@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preprocessing - IdiomSense Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="bg-gray-100 font-sans antialiased">
+    <div class="flex h-screen overflow-hidden">
+        <aside class="w-64 bg-white shadow-lg flex-shrink-0">
+            <div class="p-4 border-b">
+                <span class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IdiomSense</span>
+                <p class="text-sm text-gray-500">Admin Panel</p>
+            </div>
+            <nav class="p-4">
+                <ul class="space-y-2">
+                    <li><a href="index.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600"><i class="fas fa-tachometer-alt w-5"></i><span>Dashboard</span></a></li>
+                    <li><a href="dataset.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600"><i class="fas fa-database w-5"></i><span>Kelola Dataset</span></a></li>
+                    <li><a href="preprocess.html" class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-filter w-5"></i><span>Preprocessing</span></a></li>
+                    <li><a href="training.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600"><i class="fas fa-brain w-5"></i><span>Training Model</span></a></li>
+                    <li><a href="evaluasi.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600"><i class="fas fa-chart-line w-5"></i><span>Evaluasi</span></a></li>
+                    <li><a href="monitoring.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600"><i class="fas fa-shield-alt w-5"></i><span>Monitoring & Backup</span></a></li>
+                    <li class="pt-4 mt-4 border-t"><a href="login.html" class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="flex-1 overflow-y-auto p-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">Preprocessing Data</h1>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Langkah Preprocessing -->
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="font-semibold text-gray-700 mb-4">Langkah Preprocessing</h2>
+                    <ul class="space-y-3">
+                        <li class="flex items-center"><input type="checkbox" checked disabled class="mr-2"> Normalisasi teks (case folding, hapus tanda baca)</li>
+                        <li class="flex items-center"><input type="checkbox" checked disabled class="mr-2"> Tokenisasi</li>
+                        <li class="flex items-center"><input type="checkbox" checked disabled class="mr-2"> Encoding label emosi (one-hot/label encoder)</li>
+                        <li class="flex items-center"><input type="checkbox" class="mr-2"> Stemming (opsional)</li>
+                        <li class="flex items-center"><input type="checkbox" class="mr-2"> Hapus stopwords</li>
+                    </ul>
+                    <button class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Jalankan Preprocessing</button>
+                </div>
+                <!-- Hasil -->
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="font-semibold text-gray-700 mb-4">Hasil Preprocessing</h2>
+                    <p class="text-gray-600">Dataset siap: 3.567 kalimat</p>
+                    <p class="text-gray-600">Jumlah token: 45.321</p>
+                    <p class="text-gray-600">Jumlah idiom unik: 1.234</p>
+                    <div class="mt-4 bg-gray-100 p-3 rounded text-sm">
+                        <strong>Contoh hasil:</strong><br>
+                        Input: "Dia angkat kaki dari kantor." <br>
+                        Output: ["angkat", "kaki", "kantor"]
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

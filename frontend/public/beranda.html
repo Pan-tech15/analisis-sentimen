@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beranda - IdiomSense (Deteksi Emosi)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .bg-gradient-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+
+    <!-- Navigasi -->
+    <nav class="bg-white shadow-md border-b border-gray-200 sticky top-0 z-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <span class="font-bold text-4xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IdiomSense</span>
+                </div>
+                <div class="hidden md:flex space-x-6">
+                    <a href="beranda.html" class="text-blue-600 font-medium border-b-2 border-blue-600 pb-1">Beranda</a>
+                    <a href="hasil.html" class="text-gray-600 hover:text-blue-600 transition">Hasil</a>
+                    <a href="tentang.html" class="text-gray-600 hover:text-blue-600 transition">Tentang</a>
+                </div>
+                <div class="md:hidden">
+                    <button id="menu-btn" class="text-gray-500 focus:outline-none">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="mobile-menu" class="hidden md:hidden mt-2 pb-3 space-y-1">
+                <a href="beranda.html" class="block px-3 py-2 rounded-md text-base font-medium text-blue-600 bg-blue-50">Beranda</a>
+                <a href="hasil.html" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">Hasil</a>
+                <a href="tentang.html" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">Tentang</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section (fokus deteksi emosi) -->
+    <section class="bg-gradient-custom text-white py-16 px-4 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <i class="fas fa-language text-9xl absolute top-10 left-10"></i>
+            <i class="fas fa-heart text-9xl absolute bottom-10 right-10"></i> <!-- ikon emosi -->
+        </div>
+        <div class="max-w-4xl mx-auto text-center relative">
+            <h1 class="text-5xl font-extrabold mb-4 drop-shadow-lg">Klasifikasi Emosi dalam Idiom <span class="text-yellow-300">Bahasa Indonesia</span></h1>
+            <p class="text-xl text-blue-100 max-w-2xl mx-auto">
+                Kenali emosi di balik idiom. Masukkan kalimat dan temukan emosi yang terkandung.
+            </p>
+        </div>
+    </section>
+
+    <!-- Konten Utama -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 -mt-10 relative z-10">
+        <!-- Card Input Teks -->
+        <div class="mt-10 bg-white rounded-2xl shadow-xl p-8 border-t-4 border-blue-500 hover:shadow-2xl transition max-w-2xl mx-auto">
+            <div class="flex items-center space-x-2 mb-4">
+                <div class="bg-blue-100 p-3 rounded-full">
+                    <i class="fas fa-pen text-blue-600 text-xl"></i>
+                </div>
+                <h2 class="text-xl font-semibold text-gray-800">Klasifikasi Emosi dari Kalimat</h2>
+            </div>
+            <p class="text-gray-600 text-sm mb-4">
+                Ketik atau tempel kalimat (maksimal <span class="font-bold text-blue-600">20 kata</span>). Klik tombol "Deteksi" untuk melihat hasil.
+            </p>
+            <textarea id="single-text" rows="4" class="w-full border-2 border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-blue-400 focus:border-transparent" placeholder="Contoh: Dia angkat kaki dari kantor karena bosan."></textarea>
+            <div class="mt-4 flex justify-between items-center">
+                <span id="word-count" class="text-sm text-gray-500">0/20 kata</span>
+                <button id="analyze-btn" class="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-medium py-2 px-6 rounded-lg transition duration-200 flex items-center space-x-2 shadow-md">
+                    <i class="fas fa-search"></i>
+                    <span>Deteksi</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Contoh Kalimat Demo -->
+        <div class="mt-12">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                <i class="fas fa-lightbulb text-yellow-500 mr-2"></i> Coba dengan contoh kalimat
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Contoh 1 -->
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-100 p-5 rounded-xl border-l-4 border-blue-500 shadow-md hover:shadow-xl transition cursor-pointer example-card" data-text="Dia angkat kaki dari kantor karena bosan.">
+                    <p class="text-gray-800 font-medium">“Dia <span class="bg-blue-200 px-1 rounded">angkat kaki</span> dari kantor karena bosan.”</p>
+                    <span class="inline-block mt-3 text-xs bg-blue-200 text-blue-800 px-3 py-1 rounded-full">Klik untuk coba</span>
+                </div>
+                <!-- Contoh 2 -->
+                <div class="bg-gradient-to-br from-green-50 to-teal-100 p-5 rounded-xl border-l-4 border-green-500 shadow-md hover:shadow-xl transition cursor-pointer example-card" data-text="Aku kesal sekali hari ini, rasanya ingin membanting tulang.">
+                    <p class="text-gray-800 font-medium">“Aku kesal sekali, rasanya ingin <span class="bg-green-200 px-1 rounded">membanting tulang</span>.”</p>
+                    <span class="inline-block mt-3 text-xs bg-green-200 text-green-800 px-3 py-1 rounded-full">Klik untuk coba</span>
+                </div>
+                <!-- Contoh 3 -->
+                <div class="bg-gradient-to-br from-yellow-50 to-amber-100 p-5 rounded-xl border-l-4 border-yellow-500 shadow-md hover:shadow-xl transition cursor-pointer example-card" data-text="Presentasinya sukses besar, dia benar-benar naik daun.">
+                    <p class="text-gray-800 font-medium">“Presentasinya sukses, dia <span class="bg-yellow-200 px-1 rounded">naik daun</span>.”</p>
+                    <span class="inline-block mt-3 text-xs bg-yellow-200 text-yellow-800 px-3 py-1 rounded-full">Klik untuk coba</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informasi Model (fokus emosi) -->
+        <div class="mt-12 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-6 text-white shadow-xl">
+            <div class="flex items-start space-x-4">
+                <i class="fas fa-robot text-4xl"></i>
+                <div>
+                    <h4 class="font-bold text-xl">Model Deteksi Emosi Hybrid IndoBERT + KNN</h4>
+                    <p class="text-purple-100 text-sm mt-1">
+                        Sistem kami dilatih pada ribuan kalimat beridiom. Mampu mengidentifikasi 7 emosi dasar: senang, percaya, terkejut, netral, takut, sedih, marah.
+                    </p>
+                    <a href="tentang.html" class="inline-block mt-3 bg-white text-purple-700 px-4 py-2 rounded-full text-sm font-semibold hover:bg-purple-100 transition">Pelajari selengkapnya →</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t mt-12 py-6">
+        <div class="max-w-7xl mx-auto px-4 text-center text-gray-500 text-sm">
+            &copy; 2025 IdiomSense. Proyek penelitian deteksi emosi dalam idiom.
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        (function() {
+            const menuBtn = document.getElementById('menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (menuBtn && mobileMenu) {
+                menuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+            }
+
+            const textarea = document.getElementById('single-text');
+            const wordCount = document.getElementById('word-count');
+            if (textarea && wordCount) {
+                textarea.addEventListener('input', function() {
+                    const words = this.value.trim().split(/\s+/).filter(w => w.length > 0);
+                    const count = words.length;
+                    wordCount.textContent = `${count}/20 kata`;
+                    if (count > 20) {
+                        wordCount.classList.add('text-red-500', 'font-bold');
+                        wordCount.classList.remove('text-gray-500');
+                    } else {
+                        wordCount.classList.remove('text-red-500', 'font-bold');
+                        wordCount.classList.add('text-gray-500');
+                    }
+                });
+            }
+
+            const exampleCards = document.querySelectorAll('.example-card');
+            exampleCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const text = card.getAttribute('data-text');
+                    if (textarea) {
+                        textarea.value = text;
+                        textarea.dispatchEvent(new Event('input'));
+                        textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                });
+            });
+
+            const analyzeBtn = document.getElementById('analyze-btn');
+            if (analyzeBtn) {
+                analyzeBtn.addEventListener('click', () => {
+                    if (!textarea) return;
+                    const words = textarea.value.trim().split(/\s+/).filter(w => w.length > 0);
+                    if (words.length === 0) {
+                        alert('Silakan masukkan kalimat.');
+                    } else if (words.length > 20) {
+                        alert('Kalimat melebihi batas 20 kata!');
+                    } else {
+                        window.location.href = 'hasil.html';
+                    }
+                });
+            }
+        })();
+    </script>
+</body>
+</html>
