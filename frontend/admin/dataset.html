@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Dataset - IdiomSense Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="bg-gray-100 font-sans antialiased">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar (sama) -->
+        <aside class="w-64 bg-white shadow-lg flex-shrink-0">
+            <div class="p-4 border-b">
+                <span class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IdiomSense</span>
+                <p class="text-sm text-gray-500">Admin Panel</p>
+            </div>
+            <nav class="p-4">
+                <ul class="space-y-2">
+                    <li><a href="index.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600"><i class="fas fa-tachometer-alt w-5"></i><span>Dashboard</span></a></li>
+                    <li><a href="dataset.html" class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-database w-5"></i><span>Kelola Dataset</span></a></li>
+                    <li><a href="preprocess.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600"><i class="fas fa-filter w-5"></i><span>Preprocessing</span></a></li>
+                    <li><a href="training.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600"><i class="fas fa-brain w-5"></i><span>Training Model</span></a></li>
+                    <li><a href="evaluasi.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600"><i class="fas fa-chart-line w-5"></i><span>Evaluasi</span></a></li>
+                    <li><a href="monitoring.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600"><i class="fas fa-shield-alt w-5"></i><span>Monitoring & Backup</span></a></li>
+                    <li class="pt-4 mt-4 border-t"><a href="login.html" class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">Kelola Dataset Idiom</h1>
+            <!-- Impor CSV -->
+            <div class="bg-white p-6 rounded-xl shadow-md mb-6">
+                <h2 class="font-semibold text-gray-700 mb-4">Impor Data CSV</h2>
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
+                    <p class="text-gray-600">Seret file CSV ke sini atau <span class="text-blue-600 font-medium">klik untuk memilih</span></p>
+                    <p class="text-xs text-gray-400 mt-1">Format: id, kalimat, idiom, emosi, makna</p>
+                </div>
+                <button class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">Import</button>
+            </div>
+
+            <!-- Tabel Data Idiom -->
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="font-semibold text-gray-700">Daftar Idiom</h2>
+                    <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm">+ Tambah Baru</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-4 py-2 text-left">Idiom</th>
+                                <th class="px-4 py-2 text-left">Makna</th>
+                                <th class="px-4 py-2 text-left">Emosi</th>
+                                <th class="px-4 py-2 text-left">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="px-4 py-2">angkat kaki</td><td class="px-4 py-2">pergi</td><td class="px-4 py-2">netral</td><td class="px-4 py-2"><i class="fas fa-edit text-blue-500 mr-2 cursor-pointer"></i><i class="fas fa-trash text-red-500 cursor-pointer"></i></td></tr>
+                            <tr><td class="px-4 py-2">membanting tulang</td><td class="px-4 py-2">bekerja keras</td><td class="px-4 py-2">positif</td><td class="px-4 py-2"><i class="fas fa-edit text-blue-500 mr-2 cursor-pointer"></i><i class="fas fa-trash text-red-500 cursor-pointer"></i></td></tr>
+                            <tr><td class="px-4 py-2">naik daun</td><td class="px-4 py-2">terkenal</td><td class="px-4 py-2">positif</td><td class="px-4 py-2"><i class="fas fa-edit text-blue-500 mr-2 cursor-pointer"></i><i class="fas fa-trash text-red-500 cursor-pointer"></i></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
