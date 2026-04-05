@@ -3,59 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Preprocessing - IdiomSense Admin</title>
+    <title>Pre-Processing - IdiomSense Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body class="bg-gray-100 font-sans antialiased">
+
     <div class="flex h-screen overflow-hidden">
-        <aside class="w-64 bg-white shadow-lg flex-shrink-0">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
             <div class="p-4 border-b">
                 <span class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IdiomSense</span>
                 <p class="text-sm text-gray-500">Admin Panel</p>
             </div>
             <nav class="p-4">
-                <ul class="space-y-2">
-                    <li><a href="index.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600"><i class="fas fa-tachometer-alt w-5"></i><span>Dashboard</span></a></li>
-                    <li><a href="dataset.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600"><i class="fas fa-database w-5"></i><span>Kelola Dataset</span></a></li>
-                    <li><a href="preprocess.html" class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-filter w-5"></i><span>Preprocessing</span></a></li>
-                    <li><a href="training.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600"><i class="fas fa-brain w-5"></i><span>Training Model</span></a></li>
-                    <li><a href="evaluasi.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600"><i class="fas fa-chart-line w-5"></i><span>Evaluasi</span></a></li>
-                    <li><a href="monitoring.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600"><i class="fas fa-shield-alt w-5"></i><span>Monitoring & Backup</span></a></li>
+                <ul class="space-y-1">
+                    <li><a href="beranda-admin.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"><i class="fas fa-tachometer-alt w-5"></i><span>Beranda</span></a></li>
+                    <!-- Data Collection dropdown -->
+                    <li>
+                        <button id="dataCollectionBtn" class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700">
+                            <div class="flex items-center space-x-2"><i class="fas fa-database w-5"></i><span>Data Collection</span></div>
+                            <i id="dataCollectionIcon" class="fas fa-chevron-down text-sm transition-transform"></i>
+                        </button>
+                        <ul id="dataCollectionMenu" class="ml-6 mt-1 space-y-1 hidden">
+                            <li><a href="dataset.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-table w-5 mr-2"></i>Dataset</a></li>
+                            <li><a href="kamus-idiom.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-book w-5 mr-2"></i>Kamus Idiom</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="preprocessing.html" class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-filter w-5"></i><span>Pre-Processing</span></a></li>
+                    <!-- Processing dropdown -->
+                    <li>
+                        <button id="processingBtn" class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700">
+                            <div class="flex items-center space-x-2"><i class="fas fa-brain w-5"></i><span>Processing</span></div>
+                            <i id="processingIcon" class="fas fa-chevron-down text-sm transition-transform"></i>
+                        </button>
+                        <ul id="processingMenu" class="ml-6 mt-1 space-y-1 hidden">
+                            <li><a href="pengaturan.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-sliders-h w-5 mr-2"></i>Pengaturan</a></li>
+                            <li><a href="latih.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-chart-line w-5 mr-2"></i>Latih</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="testing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-vial w-5"></i><span>Testing</span></a></li>
                     <li class="pt-4 mt-4 border-t"><a href="login.html" class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a></li>
                 </ul>
             </nav>
         </aside>
 
-        <main class="flex-1 overflow-y-auto p-6">
-            <h1 class="text-3xl font-bold text-gray-800 mb-6">Preprocessing Data</h1>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Langkah Preprocessing -->
-                <div class="bg-white p-6 rounded-xl shadow-md">
-                    <h2 class="font-semibold text-gray-700 mb-4">Langkah Preprocessing</h2>
-                    <ul class="space-y-3">
-                        <li class="flex items-center"><input type="checkbox" checked disabled class="mr-2"> Normalisasi teks (case folding, hapus tanda baca)</li>
-                        <li class="flex items-center"><input type="checkbox" checked disabled class="mr-2"> Tokenisasi</li>
-                        <li class="flex items-center"><input type="checkbox" checked disabled class="mr-2"> Encoding label emosi (one-hot/label encoder)</li>
-                        <li class="flex items-center"><input type="checkbox" class="mr-2"> Stemming (opsional)</li>
-                        <li class="flex items-center"><input type="checkbox" class="mr-2"> Hapus stopwords</li>
-                    </ul>
-                    <button class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Jalankan Preprocessing</button>
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">Pre-Processing</h1>
+
+            <div class="bg-white p-6 rounded-xl shadow-md max-w-2xl">
+                <h2 class="font-semibold text-gray-700 mb-4">Proses Pembersihan</h2>
+                
+                <!-- Pilih Data Mentah -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Data Mentah</label>
+                    <select id="datasetSelect" class="w-full border border-gray-300 rounded-lg p-2">
+                        <option value="">-- Pilih dataset --</option>
+                        <option value="twitter_idioms.csv">twitter_idioms.csv (1.234 baris)</option>
+                        <option value="news_idioms.xlsx">news_idioms.xlsx (892 baris)</option>
+                        <option value="book_idioms.csv">book_idioms.csv (567 baris)</option>
+                    </select>
                 </div>
-                <!-- Hasil -->
-                <div class="bg-white p-6 rounded-xl shadow-md">
-                    <h2 class="font-semibold text-gray-700 mb-4">Hasil Preprocessing</h2>
-                    <p class="text-gray-600">Dataset siap: 3.567 kalimat</p>
-                    <p class="text-gray-600">Jumlah token: 45.321</p>
-                    <p class="text-gray-600">Jumlah idiom unik: 1.234</p>
-                    <div class="mt-4 bg-gray-100 p-3 rounded text-sm">
-                        <strong>Contoh hasil:</strong><br>
-                        Input: "Dia angkat kaki dari kantor." <br>
-                        Output: ["angkat", "kaki", "kantor"]
+
+                <!-- Tombol Mulai Pembersihan -->
+                <button id="startCleanBtn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition flex items-center space-x-2">
+                    <i class="fas fa-play"></i>
+                    <span>Mulai Pembersihan</span>
+                </button>
+
+                <!-- Status -->
+                <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                    <p class="text-sm text-gray-600">Status : <span id="statusText" class="font-medium">Belum Mulai</span></p>
+                    <!-- Progress bar (opsional) -->
+                    <div id="progressContainer" class="mt-2 hidden">
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div id="progressBar" class="bg-blue-600 h-2 rounded-full" style="width:0%"></div>
+                        </div>
+                        <p id="progressPercent" class="text-xs text-gray-500 mt-1">0%</p>
                     </div>
+                </div>
+
+                <!-- Tombol Unduh CSV (muncul setelah proses selesai) -->
+                <div class="mt-6 text-right">
+                    <button id="downloadBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition flex items-center space-x-2 opacity-50 cursor-not-allowed" disabled>
+                        <i class="fas fa-download"></i>
+                        <span>Unduh CSV</span>
+                    </button>
                 </div>
             </div>
         </main>
     </div>
+
+    <script>
+        // Elemen
+        const datasetSelect = document.getElementById('datasetSelect');
+        const startBtn = document.getElementById('startCleanBtn');
+        const statusText = document.getElementById('statusText');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressPercent = document.getElementById('progressPercent');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        let cleaningActive = false;
+        let cleanedData = null;
+
+        // Simulasi proses pembersihan
+        function startCleaning() {
+            const selected = datasetSelect.value;
+            if (!selected) {
+                alert('Pilih dataset terlebih dahulu!');
+                return;
+            }
+            if (cleaningActive) return;
+
+            cleaningActive = true;
+            statusText.innerText = 'Sedang memproses...';
+            progressContainer.classList.remove('hidden');
+            downloadBtn.disabled = true;
+            downloadBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            downloadBtn.classList.remove('opacity-100', 'cursor-pointer');
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    progress = 100;
+                    statusText.innerText = 'Selesai';
+                    cleaningActive = false;
+                    downloadBtn.disabled = false;
+                    downloadBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    downloadBtn.classList.add('opacity-100', 'cursor-pointer');
+                    // Simulasi data bersih (dummy)
+                    cleanedData = `kalimat_bersih,label\n"dia pergi dari kantor","netral"\n"dia bekerja keras","positif"`;
+                }
+                progressBar.style.width = `${progress}%`;
+                progressPercent.innerText = `${progress}%`;
+            }, 200);
+        }
+
+        // Unduh CSV
+        function downloadCSV() {
+            if (!cleanedData) {
+                alert('Tidak ada data untuk diunduh. Lakukan pembersihan terlebih dahulu.');
+                return;
+            }
+            const blob = new Blob([cleanedData], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `hasil_cleaning_${new Date().toISOString().slice(0,19)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        startBtn.addEventListener('click', startCleaning);
+        downloadBtn.addEventListener('click', downloadCSV);
+
+        // Dropdown sidebar (sama seperti sebelumnya)
+        function toggleDropdown(btn, menu, icon) {
+            btn.addEventListener('click', () => {
+                menu.classList.toggle('hidden');
+                icon.classList.toggle('rotate-180');
+            });
+        }
+        const dataCollectionBtn = document.getElementById('dataCollectionBtn');
+        const dataCollectionMenu = document.getElementById('dataCollectionMenu');
+        const dataCollectionIcon = document.getElementById('dataCollectionIcon');
+        toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
+        const processingBtn = document.getElementById('processingBtn');
+        const processingMenu = document.getElementById('processingMenu');
+        const processingIcon = document.getElementById('processingIcon');
+        toggleDropdown(processingBtn, processingMenu, processingIcon);
+    </script>
 </body>
 </html>

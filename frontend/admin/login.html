@@ -6,26 +6,71 @@
     <title>Login Admin - IdiomSense</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+    </style>
 </head>
 <body class="bg-gray-100">
-    <div class="min-h-screen flex items-center justify-center">
-        <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-            <div class="text-center mb-6">
-                <span class="font-bold text-4xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IdiomSense</span>
-                <p class="text-gray-600 mt-2">Admin Panel</p>
+
+    <div class="min-h-screen flex items-center justify-center p-4 md:p-0">
+        <div class="w-full max-w-6xl bg-white rounded-2xl shadow-xl overflow-hidden md:rounded-2xl">
+            <div class="flex flex-col md:flex-row">
+                <!-- Bagian Kiri: Branding (full height) -->
+                <div class="w-full md:w-1/2 bg-gradient-to-br from-blue-600 to-purple-700 p-8 md:p-12 flex flex-col justify-center items-center md:items-start text-white min-h-[300px] md:min-h-[600px]">
+                    <div class="text-center md:text-left">
+                        <h1 class="text-4xl md:text-5xl font-bold mb-4">IdiomSense</h1>
+                        <p class="text-blue-100 text-lg mb-6">Deteksi Emosi dalam Kalimat Idiom<br>Bahasa Indonesia</p>
+                        <div class="mt-8 hidden md:block">
+                            <i class="fas fa-smile text-5xl opacity-50"></i>
+                            <i class="fas fa-language text-5xl ml-4 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bagian Kanan: Form Login (full height) -->
+                <div class="w-full md:w-1/2 p-8 md:p-12 flex items-center justify-center min-h-[400px] md:min-h-[600px]">
+                    <div class="w-full max-w-md">
+                        <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">Masuk Admin</h2>
+                        
+                        <form id="loginForm" class="space-y-5">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Pengguna</label>
+                                <input type="text" id="username" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none" placeholder="admin">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Kata Sandi</label>
+                                <input type="password" id="password" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none" placeholder="******">
+                            </div>
+
+                            <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-2 rounded-lg hover:from-blue-600 hover:to-purple-700 transition duration-200">Masuk</button>
+                        </form>
+
+                        <div id="errorMessage" class="mt-4 text-center text-sm text-red-500 hidden"></div>
+                    </div>
+                </div>
             </div>
-            <form>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Username</label>
-                    <input type="text" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400" placeholder="admin">
-                </div>
-                <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
-                    <input type="password" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400" placeholder="******">
-                </div>
-                <button class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-2 px-4 rounded-lg hover:from-blue-600 hover:to-purple-700 transition">Login</button>
-            </form>
         </div>
     </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorDiv = document.getElementById('errorMessage');
+
+            if (username === 'admin' && password === 'admin') {
+                window.location.href = 'beranda-admin.html';
+            } else {
+                errorDiv.textContent = 'Nama pengguna atau kata sandi salah.';
+                errorDiv.classList.remove('hidden');
+            }
+        });
+    </script>
+
 </body>
 </html>
