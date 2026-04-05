@@ -3,70 +3,406 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Dataset - IdiomSense Admin</title>
+    <title>Dataset - IdiomSense Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body class="bg-gray-100 font-sans antialiased">
+
     <div class="flex h-screen overflow-hidden">
-        <!-- Sidebar (sama) -->
-        <aside class="w-64 bg-white shadow-lg flex-shrink-0">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
             <div class="p-4 border-b">
                 <span class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IdiomSense</span>
                 <p class="text-sm text-gray-500">Admin Panel</p>
             </div>
             <nav class="p-4">
-                <ul class="space-y-2">
-                    <li><a href="index.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600"><i class="fas fa-tachometer-alt w-5"></i><span>Dashboard</span></a></li>
-                    <li><a href="dataset.html" class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-database w-5"></i><span>Kelola Dataset</span></a></li>
-                    <li><a href="preprocess.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600"><i class="fas fa-filter w-5"></i><span>Preprocessing</span></a></li>
-                    <li><a href="training.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600"><i class="fas fa-brain w-5"></i><span>Training Model</span></a></li>
-                    <li><a href="evaluasi.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600"><i class="fas fa-chart-line w-5"></i><span>Evaluasi</span></a></li>
-                    <li><a href="monitoring.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600"><i class="fas fa-shield-alt w-5"></i><span>Monitoring & Backup</span></a></li>
+                <ul class="space-y-1">
+                    <li><a href="beranda-admin.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"><i class="fas fa-tachometer-alt w-5"></i><span>Beranda</span></a></li>
+                    <li>
+                        <button id="dataCollectionBtn" class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700">
+                            <div class="flex items-center space-x-2"><i class="fas fa-database w-5"></i><span>Data Collection</span></div>
+                            <i id="dataCollectionIcon" class="fas fa-chevron-down text-sm transition-transform"></i>
+                        </button>
+                        <ul id="dataCollectionMenu" class="ml-6 mt-1 space-y-1 hidden">
+                            <li><a href="dataset.html" class="block p-2 rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-table w-5 mr-2"></i>Dataset</a></li>
+                            <li><a href="kamus-idiom.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-book w-5 mr-2"></i>Kamus Idiom</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="preprocessing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-filter w-5"></i><span>Pre-Processing</span></a></li>
+                    <li>
+                        <button id="processingBtn" class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700">
+                            <div class="flex items-center space-x-2"><i class="fas fa-brain w-5"></i><span>Processing</span></div>
+                            <i id="processingIcon" class="fas fa-chevron-down text-sm transition-transform"></i>
+                        </button>
+                        <ul id="processingMenu" class="ml-6 mt-1 space-y-1 hidden">
+                            <li><a href="pengaturan.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-sliders-h w-5 mr-2"></i>Pengaturan</a></li>
+                            <li><a href="latih.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-chart-line w-5 mr-2"></i>Latih</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="testing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-vial w-5"></i><span>Testing</span></a></li>
                     <li class="pt-4 mt-4 border-t"><a href="login.html" class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a></li>
                 </ul>
             </nav>
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto p-6">
-            <h1 class="text-3xl font-bold text-gray-800 mb-6">Kelola Dataset Idiom</h1>
-            <!-- Impor CSV -->
+        <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">Dataset</h1>
+
+            <!-- Upload Dataset Mentah -->
             <div class="bg-white p-6 rounded-xl shadow-md mb-6">
-                <h2 class="font-semibold text-gray-700 mb-4">Impor Data CSV</h2>
-                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                <h2 class="font-semibold text-gray-700 mb-4">Upload Dataset Mentah</h2>
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 transition" id="uploadArea">
                     <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
-                    <p class="text-gray-600">Seret file CSV ke sini atau <span class="text-blue-600 font-medium">klik untuk memilih</span></p>
-                    <p class="text-xs text-gray-400 mt-1">Format: id, kalimat, idiom, emosi, makna</p>
+                    <p class="text-gray-600">Drag atau <span class="text-blue-600 font-medium">klik untuk memilih</span></p>
+                    <p class="text-xs text-gray-400 mt-1">Format CSV/Excel (id, kalimat, has_idiom, idiom_text, sentiment, emotion, idiom_meaning, sumber)</p>
+                    <input type="file" id="fileInput" class="hidden" accept=".csv,.xlsx,.xls">
                 </div>
-                <button class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">Import</button>
+                <button id="uploadBtn" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">Upload</button>
             </div>
 
-            <!-- Tabel Data Idiom -->
-            <div class="bg-white p-6 rounded-xl shadow-md">
+            <!-- Daftar Dataset dengan Pagination -->
+            <div class="bg-white p-6 rounded-xl shadow-md mb-6">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="font-semibold text-gray-700">Daftar Idiom</h2>
-                    <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm">+ Tambah Baru</button>
+                    <h2 class="font-semibold text-gray-700">Daftar Dataset</h2>
+                    <button id="exportAllBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">Ekspor Semua</button>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-100">
+                    <table class="min-w-full border border-gray-200">
+                        <thead class="bg-blue-500 text-white">
                             <tr>
-                                <th class="px-4 py-2 text-left">Idiom</th>
-                                <th class="px-4 py-2 text-left">Makna</th>
-                                <th class="px-4 py-2 text-left">Emosi</th>
-                                <th class="px-4 py-2 text-left">Aksi</th>
+                                <th class="px-4 py-2 border border-blue-400">Nama File</th>
+                                <th class="px-4 py-2 border border-blue-400">Baris</th>
+                                <th class="px-4 py-2 border border-blue-400">Tanggal Upload</th>
+                                <th class="px-4 py-2 border border-blue-400">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr><td class="px-4 py-2">angkat kaki</td><td class="px-4 py-2">pergi</td><td class="px-4 py-2">netral</td><td class="px-4 py-2"><i class="fas fa-edit text-blue-500 mr-2 cursor-pointer"></i><i class="fas fa-trash text-red-500 cursor-pointer"></i></td></tr>
-                            <tr><td class="px-4 py-2">membanting tulang</td><td class="px-4 py-2">bekerja keras</td><td class="px-4 py-2">positif</td><td class="px-4 py-2"><i class="fas fa-edit text-blue-500 mr-2 cursor-pointer"></i><i class="fas fa-trash text-red-500 cursor-pointer"></i></td></tr>
-                            <tr><td class="px-4 py-2">naik daun</td><td class="px-4 py-2">terkenal</td><td class="px-4 py-2">positif</td><td class="px-4 py-2"><i class="fas fa-edit text-blue-500 mr-2 cursor-pointer"></i><i class="fas fa-trash text-red-500 cursor-pointer"></i></td></tr>
+                        <tbody id="datasetTableBody" class="bg-white">
+                            <!-- Data akan diisi oleh JS -->
                         </tbody>
                     </table>
                 </div>
+                <!-- Pagination untuk daftar dataset -->
+                <div id="datasetPagination" class="flex justify-center mt-4 space-x-2"></div>
+            </div>
+
+            <!-- Filter & Pencarian (awal hidden) -->
+            <div id="filterSection" class="bg-white p-6 rounded-xl shadow-md hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="font-semibold text-gray-700">Filter & Pencarian: <span id="selectedDatasetName"></span></h2>
+                    <button id="closeFilter" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                    <input type="text" id="searchKalimat" placeholder="Cari teks kalimat..." class="border rounded p-2">
+                    <select id="filterEmosi" class="border rounded p-2">
+                        <option value="">Semua Emosi</option>
+                        <option>Senang</option><option>Percaya</option><option>Terkejut</option>
+                        <option>Netral</option><option>Marah</option><option>Sedih</option><option>Takut</option>
+                    </select>
+                    <select id="filterStatusIdiom" class="border rounded p-2">
+                        <option value="">Semua Status Idiom</option>
+                        <option value="1">Beridiom</option>
+                        <option value="0">Non-idiom</option>
+                    </select>
+                    <button id="applyFilterBtn" class="bg-blue-600 text-white px-4 py-2 rounded">Terapkan Filter</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full border border-gray-200">
+                        <thead class="bg-blue-500 text-white">
+                            70tr
+                                <th class="px-4 py-2 border border-blue-400">No</th>
+                                <th class="px-4 py-2 border border-blue-400">Kalimat</th>
+                                <th class="px-4 py-2 border border-blue-400">Jumlah Idiom</th>
+                                <th class="px-4 py-2 border border-blue-400">Teks Idiom</th>
+                                <th class="px-4 py-2 border border-blue-400">Emosi</th>
+                                <th class="px-4 py-2 border border-blue-400">Makna Idiom</th>
+                            </tr>
+                        </thead>
+                        <tbody id="filterResultBody" class="bg-white">
+                            <!-- Hasil filter akan diisi -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination untuk hasil filter -->
+                <div id="filterPagination" class="flex justify-center mt-4 space-x-2"></div>
             </div>
         </main>
     </div>
+
+    <script>
+        // Data dummy untuk daftar dataset (diperbanyak agar pagination terlihat)
+        let datasets = [
+            { id: 1, name: 'file1.csv', rows: 800, date: '2025-03-20', data: [] },
+            { id: 2, name: 'file2.csv', rows: 1000, date: '2025-03-21', data: [] },
+            { id: 3, name: 'file3.csv', rows: 450, date: '2025-03-22', data: [] },
+            { id: 4, name: 'file4.csv', rows: 1230, date: '2025-03-23', data: [] },
+            { id: 5, name: 'file5.csv', rows: 670, date: '2025-03-24', data: [] },
+            { id: 6, name: 'file6.csv', rows: 890, date: '2025-03-25', data: [] },
+        ];
+        // Data dummy untuk kalimat di setiap dataset
+        function generateDummyData(id) {
+            const base = [
+                { kalimat: "Dia angkat kaki dari kantor.", jumlahIdiom: 1, teksIdiom: "angkat kaki", emosi: "Netral", makna: "pergi" },
+                { kalimat: "Aku ingin membanting tulang.", jumlahIdiom: 1, teksIdiom: "membanting tulang", emosi: "Positif", makna: "bekerja keras" },
+                { kalimat: "Dia naik daun setelah sukses.", jumlahIdiom: 1, teksIdiom: "naik daun", emosi: "Senang", makna: "terkenal" },
+                { kalimat: "Hati-hati, jangan buka aib.", jumlahIdiom: 1, teksIdiom: "buka aib", emosi: "Takut", makna: "membuka rahasia" },
+                { kalimat: "Kepala dingin dalam menghadapi masalah.", jumlahIdiom: 1, teksIdiom: "kepala dingin", emosi: "Netral", makna: "tenang" },
+                { kalimat: "Dia merasa kesal karena diputus.", jumlahIdiom: 0, teksIdiom: "", emosi: "", makna: "" },
+                { kalimat: "Semua orang memuji prestasinya.", jumlahIdiom: 0, teksIdiom: "", emosi: "", makna: "" },
+                { kalimat: "Jangan suka membuka rahasia orang.", jumlahIdiom: 1, teksIdiom: "membuka rahasia", emosi: "Marah", makna: "membocorkan" },
+            ];
+            // buat array dengan jumlah baris sesuai kebutuhan (misal 20 baris)
+            let arr = [];
+            for (let i=0; i<20; i++) {
+                arr.push({ ...base[i%base.length], kalimat: `${base[i%base.length].kalimat} (${i+1})` });
+            }
+            return arr;
+        }
+        // Inisialisasi data untuk setiap dataset
+        datasets.forEach(ds => {
+            ds.data = generateDummyData(ds.id);
+        });
+
+        let currentDataset = null; // dataset yang sedang dilihat
+        let currentDatasetPage = 1;
+        let currentFilterPage = 1;
+        const rowsPerPage = 5;
+
+        // Render daftar dataset dengan pagination
+        function renderDatasetTable() {
+            const start = (currentDatasetPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedData = datasets.slice(start, end);
+            const tbody = document.getElementById('datasetTableBody');
+            tbody.innerHTML = '';
+            paginatedData.forEach(ds => {
+                const row = tbody.insertRow();
+                row.insertCell(0).innerHTML = `<span class="font-medium">${ds.name}</span>`;
+                row.insertCell(1).innerHTML = ds.rows;
+                row.insertCell(2).innerHTML = ds.date;
+                const actions = document.createElement('td');
+                actions.className = 'px-4 py-2 border border-gray-200';
+                actions.innerHTML = `
+                    <i class="fas fa-eye text-blue-500 mr-3 cursor-pointer hover:text-blue-700" data-id="${ds.id}" data-action="view"></i>
+                    <i class="fas fa-trash text-red-500 cursor-pointer hover:text-red-700" data-id="${ds.id}" data-action="delete"></i>
+                `;
+                row.appendChild(actions);
+                // tambahkan border pada cell
+                for (let cell of row.cells) {
+                    cell.classList.add('border', 'border-gray-200', 'px-4', 'py-2');
+                }
+            });
+            // Event listener untuk aksi
+            document.querySelectorAll('[data-action="view"]').forEach(icon => {
+                icon.addEventListener('click', (e) => {
+                    const id = parseInt(icon.dataset.id);
+                    const ds = datasets.find(d => d.id === id);
+                    if (ds) showFilterForDataset(ds);
+                });
+            });
+            document.querySelectorAll('[data-action="delete"]').forEach(icon => {
+                icon.addEventListener('click', (e) => {
+                    const id = parseInt(icon.dataset.id);
+                    if (confirm('Apakah Anda yakin ingin menghapus dataset ini?')) {
+                        datasets = datasets.filter(d => d.id !== id);
+                        // jika halaman sekarang kosong, mundur satu halaman
+                        const totalPages = Math.ceil(datasets.length / rowsPerPage);
+                        if (currentDatasetPage > totalPages && totalPages > 0) currentDatasetPage = totalPages;
+                        if (datasets.length === 0) currentDatasetPage = 1;
+                        renderDatasetTable();
+                        renderDatasetPagination();
+                        if (currentDataset && currentDataset.id === id) {
+                            document.getElementById('filterSection').classList.add('hidden');
+                            currentDataset = null;
+                        }
+                    }
+                });
+            });
+        }
+
+        function renderDatasetPagination() {
+            const totalPages = Math.ceil(datasets.length / rowsPerPage);
+            const paginationDiv = document.getElementById('datasetPagination');
+            paginationDiv.innerHTML = '';
+            if (totalPages <= 1) return;
+            // Prev button
+            const prevBtn = document.createElement('button');
+            prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            prevBtn.className = `px-3 py-1 rounded border ${currentDatasetPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
+            prevBtn.disabled = currentDatasetPage === 1;
+            prevBtn.onclick = () => { if (currentDatasetPage > 1) { currentDatasetPage--; renderDatasetTable(); renderDatasetPagination(); } };
+            paginationDiv.appendChild(prevBtn);
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.innerText = i;
+                btn.className = `px-3 py-1 rounded border ${currentDatasetPage === i ? 'bg-blue-500 text-white' : 'bg-white hover:bg-blue-50'}`;
+                btn.onclick = () => { currentDatasetPage = i; renderDatasetTable(); renderDatasetPagination(); };
+                paginationDiv.appendChild(btn);
+            }
+            // Next button
+            const nextBtn = document.createElement('button');
+            nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            nextBtn.className = `px-3 py-1 rounded border ${currentDatasetPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
+            nextBtn.disabled = currentDatasetPage === totalPages;
+            nextBtn.onclick = () => { if (currentDatasetPage < totalPages) { currentDatasetPage++; renderDatasetTable(); renderDatasetPagination(); } };
+            paginationDiv.appendChild(nextBtn);
+        }
+
+        // Menampilkan filter & pencarian untuk dataset tertentu
+        function showFilterForDataset(ds) {
+            currentDataset = ds;
+            currentFilterPage = 1;
+            document.getElementById('selectedDatasetName').innerText = ds.name;
+            document.getElementById('filterSection').classList.remove('hidden');
+            // Reset filter
+            document.getElementById('searchKalimat').value = '';
+            document.getElementById('filterEmosi').value = '';
+            document.getElementById('filterStatusIdiom').value = '';
+            applyFilter(); // tampilkan semua data
+        }
+
+        // Menerapkan filter pada data dataset yang sedang dipilih
+        function applyFilter() {
+            if (!currentDataset) return;
+            const search = document.getElementById('searchKalimat').value.toLowerCase();
+            const emosi = document.getElementById('filterEmosi').value;
+            const statusIdiom = document.getElementById('filterStatusIdiom').value;
+
+            let filtered = currentDataset.data.filter(item => {
+                if (search && !item.kalimat.toLowerCase().includes(search)) return false;
+                if (emosi && item.emosi !== emosi) return false;
+                if (statusIdiom !== '') {
+                    const hasIdiom = (item.jumlahIdiom > 0) ? '1' : '0';
+                    if (hasIdiom !== statusIdiom) return false;
+                }
+                return true;
+            });
+            // Simpan hasil filter untuk pagination
+            window.filteredData = filtered;
+            renderFilterTable();
+            renderFilterPagination();
+        }
+
+        function renderFilterTable() {
+            if (!window.filteredData) return;
+            const start = (currentFilterPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const pageData = window.filteredData.slice(start, end);
+            const tbody = document.getElementById('filterResultBody');
+            tbody.innerHTML = '';
+            pageData.forEach((item, idx) => {
+                const row = tbody.insertRow();
+                row.insertCell(0).innerHTML = (start + idx + 1);
+                row.insertCell(1).innerHTML = item.kalimat;
+                row.insertCell(2).innerHTML = item.jumlahIdiom;
+                row.insertCell(3).innerHTML = item.teksIdiom;
+                row.insertCell(4).innerHTML = item.emosi;
+                row.insertCell(5).innerHTML = item.makna;
+                for (let cell of row.cells) {
+                    cell.classList.add('border', 'border-gray-200', 'px-4', 'py-2');
+                }
+            });
+        }
+
+        function renderFilterPagination() {
+            const totalItems = window.filteredData ? window.filteredData.length : 0;
+            const totalPages = Math.ceil(totalItems / rowsPerPage);
+            const paginationDiv = document.getElementById('filterPagination');
+            paginationDiv.innerHTML = '';
+            if (totalPages <= 1) return;
+            // Prev
+            const prevBtn = document.createElement('button');
+            prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            prevBtn.className = `px-3 py-1 rounded border ${currentFilterPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
+            prevBtn.disabled = currentFilterPage === 1;
+            prevBtn.onclick = () => { if (currentFilterPage > 1) { currentFilterPage--; renderFilterTable(); renderFilterPagination(); } };
+            paginationDiv.appendChild(prevBtn);
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.innerText = i;
+                btn.className = `px-3 py-1 rounded border ${currentFilterPage === i ? 'bg-blue-500 text-white' : 'bg-white hover:bg-blue-50'}`;
+                btn.onclick = () => { currentFilterPage = i; renderFilterTable(); renderFilterPagination(); };
+                paginationDiv.appendChild(btn);
+            }
+            const nextBtn = document.createElement('button');
+            nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            nextBtn.className = `px-3 py-1 rounded border ${currentFilterPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
+            nextBtn.disabled = currentFilterPage === totalPages;
+            nextBtn.onclick = () => { if (currentFilterPage < totalPages) { currentFilterPage++; renderFilterTable(); renderFilterPagination(); } };
+            paginationDiv.appendChild(nextBtn);
+        }
+
+        // Upload file (simulasi)
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('border-blue-500', 'bg-blue-50');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('border-blue-500', 'bg-blue-50');
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('border-blue-500', 'bg-blue-50');
+            const files = e.dataTransfer.files;
+            if (files.length) fileInput.files = files;
+        });
+        document.getElementById('uploadBtn').addEventListener('click', () => {
+            if (fileInput.files.length === 0) {
+                alert('Pilih file terlebih dahulu.');
+                return;
+            }
+            const file = fileInput.files[0];
+            const newId = datasets.length + 1;
+            const newName = file.name;
+            const newRows = Math.floor(Math.random() * 1000) + 100;
+            const newDate = new Date().toISOString().slice(0,10);
+            datasets.push({
+                id: newId,
+                name: newName,
+                rows: newRows,
+                date: newDate,
+                data: generateDummyData(newId)
+            });
+            // Refresh dataset table and pagination
+            renderDatasetTable();
+            renderDatasetPagination();
+            alert(`File ${newName} berhasil diupload (simulasi).`);
+            fileInput.value = '';
+        });
+
+        document.getElementById('exportAllBtn').addEventListener('click', () => {
+            alert('Fitur ekspor semua dataset akan segera tersedia.');
+        });
+
+        document.getElementById('closeFilter').addEventListener('click', () => {
+            document.getElementById('filterSection').classList.add('hidden');
+            currentDataset = null;
+        });
+        document.getElementById('applyFilterBtn').addEventListener('click', applyFilter);
+
+        // Dropdown menu
+        function toggleDropdown(btn, menu, icon) {
+            btn.addEventListener('click', () => {
+                menu.classList.toggle('hidden');
+                icon.classList.toggle('rotate-180');
+            });
+        }
+        const dataCollectionBtn = document.getElementById('dataCollectionBtn');
+        const dataCollectionMenu = document.getElementById('dataCollectionMenu');
+        const dataCollectionIcon = document.getElementById('dataCollectionIcon');
+        toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
+        const processingBtn = document.getElementById('processingBtn');
+        const processingMenu = document.getElementById('processingMenu');
+        const processingIcon = document.getElementById('processingIcon');
+        toggleDropdown(processingBtn, processingMenu, processingIcon);
+
+        renderDatasetTable();
+        renderDatasetPagination();
+    </script>
 </body>
 </html>

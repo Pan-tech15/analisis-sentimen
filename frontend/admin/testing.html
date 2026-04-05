@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing - IdiomSense Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="bg-gray-100 font-sans antialiased">
+
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar (konsisten) -->
+        <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
+            <div class="p-4 border-b">
+                <span class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IdiomSense</span>
+                <p class="text-sm text-gray-500">Admin Panel</p>
+            </div>
+            <nav class="p-4">
+                <ul class="space-y-1">
+                    <li><a href="beranda-admin.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"><i class="fas fa-tachometer-alt w-5"></i><span>Beranda</span></a></li>
+                    <li><button id="dataCollectionBtn" class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700"><div class="flex items-center space-x-2"><i class="fas fa-database w-5"></i><span>Data Collection</span></div><i id="dataCollectionIcon" class="fas fa-chevron-down text-sm transition-transform"></i></button>
+                        <ul id="dataCollectionMenu" class="ml-6 mt-1 space-y-1 hidden">
+                            <li><a href="dataset.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-table w-5 mr-2"></i>Dataset</a></li>
+                            <li><a href="kamus-idiom.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-book w-5 mr-2"></i>Kamus Idiom</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="preprocessing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-filter w-5"></i><span>Pre-Processing</span></a></li>
+                    <li><button id="processingBtn" class="w-full flex items-center justify-between p-2 rounded-lg bg-gray-100 text-gray-700"><div class="flex items-center space-x-2"><i class="fas fa-brain w-5"></i><span>Processing</span></div><i id="processingIcon" class="fas fa-chevron-down text-sm transition-transform"></i></button>
+                        <ul id="processingMenu" class="ml-6 mt-1 space-y-1">
+                            <li><a href="pengaturan.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-sliders-h w-5 mr-2"></i>Pengaturan</a></li>
+                            <li><a href="latih.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-chart-line w-5 mr-2"></i>Latih</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="testing.html" class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-vial w-5"></i><span>Testing</span></a></li>
+                    <li class="pt-4 mt-4 border-t"><a href="login.html" class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">Testing</h1>
+
+            <!-- Form Testing -->
+            <div class="bg-white p-6 rounded-xl shadow-md mb-6">
+                <h2 class="font-semibold text-gray-700 mb-4">Testing</h2>
+
+                <!-- Upload Dataset -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Upload Dataset</label>
+                    <div id="uploadArea" class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-blue-400 transition">
+                        <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+                        <p class="text-gray-600">Drag atau <span class="text-blue-600 font-medium">klik untuk memilih</span></p>
+                        <p class="text-xs text-gray-400">Format CSV/Excel (kalimat mentah atau sudah diproses)</p>
+                        <input type="file" id="testFile" class="hidden" accept=".csv,.xlsx">
+                    </div>
+                </div>
+
+                <!-- Pilih Model Hasil Training -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Model Hasil Training</label>
+                    <select id="modelSelect" class="w-full border border-gray-300 rounded-lg p-2">
+                        <option value="">-- Pilih model --</option>
+                        <option value="hybrid">IndoBERT-KNN + UMAP (hasil_hybrid_1)</option>
+                        <option value="nb">Naive Bayes-Lexicon (hasil_nb_1)</option>
+                    </select>
+                </div>
+
+                <!-- Tombol Mulai Testing -->
+                <button id="startTestBtn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition flex items-center space-x-2">
+                    <i class="fas fa-play"></i>
+                    <span>Mulai Testing</span>
+                </button>
+
+                <!-- Status -->
+                <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <p class="text-sm text-gray-600">Status : <span id="testStatus" class="font-medium">Belum Mulai</span></p>
+                    <div id="progressContainer" class="mt-2 hidden">
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div id="progressBar" class="bg-blue-600 h-2 rounded-full" style="width:0%"></div>
+                        </div>
+                        <p id="progressPercent" class="text-xs text-gray-500 mt-1">0%</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daftar Hasil Data Testing dengan Pagination -->
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <h2 class="font-semibold text-gray-700 mb-4">Daftar Hasil Data Testing</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full border border-gray-200">
+                        <thead class="bg-blue-500 text-white">
+                             <tr>
+                                <th class="px-4 py-2 border border-blue-400">Nama</th>
+                                <th class="px-4 py-2 border border-blue-400">Model</th>
+                                <th class="px-4 py-2 border border-blue-400">Akurasi</th>
+                                <th class="px-4 py-2 border border-blue-400">F1-Score</th>
+                                <th class="px-4 py-2 border border-blue-400">Aksi</th>
+                             </tr>
+                        </thead>
+                        <tbody id="testResultsBody">
+                            <!-- Data dummy awal -->
+                             <tr>
+                                <td class="px-4 py-2 border border-gray-200">test_hybrid_1.csv</td>
+                                <td class="px-4 py-2 border border-gray-200">IndoBERT-KNN + UMAP</td>
+                                <td class="px-4 py-2 border border-gray-200">0.95</td>
+                                <td class="px-4 py-2 border border-gray-200">0.95</td>
+                                <td class="px-4 py-2 border border-gray-200 text-center">
+                                    <a href="detail-testing.html?id=1" class="text-blue-500 hover:text-blue-700"><i class="fas fa-search"></i></a>
+                                </td>
+                             </tr>
+                             <tr>
+                                <td class="px-4 py-2 border border-gray-200">test_nb_1.csv</td>
+                                <td class="px-4 py-2 border border-gray-200">Naive Bayes-Lexicon</td>
+                                <td class="px-4 py-2 border border-gray-200">0.92</td>
+                                <td class="px-4 py-2 border border-gray-200">0.91</td>
+                                <td class="px-4 py-2 border border-gray-200 text-center">
+                                    <a href="detail-testing.html?id=2" class="text-blue-500 hover:text-blue-700"><i class="fas fa-search"></i></a>
+                                </td>
+                             </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination controls -->
+                <div id="pagination" class="flex justify-center mt-4 space-x-2"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Data hasil testing (akan bertambah saat testing dijalankan)
+        let testResults = [
+            { name: "test_hybrid_1.csv", model: "IndoBERT-KNN + UMAP", acc: 0.95, f1: 0.95, id: 1 },
+            { name: "test_nb_1.csv", model: "Naive Bayes-Lexicon", acc: 0.92, f1: 0.91, id: 2 }
+        ];
+        let currentPage = 1;
+        const rowsPerPage = 5;
+
+        // Fungsi render tabel dengan pagination
+        function renderTestTable() {
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const pageData = testResults.slice(start, end);
+            const tbody = document.getElementById('testResultsBody');
+            tbody.innerHTML = '';
+            pageData.forEach((item, idx) => {
+                const row = tbody.insertRow();
+                row.insertCell(0).innerHTML = item.name;
+                row.insertCell(1).innerHTML = item.model;
+                row.insertCell(2).innerHTML = item.acc;
+                row.insertCell(3).innerHTML = item.f1;
+                const actionCell = row.insertCell(4);
+                actionCell.className = 'px-4 py-2 border border-gray-200 text-center';
+                actionCell.innerHTML = `<a href="detail-testing.html?id=${item.id}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-search"></i></a>`;
+                // Tambahkan border
+                for (let cell of row.cells) {
+                    cell.classList.add('border', 'border-gray-200', 'px-4', 'py-2');
+                }
+            });
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(testResults.length / rowsPerPage);
+            const paginationDiv = document.getElementById('pagination');
+            paginationDiv.innerHTML = '';
+            if (totalPages <= 1) return;
+
+            // Prev button
+            const prevBtn = document.createElement('button');
+            prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            prevBtn.className = `px-3 py-1 rounded border ${currentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderTestTable(); renderPagination(); } };
+            paginationDiv.appendChild(prevBtn);
+
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.innerText = i;
+                btn.className = `px-3 py-1 rounded border ${currentPage === i ? 'bg-blue-500 text-white' : 'bg-white hover:bg-blue-50'}`;
+                btn.onclick = () => { currentPage = i; renderTestTable(); renderPagination(); };
+                paginationDiv.appendChild(btn);
+            }
+
+            // Next button
+            const nextBtn = document.createElement('button');
+            nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            nextBtn.className = `px-3 py-1 rounded border ${currentPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; renderTestTable(); renderPagination(); } };
+            paginationDiv.appendChild(nextBtn);
+        }
+
+        // Upload dataset
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('testFile');
+        let selectedFile = null;
+
+        function handleFileSelect(file) {
+            selectedFile = file;
+            uploadArea.innerHTML = `
+                <i class="fas fa-check-circle text-green-500 text-3xl mb-2"></i>
+                <p class="text-gray-700">File terpilih: <span class="font-medium">${file.name}</span></p>
+                <p class="text-xs text-gray-400 mt-1">Klik untuk mengganti</p>
+            `;
+        }
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('border-blue-500', 'bg-blue-50');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('border-blue-500', 'bg-blue-50');
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('border-blue-500', 'bg-blue-50');
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelect(e.dataTransfer.files[0]);
+            }
+        });
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length) {
+                handleFileSelect(fileInput.files[0]);
+            }
+        });
+
+        // Simulasi testing
+        const startBtn = document.getElementById('startTestBtn');
+        const testStatus = document.getElementById('testStatus');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressPercent = document.getElementById('progressPercent');
+        const modelSelect = document.getElementById('modelSelect');
+
+        startBtn.addEventListener('click', () => {
+            if (!selectedFile) {
+                alert('Pilih file dataset terlebih dahulu!');
+                return;
+            }
+            if (!modelSelect.value) {
+                alert('Pilih model hasil training!');
+                return;
+            }
+
+            testStatus.innerText = 'Sedang memproses...';
+            progressContainer.classList.remove('hidden');
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    progress = 100;
+                    testStatus.innerText = 'Selesai';
+                    // Tambahkan hasil ke tabel
+                    const modelName = modelSelect.value === 'hybrid' ? 'IndoBERT-KNN + UMAP' : 'Naive Bayes-Lexicon';
+                    const newName = selectedFile.name.replace(/\.[^/.]+$/, "") + '_test.csv';
+                    const acc = (Math.random() * 0.1 + 0.85).toFixed(3);
+                    const f1 = (Math.random() * 0.1 + 0.85).toFixed(3);
+                    const newId = Date.now();
+                    testResults.push({ name: newName, model: modelName, acc: parseFloat(acc), f1: parseFloat(f1), id: newId });
+                    // Refresh tabel dan pagination
+                    const totalPages = Math.ceil(testResults.length / rowsPerPage);
+                    if (currentPage > totalPages) currentPage = totalPages;
+                    renderTestTable();
+                    renderPagination();
+                }
+                progressBar.style.width = `${progress}%`;
+                progressPercent.innerText = `${progress}%`;
+            }, 200);
+        });
+
+        // Inisialisasi tampilan
+        renderTestTable();
+        renderPagination();
+
+        // Dropdown sidebar (sama seperti sebelumnya)
+        function toggleDropdown(btn, menu, icon) {
+            btn.addEventListener('click', () => {
+                menu.classList.toggle('hidden');
+                icon.classList.toggle('rotate-180');
+            });
+        }
+        const dataCollectionBtn = document.getElementById('dataCollectionBtn');
+        const dataCollectionMenu = document.getElementById('dataCollectionMenu');
+        const dataCollectionIcon = document.getElementById('dataCollectionIcon');
+        toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
+        const processingBtn = document.getElementById('processingBtn');
+        const processingMenu = document.getElementById('processingMenu');
+        const processingIcon = document.getElementById('processingIcon');
+        toggleDropdown(processingBtn, processingMenu, processingIcon);
+    </script>
+</body>
+</html>
