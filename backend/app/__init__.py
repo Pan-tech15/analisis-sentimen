@@ -14,7 +14,8 @@ bcrypt = Bcrypt()
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
-
+    app.config['UPLOAD_FOLDER'] = 'data/raw'
+    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
@@ -27,6 +28,10 @@ def create_app():
     # Register blueprint
     from app.routes.auth import auth_bp
     app.register_blueprint(auth_bp)
+
+    # Dataset blueprint
+    from app.routes.dataset import dataset_bp
+    app.register_blueprint(dataset_bp)
 
     # Route test
     @app.route('/')

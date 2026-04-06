@@ -56,7 +56,7 @@
                 <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 transition" id="uploadArea">
                     <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
                     <p class="text-gray-600">Drag atau <span class="text-blue-600 font-medium">klik untuk memilih</span></p>
-                    <p class="text-xs text-gray-400 mt-1">Format CSV/Excel (id, kalimat, has_idiom, idiom_text, sentiment, emotion, idiom_meaning, sumber)</p>
+                    <p class="text-xs text-gray-400 mt-1">Format CSV/Excel (id, kalimat, has_idiom, idiom_text, sentiment, emotion, idiom_meaning)</p>
                     <input type="file" id="fileInput" class="hidden" accept=".csv,.xlsx,.xls">
                 </div>
                 <button id="uploadBtn" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">Upload</button>
@@ -110,7 +110,6 @@
                 <div class="overflow-x-auto">
                     <table class="min-w-full border border-gray-200">
                         <thead class="bg-blue-500 text-white">
-                            70tr
                                 <th class="px-4 py-2 border border-blue-400">No</th>
                                 <th class="px-4 py-2 border border-blue-400">Kalimat</th>
                                 <th class="px-4 py-2 border border-blue-400">Jumlah Idiom</th>
@@ -130,279 +129,401 @@
         </main>
     </div>
 
-    <script>
-        // Data dummy untuk daftar dataset (diperbanyak agar pagination terlihat)
-        let datasets = [
-            { id: 1, name: 'file1.csv', rows: 800, date: '2025-03-20', data: [] },
-            { id: 2, name: 'file2.csv', rows: 1000, date: '2025-03-21', data: [] },
-            { id: 3, name: 'file3.csv', rows: 450, date: '2025-03-22', data: [] },
-            { id: 4, name: 'file4.csv', rows: 1230, date: '2025-03-23', data: [] },
-            { id: 5, name: 'file5.csv', rows: 670, date: '2025-03-24', data: [] },
-            { id: 6, name: 'file6.csv', rows: 890, date: '2025-03-25', data: [] },
-        ];
-        // Data dummy untuk kalimat di setiap dataset
-        function generateDummyData(id) {
-            const base = [
-                { kalimat: "Dia angkat kaki dari kantor.", jumlahIdiom: 1, teksIdiom: "angkat kaki", emosi: "Netral", makna: "pergi" },
-                { kalimat: "Aku ingin membanting tulang.", jumlahIdiom: 1, teksIdiom: "membanting tulang", emosi: "Positif", makna: "bekerja keras" },
-                { kalimat: "Dia naik daun setelah sukses.", jumlahIdiom: 1, teksIdiom: "naik daun", emosi: "Senang", makna: "terkenal" },
-                { kalimat: "Hati-hati, jangan buka aib.", jumlahIdiom: 1, teksIdiom: "buka aib", emosi: "Takut", makna: "membuka rahasia" },
-                { kalimat: "Kepala dingin dalam menghadapi masalah.", jumlahIdiom: 1, teksIdiom: "kepala dingin", emosi: "Netral", makna: "tenang" },
-                { kalimat: "Dia merasa kesal karena diputus.", jumlahIdiom: 0, teksIdiom: "", emosi: "", makna: "" },
-                { kalimat: "Semua orang memuji prestasinya.", jumlahIdiom: 0, teksIdiom: "", emosi: "", makna: "" },
-                { kalimat: "Jangan suka membuka rahasia orang.", jumlahIdiom: 1, teksIdiom: "membuka rahasia", emosi: "Marah", makna: "membocorkan" },
-            ];
-            // buat array dengan jumlah baris sesuai kebutuhan (misal 20 baris)
-            let arr = [];
-            for (let i=0; i<20; i++) {
-                arr.push({ ...base[i%base.length], kalimat: `${base[i%base.length].kalimat} (${i+1})` });
-            }
-            return arr;
-        }
-        // Inisialisasi data untuk setiap dataset
-        datasets.forEach(ds => {
-            ds.data = generateDummyData(ds.id);
-        });
+<script>
+// === Konfigurasi ===
+const API_BASE = 'http://localhost:5000/api';
+let authToken = localStorage.getItem('access_token');
+let currentDatasetId = null;
+const rowsPerPage = 10;  // Ubah dari 5 menjadi 10
+let currentFilterPage = 1;
+let currentFilterData = { total: 0, data: [] };
 
-        let currentDataset = null; // dataset yang sedang dilihat
-        let currentDatasetPage = 1;
-        let currentFilterPage = 1;
-        const rowsPerPage = 5;
+// Helper untuk fetch dengan token
+async function apiFetch(endpoint, options = {}) {
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+    };
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+        ...options,
+        headers: { ...headers, ...options.headers }
+    });
+    if (response.status === 401) {
+        localStorage.clear();
+        window.location.href = 'login.html';
+        return null;
+    }
+    return response;
+}
 
-        // Render daftar dataset dengan pagination
-        function renderDatasetTable() {
-            const start = (currentDatasetPage - 1) * rowsPerPage;
-            const end = start + rowsPerPage;
-            const paginatedData = datasets.slice(start, end);
-            const tbody = document.getElementById('datasetTableBody');
-            tbody.innerHTML = '';
-            paginatedData.forEach(ds => {
-                const row = tbody.insertRow();
-                row.insertCell(0).innerHTML = `<span class="font-medium">${ds.name}</span>`;
-                row.insertCell(1).innerHTML = ds.rows;
-                row.insertCell(2).innerHTML = ds.date;
-                const actions = document.createElement('td');
-                actions.className = 'px-4 py-2 border border-gray-200';
-                actions.innerHTML = `
-                    <i class="fas fa-eye text-blue-500 mr-3 cursor-pointer hover:text-blue-700" data-id="${ds.id}" data-action="view"></i>
-                    <i class="fas fa-trash text-red-500 cursor-pointer hover:text-red-700" data-id="${ds.id}" data-action="delete"></i>
-                `;
-                row.appendChild(actions);
-                // tambahkan border pada cell
-                for (let cell of row.cells) {
-                    cell.classList.add('border', 'border-gray-200', 'px-4', 'py-2');
-                }
-            });
-            // Event listener untuk aksi
-            document.querySelectorAll('[data-action="view"]').forEach(icon => {
-                icon.addEventListener('click', (e) => {
-                    const id = parseInt(icon.dataset.id);
-                    const ds = datasets.find(d => d.id === id);
-                    if (ds) showFilterForDataset(ds);
-                });
-            });
-            document.querySelectorAll('[data-action="delete"]').forEach(icon => {
-                icon.addEventListener('click', (e) => {
-                    const id = parseInt(icon.dataset.id);
-                    if (confirm('Apakah Anda yakin ingin menghapus dataset ini?')) {
-                        datasets = datasets.filter(d => d.id !== id);
-                        // jika halaman sekarang kosong, mundur satu halaman
-                        const totalPages = Math.ceil(datasets.length / rowsPerPage);
-                        if (currentDatasetPage > totalPages && totalPages > 0) currentDatasetPage = totalPages;
-                        if (datasets.length === 0) currentDatasetPage = 1;
-                        renderDatasetTable();
-                        renderDatasetPagination();
-                        if (currentDataset && currentDataset.id === id) {
-                            document.getElementById('filterSection').classList.add('hidden');
-                            currentDataset = null;
-                        }
-                    }
-                });
-            });
-        }
-
-        function renderDatasetPagination() {
-            const totalPages = Math.ceil(datasets.length / rowsPerPage);
-            const paginationDiv = document.getElementById('datasetPagination');
-            paginationDiv.innerHTML = '';
-            if (totalPages <= 1) return;
-            // Prev button
-            const prevBtn = document.createElement('button');
-            prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-            prevBtn.className = `px-3 py-1 rounded border ${currentDatasetPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
-            prevBtn.disabled = currentDatasetPage === 1;
-            prevBtn.onclick = () => { if (currentDatasetPage > 1) { currentDatasetPage--; renderDatasetTable(); renderDatasetPagination(); } };
-            paginationDiv.appendChild(prevBtn);
-            // Page numbers
-            for (let i = 1; i <= totalPages; i++) {
-                const btn = document.createElement('button');
-                btn.innerText = i;
-                btn.className = `px-3 py-1 rounded border ${currentDatasetPage === i ? 'bg-blue-500 text-white' : 'bg-white hover:bg-blue-50'}`;
-                btn.onclick = () => { currentDatasetPage = i; renderDatasetTable(); renderDatasetPagination(); };
-                paginationDiv.appendChild(btn);
-            }
-            // Next button
-            const nextBtn = document.createElement('button');
-            nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-            nextBtn.className = `px-3 py-1 rounded border ${currentDatasetPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
-            nextBtn.disabled = currentDatasetPage === totalPages;
-            nextBtn.onclick = () => { if (currentDatasetPage < totalPages) { currentDatasetPage++; renderDatasetTable(); renderDatasetPagination(); } };
-            paginationDiv.appendChild(nextBtn);
-        }
-
-        // Menampilkan filter & pencarian untuk dataset tertentu
-        function showFilterForDataset(ds) {
-            currentDataset = ds;
-            currentFilterPage = 1;
-            document.getElementById('selectedDatasetName').innerText = ds.name;
-            document.getElementById('filterSection').classList.remove('hidden');
-            // Reset filter
-            document.getElementById('searchKalimat').value = '';
-            document.getElementById('filterEmosi').value = '';
-            document.getElementById('filterStatusIdiom').value = '';
-            applyFilter(); // tampilkan semua data
-        }
-
-        // Menerapkan filter pada data dataset yang sedang dipilih
-        function applyFilter() {
-            if (!currentDataset) return;
-            const search = document.getElementById('searchKalimat').value.toLowerCase();
-            const emosi = document.getElementById('filterEmosi').value;
-            const statusIdiom = document.getElementById('filterStatusIdiom').value;
-
-            let filtered = currentDataset.data.filter(item => {
-                if (search && !item.kalimat.toLowerCase().includes(search)) return false;
-                if (emosi && item.emosi !== emosi) return false;
-                if (statusIdiom !== '') {
-                    const hasIdiom = (item.jumlahIdiom > 0) ? '1' : '0';
-                    if (hasIdiom !== statusIdiom) return false;
-                }
-                return true;
-            });
-            // Simpan hasil filter untuk pagination
-            window.filteredData = filtered;
-            renderFilterTable();
-            renderFilterPagination();
-        }
-
-        function renderFilterTable() {
-            if (!window.filteredData) return;
-            const start = (currentFilterPage - 1) * rowsPerPage;
-            const end = start + rowsPerPage;
-            const pageData = window.filteredData.slice(start, end);
-            const tbody = document.getElementById('filterResultBody');
-            tbody.innerHTML = '';
-            pageData.forEach((item, idx) => {
-                const row = tbody.insertRow();
-                row.insertCell(0).innerHTML = (start + idx + 1);
-                row.insertCell(1).innerHTML = item.kalimat;
-                row.insertCell(2).innerHTML = item.jumlahIdiom;
-                row.insertCell(3).innerHTML = item.teksIdiom;
-                row.insertCell(4).innerHTML = item.emosi;
-                row.insertCell(5).innerHTML = item.makna;
-                for (let cell of row.cells) {
-                    cell.classList.add('border', 'border-gray-200', 'px-4', 'py-2');
-                }
-            });
-        }
-
-        function renderFilterPagination() {
-            const totalItems = window.filteredData ? window.filteredData.length : 0;
-            const totalPages = Math.ceil(totalItems / rowsPerPage);
-            const paginationDiv = document.getElementById('filterPagination');
-            paginationDiv.innerHTML = '';
-            if (totalPages <= 1) return;
-            // Prev
-            const prevBtn = document.createElement('button');
-            prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-            prevBtn.className = `px-3 py-1 rounded border ${currentFilterPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
-            prevBtn.disabled = currentFilterPage === 1;
-            prevBtn.onclick = () => { if (currentFilterPage > 1) { currentFilterPage--; renderFilterTable(); renderFilterPagination(); } };
-            paginationDiv.appendChild(prevBtn);
-            for (let i = 1; i <= totalPages; i++) {
-                const btn = document.createElement('button');
-                btn.innerText = i;
-                btn.className = `px-3 py-1 rounded border ${currentFilterPage === i ? 'bg-blue-500 text-white' : 'bg-white hover:bg-blue-50'}`;
-                btn.onclick = () => { currentFilterPage = i; renderFilterTable(); renderFilterPagination(); };
-                paginationDiv.appendChild(btn);
-            }
-            const nextBtn = document.createElement('button');
-            nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-            nextBtn.className = `px-3 py-1 rounded border ${currentFilterPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
-            nextBtn.disabled = currentFilterPage === totalPages;
-            nextBtn.onclick = () => { if (currentFilterPage < totalPages) { currentFilterPage++; renderFilterTable(); renderFilterPagination(); } };
-            paginationDiv.appendChild(nextBtn);
-        }
-
-        // Upload file (simulasi)
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-        uploadArea.addEventListener('click', () => fileInput.click());
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('border-blue-500', 'bg-blue-50');
-        });
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('border-blue-500', 'bg-blue-50');
-        });
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('border-blue-500', 'bg-blue-50');
-            const files = e.dataTransfer.files;
-            if (files.length) fileInput.files = files;
-        });
-        document.getElementById('uploadBtn').addEventListener('click', () => {
-            if (fileInput.files.length === 0) {
-                alert('Pilih file terlebih dahulu.');
-                return;
-            }
-            const file = fileInput.files[0];
-            const newId = datasets.length + 1;
-            const newName = file.name;
-            const newRows = Math.floor(Math.random() * 1000) + 100;
-            const newDate = new Date().toISOString().slice(0,10);
-            datasets.push({
-                id: newId,
-                name: newName,
-                rows: newRows,
-                date: newDate,
-                data: generateDummyData(newId)
-            });
-            // Refresh dataset table and pagination
-            renderDatasetTable();
-            renderDatasetPagination();
-            alert(`File ${newName} berhasil diupload (simulasi).`);
-            fileInput.value = '';
-        });
-
-        document.getElementById('exportAllBtn').addEventListener('click', () => {
-            alert('Fitur ekspor semua dataset akan segera tersedia.');
-        });
-
-        document.getElementById('closeFilter').addEventListener('click', () => {
-            document.getElementById('filterSection').classList.add('hidden');
-            currentDataset = null;
-        });
-        document.getElementById('applyFilterBtn').addEventListener('click', applyFilter);
-
-        // Dropdown menu
-        function toggleDropdown(btn, menu, icon) {
-            btn.addEventListener('click', () => {
-                menu.classList.toggle('hidden');
-                icon.classList.toggle('rotate-180');
-            });
-        }
-        const dataCollectionBtn = document.getElementById('dataCollectionBtn');
-        const dataCollectionMenu = document.getElementById('dataCollectionMenu');
-        const dataCollectionIcon = document.getElementById('dataCollectionIcon');
-        toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
-        const processingBtn = document.getElementById('processingBtn');
-        const processingMenu = document.getElementById('processingMenu');
-        const processingIcon = document.getElementById('processingIcon');
-        toggleDropdown(processingBtn, processingMenu, processingIcon);
-
+// === Daftar Dataset dengan Pagination (10 per halaman) ===
+async function loadDatasets(page = 1) {
+    try {
+        const response = await apiFetch('/datasets/');
+        if (!response) return;
+        if (!response.ok) throw new Error('Gagal mengambil data');
+        const datasets = await response.json();
+        window.allDatasets = datasets;
+        window.currentDatasetPage = page;
         renderDatasetTable();
         renderDatasetPagination();
-    </script>
+    } catch (error) {
+        console.error(error);
+        alert('Gagal memuat daftar dataset');
+    }
+}
+
+function renderDatasetTable() {
+    const start = (window.currentDatasetPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    const pageData = window.allDatasets.slice(start, end);
+    const tbody = document.getElementById('datasetTableBody');
+    tbody.innerHTML = '';
+    pageData.forEach(ds => {
+        const row = tbody.insertRow();
+        row.insertCell(0).innerHTML = `<span class="font-medium">${ds.filename}</span>`;
+        row.insertCell(1).innerHTML = ds.rows;
+        row.insertCell(2).innerHTML = new Date(ds.uploaded_at).toLocaleDateString();
+        const actions = document.createElement('td');
+        actions.className = 'px-4 py-2 border border-gray-200';
+        actions.innerHTML = `
+            <i class="fas fa-eye text-blue-500 mr-3 cursor-pointer hover:text-blue-700" data-id="${ds.id}" data-action="view"></i>
+            <i class="fas fa-trash text-red-500 cursor-pointer hover:text-red-700" data-id="${ds.id}" data-action="delete"></i>
+        `;
+        row.appendChild(actions);
+        for (let cell of row.cells) {
+            cell.classList.add('border', 'border-gray-200', 'px-4', 'py-2');
+        }
+    });
+    // Event listener aksi
+    document.querySelectorAll('[data-action="view"]').forEach(icon => {
+        icon.addEventListener('click', (e) => {
+            const id = parseInt(icon.dataset.id);
+            showPreview(id);
+        });
+    });
+    document.querySelectorAll('[data-action="delete"]').forEach(icon => {
+        icon.addEventListener('click', async (e) => {
+            const id = parseInt(icon.dataset.id);
+            if (confirm('Yakin hapus dataset ini?')) {
+                await deleteDataset(id);
+            }
+        });
+    });
+}
+
+function renderDatasetPagination() {
+    const totalItems = window.allDatasets.length;
+    const totalPages = Math.ceil(totalItems / rowsPerPage);
+    const paginationDiv = document.getElementById('datasetPagination');
+    paginationDiv.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    // Container flex dengan gap
+    const container = document.createElement('div');
+    container.className = 'flex items-center space-x-2';
+
+    // Tombol Previous
+    const prevBtn = document.createElement('button');
+    prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
+    prevBtn.className = `px-3 py-1 rounded border ${window.currentDatasetPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
+    prevBtn.disabled = window.currentDatasetPage === 1;
+    prevBtn.onclick = () => {
+        if (window.currentDatasetPage > 1) {
+            window.currentDatasetPage--;
+            renderDatasetTable();
+            renderDatasetPagination();
+        }
+    };
+    container.appendChild(prevBtn);
+
+    // Info halaman
+    const pageInfo = document.createElement('span');
+    pageInfo.className = 'text-gray-700';
+    pageInfo.innerText = `Halaman ${window.currentDatasetPage} dari ${totalPages}`;
+    container.appendChild(pageInfo);
+
+    // Input nomor halaman
+    const pageInput = document.createElement('input');
+    pageInput.type = 'number';
+    pageInput.min = 1;
+    pageInput.max = totalPages;
+    pageInput.value = window.currentDatasetPage;
+    pageInput.className = 'w-16 border rounded px-2 py-1 text-center';
+    container.appendChild(pageInput);
+
+    // Tombol Go
+    const goBtn = document.createElement('button');
+    goBtn.innerText = 'Go';
+    goBtn.className = 'px-3 py-1 rounded border bg-blue-500 text-white hover:bg-blue-600';
+    goBtn.onclick = () => {
+        let newPage = parseInt(pageInput.value);
+        if (isNaN(newPage)) newPage = 1;
+        if (newPage < 1) newPage = 1;
+        if (newPage > totalPages) newPage = totalPages;
+        window.currentDatasetPage = newPage;
+        renderDatasetTable();
+        renderDatasetPagination();
+    };
+    container.appendChild(goBtn);
+
+    // Tombol Next
+    const nextBtn = document.createElement('button');
+    nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
+    nextBtn.className = `px-3 py-1 rounded border ${window.currentDatasetPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
+    nextBtn.disabled = window.currentDatasetPage === totalPages;
+    nextBtn.onclick = () => {
+        if (window.currentDatasetPage < totalPages) {
+            window.currentDatasetPage++;
+            renderDatasetTable();
+            renderDatasetPagination();
+        }
+    };
+    container.appendChild(nextBtn);
+
+    paginationDiv.appendChild(container);
+}
+
+async function deleteDataset(id) {
+    try {
+        const response = await apiFetch(`/datasets/${id}`, { method: 'DELETE' });
+        if (!response) return;
+        if (response.ok) {
+            alert('Dataset dihapus');
+            loadDatasets(window.currentDatasetPage);
+            if (currentDatasetId === id) {
+                document.getElementById('filterSection').classList.add('hidden');
+                currentDatasetId = null;
+            }
+        } else {
+            const err = await response.json();
+            alert(err.message || 'Gagal hapus');
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Error saat menghapus');
+    }
+}
+
+// === Preview / Filter Dataset ===
+async function showPreview(datasetId) {
+    currentDatasetId = datasetId;
+    currentFilterPage = 1;
+    document.getElementById('filterSection').classList.remove('hidden');
+    // Reset filter inputs
+    document.getElementById('searchKalimat').value = '';
+    document.getElementById('filterEmosi').value = '';
+    document.getElementById('filterStatusIdiom').value = '';
+    const ds = window.allDatasets.find(d => d.id === datasetId);
+    document.getElementById('selectedDatasetName').innerText = ds ? ds.filename : datasetId;
+    await applyFilter();
+}
+
+async function applyFilter() {
+    if (!currentDatasetId) return;
+    const search = document.getElementById('searchKalimat').value;
+    const emotion = document.getElementById('filterEmosi').value;
+    const hasIdiom = document.getElementById('filterStatusIdiom').value;
+    const url = `/datasets/${currentDatasetId}/preview?page=${currentFilterPage}&per_page=${rowsPerPage}&search=${encodeURIComponent(search)}&emotion=${emotion}&has_idiom=${hasIdiom}`;
+    try {
+        const response = await apiFetch(url);
+        if (!response) return;
+        if (!response.ok) throw new Error('Gagal preview');
+        const result = await response.json();
+        window.filteredData = result.data;
+        window.filterTotal = result.total_rows;
+        renderFilterTable();
+        renderFilterPagination();
+    } catch (error) {
+        console.error(error);
+        alert('Gagal memuat data');
+    }
+}
+
+function renderFilterTable() {
+    const tbody = document.getElementById('filterResultBody');
+    tbody.innerHTML = '';
+    if (!window.filteredData || window.filteredData.length === 0) {
+        const row = tbody.insertRow();
+        row.insertCell(0).colSpan = 6;
+        row.insertCell(0).innerHTML = 'Tidak ada data';
+        return;
+    }
+    const start = (currentFilterPage - 1) * rowsPerPage;
+    window.filteredData.forEach((item, idx) => {
+        const row = tbody.insertRow();
+        row.insertCell(0).innerHTML = start + idx + 1;
+        row.insertCell(1).innerHTML = item.kalimat || '';
+        row.insertCell(2).innerHTML = item.has_idiom;
+        row.insertCell(3).innerHTML = item.idiom_text || '';
+        row.insertCell(4).innerHTML = item.emotion || '';
+        row.insertCell(5).innerHTML = item.idiom_meaning || '';
+        for (let cell of row.cells) {
+            cell.classList.add('border', 'border-gray-200', 'px-4', 'py-2');
+        }
+    });
+}
+
+function renderFilterPagination() {
+    const totalItems = window.filterTotal || 0;
+    const totalPages = Math.ceil(totalItems / rowsPerPage);
+    const paginationDiv = document.getElementById('filterPagination');
+    paginationDiv.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    const container = document.createElement('div');
+    container.className = 'flex items-center space-x-2';
+
+    // Previous
+    const prevBtn = document.createElement('button');
+    prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
+    prevBtn.className = `px-3 py-1 rounded border ${currentFilterPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
+    prevBtn.disabled = currentFilterPage === 1;
+    prevBtn.onclick = () => {
+        if (currentFilterPage > 1) {
+            currentFilterPage--;
+            applyFilter();
+        }
+    };
+    container.appendChild(prevBtn);
+
+    // Info halaman
+    const pageInfo = document.createElement('span');
+    pageInfo.className = 'text-gray-700';
+    pageInfo.innerText = `Halaman ${currentFilterPage} dari ${totalPages}`;
+    container.appendChild(pageInfo);
+
+    // Input nomor halaman
+    const pageInput = document.createElement('input');
+    pageInput.type = 'number';
+    pageInput.min = 1;
+    pageInput.max = totalPages;
+    pageInput.value = currentFilterPage;
+    pageInput.className = 'w-16 border rounded px-2 py-1 text-center';
+    container.appendChild(pageInput);
+
+    // Tombol Go
+    const goBtn = document.createElement('button');
+    goBtn.innerText = 'Go';
+    goBtn.className = 'px-3 py-1 rounded border bg-blue-500 text-white hover:bg-blue-600';
+    goBtn.onclick = () => {
+        let newPage = parseInt(pageInput.value);
+        if (isNaN(newPage)) newPage = 1;
+        if (newPage < 1) newPage = 1;
+        if (newPage > totalPages) newPage = totalPages;
+        currentFilterPage = newPage;
+        applyFilter();
+    };
+    container.appendChild(goBtn);
+
+    // Next
+    const nextBtn = document.createElement('button');
+    nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
+    nextBtn.className = `px-3 py-1 rounded border ${currentFilterPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
+    nextBtn.disabled = currentFilterPage === totalPages;
+    nextBtn.onclick = () => {
+        if (currentFilterPage < totalPages) {
+            currentFilterPage++;
+            applyFilter();
+        }
+    };
+    container.appendChild(nextBtn);
+
+    paginationDiv.appendChild(container);
+}
+
+// === Upload File ===
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('fileInput');
+uploadArea.addEventListener('click', () => fileInput.click());
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('border-blue-500', 'bg-blue-50');
+});
+uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('border-blue-500', 'bg-blue-50');
+});
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('border-blue-500', 'bg-blue-50');
+    const files = e.dataTransfer.files;
+    if (files.length) fileInput.files = files;
+});
+
+document.getElementById('uploadBtn').addEventListener('click', async () => {
+    if (fileInput.files.length === 0) {
+        alert('Pilih file CSV terlebih dahulu.');
+        return;
+    }
+    const file = fileInput.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await fetch(`${API_BASE}/datasets/upload`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: formData
+        });
+        if (response.status === 401) {
+            localStorage.clear();
+            window.location.href = 'login.html';
+            return;
+        }
+        const result = await response.json();
+        if (response.ok) {
+            alert('Upload berhasil');
+            fileInput.value = '';
+            await loadDatasets(1);
+            // Optional: langsung preview dataset yang baru diupload
+            if (result.dataset && result.dataset.id) {
+                showPreview(result.dataset.id);
+            }
+        } else {
+            alert(result.message || 'Upload gagal');
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Error saat upload');
+    }
+});
+
+// === Ekspor (belum diimplementasikan) ===
+document.getElementById('exportAllBtn').addEventListener('click', () => {
+    alert('Fitur ekspor akan segera tersedia.');
+});
+
+// === Tombol tutup filter ===
+document.getElementById('closeFilter').addEventListener('click', () => {
+    document.getElementById('filterSection').classList.add('hidden');
+    currentDatasetId = null;
+});
+
+document.getElementById('applyFilterBtn').addEventListener('click', () => {
+    currentFilterPage = 1;
+    applyFilter();
+});
+
+// === Dropdown sidebar ===
+function toggleDropdown(btn, menu, icon) {
+    btn.addEventListener('click', () => {
+        menu.classList.toggle('hidden');
+        icon.classList.toggle('rotate-180');
+    });
+}
+const dataCollectionBtn = document.getElementById('dataCollectionBtn');
+const dataCollectionMenu = document.getElementById('dataCollectionMenu');
+const dataCollectionIcon = document.getElementById('dataCollectionIcon');
+toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
+const processingBtn = document.getElementById('processingBtn');
+const processingMenu = document.getElementById('processingMenu');
+const processingIcon = document.getElementById('processingIcon');
+toggleDropdown(processingBtn, processingMenu, processingIcon);
+
+// Inisialisasi
+loadDatasets(1);
+</script>
 </body>
 </html>
