@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Validasi Hasil Latih - IdiomSense Admin</title>
+    <title>Detail Hasil Testing - IdiomSense Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -30,7 +30,7 @@
 <body class="bg-gray-100 font-sans antialiased">
 
     <div class="flex h-screen overflow-hidden">
-        <!-- Sidebar (sama) -->
+        <!-- Sidebar (sama dengan halaman admin lainnya) -->
         <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
             <div class="p-4 border-b">
                 <span class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IdiomSense</span>
@@ -46,59 +46,63 @@
                         </ul>
                     </li>
                     <li><a href="preprocessing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-filter w-5"></i><span>Pre-Processing</span></a></li>
-                    <li><button id="processingBtn" class="w-full flex items-center justify-between p-2 rounded-lg bg-gray-100 text-gray-700"><div class="flex items-center space-x-2"><i class="fas fa-brain w-5"></i><span>Processing</span></div><i id="processingIcon" class="fas fa-chevron-down text-sm transition-transform"></i></button>
-                        <ul id="processingMenu" class="ml-6 mt-1 space-y-1">
+                    <li>
+                        <button id="processingBtn" class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700">
+                            <div class="flex items-center space-x-2"><i class="fas fa-brain w-5"></i><span>Processing</span></div>
+                            <i id="processingIcon" class="fas fa-chevron-down text-sm transition-transform"></i>
+                        </button>
+                        <ul id="processingMenu" class="ml-6 mt-1 space-y-1 hidden">
                             <li><a href="pengaturan.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-sliders-h w-5 mr-2"></i>Pengaturan</a></li>
                             <li><a href="latih.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-chart-line w-5 mr-2"></i>Latih</a></li>
                         </ul>
                     </li>
-                    <li><a href="testing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-vial w-5"></i><span>Testing</span></a></li>
+                    <li><a href="testing.html" class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-vial w-5"></i><span>Testing</span></a></li>
                     <li class="pt-4 mt-4 border-t"><a href="login.html" class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a></li>
                 </ul>
             </nav>
         </aside>
 
         <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
-            <h1 class="text-3xl font-bold text-gray-800 mb-6">Validasi Hasil Data Latih</h1>
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">Detail Hasil Testing</h1>
 
-            <!-- Info dataset & model -->
+            <!-- Info dataset uji & model -->
             <div class="bg-white p-6 rounded-xl shadow-md mb-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <p class="text-sm text-gray-500">Nama Dataset</p>
-                        <p class="font-semibold text-gray-800">hasil_hybrid_1.csv</p>
+                        <p class="text-sm text-gray-500">Nama Dataset Uji</p>
+                        <p class="font-semibold text-gray-800">test_hybrid_1.csv</p>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-500">Model</p>
+                        <p class="text-sm text-gray-500">Model yang Diuji</p>
                         <p class="font-semibold text-gray-800">IndoBERT-KNN + UMAP</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Metrik evaluasi -->
+            <!-- Metrik evaluasi pada data uji -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div class="bg-white p-4 rounded-xl shadow-md text-center border-l-4 border-blue-500">
                     <p class="text-sm text-gray-500">Akurasi</p>
-                    <p class="text-3xl font-bold text-gray-800">0.95</p>
+                    <p class="text-3xl font-bold text-gray-800">0.94</p>
                 </div>
                 <div class="bg-white p-4 rounded-xl shadow-md text-center border-l-4 border-green-500">
                     <p class="text-sm text-gray-500">Precision</p>
-                    <p class="text-3xl font-bold text-gray-800">0.94</p>
+                    <p class="text-3xl font-bold text-gray-800">0.93</p>
                 </div>
                 <div class="bg-white p-4 rounded-xl shadow-md text-center border-l-4 border-yellow-500">
                     <p class="text-sm text-gray-500">Recall</p>
-                    <p class="text-3xl font-bold text-gray-800">0.93</p>
+                    <p class="text-3xl font-bold text-gray-800">0.92</p>
                 </div>
                 <div class="bg-white p-4 rounded-xl shadow-md text-center border-l-4 border-purple-500">
                     <p class="text-sm text-gray-500">F1-Score</p>
-                    <p class="text-3xl font-bold text-gray-800">0.93</p>
+                    <p class="text-3xl font-bold text-gray-800">0.92</p>
                 </div>
             </div>
 
-            <!-- Confusion Matrix dengan label jelas -->
+            <!-- Confusion Matrix untuk hasil testing -->
             <div class="bg-white p-6 rounded-xl shadow-md">
-                <h2 class="font-semibold text-gray-700 mb-2">Confusion Matrix (Emosi)</h2>
-                <p class="text-xs text-gray-500 mb-4">Aktual vs Prediksi - Hover pada sel untuk melihat detail</p>
+                <h2 class="font-semibold text-gray-700 mb-2">Confusion Matrix (Emosi) - Data Uji</h2>
+                <p class="text-xs text-gray-500 mb-4">Aktual vs Prediksi pada data testing - Hover pada sel untuk melihat detail</p>
                 <div class="flex justify-center overflow-x-auto">
                     <div class="relative" style="width: 100%; max-width: 900px; margin: 0 auto;">
                         <canvas id="confusionHeatmap" width="850" height="850" class="border border-gray-300 rounded shadow-sm" style="width:100%; height:auto;"></canvas>
@@ -112,32 +116,31 @@
                 </div>
             </div>
 
-            <!-- Tombol kembali -->
+            <!-- Tombol kembali ke halaman testing -->
             <div class="mt-6 flex justify-end">
-                <a href="latih.html" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-5 rounded-lg transition flex items-center space-x-2">
+                <a href="testing.html" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-5 rounded-lg transition flex items-center space-x-2">
                     <i class="fas fa-arrow-left"></i>
-                    <span>Kembali ke Latih</span>
+                    <span>Kembali ke Testing</span>
                 </a>
             </div>
         </main>
     </div>
 
     <script>
-        // Data confusion matrix (contoh)
+        // Data confusion matrix untuk hasil testing (contoh, bisa berbeda dengan latih)
         const matrix = [
-            [42, 2, 1, 3, 0, 1, 1],
-            [3, 38, 2, 2, 0, 0, 0],
-            [2, 1, 35, 4, 2, 1, 1],
-            [2, 1, 2, 89, 0, 1, 0],
-            [1, 0, 2, 2, 28, 2, 0],
-            [2, 0, 1, 3, 1, 34, 2],
-            [1, 0, 1, 2, 0, 1, 30]
+            [40, 3, 1, 4, 0, 1, 1],
+            [4, 36, 2, 2, 0, 1, 0],
+            [2, 2, 33, 5, 2, 1, 1],
+            [3, 1, 2, 85, 0, 2, 0],
+            [1, 0, 2, 3, 26, 2, 0],
+            [2, 0, 1, 4, 1, 32, 2],
+            [1, 0, 1, 3, 0, 1, 28]
         ];
         const labels = ['Senang', 'Percaya', 'Terkejut', 'Netral', 'Takut', 'Sedih', 'Marah'];
         const maxVal = Math.max(...matrix.flat());
 
         function getColor(intensity) {
-            // intensitas 0..1
             const r = Math.min(255, Math.floor(255 * intensity * 1.5));
             const g = Math.min(255, Math.floor(255 * (1.5 - intensity * 1.2)));
             const b = Math.min(255, Math.floor(255 * (1 - intensity * 0.8)));
@@ -145,10 +148,10 @@
         }
 
         let canvas, ctx, size, cellSize;
-        const marginLeft = 80;   // ruang untuk label sumbu Y
+        const marginLeft = 80;
         const marginRight = 30;
-        const marginTop = 40;     // ruang untuk judul dan label atas
-        const marginBottom = 100;  // ruang untuk label sumbu X
+        const marginTop = 40;
+        const marginBottom = 100;
 
         function drawHeatmap() {
             canvas = document.getElementById('confusionHeatmap');
@@ -158,20 +161,16 @@
             const gridSize = size - marginLeft - marginRight;
             cellSize = gridSize / matrix.length;
 
-            // Bersihkan canvas
             ctx.clearRect(0, 0, size, size);
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, size, size);
 
-            // Gambar sel heatmap
             for (let i = 0; i < matrix.length; i++) {
                 for (let j = 0; j < matrix[i].length; j++) {
                     const val = matrix[i][j];
                     const intensity = val / maxVal;
                     ctx.fillStyle = getColor(intensity);
                     ctx.fillRect(marginLeft + j * cellSize, marginTop + i * cellSize, cellSize, cellSize);
-                    
-                    // Tulis angka
                     ctx.fillStyle = intensity > 0.65 ? 'white' : '#1f2937';
                     ctx.font = `bold ${Math.max(12, cellSize * 0.28)}px "Segoe UI", system-ui`;
                     ctx.textAlign = 'center';
@@ -180,7 +179,7 @@
                 }
             }
 
-            // Garis grid
+            // Grid
             ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 1.5;
             for (let i = 0; i <= matrix.length; i++) {
@@ -194,14 +193,14 @@
                 ctx.stroke();
             }
 
-            // Label sumbu Y (Aktual) - teks normal horizontal
+            // Label sumbu Y (Aktual)
             ctx.fillStyle = '#1f2937';
             ctx.font = '13px "Segoe UI", system-ui';
             for (let i = 0; i < labels.length; i++) {
                 ctx.fillText(labels[i], marginLeft - 10, marginTop + i * cellSize + cellSize/2);
             }
 
-            // Label sumbu X (Prediksi) - diputar 30 derajat agar tidak bertabrakan
+            // Label sumbu X (Prediksi) dengan rotasi
             ctx.save();
             ctx.font = '13px "Segoe UI", system-ui';
             for (let i = 0; i < labels.length; i++) {
@@ -209,7 +208,7 @@
                 const y = marginTop + matrix.length * cellSize + 20;
                 ctx.save();
                 ctx.translate(x, y);
-                ctx.rotate(-Math.PI / 5); // -36 derajat
+                ctx.rotate(-Math.PI / 5);
                 ctx.fillStyle = '#1f2937';
                 ctx.fillText(labels[i], 0, 0);
                 ctx.restore();
@@ -227,7 +226,7 @@
             ctx.restore();
         }
 
-        // Tooltip interaktif
+        // Tooltip
         let tooltipDiv = null;
         function createTooltip() {
             if (!tooltipDiv) {
@@ -244,7 +243,6 @@
             const scaleY = canvas.height / rect.height;
             const mouseX = (e.clientX - rect.left) * scaleX;
             const mouseY = (e.clientY - rect.top) * scaleY;
-            // Hitung koordinat dalam grid heatmap
             const col = Math.floor((mouseX - marginLeft) / cellSize);
             const row = Math.floor((mouseY - marginTop) / cellSize);
             if (row >= 0 && row < matrix.length && col >= 0 && col < matrix[0].length) {
@@ -271,7 +269,7 @@
             canvas.addEventListener('mouseleave', hideTooltip);
         };
 
-        // Dropdown sidebar (sama)
+        // Dropdown sidebar (sama seperti halaman lain)
         function toggleDropdown(btn, menu, icon) {
             btn.addEventListener('click', () => {
                 menu.classList.toggle('hidden');
