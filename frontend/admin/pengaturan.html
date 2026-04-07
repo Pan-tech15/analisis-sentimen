@@ -6,6 +6,41 @@
     <title>Pengaturan Model - IdiomSense Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Animasi fade-in untuk modal */
+        .modal-backdrop {
+            transition: opacity 0.3s ease;
+        }
+        .modal-container {
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            transform: scale(0.95);
+            opacity: 0;
+        }
+        .modal-container.show {
+            transform: scale(1);
+            opacity: 1;
+        }
+        /* Custom scrollbar untuk modal */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        /* Sembunyikan scrollbar default jika perlu */
+        .scroll-container {
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+    </style>
 </head>
 <body class="bg-gray-100 font-sans antialiased">
 
@@ -44,7 +79,7 @@
 
             <!-- Tombol Tambah Model -->
             <div class="mb-6 flex justify-end">
-                <button id="btnAddModel" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                <button id="btnAddModel" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 shadow-md transition">
                     <i class="fas fa-plus"></i>
                     <span>Tambah Model Baru</span>
                 </button>
@@ -71,58 +106,66 @@
         </main>
     </div>
 
-    <!-- Modal Tambah/Edit Model -->
-    <div id="modelModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 id="modalTitle" class="text-xl font-bold text-gray-800">Tambah Model Baru</h2>
-                <button id="closeModal" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+    <!-- Modal Tambah/Edit Model dengan custom scroll -->
+    <div id="modelModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50 modal-backdrop">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden relative transform transition-all modal-container">
+            <!-- Header dengan warna dinamis -->
+            <div id="modalHeader" class="sticky top-0 bg-blue-600 border-b px-6 py-4 flex justify-between items-center rounded-t-2xl text-white z-10">
+                <h2 id="modalTitle" class="text-xl font-bold">Tambah Model Baru</h2>
+                <button id="closeModal" class="text-white hover:text-gray-200 transition">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
             </div>
-            <form id="modelForm">
-                <!-- Nama Model -->
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Nama Model</label>
-                    <input type="text" id="modelName" required class="w-full border rounded-lg p-2 mt-1">
+            <!-- Body Form dengan scroll area custom -->
+            <div class="overflow-y-auto custom-scroll" style="max-height: calc(90vh - 80px);">
+                <div class="p-6">
+                    <form id="modelForm">
+                        <!-- Nama Model -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700">Nama Model</label>
+                            <input type="text" id="modelName" required class="w-full border rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+                            <p class="text-xs text-gray-500 mt-1">Nama unik untuk mengidentifikasi model ini.</p>
+                        </div>
+                        <!-- Pilih Algoritma -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700">Algoritma</label>
+                            <select id="modelAlgo" class="w-full border rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-400">
+                                <option value="hybrid">IndoBERT-KNN + UMAP</option>
+                                <option value="nb-lexicon">Naive Bayes-Lexicon</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Pilih algoritma yang akan digunakan untuk model ini.</p>
+                        </div>
+                        <!-- Tempat parameter umum dan spesifik -->
+                        <div id="dynamicParams"></div>
+                        <div class="mt-6 flex justify-end space-x-3">
+                            <button type="button" id="cancelModal" class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg transition">Batal</button>
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">Simpan Model</button>
+                        </div>
+                    </form>
                 </div>
-                <!-- Pilih Algoritma -->
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Algoritma</label>
-                    <select id="modelAlgo" class="w-full border rounded-lg p-2 mt-1">
-                        <option value="hybrid">IndoBERT-KNN + UMAP</option>
-                        <option value="nb-lexicon">Naive Bayes-Lexicon</option>
-                    </select>
-                </div>
-                <!-- Tempat parameter umum dan spesifik -->
-                <div id="dynamicParams"></div>
-                <div class="mt-6 flex justify-end space-x-3">
-                    <button type="button" id="cancelModal" class="bg-gray-300 hover:bg-gray-400 px-4 py-2 rounded">Batal</button>
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Simpan Model</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 
     <script>
-        // Data model (simulasi) - disimpan dalam array
+        // Data model (simulasi)
         let models = [
             { id: 1, name: "Model Hybrid Default", algo: "hybrid", config: getDefaultHybridConfig() },
             { id: 2, name: "Model NB Lexicon Default", algo: "nb-lexicon", config: getDefaultNBConfig() }
         ];
 
         let nextId = 3;
-        let editingId = null; // null untuk tambah, berisi id untuk edit
+        let editingId = null;
 
-        // Fungsi untuk mendapatkan konfigurasi default hybrid (sesuai parameter sebelumnya)
+        // Konfigurasi default hybrid (tanpa kFold dan valMetric)
         function getDefaultHybridConfig() {
             return {
                 general: {
-                    kFold: "5",
                     epochPerFold: "3",
                     randomState: "42",
                     shuffle: "yes",
                     stratified: "yes",
                     earlyStopping: "0",
-                    valMetric: "accuracy",
                     parallel: "no"
                 },
                 split: { type: "percentage", train: "80", test: "20" },
@@ -155,13 +198,11 @@
         function getDefaultNBConfig() {
             return {
                 general: {
-                    kFold: "5",
                     epochPerFold: "3",
                     randomState: "42",
                     shuffle: "yes",
                     stratified: "yes",
                     earlyStopping: "0",
-                    valMetric: "accuracy",
                     parallel: "no"
                 },
                 split: { type: "percentage", train: "80", test: "20" },
@@ -220,7 +261,7 @@
             });
         }
 
-        // Fungsi untuk menghasilkan form parameter dinamis berdasarkan algoritma
+        // Render form parameter (tanpa kFold dan valMetric)
         function renderParamForm(algo, config = null) {
             const container = document.getElementById('dynamicParams');
             if (!config) {
@@ -231,14 +272,36 @@
                 <div class="mb-6 p-4 bg-gray-50 rounded-lg">
                     <h3 class="font-bold text-gray-800 mb-3">Parameter Umum</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div><label class="block text-sm font-medium">Jumlah Fold (k)</label><input type="text" name="general_kFold" value="${config.general.kFold}" class="w-full border rounded p-2"></div>
-                        <div><label class="block text-sm font-medium">Epoch per Fold</label><input type="number" name="general_epochPerFold" value="${config.general.epochPerFold}" class="w-full border rounded p-2"></div>
-                        <div><label class="block text-sm font-medium">Random State</label><input type="number" name="general_randomState" value="${config.general.randomState}" class="w-full border rounded p-2"></div>
-                        <div><label class="block text-sm font-medium">Shuffle Before Split</label><select name="general_shuffle" class="w-full border rounded p-2"><option value="yes" ${config.general.shuffle === 'yes' ? 'selected' : ''}>Ya</option><option value="no" ${config.general.shuffle === 'no' ? 'selected' : ''}>Tidak</option></select></div>
-                        <div><label class="block text-sm font-medium">Stratified Folds</label><select name="general_stratified" class="w-full border rounded p-2"><option value="yes" ${config.general.stratified === 'yes' ? 'selected' : ''}>Ya</option><option value="no" ${config.general.stratified === 'no' ? 'selected' : ''}>Tidak</option></select></div>
-                        <div><label class="block text-sm font-medium">Early Stopping Patience</label><input type="number" name="general_earlyStopping" value="${config.general.earlyStopping}" class="w-full border rounded p-2"></div>
-                        <div><label class="block text-sm font-medium">Validation Metric</label><select name="general_valMetric" class="w-full border rounded p-2"><option value="accuracy" ${config.general.valMetric === 'accuracy' ? 'selected' : ''}>accuracy</option><option value="f1" ${config.general.valMetric === 'f1' ? 'selected' : ''}>f1</option><option value="precision" ${config.general.valMetric === 'precision' ? 'selected' : ''}>precision</option><option value="recall" ${config.general.valMetric === 'recall' ? 'selected' : ''}>recall</option></select></div>
-                        <div><label class="block text-sm font-medium">Parallel Folds</label><select name="general_parallel" class="w-full border rounded p-2"><option value="no" ${config.general.parallel === 'no' ? 'selected' : ''}>Tidak</option><option value="yes" ${config.general.parallel === 'yes' ? 'selected' : ''}>Ya</option></select></div>
+                        <div>
+                            <label class="block text-sm font-medium">Epoch per Fold</label>
+                            <input type="number" name="general_epochPerFold" value="${config.general.epochPerFold}" class="w-full border rounded p-2">
+                            <p class="text-xs text-gray-500 mt-1">Jumlah epoch untuk setiap fold training.</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Random State</label>
+                            <input type="number" name="general_randomState" value="${config.general.randomState}" class="w-full border rounded p-2">
+                            <p class="text-xs text-gray-500 mt-1">Seed untuk reproduksibilitas hasil.</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Shuffle Before Split</label>
+                            <select name="general_shuffle" class="w-full border rounded p-2"><option value="yes" ${config.general.shuffle === 'yes' ? 'selected' : ''}>Ya</option><option value="no" ${config.general.shuffle === 'no' ? 'selected' : ''}>Tidak</option></select>
+                            <p class="text-xs text-gray-500 mt-1">Mengacak data sebelum membagi.</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Stratified Folds</label>
+                            <select name="general_stratified" class="w-full border rounded p-2"><option value="yes" ${config.general.stratified === 'yes' ? 'selected' : ''}>Ya</option><option value="no" ${config.general.stratified === 'no' ? 'selected' : ''}>Tidak</option></select>
+                            <p class="text-xs text-gray-500 mt-1">Menjaga proporsi kelas di setiap fold.</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Early Stopping Patience</label>
+                            <input type="number" name="general_earlyStopping" value="${config.general.earlyStopping}" class="w-full border rounded p-2">
+                            <p class="text-xs text-gray-500 mt-1">Jumlah epoch tanpa peningkatan sebelum berhenti (0 = nonaktif).</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Parallel Folds</label>
+                            <select name="general_parallel" class="w-full border rounded p-2"><option value="no" ${config.general.parallel === 'no' ? 'selected' : ''}>Tidak</option><option value="yes" ${config.general.parallel === 'yes' ? 'selected' : ''}>Ya</option></select>
+                            <p class="text-xs text-gray-500 mt-1">Menjalankan fold secara paralel (memerlukan memori besar).</p>
+                        </div>
                     </div>
                 </div>
                 <div class="mb-6 p-4 bg-gray-50 rounded-lg">
@@ -254,63 +317,65 @@
                             <span>:</span>
                             <input type="text" name="testRatio" value="${config.split.test || '20'}" class="w-20 border rounded p-1 text-center">%
                         </div>
+                        <p class="text-xs text-gray-500 mt-1">Proporsi data training dan testing.</p>
                     </div>
                     <div id="splitCrossvalDiv" class="mt-3 ${config.split.type !== 'crossval' ? 'hidden' : ''}">
                         <label class="block text-sm font-medium">Jumlah Fold (k)</label>
                         <input type="number" name="kFold" value="${config.split.folds || '10'}" class="mt-1 w-24 border rounded p-1">
+                        <p class="text-xs text-gray-500 mt-1">Jumlah fold untuk cross-validation.</p>
                     </div>
                 </div>
             `;
-            // Parameter spesifik algoritma
+            // Parameter spesifik algoritma (sama seperti sebelumnya, dengan deskripsi)
             if (algo === 'hybrid') {
                 html += `
                     <h3 class="font-bold text-gray-700 mt-4">IndoBERT</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                        <div><label class="block text-sm font-medium">Model Name</label><input type="text" name="bert_modelName" value="${config.indobert.modelName}" class="w-full border rounded p-2"></div>
-                        <div><label class="block text-sm font-medium">Max Sequence Length</label><select name="bert_maxSeq" class="w-full border rounded p-2"><option value="64" ${config.indobert.maxSeqLength === '64' ? 'selected' : ''}>64</option><option value="128" ${config.indobert.maxSeqLength === '128' ? 'selected' : ''}>128</option><option value="256" ${config.indobert.maxSeqLength === '256' ? 'selected' : ''}>256</option><option value="512" ${config.indobert.maxSeqLength === '512' ? 'selected' : ''}>512</option></select></div>
-                        <div><label class="block text-sm font-medium">Pooling Strategy</label><select name="bert_pooling" class="w-full border rounded p-2"><option value="CLS" ${config.indobert.pooling === 'CLS' ? 'selected' : ''}>CLS</option><option value="MEAN" ${config.indobert.pooling === 'MEAN' ? 'selected' : ''}>MEAN</option><option value="MAX" ${config.indobert.pooling === 'MAX' ? 'selected' : ''}>MAX</option></select></div>
-                        <div><label class="block text-sm font-medium">Batch Size</label><select name="bert_batchSize" class="w-full border rounded p-2"><option value="8" ${config.indobert.batchSize === '8' ? 'selected' : ''}>8</option><option value="16" ${config.indobert.batchSize === '16' ? 'selected' : ''}>16</option><option value="32" ${config.indobert.batchSize === '32' ? 'selected' : ''}>32</option></select></div>
-                        <div><label class="block text-sm font-medium">Learning Rate</label><select name="bert_lr" class="w-full border rounded p-2"><option value="1e-5" ${config.indobert.learningRate === '1e-5' ? 'selected' : ''}>1e-5</option><option value="2e-5" ${config.indobert.learningRate === '2e-5' ? 'selected' : ''}>2e-5</option><option value="3e-5" ${config.indobert.learningRate === '3e-5' ? 'selected' : ''}>3e-5</option><option value="5e-5" ${config.indobert.learningRate === '5e-5' ? 'selected' : ''}>5e-5</option></select></div>
-                        <div><label class="block text-sm font-medium">Optimizer</label><select name="bert_optimizer" class="w-full border rounded p-2"><option value="Adam" ${config.indobert.optimizer === 'Adam' ? 'selected' : ''}>Adam</option><option value="AdamW" ${config.indobert.optimizer === 'AdamW' ? 'selected' : ''}>AdamW</option><option value="SGD" ${config.indobert.optimizer === 'SGD' ? 'selected' : ''}>SGD</option></select></div>
+                        <div><label class="block text-sm font-medium">Model Name</label><input type="text" name="bert_modelName" value="${config.indobert.modelName}" class="w-full border rounded p-2"><p class="text-xs text-gray-500 mt-1">Nama model pre-trained dari HuggingFace.</p></div>
+                        <div><label class="block text-sm font-medium">Max Sequence Length</label><select name="bert_maxSeq" class="w-full border rounded p-2"><option value="64" ${config.indobert.maxSeqLength === '64' ? 'selected' : ''}>64</option><option value="128" ${config.indobert.maxSeqLength === '128' ? 'selected' : ''}>128</option><option value="256" ${config.indobert.maxSeqLength === '256' ? 'selected' : ''}>256</option><option value="512" ${config.indobert.maxSeqLength === '512' ? 'selected' : ''}>512</option></select><p class="text-xs text-gray-500 mt-1">Panjang maksimum token input.</p></div>
+                        <div><label class="block text-sm font-medium">Pooling Strategy</label><select name="bert_pooling" class="w-full border rounded p-2"><option value="CLS" ${config.indobert.pooling === 'CLS' ? 'selected' : ''}>CLS</option><option value="MEAN" ${config.indobert.pooling === 'MEAN' ? 'selected' : ''}>MEAN</option><option value="MAX" ${config.indobert.pooling === 'MAX' ? 'selected' : ''}>MAX</option></select><p class="text-xs text-gray-500 mt-1">Metode pooling untuk menghasilkan vektor kalimat.</p></div>
+                        <div><label class="block text-sm font-medium">Batch Size</label><select name="bert_batchSize" class="w-full border rounded p-2"><option value="8" ${config.indobert.batchSize === '8' ? 'selected' : ''}>8</option><option value="16" ${config.indobert.batchSize === '16' ? 'selected' : ''}>16</option><option value="32" ${config.indobert.batchSize === '32' ? 'selected' : ''}>32</option></select><p class="text-xs text-gray-500 mt-1">Jumlah sampel per iterasi training.</p></div>
+                        <div><label class="block text-sm font-medium">Learning Rate</label><select name="bert_lr" class="w-full border rounded p-2"><option value="1e-5" ${config.indobert.learningRate === '1e-5' ? 'selected' : ''}>1e-5</option><option value="2e-5" ${config.indobert.learningRate === '2e-5' ? 'selected' : ''}>2e-5</option><option value="3e-5" ${config.indobert.learningRate === '3e-5' ? 'selected' : ''}>3e-5</option><option value="5e-5" ${config.indobert.learningRate === '5e-5' ? 'selected' : ''}>5e-5</option></select><p class="text-xs text-gray-500 mt-1">Kecepatan pembelajaran untuk fine-tuning.</p></div>
+                        <div><label class="block text-sm font-medium">Optimizer</label><select name="bert_optimizer" class="w-full border rounded p-2"><option value="Adam" ${config.indobert.optimizer === 'Adam' ? 'selected' : ''}>Adam</option><option value="AdamW" ${config.indobert.optimizer === 'AdamW' ? 'selected' : ''}>AdamW</option><option value="SGD" ${config.indobert.optimizer === 'SGD' ? 'selected' : ''}>SGD</option></select><p class="text-xs text-gray-500 mt-1">Algoritma optimizer yang digunakan.</p></div>
                     </div>
                     <h3 class="font-bold text-gray-700 mt-4">UMAP</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                        <div><label class="block text-sm font-medium">n_components</label><input type="number" name="umap_nComponents" value="${config.umap.nComponents}" class="w-full border rounded p-2"></div>
-                        <div><label class="block text-sm font-medium">n_neighbors</label><input type="number" name="umap_nNeighbors" value="${config.umap.nNeighbors}" class="w-full border rounded p-2"></div>
-                        <div><label class="block text-sm font-medium">min_dist</label><input type="number" step="0.01" name="umap_minDist" value="${config.umap.minDist}" class="w-full border rounded p-2"></div>
-                        <div><label class="block text-sm font-medium">metric</label><select name="umap_metric" class="w-full border rounded p-2"><option value="euclidean" ${config.umap.metric === 'euclidean' ? 'selected' : ''}>euclidean</option><option value="cosine" ${config.umap.metric === 'cosine' ? 'selected' : ''}>cosine</option><option value="manhattan" ${config.umap.metric === 'manhattan' ? 'selected' : ''}>manhattan</option></select></div>
-                        <div><label class="block text-sm font-medium">random_state</label><input type="number" name="umap_randomState" value="${config.umap.randomState}" class="w-full border rounded p-2"></div>
+                        <div><label class="block text-sm font-medium">n_components</label><input type="number" name="umap_nComponents" value="${config.umap.nComponents}" class="w-full border rounded p-2"><p class="text-xs text-gray-500 mt-1">Dimensi tujuan setelah reduksi.</p></div>
+                        <div><label class="block text-sm font-medium">n_neighbors</label><input type="number" name="umap_nNeighbors" value="${config.umap.nNeighbors}" class="w-full border rounded p-2"><p class="text-xs text-gray-500 mt-1">Jumlah tetangga lokal untuk UMAP.</p></div>
+                        <div><label class="block text-sm font-medium">min_dist</label><input type="number" step="0.01" name="umap_minDist" value="${config.umap.minDist}" class="w-full border rounded p-2"><p class="text-xs text-gray-500 mt-1">Jarak minimum antar titik dalam embedding.</p></div>
+                        <div><label class="block text-sm font-medium">metric</label><select name="umap_metric" class="w-full border rounded p-2"><option value="euclidean" ${config.umap.metric === 'euclidean' ? 'selected' : ''}>euclidean</option><option value="cosine" ${config.umap.metric === 'cosine' ? 'selected' : ''}>cosine</option><option value="manhattan" ${config.umap.metric === 'manhattan' ? 'selected' : ''}>manhattan</option></select><p class="text-xs text-gray-500 mt-1">Metrik jarak untuk UMAP.</p></div>
+                        <div><label class="block text-sm font-medium">random_state</label><input type="number" name="umap_randomState" value="${config.umap.randomState}" class="w-full border rounded p-2"><p class="text-xs text-gray-500 mt-1">Seed untuk reproduksibilitas.</p></div>
                     </div>
                     <h3 class="font-bold text-gray-700 mt-4">KNN</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                        <div><label class="block text-sm font-medium">K (n_neighbors)</label><input type="number" name="knn_k" value="${config.knn.k}" class="w-full border rounded p-2"></div>
-                        <div><label class="block text-sm font-medium">Metrik Jarak</label><select name="knn_metric" class="w-full border rounded p-2"><option value="euclidean" ${config.knn.metric === 'euclidean' ? 'selected' : ''}>euclidean</option><option value="cosine" ${config.knn.metric === 'cosine' ? 'selected' : ''}>cosine</option><option value="manhattan" ${config.knn.metric === 'manhattan' ? 'selected' : ''}>manhattan</option></select></div>
-                        <div><label class="block text-sm font-medium">weights</label><select name="knn_weights" class="w-full border rounded p-2"><option value="uniform" ${config.knn.weights === 'uniform' ? 'selected' : ''}>uniform</option><option value="distance" ${config.knn.weights === 'distance' ? 'selected' : ''}>distance</option></select></div>
-                        <div><label class="block text-sm font-medium">algorithm</label><select name="knn_algorithm" class="w-full border rounded p-2"><option value="auto" ${config.knn.algorithm === 'auto' ? 'selected' : ''}>auto</option><option value="ball_tree" ${config.knn.algorithm === 'ball_tree' ? 'selected' : ''}>ball_tree</option><option value="kd_tree" ${config.knn.algorithm === 'kd_tree' ? 'selected' : ''}>kd_tree</option><option value="brute" ${config.knn.algorithm === 'brute' ? 'selected' : ''}>brute</option></select></div>
-                        <div><label class="block text-sm font-medium">leaf_size</label><input type="number" name="knn_leafSize" value="${config.knn.leafSize}" class="w-full border rounded p-2"></div>
-                        <div><label class="block text-sm font-medium">p (Minkowski)</label><input type="number" name="knn_p" value="${config.knn.p}" class="w-full border rounded p-2"></div>
+                        <div><label class="block text-sm font-medium">K (n_neighbors)</label><input type="number" name="knn_k" value="${config.knn.k}" class="w-full border rounded p-2"><p class="text-xs text-gray-500 mt-1">Jumlah tetangga untuk klasifikasi.</p></div>
+                        <div><label class="block text-sm font-medium">Metrik Jarak</label><select name="knn_metric" class="w-full border rounded p-2"><option value="euclidean" ${config.knn.metric === 'euclidean' ? 'selected' : ''}>euclidean</option><option value="cosine" ${config.knn.metric === 'cosine' ? 'selected' : ''}>cosine</option><option value="manhattan" ${config.knn.metric === 'manhattan' ? 'selected' : ''}>manhattan</option></select><p class="text-xs text-gray-500 mt-1">Metrik jarak untuk KNN.</p></div>
+                        <div><label class="block text-sm font-medium">weights</label><select name="knn_weights" class="w-full border rounded p-2"><option value="uniform" ${config.knn.weights === 'uniform' ? 'selected' : ''}>uniform</option><option value="distance" ${config.knn.weights === 'distance' ? 'selected' : ''}>distance</option></select><p class="text-xs text-gray-500 mt-1">Bobot tetangga (uniform atau distance).</p></div>
+                        <div><label class="block text-sm font-medium">algorithm</label><select name="knn_algorithm" class="w-full border rounded p-2"><option value="auto" ${config.knn.algorithm === 'auto' ? 'selected' : ''}>auto</option><option value="ball_tree" ${config.knn.algorithm === 'ball_tree' ? 'selected' : ''}>ball_tree</option><option value="kd_tree" ${config.knn.algorithm === 'kd_tree' ? 'selected' : ''}>kd_tree</option><option value="brute" ${config.knn.algorithm === 'brute' ? 'selected' : ''}>brute</option></select><p class="text-xs text-gray-500 mt-1">Algoritma pencarian tetangga.</p></div>
+                        <div><label class="block text-sm font-medium">leaf_size</label><input type="number" name="knn_leafSize" value="${config.knn.leafSize}" class="w-full border rounded p-2"><p class="text-xs text-gray-500 mt-1">Ukuran leaf untuk tree-based algorithm.</p></div>
+                        <div><label class="block text-sm font-medium">p (Minkowski)</label><input type="number" name="knn_p" value="${config.knn.p}" class="w-full border rounded p-2"><p class="text-xs text-gray-500 mt-1">Parameter p untuk metrik Minkowski (1=Manhattan, 2=Euclidean).</p></div>
                     </div>
                 `;
             } else {
-                // NB-Lexicon
+                // NB-Lexicon (dengan deskripsi)
                 html += `
                     <h3 class="font-bold text-gray-700 mt-4">Lexicon</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                        <div><label class="block text-sm font-medium">Lexicon Source</label><select name="lex_source" class="w-full border rounded p-2"><option value="nrc" ${config.lexicon.source === 'nrc' ? 'selected' : ''}>NRC</option><option value="inset" ${config.lexicon.source === 'inset' ? 'selected' : ''}>InSet</option><option value="custom" ${config.lexicon.source === 'custom' ? 'selected' : ''}>Custom</option></select></div>
-                        <div><label class="block text-sm font-medium">Use PMI</label><select name="lex_usePMI" class="w-full border rounded p-2"><option value="yes" ${config.lexicon.usePMI === 'yes' ? 'selected' : ''}>Yes</option><option value="no" ${config.lexicon.usePMI === 'no' ? 'selected' : ''}>No</option></select></div>
-                        <div><label class="block text-sm font-medium">Scoring Method</label><select name="lex_scoring" class="w-full border rounded p-2"><option value="sum" ${config.lexicon.scoringMethod === 'sum' ? 'selected' : ''}>Sum</option><option value="max" ${config.lexicon.scoringMethod === 'max' ? 'selected' : ''}>Max</option><option value="average" ${config.lexicon.scoringMethod === 'average' ? 'selected' : ''}>Average</option></select></div>
-                        <div><label class="block text-sm font-medium">Integration</label><select name="lex_integration" class="w-full border rounded p-2"><option value="dictionary_pmi" ${config.lexicon.integration === 'dictionary_pmi' ? 'selected' : ''}>Dictionary + PMI</option><option value="dictionary_only" ${config.lexicon.integration === 'dictionary_only' ? 'selected' : ''}>Dictionary Only</option><option value="pmi_only" ${config.lexicon.integration === 'pmi_only' ? 'selected' : ''}>PMI Only</option></select></div>
+                        <div><label class="block text-sm font-medium">Lexicon Source</label><select name="lex_source" class="w-full border rounded p-2"><option value="nrc" ${config.lexicon.source === 'nrc' ? 'selected' : ''}>NRC</option><option value="inset" ${config.lexicon.source === 'inset' ? 'selected' : ''}>InSet</option><option value="custom" ${config.lexicon.source === 'custom' ? 'selected' : ''}>Custom</option></select><p class="text-xs text-gray-500 mt-1">Sumber lexicon emosi.</p></div>
+                        <div><label class="block text-sm font-medium">Use PMI</label><select name="lex_usePMI" class="w-full border rounded p-2"><option value="yes" ${config.lexicon.usePMI === 'yes' ? 'selected' : ''}>Yes</option><option value="no" ${config.lexicon.usePMI === 'no' ? 'selected' : ''}>No</option></select><p class="text-xs text-gray-500 mt-1">Menggunakan Pointwise Mutual Information.</p></div>
+                        <div><label class="block text-sm font-medium">Scoring Method</label><select name="lex_scoring" class="w-full border rounded p-2"><option value="sum" ${config.lexicon.scoringMethod === 'sum' ? 'selected' : ''}>Sum</option><option value="max" ${config.lexicon.scoringMethod === 'max' ? 'selected' : ''}>Max</option><option value="average" ${config.lexicon.scoringMethod === 'average' ? 'selected' : ''}>Average</option></select><p class="text-xs text-gray-500 mt-1">Metode agregasi skor lexicon.</p></div>
+                        <div><label class="block text-sm font-medium">Integration</label><select name="lex_integration" class="w-full border rounded p-2"><option value="dictionary_pmi" ${config.lexicon.integration === 'dictionary_pmi' ? 'selected' : ''}>Dictionary + PMI</option><option value="dictionary_only" ${config.lexicon.integration === 'dictionary_only' ? 'selected' : ''}>Dictionary Only</option><option value="pmi_only" ${config.lexicon.integration === 'pmi_only' ? 'selected' : ''}>PMI Only</option></select><p class="text-xs text-gray-500 mt-1">Cara menggabungkan lexicon dan PMI.</p></div>
                     </div>
                     <h3 class="font-bold text-gray-700 mt-4">Naive Bayes</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                        <div><label class="block text-sm font-medium">Model Type</label><select name="nb_modelType" class="w-full border rounded p-2"><option value="MultinomialNB" ${config.naivebayes.modelType === 'MultinomialNB' ? 'selected' : ''}>MultinomialNB</option><option value="BernoulliNB" ${config.naivebayes.modelType === 'BernoulliNB' ? 'selected' : ''}>BernoulliNB</option></select></div>
-                        <div><label class="block text-sm font-medium">Feature</label><select name="nb_feature" class="w-full border rounded p-2"><option value="CountVectorizer" ${config.naivebayes.feature === 'CountVectorizer' ? 'selected' : ''}>CountVectorizer</option><option value="TfidfVectorizer" ${config.naivebayes.feature === 'TfidfVectorizer' ? 'selected' : ''}>TfidfVectorizer</option></select></div>
-                        <div><label class="block text-sm font-medium">Alpha (Smoothing)</label><input type="number" step="0.1" name="nb_alpha" value="${config.naivebayes.alpha}" class="w-full border rounded p-2"></div>
+                        <div><label class="block text-sm font-medium">Model Type</label><select name="nb_modelType" class="w-full border rounded p-2"><option value="MultinomialNB" ${config.naivebayes.modelType === 'MultinomialNB' ? 'selected' : ''}>MultinomialNB</option><option value="BernoulliNB" ${config.naivebayes.modelType === 'BernoulliNB' ? 'selected' : ''}>BernoulliNB</option></select><p class="text-xs text-gray-500 mt-1">Tipe Naive Bayes.</p></div>
+                        <div><label class="block text-sm font-medium">Feature</label><select name="nb_feature" class="w-full border rounded p-2"><option value="CountVectorizer" ${config.naivebayes.feature === 'CountVectorizer' ? 'selected' : ''}>CountVectorizer</option><option value="TfidfVectorizer" ${config.naivebayes.feature === 'TfidfVectorizer' ? 'selected' : ''}>TfidfVectorizer</option></select><p class="text-xs text-gray-500 mt-1">Metode ekstraksi fitur teks.</p></div>
+                        <div><label class="block text-sm font-medium">Alpha (Smoothing)</label><input type="number" step="0.1" name="nb_alpha" value="${config.naivebayes.alpha}" class="w-full border rounded p-2"><p class="text-xs text-gray-500 mt-1">Parameter smoothing Laplace.</p></div>
                     </div>
                     <h3 class="font-bold text-gray-700 mt-4">Hybrid Fusion</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                        <div><label class="block text-sm font-medium">Fusion Method</label><select name="fusion_method" class="w-full border rounded p-2"><option value="product" ${config.fusion.method === 'product' ? 'selected' : ''}>Product</option><option value="sum" ${config.fusion.method === 'sum' ? 'selected' : ''}>Sum</option><option value="weighted" ${config.fusion.method === 'weighted' ? 'selected' : ''}>Weighted Average</option></select></div>
-                        <div><label class="block text-sm font-medium">Formula</label><input type="text" name="fusion_formula" value="${config.fusion.formula}" class="w-full border rounded p-2"></div>
+                        <div><label class="block text-sm font-medium">Fusion Method</label><select name="fusion_method" class="w-full border rounded p-2"><option value="product" ${config.fusion.method === 'product' ? 'selected' : ''}>Product</option><option value="sum" ${config.fusion.method === 'sum' ? 'selected' : ''}>Sum</option><option value="weighted" ${config.fusion.method === 'weighted' ? 'selected' : ''}>Weighted Average</option></select><p class="text-xs text-gray-500 mt-1">Metode menggabungkan NB dan Lexicon.</p></div>
+                        <div><label class="block text-sm font-medium">Formula</label><input type="text" name="fusion_formula" value="${config.fusion.formula}" class="w-full border rounded p-2"><p class="text-xs text-gray-500 mt-1">Ekspresi matematika fusion (LaTeX).</p></div>
                     </div>
                 `;
             }
@@ -332,17 +397,44 @@
             });
         }
 
-        // Buka modal untuk tambah
+        function updateModalColor(algo) {
+            const header = document.getElementById('modalHeader');
+            if (algo === 'hybrid') {
+                header.className = 'sticky top-0 bg-blue-600 border-b px-6 py-4 flex justify-between items-center rounded-t-2xl text-white z-10';
+            } else {
+                header.className = 'sticky top-0 bg-green-600 border-b px-6 py-4 flex justify-between items-center rounded-t-2xl text-white z-10';
+            }
+        }
+
+        function openModal() {
+            const modal = document.getElementById('modelModal');
+            const modalContainer = modal.querySelector('.modal-container');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContainer.classList.add('show');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modelModal');
+            const modalContainer = modal.querySelector('.modal-container');
+            modalContainer.classList.remove('show');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                editingId = null;
+            }, 300);
+        }
+
         function openAddModal() {
             editingId = null;
             document.getElementById('modalTitle').innerText = 'Tambah Model Baru';
             document.getElementById('modelName').value = '';
-            document.getElementById('modelAlgo').value = 'hybrid';
-            renderParamForm('hybrid', getDefaultHybridConfig());
-            document.getElementById('modelModal').classList.remove('hidden');
+            const algo = document.getElementById('modelAlgo').value;
+            updateModalColor(algo);
+            renderParamForm(algo, algo === 'hybrid' ? getDefaultHybridConfig() : getDefaultNBConfig());
+            openModal();
         }
 
-        // Buka modal untuk edit
         function openEditModal(id) {
             const model = models.find(m => m.id === id);
             if (!model) return;
@@ -350,11 +442,11 @@
             document.getElementById('modalTitle').innerText = 'Edit Model';
             document.getElementById('modelName').value = model.name;
             document.getElementById('modelAlgo').value = model.algo;
+            updateModalColor(model.algo);
             renderParamForm(model.algo, model.config);
-            document.getElementById('modelModal').classList.remove('hidden');
+            openModal();
         }
 
-        // Simpan model (tambah atau edit)
         function saveModel(event) {
             event.preventDefault();
             const name = document.getElementById('modelName').value.trim();
@@ -363,17 +455,13 @@
                 alert('Nama model harus diisi');
                 return;
             }
-            // Kumpulkan semua parameter dari form
             const formData = new FormData(document.getElementById('modelForm'));
-            // Parameter umum
             const general = {
-                kFold: formData.get('general_kFold'),
                 epochPerFold: formData.get('general_epochPerFold'),
                 randomState: formData.get('general_randomState'),
                 shuffle: formData.get('general_shuffle'),
                 stratified: formData.get('general_stratified'),
                 earlyStopping: formData.get('general_earlyStopping'),
-                valMetric: formData.get('general_valMetric'),
                 parallel: formData.get('general_parallel')
             };
             const splitType = formData.get('splitType');
@@ -427,22 +515,15 @@
                 };
             }
             if (editingId !== null) {
-                // Edit
                 const index = models.findIndex(m => m.id === editingId);
                 if (index !== -1) {
                     models[index] = { ...models[index], name, algo, config };
                 }
             } else {
-                // Tambah
                 models.push({ id: nextId++, name, algo, config });
             }
             renderModelTable();
             closeModal();
-        }
-
-        function closeModal() {
-            document.getElementById('modelModal').classList.add('hidden');
-            editingId = null;
         }
 
         // Event listeners
@@ -450,14 +531,13 @@
         document.getElementById('closeModal').addEventListener('click', closeModal);
         document.getElementById('cancelModal').addEventListener('click', closeModal);
         document.getElementById('modelForm').addEventListener('submit', saveModel);
-        // Saat algoritma berubah, reload form parameter dengan default config untuk algoritma tersebut (kosong)
         document.getElementById('modelAlgo').addEventListener('change', function() {
             const algo = this.value;
+            updateModalColor(algo);
             const defaultConfig = algo === 'hybrid' ? getDefaultHybridConfig() : getDefaultNBConfig();
             renderParamForm(algo, defaultConfig);
         });
 
-        // Inisialisasi
         renderModelTable();
 
         // Dropdown sidebar
