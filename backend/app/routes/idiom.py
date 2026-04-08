@@ -186,3 +186,44 @@ def upload_idioms():
         'added': added,
         'skipped': skipped
     }), 200
+
+# Batch POST (untuk preview & ekstrak dari frontend)
+@idiom_bp.route('/batch', methods=['POST'], strict_slashes=False)
+@jwt_required()
+def batch_add_idioms():
+    data = request.get_json()
+    idioms = data.get('idioms', [])
+    if not idioms:
+        return jsonify({'message': 'Tidak ada data idiom'}), 400
+    
+    added = 0
+    merged = 0
+    for item in idioms:
+        idiom_text = item.get('idiom_text', '').strip().lower()
+        idiom_meaning = item.get('idiom_meaning', '').strip()
+        if not idiom_text or not idiom_meaning:
+            continue
+        
+        # Cek apakah idiom sudah ada (case-insensitive)
+        existing = Idiom.query.filter(func.lower(Idiom.idiom_text) == idiom_text).first()
+        if existing:
+            # Gabungkan arti jika berbeda (pisahkan dengan '; ')
+            current_meanings = set([m.strip() for m in existing.idiom_meaning.split(';')])
+            if idiom_meaning not in current_meanings:
+                existing.idiom_meaning += '; ' + idiom_meaning
+                merged += 1
+        else:
+            new_idiom = Idiom(
+                idiom_text=idiom_text,
+                idiom_meaning=idiom_meaning,
+                source='batch'
+            )
+            db.session.add(new_idiom)
+            added += 1
+    
+    db.session.commit()
+    return jsonify({
+        'message': f'Berhasil menambahkan {added} idiom baru, menggabungkan {merged} arti',
+        'added': added,
+        'merged': merged
+    }), 200
