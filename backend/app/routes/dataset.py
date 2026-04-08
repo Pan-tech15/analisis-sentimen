@@ -6,6 +6,7 @@ from werkzeug.utils import secure_filename
 from app import db
 from app.models.dataset import Dataset as DatasetModel
 from app.models.user import User
+from app.models.idiom import Idiom
 from datetime import datetime
 
 dataset_bp = Blueprint('dataset', __name__, url_prefix='/api/datasets')
@@ -112,6 +113,63 @@ def delete_dataset(dataset_id):
     db.session.commit()
     return jsonify({'message': 'Dataset deleted'}), 200
 
+@dataset_bp.route('/<int:dataset_id>/extract-idioms', methods=['POST'])
+@jwt_required()
+def extract_idioms_to_kamus(dataset_id):
+    try:
+        dataset = DatasetModel.query.get(dataset_id)
+        if not dataset:
+            return jsonify({'message': 'Dataset not found'}), 404
+
+        df = pd.read_csv(dataset.filepath)
+
+        if 'has_idiom' not in df.columns:
+            return jsonify({'message': 'Kolom has_idiom tidak ditemukan'}), 400
+        if 'idiom_text' not in df.columns or 'idiom_meaning' not in df.columns:
+            return jsonify({'message': 'Kolom idiom_text atau idiom_meaning tidak ditemukan'}), 400
+
+        idiom_df = df[df['has_idiom'] == 1]
+        if idiom_df.empty:
+            return jsonify({'message': 'Tidak ada data idiom dalam dataset ini', 'added': 0, 'skipped': 0}), 200
+
+        added = 0
+        skipped = 0
+
+        for _, row in idiom_df.iterrows():
+            idiom_text = str(row['idiom_text']).strip()
+            idiom_meaning = str(row['idiom_meaning']).strip()
+            if not idiom_text or not idiom_meaning:
+                skipped += 1
+                continue
+
+            # Cek kombinasi idiom_text dan idiom_meaning (case-insensitive)
+            existing = Idiom.query.filter(
+                db.func.lower(Idiom.idiom_text) == idiom_text.lower(),
+                db.func.lower(Idiom.idiom_meaning) == idiom_meaning.lower()
+            ).first()
+
+            if not existing:
+                new_idiom = Idiom(
+                    idiom_text=idiom_text,
+                    idiom_meaning=idiom_meaning,
+                    source=f'dataset_{dataset_id}'
+                )
+                db.session.add(new_idiom)
+                added += 1
+            else:
+                skipped += 1
+
+        db.session.commit()
+        return jsonify({
+            'message': f'Berhasil menambahkan {added} idiom baru, {skipped} idiom sudah ada/tidak valid',
+            'added': added,
+            'skipped': skipped
+        }), 200
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'message': f'Terjadi kesalahan: {str(e)}'}), 500
 
 @dataset_bp.route('/<int:dataset_id>/preview', methods=['GET'])
 @jwt_required()
@@ -162,3 +220,4 @@ def preview_dataset(dataset_id):
         'per_page': per_page,
         'data': records
     }), 200
+
