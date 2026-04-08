@@ -95,89 +95,179 @@
         </main>
     </div>
 
-    <script>
-        // Elemen
-        const datasetSelect = document.getElementById('datasetSelect');
-        const startBtn = document.getElementById('startCleanBtn');
-        const statusText = document.getElementById('statusText');
-        const progressContainer = document.getElementById('progressContainer');
-        const progressBar = document.getElementById('progressBar');
-        const progressPercent = document.getElementById('progressPercent');
-        const downloadBtn = document.getElementById('downloadBtn');
+<script>
+    // === Konfigurasi ===
+    const API_BASE = "http://localhost:5000/api";
+    let authToken = localStorage.getItem("access_token");
+    let currentPreprocId = null;
 
-        let cleaningActive = false;
-        let cleanedData = null;
+    // Elemen
+    const datasetSelect = document.getElementById('datasetSelect');
+    const startBtn = document.getElementById('startCleanBtn');
+    const statusText = document.getElementById('statusText');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBar = document.getElementById('progressBar');
+    const progressPercent = document.getElementById('progressPercent');
+    const downloadBtn = document.getElementById('downloadBtn');
 
-        // Simulasi proses pembersihan
-        function startCleaning() {
-            const selected = datasetSelect.value;
-            if (!selected) {
-                alert('Pilih dataset terlebih dahulu!');
-                return;
-            }
-            if (cleaningActive) return;
+    // Helper fetch dengan token
+    async function apiFetch(endpoint, options = {}) {
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+        };
+        const response = await fetch(`${API_BASE}${endpoint}`, {
+            ...options,
+            headers: { ...headers, ...options.headers }
+        });
+        if (response.status === 401) {
+            localStorage.clear();
+            window.location.href = 'login.html';
+            return null;
+        }
+        return response;
+    }
 
-            cleaningActive = true;
-            statusText.innerText = 'Sedang memproses...';
-            progressContainer.classList.remove('hidden');
-            downloadBtn.disabled = true;
-            downloadBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            downloadBtn.classList.remove('opacity-100', 'cursor-pointer');
+    // Memuat daftar dataset dari server
+    async function loadDatasets() {
+        try {
+            const response = await apiFetch('/datasets/');
+            if (!response) return;
+            if (!response.ok) throw new Error('Gagal memuat dataset');
+            const datasets = await response.json();
+            // Isi dropdown
+            datasetSelect.innerHTML = '<option value="">-- Pilih dataset --</option>';
+            datasets.forEach(ds => {
+                const option = document.createElement('option');
+                option.value = ds.id;
+                option.textContent = `${ds.filename} (${ds.rows} baris)`;
+                datasetSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error(error);
+            alert('Gagal memuat daftar dataset');
+        }
+    }
 
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 10;
-                if (progress >= 100) {
-                    clearInterval(interval);
-                    progress = 100;
-                    statusText.innerText = 'Selesai';
-                    cleaningActive = false;
-                    downloadBtn.disabled = false;
-                    downloadBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    downloadBtn.classList.add('opacity-100', 'cursor-pointer');
-                    // Simulasi data bersih (dummy)
-                    cleanedData = `kalimat_bersih,label\n"dia pergi dari kantor","netral"\n"dia bekerja keras","positif"`;
-                }
-                progressBar.style.width = `${progress}%`;
-                progressPercent.innerText = `${progress}%`;
-            }, 200);
+    // Proses preprocessing
+    async function startCleaning() {
+        const datasetId = datasetSelect.value;
+        if (!datasetId) {
+            alert('Pilih dataset terlebih dahulu!');
+            return;
         }
 
-        // Unduh CSV
-        function downloadCSV() {
-            if (!cleanedData) {
-                alert('Tidak ada data untuk diunduh. Lakukan pembersihan terlebih dahulu.');
+        startBtn.disabled = true;
+        startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+        statusText.innerText = 'Sedang memproses...';
+        progressContainer.classList.remove('hidden');
+        progressBar.style.width = '0%';
+        progressPercent.innerText = '0%';
+        downloadBtn.disabled = true;
+        downloadBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        downloadBtn.classList.remove('opacity-100', 'cursor-pointer');
+
+        // Simulasi progress (karena backend tidak mengirim progress, kita polling atau simulasi)
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += 10;
+            if (progress >= 90) progress = 90;
+            progressBar.style.width = `${progress}%`;
+            progressPercent.innerText = `${progress}%`;
+        }, 500);
+
+        try {
+            const response = await apiFetch('/preprocess/start', {
+                method: 'POST',
+                body: JSON.stringify({ dataset_id: datasetId })
+            });
+            clearInterval(interval);
+            if (!response) return;
+            const result = await response.json();
+            if (response.ok) {
+                progressBar.style.width = '100%';
+                progressPercent.innerText = '100%';
+                statusText.innerText = `Selesai (${result.rows} baris diproses)`;
+                currentPreprocId = result.preprocessed_id;
+                downloadBtn.disabled = false;
+                downloadBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                downloadBtn.classList.add('opacity-100', 'cursor-pointer');
+            } else {
+                statusText.innerText = `Gagal: ${result.message}`;
+                alert(result.message);
+            }
+        } catch (error) {
+            clearInterval(interval);
+            console.error(error);
+            statusText.innerText = 'Terjadi kesalahan';
+            alert('Error saat preprocessing');
+        } finally {
+            startBtn.disabled = false;
+            startBtn.innerHTML = '<i class="fas fa-play"></i> Mulai Pembersihan';
+        }
+    }
+
+    // Unduh CSV hasil preprocessing
+    async function downloadCSV() {
+        if (!currentPreprocId) {
+            alert('Tidak ada hasil preprocessing. Lakukan pembersihan terlebih dahulu.');
+            return;
+        }
+        try {
+            const response = await fetch(`${API_BASE}/preprocess/download/${currentPreprocId}`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            if (response.status === 401) {
+                localStorage.clear();
+                window.location.href = 'login.html';
                 return;
             }
-            const blob = new Blob([cleanedData], { type: 'text/csv' });
+            if (!response.ok) {
+                const err = await response.json();
+                alert(err.message || 'Gagal mengunduh');
+                return;
+            }
+            const blob = await response.blob();
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `hasil_cleaning_${new Date().toISOString().slice(0,19)}.csv`;
+            a.download = `preprocessed_${currentPreprocId}.csv`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error(error);
+            alert('Error saat mengunduh');
         }
+    }
 
-        startBtn.addEventListener('click', startCleaning);
-        downloadBtn.addEventListener('click', downloadCSV);
+    // Event listeners
+    startBtn.addEventListener('click', startCleaning);
+    downloadBtn.addEventListener('click', downloadCSV);
 
-        // Dropdown sidebar (sama seperti sebelumnya)
-        function toggleDropdown(btn, menu, icon) {
-            btn.addEventListener('click', () => {
-                menu.classList.toggle('hidden');
-                icon.classList.toggle('rotate-180');
-            });
-        }
-        const dataCollectionBtn = document.getElementById('dataCollectionBtn');
-        const dataCollectionMenu = document.getElementById('dataCollectionMenu');
-        const dataCollectionIcon = document.getElementById('dataCollectionIcon');
-        toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
-        const processingBtn = document.getElementById('processingBtn');
-        const processingMenu = document.getElementById('processingMenu');
-        const processingIcon = document.getElementById('processingIcon');
-        toggleDropdown(processingBtn, processingMenu, processingIcon);
-    </script>
+    // Dropdown sidebar (sama seperti sebelumnya)
+    function toggleDropdown(btn, menu, icon) {
+        btn.addEventListener('click', () => {
+            menu.classList.toggle('hidden');
+            icon.classList.toggle('rotate-180');
+        });
+    }
+    const dataCollectionBtn = document.getElementById('dataCollectionBtn');
+    const dataCollectionMenu = document.getElementById('dataCollectionMenu');
+    const dataCollectionIcon = document.getElementById('dataCollectionIcon');
+    toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
+    const processingBtn = document.getElementById('processingBtn');
+    const processingMenu = document.getElementById('processingMenu');
+    const processingIcon = document.getElementById('processingIcon');
+    toggleDropdown(processingBtn, processingMenu, processingIcon);
+
+    // Inisialisasi
+    if (authToken) {
+        loadDatasets();
+    } else {
+        window.location.href = 'login.html';
+    }
+</script>
 </body>
 </html>

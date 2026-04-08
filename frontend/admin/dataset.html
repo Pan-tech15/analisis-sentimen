@@ -186,10 +186,11 @@ function renderDatasetTable() {
         row.insertCell(2).innerHTML = new Date(ds.uploaded_at).toLocaleDateString();
         const actions = document.createElement('td');
         actions.className = 'px-4 py-2 border border-gray-200';
-        actions.innerHTML = `
-            <i class="fas fa-eye text-blue-500 mr-3 cursor-pointer hover:text-blue-700" data-id="${ds.id}" data-action="view"></i>
-            <i class="fas fa-trash text-red-500 cursor-pointer hover:text-red-700" data-id="${ds.id}" data-action="delete"></i>
-        `;
+actions.innerHTML = `
+    <i class="fas fa-eye text-blue-500 mr-3 cursor-pointer hover:text-blue-700" data-id="${ds.id}" data-action="view"></i>
+    <i class="fas fa-book text-green-500 mr-3 cursor-pointer hover:text-green-700" data-id="${ds.id}" data-action="extract"></i>
+    <i class="fas fa-trash text-red-500 cursor-pointer hover:text-red-700" data-id="${ds.id}" data-action="delete"></i>
+`;
         row.appendChild(actions);
         for (let cell of row.cells) {
             cell.classList.add('border', 'border-gray-200', 'px-4', 'py-2');
@@ -210,6 +211,14 @@ function renderDatasetTable() {
             }
         });
     });
+    document.querySelectorAll('[data-action="extract"]').forEach(icon => {
+    icon.addEventListener('click', async (e) => {
+        const id = parseInt(icon.dataset.id);
+        if (confirm('Ekstrak semua idiom dari dataset ini ke Kamus Idiom?')) {
+            await extractIdiomsFromDataset(id);
+        }
+    });
+});
 }
 
 function renderDatasetPagination() {
@@ -302,6 +311,24 @@ async function deleteDataset(id) {
     } catch (error) {
         console.error(error);
         alert('Error saat menghapus');
+    }
+}
+
+async function extractIdiomsFromDataset(datasetId) {
+    try {
+        const response = await apiFetch(`/datasets/${datasetId}/extract-idioms`, {
+            method: 'POST'
+        });
+        if (!response) return;
+        const result = await response.json();
+        if (response.ok) {
+            alert(result.message);
+        } else {
+            alert(result.message || 'Gagal mengekstrak idiom');
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Error saat mengekstrak idiom');
     }
 }
 
