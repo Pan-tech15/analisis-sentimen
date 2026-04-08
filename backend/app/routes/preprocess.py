@@ -1,15 +1,21 @@
 import os
 import pandas as pd
-from flask import Blueprint, request, jsonify, send_file
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask import Blueprint, request, jsonify, send_file, current_app
+from flask_jwt_extended import jwt_required
 from app import db
 from app.models.dataset import Dataset as DatasetModel
 from app.models.preprocessing import Preprocessing
 from app.utils.preprocessing_utils import preprocess_text
 from datetime import datetime
-import tempfile
 
 preprocess_bp = Blueprint('preprocess', __name__, url_prefix='/api/preprocess')
+
+def get_preprocessed_folder():
+    """Mendapatkan path absolut folder data/preprocessed"""
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))  # sampai folder backend
+    preprocessed_dir = os.path.join(base_dir, 'data', 'preprocessed')
+    os.makedirs(preprocessed_dir, exist_ok=True)
+    return preprocessed_dir
 
 @preprocess_bp.route('/start', methods=['POST'])
 @jwt_required()
@@ -23,25 +29,21 @@ def start_preprocessing():
     if not dataset:
         return jsonify({'message': 'Dataset tidak ditemukan'}), 404
     
-    # Baca file CSV
     try:
         df = pd.read_csv(dataset.filepath)
     except Exception as e:
         return jsonify({'message': f'Error membaca file: {str(e)}'}), 500
     
-    # Kolom yang diperlukan: 'kalimat' dan 'emotion' (atau 'label')
     if 'kalimat' not in df.columns:
         return jsonify({'message': 'Kolom "kalimat" tidak ditemukan'}), 400
     
-    # Asumsikan label emosi ada di kolom 'emotion'
     emotion_col = 'emotion' if 'emotion' in df.columns else 'label' if 'label' in df.columns else None
     if not emotion_col:
         return jsonify({'message': 'Kolom emosi/label tidak ditemukan (gunakan "emotion" atau "label")'}), 400
     
-    # Proses setiap kalimat
     results = []
     total = len(df)
-    for idx, row in df.iterrows():
+    for _, row in df.iterrows():
         original = row['kalimat']
         cleaned = preprocess_text(original)
         results.append({
@@ -50,15 +52,14 @@ def start_preprocessing():
             'emotion': row[emotion_col]
         })
     
-    # Simpan hasil ke CSV
     result_df = pd.DataFrame(results)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    preprocessed_filename = f"preprocessed_{timestamp}_{dataset.filename}"
-    preprocessed_path = os.path.join('data', 'preprocessed', preprocessed_filename)
-    os.makedirs(os.path.dirname(preprocessed_path), exist_ok=True)
+    original_filename = os.path.basename(dataset.filename)
+    preprocessed_filename = f"preprocessed_{timestamp}_{original_filename}"
+    preprocessed_dir = get_preprocessed_folder()
+    preprocessed_path = os.path.join(preprocessed_dir, preprocessed_filename)
     result_df.to_csv(preprocessed_path, index=False)
     
-    # Simpan record preprocessing ke database
     preproc_record = Preprocessing(
         dataset_id=dataset_id,
         preprocessed_filepath=preprocessed_path,
@@ -70,7 +71,6 @@ def start_preprocessing():
     return jsonify({
         'message': 'Preprocessing selesai',
         'preprocessed_id': preproc_record.id,
-        'file_url': f'/api/preprocess/download/{preproc_record.id}',
         'rows': total
     }), 200
 
