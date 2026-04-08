@@ -5,8 +5,7 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_bcrypt import Bcrypt
 from .config import Config
-from app.routes.preprocess import preprocess_bp
-app.register_blueprint(preprocess_bp)
+
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -44,6 +43,9 @@ def create_app():
 
     from app.routes.idiom import idiom_bp
     app.register_blueprint(idiom_bp)
+
+    from app.routes.preprocess import preprocess_bp
+    app.register_blueprint(preprocess_bp)
 
     # Route test
     @app.route('/')
