@@ -44,8 +44,8 @@ def create_app():
     from app.routes.idiom import idiom_bp
     app.register_blueprint(idiom_bp)
 
-    from app.routes.preprocess import preprocess_bp
-    app.register_blueprint(preprocess_bp)
+    from app.routes.processing import processing_bp
+    app.register_blueprint(processing_bp)
 
     # Route test
     @app.route('/')
