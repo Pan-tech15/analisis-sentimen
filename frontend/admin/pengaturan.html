@@ -1,263 +1,462 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pengaturan Model - IdiomSense Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
     <style>
-        /* Animasi modal */
-        .modal-backdrop {
-            transition: opacity 0.3s ease;
-        }
-        .modal-container {
-            transition: transform 0.3s ease, opacity 0.3s ease;
-            transform: scale(0.95);
-            opacity: 0;
-        }
-        .modal-container.show {
-            transform: scale(1);
-            opacity: 1;
-        }
-        .custom-scroll::-webkit-scrollbar {
-            width: 6px;
-        }
-        .custom-scroll::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        .custom-scroll::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 10px;
-        }
+      /* Animasi modal */
+      .modal-backdrop {
+        transition: opacity 0.3s ease;
+      }
+      .modal-container {
+        transition:
+          transform 0.3s ease,
+          opacity 0.3s ease;
+        transform: scale(0.95);
+        opacity: 0;
+      }
+      .modal-container.show {
+        transform: scale(1);
+        opacity: 1;
+      }
+      .custom-scroll::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scroll::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+      .custom-scroll::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 10px;
+      }
     </style>
-</head>
-<body class="bg-gray-100 font-sans antialiased">
-
+  </head>
+  <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-        <!-- Sidebar (konsisten) -->
-        <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
-            <div class="p-4 border-b">
-                <span class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IdiomSense</span>
-                <p class="text-sm text-gray-500">Admin Panel</p>
-            </div>
-            <nav class="p-4">
-                <ul class="space-y-1">
-                    <li><a href="beranda-admin.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"><i class="fas fa-tachometer-alt w-5"></i><span>Beranda</span></a></li>
-                    <li><button id="dataCollectionBtn" class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700"><div class="flex items-center space-x-2"><i class="fas fa-database w-5"></i><span>Data Collection</span></div><i id="dataCollectionIcon" class="fas fa-chevron-down text-sm transition-transform"></i></button>
-                        <ul id="dataCollectionMenu" class="ml-6 mt-1 space-y-1 hidden">
-                            <li><a href="dataset.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-table w-5 mr-2"></i>Dataset</a></li>
-                            <li><a href="kamus-idiom.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-book w-5 mr-2"></i>Kamus Idiom</a></li>
-                        </ul>
-                    </li>
-                    <li><a href="preprocessing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-filter w-5"></i><span>Pre-Processing</span></a></li>
-                    <li><button id="processingBtn" class="w-full flex items-center justify-between p-2 rounded-lg bg-gray-100 text-gray-700"><div class="flex items-center space-x-2"><i class="fas fa-brain w-5"></i><span>Processing</span></div><i id="processingIcon" class="fas fa-chevron-down text-sm transition-transform"></i></button>
-                        <ul id="processingMenu" class="ml-6 mt-1 space-y-1">
-                            <li><a href="pengaturan.html" class="block p-2 rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-sliders-h w-5 mr-2"></i>Pengaturan</a></li>
-                            <li><a href="latih.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-chart-line w-5 mr-2"></i>Latih</a></li>
-                        </ul>
-                    </li>
-                    <li><a href="testing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-vial w-5"></i><span>Testing</span></a></li>
-                    <li><a href="evaluasi.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-chart-line w-5"></i><span>Evaluasi</span></a></li>
-                    <li class="pt-4 mt-4 border-t"><a href="login.html" class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a></li>
-                </ul>
-            </nav>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
-            <h1 class="text-3xl font-bold text-gray-800 mb-6">Pengaturan Model</h1>
-
-            <!-- Tombol Tambah Model -->
-            <div class="mb-6 flex justify-end">
-                <button id="btnAddModel" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 shadow-md transition">
-                    <i class="fas fa-plus"></i>
-                    <span>Tambah Model Baru</span>
-                </button>
-            </div>
-
-            <!-- Daftar Model -->
-            <div class="bg-white p-6 rounded-xl shadow-md">
-                <h2 class="font-semibold text-gray-700 mb-4">Daftar Model</h2>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full border border-gray-200">
-                        <thead class="bg-blue-500 text-white">
-                            <tr>
-                                <th class="px-4 py-2 border border-blue-400">Nama Model</th>
-                                <th class="px-4 py-2 border border-blue-400">Algoritma</th>
-                                <th class="px-4 py-2 border border-blue-400">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="modelTableBody">
-                            <!-- Data model akan diisi JS -->
-                        </tbody>
-                    </table>
+      <!-- Sidebar (konsisten) -->
+      <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
+        <div class="p-4 border-b">
+          <span
+            class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
+            >IdiomSense</span
+          >
+          <p class="text-sm text-gray-500">Admin Panel</p>
+        </div>
+        <nav class="p-4">
+          <ul class="space-y-1">
+            <li>
+              <a
+                href="beranda-admin.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"
+                ><i class="fas fa-tachometer-alt w-5"></i
+                ><span>Beranda</span></a
+              >
+            </li>
+            <li>
+              <button
+                id="dataCollectionBtn"
+                class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+              >
+                <div class="flex items-center space-x-2">
+                  <i class="fas fa-database w-5"></i
+                  ><span>Data Collection</span>
                 </div>
-            </div>
-        </main>
+                <i
+                  id="dataCollectionIcon"
+                  class="fas fa-chevron-down text-sm transition-transform"
+                ></i>
+              </button>
+              <ul id="dataCollectionMenu" class="ml-6 mt-1 space-y-1 hidden">
+                <li>
+                  <a
+                    href="dataset.html"
+                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                    ><i class="fas fa-table w-5 mr-2"></i>Dataset</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="kamus-idiom.html"
+                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                    ><i class="fas fa-book w-5 mr-2"></i>Kamus Idiom</a
+                  >
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a
+                href="preprocessing.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                ><i class="fas fa-filter w-5"></i><span>Pre-Processing</span></a
+              >
+            </li>
+            <li>
+              <button
+                id="processingBtn"
+                class="w-full flex items-center justify-between p-2 rounded-lg bg-gray-100 text-gray-700"
+              >
+                <div class="flex items-center space-x-2">
+                  <i class="fas fa-brain w-5"></i><span>Processing</span>
+                </div>
+                <i
+                  id="processingIcon"
+                  class="fas fa-chevron-down text-sm transition-transform"
+                ></i>
+              </button>
+              <ul id="processingMenu" class="ml-6 mt-1 space-y-1">
+                <li>
+                  <a
+                    href="pengaturan.html"
+                    class="block p-2 rounded-lg bg-blue-50 text-blue-600"
+                    ><i class="fas fa-sliders-h w-5 mr-2"></i>Pengaturan</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="latih.html"
+                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                    ><i class="fas fa-chart-line w-5 mr-2"></i>Latih</a
+                  >
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a
+                href="testing.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                ><i class="fas fa-vial w-5"></i><span>Testing</span></a
+              >
+            </li>
+            <li>
+              <a
+                href="evaluasi.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                ><i class="fas fa-chart-line w-5"></i><span>Evaluasi</span></a
+              >
+            </li>
+            <li class="pt-4 mt-4 border-t">
+              <a
+                href="login.html"
+                class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"
+                ><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a
+              >
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Pengaturan Model</h1>
+
+        <!-- Tombol Tambah Model -->
+        <div class="mb-6 flex justify-end">
+          <button
+            id="btnAddModel"
+            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 shadow-md transition"
+          >
+            <i class="fas fa-plus"></i>
+            <span>Tambah Model Baru</span>
+          </button>
+        </div>
+
+        <!-- Daftar Model -->
+        <div class="bg-white p-6 rounded-xl shadow-md">
+          <h2 class="font-semibold text-gray-700 mb-4">Daftar Model</h2>
+          <div class="overflow-x-auto">
+            <table class="min-w-full border border-gray-200">
+              <thead class="bg-blue-500 text-white">
+                <tr>
+                  <th class="px-4 py-2 border border-blue-400">Nama Model</th>
+                  <th class="px-4 py-2 border border-blue-400">Algoritma</th>
+                  <th class="px-4 py-2 border border-blue-400">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="modelTableBody">
+                <!-- Data model akan diisi JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
     </div>
 
     <!-- Modal Tambah/Edit Model dengan custom scroll -->
-    <div id="modelModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50 modal-backdrop">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden relative transform transition-all modal-container">
-            <!-- Header dengan warna dinamis (biru/hijau) -->
-            <div id="modalHeader" class="sticky top-0 bg-blue-600 border-b px-6 py-4 flex justify-between items-center rounded-t-2xl text-white z-10">
-                <h2 id="modalTitle" class="text-xl font-bold">Tambah Model Baru</h2>
-                <button id="closeModal" class="text-white hover:text-gray-200 transition">
-                    <i class="fas fa-times text-2xl"></i>
-                </button>
-            </div>
-            <!-- Body Form dengan scroll area -->
-            <div class="overflow-y-auto custom-scroll" style="max-height: calc(90vh - 80px);">
-                <div class="p-6">
-                    <form id="modelForm">
-                        <!-- Nama Model -->
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700">Nama Model</label>
-                            <input type="text" id="modelName" required class="w-full border rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-400 focus:outline-none">
-                            <p class="text-xs text-gray-500 mt-1">Nama unik untuk mengidentifikasi model ini.</p>
-                        </div>
-                        <!-- Pilih Algoritma -->
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700">Algoritma</label>
-                            <select id="modelAlgo" class="w-full border rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-400">
-                                <option value="hybrid">IndoBERT-KNN + UMAP</option>
-                                <option value="nb-lexicon">Naive Bayes-Lexicon</option>
-                            </select>
-                            <p class="text-xs text-gray-500 mt-1">Pilih algoritma yang akan digunakan untuk model ini.</p>
-                        </div>
-                        <!-- Tempat parameter umum dan spesifik -->
-                        <div id="dynamicParams"></div>
-                        <div class="mt-6 flex justify-end space-x-3">
-                            <button type="button" id="cancelModal" class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg transition">Batal</button>
-                            <button type="submit" id="submitBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">Simpan Model</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+    <div
+      id="modelModal"
+      class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50 modal-backdrop"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden relative transform transition-all modal-container"
+      >
+        <!-- Header dengan warna dinamis (biru/hijau) -->
+        <div
+          id="modalHeader"
+          class="sticky top-0 bg-blue-600 border-b px-6 py-4 flex justify-between items-center rounded-t-2xl text-white z-10"
+        >
+          <h2 id="modalTitle" class="text-xl font-bold">Tambah Model Baru</h2>
+          <button
+            id="closeModal"
+            class="text-white hover:text-gray-200 transition"
+          >
+            <i class="fas fa-times text-2xl"></i>
+          </button>
         </div>
+        <!-- Body Form dengan scroll area -->
+        <div
+          class="overflow-y-auto custom-scroll"
+          style="max-height: calc(90vh - 80px)"
+        >
+          <div class="p-6">
+            <form id="modelForm">
+              <!-- Nama Model -->
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700"
+                  >Nama Model</label
+                >
+                <input
+                  type="text"
+                  id="modelName"
+                  required
+                  class="w-full border rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                />
+                <p class="text-xs text-gray-500 mt-1">
+                  Nama unik untuk mengidentifikasi model ini.
+                </p>
+              </div>
+              <!-- Pilih Algoritma -->
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700"
+                  >Algoritma</label
+                >
+                <select
+                  id="modelAlgo"
+                  class="w-full border rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-400"
+                >
+                  <option value="hybrid">IndoBERT-KNN + UMAP</option>
+                  <option value="nb-lexicon">Naive Bayes-Lexicon</option>
+                </select>
+                <p class="text-xs text-gray-500 mt-1">
+                  Pilih algoritma yang akan digunakan untuk model ini.
+                </p>
+              </div>
+              <!-- Tempat parameter umum dan spesifik -->
+              <div id="dynamicParams"></div>
+              <div class="mt-6 flex justify-end space-x-3">
+                <button
+                  type="button"
+                  id="cancelModal"
+                  class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg transition"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  id="submitBtn"
+                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
+                >
+                  Simpan Model
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script>
-        // Data model (simulasi)
-        let models = [
-            { id: 1, name: "Model Hybrid Default", algo: "hybrid", config: getDefaultHybridConfig() },
-            { id: 2, name: "Model NB Lexicon Default", algo: "nb-lexicon", config: getDefaultNBConfig() }
-        ];
-        let nextId = 3;
-        let editingId = null;
+      // Data model (simulasi)
+      let models = [];
+      let editingId = null;
+      const API_BASE_URL = "http://localhost:5000";
 
-        // Konfigurasi default hybrid
-        function getDefaultHybridConfig() {
-            return {
-                general: {
-                    randomState: "42",
-                    shuffle: "yes",
-                    stratified: "yes",
-                    earlyStopping: "0",
-                    parallel: "no"
-                },
-                split: { type: "percentage", train: "80", test: "20", crossval: { folds: "10", epochPerFold: "3" } },
-                indobert: {
-                    modelName: "indobenchmark/indobert-base-p2",
-                    maxSeqLength: "128",
-                    pooling: "CLS",
-                    batchSize: "16",
-                    learningRate: "2e-5",
-                    optimizer: "Adam"
-                },
-                umap: {
-                    nComponents: "25",
-                    nNeighbors: "30",
-                    minDist: "0.1",
-                    metric: "cosine",
-                    randomState: "42"
-                },
-                knn: {
-                    k: "7",
-                    metric: "cosine",
-                    weights: "distance",
-                    algorithm: "auto",
-                    leafSize: "30",
-                    p: "2"
-                }
-            };
+      async function loadModels() {
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/api/processing/configs`,
+            {
+              headers: getAuthHeaders(),
+            },
+          );
+          if (!response.ok) throw new Error("Gagal memuat konfigurasi");
+          const data = await response.json();
+          console.log("Data dari server:", data); // DEBUG
+
+          // Pastikan data adalah array
+          if (!Array.isArray(data)) {
+            console.error("Response bukan array:", data);
+            return;
+          }
+
+          models = data.map((item) => ({
+            id: item.id,
+            name: item.name,
+            algo: item.algorithm === "IndoBERT-KNN" ? "hybrid" : "nb-lexicon",
+            config: item.params,
+          }));
+          console.log("Models setelah mapping:", models); // DEBUG
+          renderModelTable();
+        } catch (error) {
+          console.error("Error loading models:", error);
+          alert("Gagal memuat daftar model dari server.");
         }
+      }
 
-        function getDefaultNBConfig() {
-            return {
-                general: {
-                    randomState: "42",
-                    shuffle: "yes",
-                    stratified: "yes",
-                    earlyStopping: "0",
-                    parallel: "no"
-                },
-                split: { type: "percentage", train: "80", test: "20", crossval: { folds: "10", epochPerFold: "3" } },
-                lexicon: {
-                    source: "nrc",
-                    usePMI: "yes",
-                    scoringMethod: "sum",
-                    integration: "dictionary_pmi",
-                    customFile: null
-                },
-                naivebayes: {
-                    modelType: "MultinomialNB",
-                    feature: "CountVectorizer",
-                    alpha: "1.0"
-                },
-                fusion: {
-                    method: "product",
-                    formula: "\\text{NB} \\times (1 + \\text{Lexicon})"
-                }
-            };
-        }
+      function getAuthHeaders() {
+        const token = localStorage.getItem("access_token"); // Simpan token saat login
+        return {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        };
+      }
 
-        // Render tabel model
-        function renderModelTable() {
-            const tbody = document.getElementById('modelTableBody');
-            tbody.innerHTML = '';
-            models.forEach(model => {
-                const row = tbody.insertRow();
-                row.insertCell(0).innerHTML = `<span class="font-medium">${model.name}</span>`;
-                row.insertCell(1).innerHTML = model.algo === 'hybrid' ? 'IndoBERT-KNN + UMAP' : 'Naive Bayes-Lexicon';
-                const actions = document.createElement('td');
-                actions.className = 'px-4 py-2 border border-gray-200 text-center';
-                actions.innerHTML = `
+      // Konfigurasi default hybrid
+      function getDefaultHybridConfig() {
+        return {
+          general: {
+            randomState: "42",
+            shuffle: "yes",
+            stratified: "yes",
+            earlyStopping: "0",
+            parallel: "no",
+          },
+          split: {
+            type: "percentage",
+            train: "80",
+            test: "20",
+            crossval: { folds: "10", epochPerFold: "3" },
+          },
+          indobert: {
+            modelName: "indobenchmark/indobert-base-p2",
+            maxSeqLength: "128",
+            pooling: "CLS",
+            batchSize: "16",
+            learningRate: "2e-5",
+            optimizer: "Adam",
+          },
+          umap: {
+            nComponents: "25",
+            nNeighbors: "30",
+            minDist: "0.1",
+            metric: "cosine",
+            randomState: "42",
+          },
+          knn: {
+            k: "7",
+            metric: "cosine",
+            weights: "distance",
+            algorithm: "auto",
+            leafSize: "30",
+            p: "2",
+          },
+        };
+      }
+
+      function getDefaultNBConfig() {
+        return {
+          general: {
+            randomState: "42",
+            shuffle: "yes",
+            stratified: "yes",
+            earlyStopping: "0",
+            parallel: "no",
+          },
+          split: {
+            type: "percentage",
+            train: "80",
+            test: "20",
+            crossval: { folds: "10", epochPerFold: "3" },
+          },
+          lexicon: {
+            source: "nrc",
+            usePMI: "yes",
+            scoringMethod: "sum",
+            integration: "dictionary_pmi",
+            customFile: null,
+          },
+          naivebayes: {
+            modelType: "MultinomialNB",
+            feature: "CountVectorizer",
+            alpha: "1.0",
+          },
+          fusion: {
+            method: "product",
+            formula: "\\text{NB} \\times (1 + \\text{Lexicon})",
+          },
+        };
+      }
+
+      // Render tabel model
+      function renderModelTable() {
+        const tbody = document.getElementById("modelTableBody");
+        tbody.innerHTML = "";
+        models.forEach((model) => {
+          const row = tbody.insertRow();
+          row.insertCell(0).innerHTML =
+            `<span class="font-medium">${model.name}</span>`;
+          row.insertCell(1).innerHTML =
+            model.algo === "hybrid"
+              ? "IndoBERT-KNN + UMAP"
+              : "Naive Bayes-Lexicon";
+          const actions = document.createElement("td");
+          actions.className = "px-4 py-2 border border-gray-200 text-center";
+          actions.innerHTML = `
                     <i class="fas fa-edit text-blue-500 mr-3 cursor-pointer hover:text-blue-700" data-id="${model.id}"></i>
                     <i class="fas fa-trash text-red-500 cursor-pointer hover:text-red-700" data-id="${model.id}"></i>
                 `;
-                row.appendChild(actions);
-                for (let cell of row.cells) cell.classList.add('border', 'border-gray-200', 'px-4', 'py-2');
-            });
-            // Event edit
-            document.querySelectorAll('.fa-edit').forEach(icon => {
-                icon.addEventListener('click', (e) => {
-                    const id = parseInt(icon.dataset.id);
-                    openEditModal(id);
-                });
-            });
-            // Event hapus
-            document.querySelectorAll('.fa-trash').forEach(icon => {
-                icon.addEventListener('click', (e) => {
-                    const id = parseInt(icon.dataset.id);
-                    if (confirm('Hapus model ini?')) {
-                        models = models.filter(m => m.id !== id);
-                        renderModelTable();
-                    }
-                });
-            });
-        }
-
-        // Render form parameter (dengan pemindahan epoch per fold ke cross validation)
-        function renderParamForm(algo, config = null) {
-            const container = document.getElementById('dynamicParams');
-            if (!config) {
-                config = algo === 'hybrid' ? getDefaultHybridConfig() : getDefaultNBConfig();
+          row.appendChild(actions);
+          for (let cell of row.cells)
+            cell.classList.add("border", "border-gray-200", "px-4", "py-2");
+        });
+        // Event edit
+        document.querySelectorAll(".fa-edit").forEach((icon) => {
+          icon.addEventListener("click", (e) => {
+            const id = parseInt(icon.dataset.id);
+            openEditModal(id);
+          });
+        });
+        // Event hapus (async)
+        document.querySelectorAll(".fa-trash").forEach((icon) => {
+          icon.addEventListener("click", async (e) => {
+            const id = parseInt(icon.dataset.id);
+            if (!confirm("Hapus model ini?")) return;
+            try {
+              const response = await fetch(
+                `${API_BASE_URL}/api/processing/configs/${id}`,
+                {
+                  method: "DELETE",
+                  headers: getAuthHeaders(),
+                },
+              );
+              if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Gagal menghapus");
+              }
+              await loadModels();
+            } catch (error) {
+              console.error("Error deleting:", error);
+              alert(`Error: ${error.message}`);
             }
-            // Parameter Umum (tanpa epoch per fold)
-            let html = `
+          });
+        });
+      }
+
+      // Render form parameter (dengan pemindahan epoch per fold ke cross validation)
+      function renderParamForm(algo, config = null) {
+        const container = document.getElementById("dynamicParams");
+        if (!config) {
+          config =
+            algo === "hybrid" ? getDefaultHybridConfig() : getDefaultNBConfig();
+        }
+        // Parameter Umum (tanpa epoch per fold)
+        let html = `
                 <div class="mb-6 p-4 bg-gray-50 rounded-lg">
                     <h3 class="font-bold text-gray-800 mb-3">Parameter Umum</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -268,12 +467,12 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium">Shuffle Before Split</label>
-                            <select name="general_shuffle" class="w-full border rounded p-2"><option value="yes" ${config.general.shuffle === 'yes' ? 'selected' : ''}>Ya</option><option value="no" ${config.general.shuffle === 'no' ? 'selected' : ''}>Tidak</option></select>
+                            <select name="general_shuffle" class="w-full border rounded p-2"><option value="yes" ${config.general.shuffle === "yes" ? "selected" : ""}>Ya</option><option value="no" ${config.general.shuffle === "no" ? "selected" : ""}>Tidak</option></select>
                             <p class="text-xs text-gray-500 mt-1">Mengacak data sebelum membagi.</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium">Stratified Folds</label>
-                            <select name="general_stratified" class="w-full border rounded p-2"><option value="yes" ${config.general.stratified === 'yes' ? 'selected' : ''}>Ya</option><option value="no" ${config.general.stratified === 'no' ? 'selected' : ''}>Tidak</option></select>
+                            <select name="general_stratified" class="w-full border rounded p-2"><option value="yes" ${config.general.stratified === "yes" ? "selected" : ""}>Ya</option><option value="no" ${config.general.stratified === "no" ? "selected" : ""}>Tidak</option></select>
                             <p class="text-xs text-gray-500 mt-1">Menjaga proporsi kelas di setiap fold.</p>
                         </div>
                         <div>
@@ -283,7 +482,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium">Parallel Folds</label>
-                            <select name="general_parallel" class="w-full border rounded p-2"><option value="no" ${config.general.parallel === 'no' ? 'selected' : ''}>Tidak</option><option value="yes" ${config.general.parallel === 'yes' ? 'selected' : ''}>Ya</option></select>
+                            <select name="general_parallel" class="w-full border rounded p-2"><option value="no" ${config.general.parallel === "no" ? "selected" : ""}>Tidak</option><option value="yes" ${config.general.parallel === "yes" ? "selected" : ""}>Ya</option></select>
                             <p class="text-xs text-gray-500 mt-1">Menjalankan fold secara paralel (memerlukan memori besar).</p>
                         </div>
                     </div>
@@ -291,28 +490,28 @@
                 <div class="mb-6 p-4 bg-gray-50 rounded-lg">
                     <h3 class="font-medium text-gray-700 mb-2">Pembagian Data</h3>
                     <div class="flex flex-wrap gap-6">
-                        <label class="inline-flex items-center"><input type="radio" name="splitType" value="percentage" ${config.split.type === 'percentage' ? 'checked' : ''} class="mr-2">Percentage Split</label>
-                        <label class="inline-flex items-center"><input type="radio" name="splitType" value="crossval" ${config.split.type === 'crossval' ? 'checked' : ''} class="mr-2">Cross Validation</label>
+                        <label class="inline-flex items-center"><input type="radio" name="splitType" value="percentage" ${config.split.type === "percentage" ? "checked" : ""} class="mr-2">Percentage Split</label>
+                        <label class="inline-flex items-center"><input type="radio" name="splitType" value="crossval" ${config.split.type === "crossval" ? "checked" : ""} class="mr-2">Cross Validation</label>
                     </div>
-                    <div id="splitPercentageDiv" class="mt-3 ${config.split.type !== 'percentage' ? 'hidden' : ''}">
+                    <div id="splitPercentageDiv" class="mt-3 ${config.split.type !== "percentage" ? "hidden" : ""}">
                         <label class="block text-sm font-medium">Rasio Train / Test</label>
                         <div class="flex items-center gap-2 mt-1">
-                            <input type="text" name="trainRatio" value="${config.split.train || '80'}" class="w-20 border rounded p-1 text-center">%
+                            <input type="text" name="trainRatio" value="${config.split.train || "80"}" class="w-20 border rounded p-1 text-center">%
                             <span>:</span>
-                            <input type="text" name="testRatio" value="${config.split.test || '20'}" class="w-20 border rounded p-1 text-center">%
+                            <input type="text" name="testRatio" value="${config.split.test || "20"}" class="w-20 border rounded p-1 text-center">%
                         </div>
                         <p class="text-xs text-gray-500 mt-1">Proporsi data training dan testing.</p>
                     </div>
-                    <div id="splitCrossvalDiv" class="mt-3 ${config.split.type !== 'crossval' ? 'hidden' : ''}">
+                    <div id="splitCrossvalDiv" class="mt-3 ${config.split.type !== "crossval" ? "hidden" : ""}">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium">Jumlah Fold (k)</label>
-                                <input type="number" name="kFold" value="${config.split.crossval.folds || '10'}" class="mt-1 w-24 border rounded p-1">
+                                <input type="number" name="kFold" value="${config.split.crossval.folds || "10"}" class="mt-1 w-24 border rounded p-1">
                                 <p class="text-xs text-gray-500 mt-1">Jumlah fold untuk cross-validation.</p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium">Epoch per Fold</label>
-                                <input type="number" name="epochPerFold" value="${config.split.crossval.epochPerFold || '3'}" class="mt-1 w-24 border rounded p-1">
+                                <input type="number" name="epochPerFold" value="${config.split.crossval.epochPerFold || "3"}" class="mt-1 w-24 border rounded p-1">
                                 <p class="text-xs text-gray-500 mt-1">Jumlah epoch untuk setiap fold training.</p>
                             </div>
                         </div>
@@ -320,23 +519,25 @@
                 </div>
             `;
 
-            // Parameter spesifik algoritma dengan pewarnaan yang lebih jelas
-            const theme = algo === 'hybrid' ? 'blue' : 'green';
-            const borderColor = theme === 'blue' ? 'border-blue-300' : 'border-green-300';
-            const bgHeader = theme === 'blue' ? 'bg-blue-50' : 'bg-green-50';
-            const textHeader = theme === 'blue' ? 'text-blue-800' : 'text-green-800';
+        // Parameter spesifik algoritma dengan pewarnaan yang lebih jelas
+        const theme = algo === "hybrid" ? "blue" : "green";
+        const borderColor =
+          theme === "blue" ? "border-blue-300" : "border-green-300";
+        const bgHeader = theme === "blue" ? "bg-blue-50" : "bg-green-50";
+        const textHeader =
+          theme === "blue" ? "text-blue-800" : "text-green-800";
 
-            if (algo === 'hybrid') {
-                html += `
+        if (algo === "hybrid") {
+          html += `
                     <div class="mb-4 p-4 rounded-lg border ${borderColor} ${bgHeader}">
                         <h3 class="font-bold ${textHeader} mb-3">IndoBERT</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div><label class="block text-sm font-medium">Model Name</label><input type="text" name="bert_modelName" value="${config.indobert.modelName}" class="w-full border rounded p-2"><p class="text-xs text-gray-500 mt-1">Nama model pre-trained dari HuggingFace.</p></div>
-                            <div><label class="block text-sm font-medium">Max Sequence Length</label><select name="bert_maxSeq" class="w-full border rounded p-2"><option value="64" ${config.indobert.maxSeqLength === '64' ? 'selected' : ''}>64</option><option value="128" ${config.indobert.maxSeqLength === '128' ? 'selected' : ''}>128</option><option value="256" ${config.indobert.maxSeqLength === '256' ? 'selected' : ''}>256</option><option value="512" ${config.indobert.maxSeqLength === '512' ? 'selected' : ''}>512</option></select><p class="text-xs text-gray-500 mt-1">Panjang maksimum token input.</p></div>
-                            <div><label class="block text-sm font-medium">Pooling Strategy</label><select name="bert_pooling" class="w-full border rounded p-2"><option value="CLS" ${config.indobert.pooling === 'CLS' ? 'selected' : ''}>CLS</option><option value="MEAN" ${config.indobert.pooling === 'MEAN' ? 'selected' : ''}>MEAN</option><option value="MAX" ${config.indobert.pooling === 'MAX' ? 'selected' : ''}>MAX</option></select><p class="text-xs text-gray-500 mt-1">Metode pooling untuk menghasilkan vektor kalimat.</p></div>
-                            <div><label class="block text-sm font-medium">Batch Size</label><select name="bert_batchSize" class="w-full border rounded p-2"><option value="8" ${config.indobert.batchSize === '8' ? 'selected' : ''}>8</option><option value="16" ${config.indobert.batchSize === '16' ? 'selected' : ''}>16</option><option value="32" ${config.indobert.batchSize === '32' ? 'selected' : ''}>32</option></select><p class="text-xs text-gray-500 mt-1">Jumlah sampel per iterasi training.</p></div>
-                            <div><label class="block text-sm font-medium">Learning Rate</label><select name="bert_lr" class="w-full border rounded p-2"><option value="1e-5" ${config.indobert.learningRate === '1e-5' ? 'selected' : ''}>1e-5</option><option value="2e-5" ${config.indobert.learningRate === '2e-5' ? 'selected' : ''}>2e-5</option><option value="3e-5" ${config.indobert.learningRate === '3e-5' ? 'selected' : ''}>3e-5</option><option value="5e-5" ${config.indobert.learningRate === '5e-5' ? 'selected' : ''}>5e-5</option></select><p class="text-xs text-gray-500 mt-1">Kecepatan pembelajaran untuk fine-tuning.</p></div>
-                            <div><label class="block text-sm font-medium">Optimizer</label><select name="bert_optimizer" class="w-full border rounded p-2"><option value="Adam" ${config.indobert.optimizer === 'Adam' ? 'selected' : ''}>Adam</option><option value="AdamW" ${config.indobert.optimizer === 'AdamW' ? 'selected' : ''}>AdamW</option><option value="SGD" ${config.indobert.optimizer === 'SGD' ? 'selected' : ''}>SGD</option></select><p class="text-xs text-gray-500 mt-1">Algoritma optimizer yang digunakan.</p></div>
+                            <div><label class="block text-sm font-medium">Max Sequence Length</label><select name="bert_maxSeq" class="w-full border rounded p-2"><option value="64" ${config.indobert.maxSeqLength === "64" ? "selected" : ""}>64</option><option value="128" ${config.indobert.maxSeqLength === "128" ? "selected" : ""}>128</option><option value="256" ${config.indobert.maxSeqLength === "256" ? "selected" : ""}>256</option><option value="512" ${config.indobert.maxSeqLength === "512" ? "selected" : ""}>512</option></select><p class="text-xs text-gray-500 mt-1">Panjang maksimum token input.</p></div>
+                            <div><label class="block text-sm font-medium">Pooling Strategy</label><select name="bert_pooling" class="w-full border rounded p-2"><option value="CLS" ${config.indobert.pooling === "CLS" ? "selected" : ""}>CLS</option><option value="MEAN" ${config.indobert.pooling === "MEAN" ? "selected" : ""}>MEAN</option><option value="MAX" ${config.indobert.pooling === "MAX" ? "selected" : ""}>MAX</option></select><p class="text-xs text-gray-500 mt-1">Metode pooling untuk menghasilkan vektor kalimat.</p></div>
+                            <div><label class="block text-sm font-medium">Batch Size</label><select name="bert_batchSize" class="w-full border rounded p-2"><option value="8" ${config.indobert.batchSize === "8" ? "selected" : ""}>8</option><option value="16" ${config.indobert.batchSize === "16" ? "selected" : ""}>16</option><option value="32" ${config.indobert.batchSize === "32" ? "selected" : ""}>32</option></select><p class="text-xs text-gray-500 mt-1">Jumlah sampel per iterasi training.</p></div>
+                            <div><label class="block text-sm font-medium">Learning Rate</label><select name="bert_lr" class="w-full border rounded p-2"><option value="1e-5" ${config.indobert.learningRate === "1e-5" ? "selected" : ""}>1e-5</option><option value="2e-5" ${config.indobert.learningRate === "2e-5" ? "selected" : ""}>2e-5</option><option value="3e-5" ${config.indobert.learningRate === "3e-5" ? "selected" : ""}>3e-5</option><option value="5e-5" ${config.indobert.learningRate === "5e-5" ? "selected" : ""}>5e-5</option></select><p class="text-xs text-gray-500 mt-1">Kecepatan pembelajaran untuk fine-tuning.</p></div>
+                            <div><label class="block text-sm font-medium">Optimizer</label><select name="bert_optimizer" class="w-full border rounded p-2"><option value="Adam" ${config.indobert.optimizer === "Adam" ? "selected" : ""}>Adam</option><option value="AdamW" ${config.indobert.optimizer === "AdamW" ? "selected" : ""}>AdamW</option><option value="SGD" ${config.indobert.optimizer === "SGD" ? "selected" : ""}>SGD</option></select><p class="text-xs text-gray-500 mt-1">Algoritma optimizer yang digunakan.</p></div>
                         </div>
                     </div>
                     <div class="mb-4 p-4 rounded-lg border ${borderColor} ${bgHeader}">
@@ -345,7 +546,7 @@
                             <div><label class="block text-sm font-medium">n_components</label><input type="number" name="umap_nComponents" value="${config.umap.nComponents}" class="w-full border rounded p-2"><p class="text-xs text-gray-500 mt-1">Dimensi tujuan setelah reduksi.</p></div>
                             <div><label class="block text-sm font-medium">n_neighbors</label><input type="number" name="umap_nNeighbors" value="${config.umap.nNeighbors}" class="w-full border rounded p-2"><p class="text-xs text-gray-500 mt-1">Jumlah tetangga lokal untuk UMAP.</p></div>
                             <div><label class="block text-sm font-medium">min_dist</label><input type="number" step="0.01" name="umap_minDist" value="${config.umap.minDist}" class="w-full border rounded p-2"><p class="text-xs text-gray-500 mt-1">Jarak minimum antar titik dalam embedding.</p></div>
-                            <div><label class="block text-sm font-medium">metric</label><select name="umap_metric" class="w-full border rounded p-2"><option value="euclidean" ${config.umap.metric === 'euclidean' ? 'selected' : ''}>euclidean</option><option value="cosine" ${config.umap.metric === 'cosine' ? 'selected' : ''}>cosine</option><option value="manhattan" ${config.umap.metric === 'manhattan' ? 'selected' : ''}>manhattan</option></select><p class="text-xs text-gray-500 mt-1">Metrik jarak untuk UMAP.</p></div>
+                            <div><label class="block text-sm font-medium">metric</label><select name="umap_metric" class="w-full border rounded p-2"><option value="euclidean" ${config.umap.metric === "euclidean" ? "selected" : ""}>euclidean</option><option value="cosine" ${config.umap.metric === "cosine" ? "selected" : ""}>cosine</option><option value="manhattan" ${config.umap.metric === "manhattan" ? "selected" : ""}>manhattan</option></select><p class="text-xs text-gray-500 mt-1">Metrik jarak untuk UMAP.</p></div>
                             <div><label class="block text-sm font-medium">random_state</label><input type="number" name="umap_randomState" value="${config.umap.randomState}" class="w-full border rounded p-2"><p class="text-xs text-gray-500 mt-1">Seed untuk reproduksibilitas.</p></div>
                         </div>
                     </div>
@@ -353,223 +554,280 @@
                         <h3 class="font-bold ${textHeader} mb-3">KNN</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div><label class="block text-sm font-medium">K (n_neighbors)</label><input type="number" name="knn_k" value="${config.knn.k}" class="w-full border rounded p-2"><p class="text-xs text-gray-500 mt-1">Jumlah tetangga untuk klasifikasi.</p></div>
-                            <div><label class="block text-sm font-medium">Metrik Jarak</label><select name="knn_metric" class="w-full border rounded p-2"><option value="euclidean" ${config.knn.metric === 'euclidean' ? 'selected' : ''}>euclidean</option><option value="cosine" ${config.knn.metric === 'cosine' ? 'selected' : ''}>cosine</option><option value="manhattan" ${config.knn.metric === 'manhattan' ? 'selected' : ''}>manhattan</option></select><p class="text-xs text-gray-500 mt-1">Metrik jarak untuk KNN.</p></div>
-                            <div><label class="block text-sm font-medium">weights</label><select name="knn_weights" class="w-full border rounded p-2"><option value="uniform" ${config.knn.weights === 'uniform' ? 'selected' : ''}>uniform</option><option value="distance" ${config.knn.weights === 'distance' ? 'selected' : ''}>distance</option></select><p class="text-xs text-gray-500 mt-1">Bobot tetangga (uniform atau distance).</p></div>
-                            <div><label class="block text-sm font-medium">algorithm</label><select name="knn_algorithm" class="w-full border rounded p-2"><option value="auto" ${config.knn.algorithm === 'auto' ? 'selected' : ''}>auto</option><option value="ball_tree" ${config.knn.algorithm === 'ball_tree' ? 'selected' : ''}>ball_tree</option><option value="kd_tree" ${config.knn.algorithm === 'kd_tree' ? 'selected' : ''}>kd_tree</option><option value="brute" ${config.knn.algorithm === 'brute' ? 'selected' : ''}>brute</option></select><p class="text-xs text-gray-500 mt-1">Algoritma pencarian tetangga.</p></div>
+                            <div><label class="block text-sm font-medium">Metrik Jarak</label><select name="knn_metric" class="w-full border rounded p-2"><option value="euclidean" ${config.knn.metric === "euclidean" ? "selected" : ""}>euclidean</option><option value="cosine" ${config.knn.metric === "cosine" ? "selected" : ""}>cosine</option><option value="manhattan" ${config.knn.metric === "manhattan" ? "selected" : ""}>manhattan</option></select><p class="text-xs text-gray-500 mt-1">Metrik jarak untuk KNN.</p></div>
+                            <div><label class="block text-sm font-medium">weights</label><select name="knn_weights" class="w-full border rounded p-2"><option value="uniform" ${config.knn.weights === "uniform" ? "selected" : ""}>uniform</option><option value="distance" ${config.knn.weights === "distance" ? "selected" : ""}>distance</option></select><p class="text-xs text-gray-500 mt-1">Bobot tetangga (uniform atau distance).</p></div>
+                            <div><label class="block text-sm font-medium">algorithm</label><select name="knn_algorithm" class="w-full border rounded p-2"><option value="auto" ${config.knn.algorithm === "auto" ? "selected" : ""}>auto</option><option value="ball_tree" ${config.knn.algorithm === "ball_tree" ? "selected" : ""}>ball_tree</option><option value="kd_tree" ${config.knn.algorithm === "kd_tree" ? "selected" : ""}>kd_tree</option><option value="brute" ${config.knn.algorithm === "brute" ? "selected" : ""}>brute</option></select><p class="text-xs text-gray-500 mt-1">Algoritma pencarian tetangga.</p></div>
                             <div><label class="block text-sm font-medium">leaf_size</label><input type="number" name="knn_leafSize" value="${config.knn.leafSize}" class="w-full border rounded p-2"><p class="text-xs text-gray-500 mt-1">Ukuran leaf untuk tree-based algorithm.</p></div>
                             <div><label class="block text-sm font-medium">p (Minkowski)</label><input type="number" name="knn_p" value="${config.knn.p}" class="w-full border rounded p-2"><p class="text-xs text-gray-500 mt-1">Parameter p untuk metrik Minkowski (1=Manhattan, 2=Euclidean).</p></div>
                         </div>
                     </div>
                 `;
-            } else {
-                // NB-Lexicon dengan warna hijau
-                html += `
+        } else {
+          // NB-Lexicon dengan warna hijau
+          html += `
                     <div class="mb-4 p-4 rounded-lg border ${borderColor} ${bgHeader}">
                         <h3 class="font-bold ${textHeader} mb-3">Lexicon</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div><label class="block text-sm font-medium">Lexicon Source</label><select name="lex_source" class="w-full border rounded p-2"><option value="nrc" ${config.lexicon.source === 'nrc' ? 'selected' : ''}>NRC</option><option value="inset" ${config.lexicon.source === 'inset' ? 'selected' : ''}>InSet</option><option value="custom" ${config.lexicon.source === 'custom' ? 'selected' : ''}>Custom</option></select><p class="text-xs text-gray-500 mt-1">Sumber lexicon emosi.</p></div>
-                            <div><label class="block text-sm font-medium">Use PMI</label><select name="lex_usePMI" class="w-full border rounded p-2"><option value="yes" ${config.lexicon.usePMI === 'yes' ? 'selected' : ''}>Yes</option><option value="no" ${config.lexicon.usePMI === 'no' ? 'selected' : ''}>No</option></select><p class="text-xs text-gray-500 mt-1">Menggunakan Pointwise Mutual Information.</p></div>
-                            <div><label class="block text-sm font-medium">Scoring Method</label><select name="lex_scoring" class="w-full border rounded p-2"><option value="sum" ${config.lexicon.scoringMethod === 'sum' ? 'selected' : ''}>Sum</option><option value="max" ${config.lexicon.scoringMethod === 'max' ? 'selected' : ''}>Max</option><option value="average" ${config.lexicon.scoringMethod === 'average' ? 'selected' : ''}>Average</option></select><p class="text-xs text-gray-500 mt-1">Metode agregasi skor lexicon.</p></div>
-                            <div><label class="block text-sm font-medium">Integration</label><select name="lex_integration" class="w-full border rounded p-2"><option value="dictionary_pmi" ${config.lexicon.integration === 'dictionary_pmi' ? 'selected' : ''}>Dictionary + PMI</option><option value="dictionary_only" ${config.lexicon.integration === 'dictionary_only' ? 'selected' : ''}>Dictionary Only</option><option value="pmi_only" ${config.lexicon.integration === 'pmi_only' ? 'selected' : ''}>PMI Only</option></select><p class="text-xs text-gray-500 mt-1">Cara menggabungkan lexicon dan PMI.</p></div>
+                            <div><label class="block text-sm font-medium">Lexicon Source</label><select name="lex_source" class="w-full border rounded p-2"><option value="nrc" ${config.lexicon.source === "nrc" ? "selected" : ""}>NRC</option><option value="inset" ${config.lexicon.source === "inset" ? "selected" : ""}>InSet</option><option value="custom" ${config.lexicon.source === "custom" ? "selected" : ""}>Custom</option></select><p class="text-xs text-gray-500 mt-1">Sumber lexicon emosi.</p></div>
+                            <div><label class="block text-sm font-medium">Use PMI</label><select name="lex_usePMI" class="w-full border rounded p-2"><option value="yes" ${config.lexicon.usePMI === "yes" ? "selected" : ""}>Yes</option><option value="no" ${config.lexicon.usePMI === "no" ? "selected" : ""}>No</option></select><p class="text-xs text-gray-500 mt-1">Menggunakan Pointwise Mutual Information.</p></div>
+                            <div><label class="block text-sm font-medium">Scoring Method</label><select name="lex_scoring" class="w-full border rounded p-2"><option value="sum" ${config.lexicon.scoringMethod === "sum" ? "selected" : ""}>Sum</option><option value="max" ${config.lexicon.scoringMethod === "max" ? "selected" : ""}>Max</option><option value="average" ${config.lexicon.scoringMethod === "average" ? "selected" : ""}>Average</option></select><p class="text-xs text-gray-500 mt-1">Metode agregasi skor lexicon.</p></div>
+                            <div><label class="block text-sm font-medium">Integration</label><select name="lex_integration" class="w-full border rounded p-2"><option value="dictionary_pmi" ${config.lexicon.integration === "dictionary_pmi" ? "selected" : ""}>Dictionary + PMI</option><option value="dictionary_only" ${config.lexicon.integration === "dictionary_only" ? "selected" : ""}>Dictionary Only</option><option value="pmi_only" ${config.lexicon.integration === "pmi_only" ? "selected" : ""}>PMI Only</option></select><p class="text-xs text-gray-500 mt-1">Cara menggabungkan lexicon dan PMI.</p></div>
                         </div>
                     </div>
                     <div class="mb-4 p-4 rounded-lg border ${borderColor} ${bgHeader}">
                         <h3 class="font-bold ${textHeader} mb-3">Naive Bayes</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div><label class="block text-sm font-medium">Model Type</label><select name="nb_modelType" class="w-full border rounded p-2"><option value="MultinomialNB" ${config.naivebayes.modelType === 'MultinomialNB' ? 'selected' : ''}>MultinomialNB</option><option value="BernoulliNB" ${config.naivebayes.modelType === 'BernoulliNB' ? 'selected' : ''}>BernoulliNB</option></select><p class="text-xs text-gray-500 mt-1">Tipe Naive Bayes.</p></div>
-                            <div><label class="block text-sm font-medium">Feature</label><select name="nb_feature" class="w-full border rounded p-2"><option value="CountVectorizer" ${config.naivebayes.feature === 'CountVectorizer' ? 'selected' : ''}>CountVectorizer</option><option value="TfidfVectorizer" ${config.naivebayes.feature === 'TfidfVectorizer' ? 'selected' : ''}>TfidfVectorizer</option></select><p class="text-xs text-gray-500 mt-1">Metode ekstraksi fitur teks.</p></div>
+                            <div><label class="block text-sm font-medium">Model Type</label><select name="nb_modelType" class="w-full border rounded p-2"><option value="MultinomialNB" ${config.naivebayes.modelType === "MultinomialNB" ? "selected" : ""}>MultinomialNB</option><option value="BernoulliNB" ${config.naivebayes.modelType === "BernoulliNB" ? "selected" : ""}>BernoulliNB</option></select><p class="text-xs text-gray-500 mt-1">Tipe Naive Bayes.</p></div>
+                            <div><label class="block text-sm font-medium">Feature</label><select name="nb_feature" class="w-full border rounded p-2"><option value="CountVectorizer" ${config.naivebayes.feature === "CountVectorizer" ? "selected" : ""}>CountVectorizer</option><option value="TfidfVectorizer" ${config.naivebayes.feature === "TfidfVectorizer" ? "selected" : ""}>TfidfVectorizer</option></select><p class="text-xs text-gray-500 mt-1">Metode ekstraksi fitur teks.</p></div>
                             <div><label class="block text-sm font-medium">Alpha (Smoothing)</label><input type="number" step="0.1" name="nb_alpha" value="${config.naivebayes.alpha}" class="w-full border rounded p-2"><p class="text-xs text-gray-500 mt-1">Parameter smoothing Laplace.</p></div>
                         </div>
                     </div>
                     <div class="mb-4 p-4 rounded-lg border ${borderColor} ${bgHeader}">
                         <h3 class="font-bold ${textHeader} mb-3">Hybrid Fusion</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div><label class="block text-sm font-medium">Fusion Method</label><select name="fusion_method" class="w-full border rounded p-2"><option value="product" ${config.fusion.method === 'product' ? 'selected' : ''}>Product</option><option value="sum" ${config.fusion.method === 'sum' ? 'selected' : ''}>Sum</option><option value="weighted" ${config.fusion.method === 'weighted' ? 'selected' : ''}>Weighted Average</option></select><p class="text-xs text-gray-500 mt-1">Metode menggabungkan NB dan Lexicon.</p></div>
+                            <div><label class="block text-sm font-medium">Fusion Method</label><select name="fusion_method" class="w-full border rounded p-2"><option value="product" ${config.fusion.method === "product" ? "selected" : ""}>Product</option><option value="sum" ${config.fusion.method === "sum" ? "selected" : ""}>Sum</option><option value="weighted" ${config.fusion.method === "weighted" ? "selected" : ""}>Weighted Average</option></select><p class="text-xs text-gray-500 mt-1">Metode menggabungkan NB dan Lexicon.</p></div>
                             <div><label class="block text-sm font-medium">Formula</label><input type="text" name="fusion_formula" value="${config.fusion.formula}" class="w-full border rounded p-2"><p class="text-xs text-gray-500 mt-1">Ekspresi matematika fusion (LaTeX).</p></div>
                         </div>
                     </div>
                 `;
+        }
+        container.innerHTML = html;
+        // Event listener untuk toggle split (percentage/crossval) dan menampilkan epoch per fold
+        const radios = document.querySelectorAll('input[name="splitType"]');
+        const percentageDiv = document.getElementById("splitPercentageDiv");
+        const crossvalDiv = document.getElementById("splitCrossvalDiv");
+        radios.forEach((radio) => {
+          radio.addEventListener("change", (e) => {
+            if (e.target.value === "percentage") {
+              percentageDiv.classList.remove("hidden");
+              crossvalDiv.classList.add("hidden");
+            } else {
+              percentageDiv.classList.add("hidden");
+              crossvalDiv.classList.remove("hidden");
             }
-            container.innerHTML = html;
-            // Event listener untuk toggle split (percentage/crossval) dan menampilkan epoch per fold
-            const radios = document.querySelectorAll('input[name="splitType"]');
-            const percentageDiv = document.getElementById('splitPercentageDiv');
-            const crossvalDiv = document.getElementById('splitCrossvalDiv');
-            radios.forEach(radio => {
-                radio.addEventListener('change', (e) => {
-                    if (e.target.value === 'percentage') {
-                        percentageDiv.classList.remove('hidden');
-                        crossvalDiv.classList.add('hidden');
-                    } else {
-                        percentageDiv.classList.add('hidden');
-                        crossvalDiv.classList.remove('hidden');
-                    }
-                });
+          });
+        });
+      }
+
+      // Update warna header dan tombol submit berdasarkan algoritma
+      function updateModalColor(algo) {
+        const header = document.getElementById("modalHeader");
+        const submitBtn = document.getElementById("submitBtn");
+        if (algo === "hybrid") {
+          header.className =
+            "sticky top-0 bg-blue-600 border-b px-6 py-4 flex justify-between items-center rounded-t-2xl text-white z-10";
+          submitBtn.className =
+            "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition";
+        } else {
+          header.className =
+            "sticky top-0 bg-green-600 border-b px-6 py-4 flex justify-between items-center rounded-t-2xl text-white z-10";
+          submitBtn.className =
+            "bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition";
+        }
+      }
+
+      function openModal() {
+        const modal = document.getElementById("modelModal");
+        const modalContainer = modal.querySelector(".modal-container");
+        modal.classList.remove("hidden");
+        setTimeout(() => {
+          modalContainer.classList.add("show");
+        }, 10);
+      }
+
+      function closeModal() {
+        const modal = document.getElementById("modelModal");
+        const modalContainer = modal.querySelector(".modal-container");
+        modalContainer.classList.remove("show");
+        setTimeout(() => {
+          modal.classList.add("hidden");
+          editingId = null;
+        }, 300);
+      }
+
+      function openAddModal() {
+        editingId = null;
+        document.getElementById("modalTitle").innerText = "Tambah Model Baru";
+        document.getElementById("modelName").value = "";
+        const algo = document.getElementById("modelAlgo").value;
+        updateModalColor(algo);
+        renderParamForm(
+          algo,
+          algo === "hybrid" ? getDefaultHybridConfig() : getDefaultNBConfig(),
+        );
+        openModal();
+      }
+
+      function openEditModal(id) {
+        const model = models.find((m) => m.id === id);
+        if (!model) return;
+        editingId = id;
+        document.getElementById("modalTitle").innerText = "Edit Model";
+        document.getElementById("modelName").value = model.name;
+        document.getElementById("modelAlgo").value = model.algo;
+        updateModalColor(model.algo);
+        renderParamForm(model.algo, model.config);
+        openModal();
+      }
+
+      async function saveModel(event) {
+        event.preventDefault();
+        const name = document.getElementById("modelName").value.trim();
+        const algo = document.getElementById("modelAlgo").value;
+        if (!name) {
+          alert("Nama model harus diisi");
+          return;
+        }
+        const formData = new FormData(document.getElementById("modelForm"));
+
+        // Bangun objek params sesuai struktur backend
+        const general = {
+          randomState: formData.get("general_randomState"),
+          shuffle: formData.get("general_shuffle"),
+          stratified: formData.get("general_stratified"),
+          earlyStopping: formData.get("general_earlyStopping"),
+          parallel: formData.get("general_parallel"),
+        };
+        const splitType = formData.get("splitType");
+        let split = {};
+        if (splitType === "percentage") {
+          split = {
+            type: "percentage",
+            train: formData.get("trainRatio"),
+            test: formData.get("testRatio"),
+          };
+        } else {
+          split = {
+            type: "crossval",
+            crossval: {
+              folds: formData.get("kFold"),
+              epochPerFold: formData.get("epochPerFold"),
+            },
+          };
+        }
+        let params = { general, split };
+
+        if (algo === "hybrid") {
+          params.indobert = {
+            modelName: formData.get("bert_modelName"),
+            maxSeqLength: formData.get("bert_maxSeq"),
+            pooling: formData.get("bert_pooling"),
+            batchSize: formData.get("bert_batchSize"),
+            learningRate: formData.get("bert_lr"),
+            optimizer: formData.get("bert_optimizer"),
+          };
+          params.umap = {
+            nComponents: formData.get("umap_nComponents"),
+            nNeighbors: formData.get("umap_nNeighbors"),
+            minDist: formData.get("umap_minDist"),
+            metric: formData.get("umap_metric"),
+            randomState: formData.get("umap_randomState"),
+          };
+          params.knn = {
+            k: formData.get("knn_k"),
+            metric: formData.get("knn_metric"),
+            weights: formData.get("knn_weights"),
+            algorithm: formData.get("knn_algorithm"),
+            leafSize: formData.get("knn_leafSize"),
+            p: formData.get("knn_p"),
+          };
+        } else {
+          params.lexicon = {
+            source: formData.get("lex_source"),
+            usePMI: formData.get("lex_usePMI"),
+            scoringMethod: formData.get("lex_scoring"),
+            integration: formData.get("lex_integration"),
+            customFile: null,
+          };
+          params.naivebayes = {
+            modelType: formData.get("nb_modelType"),
+            feature: formData.get("nb_feature"),
+            alpha: formData.get("nb_alpha"),
+          };
+          params.fusion = {
+            method: formData.get("fusion_method"),
+            formula: formData.get("fusion_formula"),
+          };
+        }
+
+        const payload = {
+          name: name,
+          algorithm: algo === "hybrid" ? "IndoBERT-KNN" : "Lexicon-NB",
+          params: params,
+        };
+
+        try {
+          let response;
+          if (editingId !== null) {
+            // Update (PUT)
+            response = await fetch(
+              `${API_BASE_URL}/api/processing/configs/${editingId}`,
+              {
+                method: "PUT",
+                headers: getAuthHeaders(),
+                body: JSON.stringify(payload),
+              },
+            );
+          } else {
+            // Create (POST)
+            response = await fetch(`${API_BASE_URL}/api/processing/configs`, {
+              method: "POST",
+              headers: getAuthHeaders(),
+              body: JSON.stringify(payload),
             });
+          }
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || "Gagal menyimpan");
+          }
+          await loadModels(); // Refresh daftar dari server
+          closeModal();
+        } catch (error) {
+          console.error("Error saving model:", error);
+          alert(`Error: ${error.message}`);
         }
+      }
 
-        // Update warna header dan tombol submit berdasarkan algoritma
-        function updateModalColor(algo) {
-            const header = document.getElementById('modalHeader');
-            const submitBtn = document.getElementById('submitBtn');
-            if (algo === 'hybrid') {
-                header.className = 'sticky top-0 bg-blue-600 border-b px-6 py-4 flex justify-between items-center rounded-t-2xl text-white z-10';
-                submitBtn.className = 'bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition';
-            } else {
-                header.className = 'sticky top-0 bg-green-600 border-b px-6 py-4 flex justify-between items-center rounded-t-2xl text-white z-10';
-                submitBtn.className = 'bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition';
-            }
-        }
-
-        function openModal() {
-            const modal = document.getElementById('modelModal');
-            const modalContainer = modal.querySelector('.modal-container');
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modalContainer.classList.add('show');
-            }, 10);
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('modelModal');
-            const modalContainer = modal.querySelector('.modal-container');
-            modalContainer.classList.remove('show');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                editingId = null;
-            }, 300);
-        }
-
-        function openAddModal() {
-            editingId = null;
-            document.getElementById('modalTitle').innerText = 'Tambah Model Baru';
-            document.getElementById('modelName').value = '';
-            const algo = document.getElementById('modelAlgo').value;
-            updateModalColor(algo);
-            renderParamForm(algo, algo === 'hybrid' ? getDefaultHybridConfig() : getDefaultNBConfig());
-            openModal();
-        }
-
-        function openEditModal(id) {
-            const model = models.find(m => m.id === id);
-            if (!model) return;
-            editingId = id;
-            document.getElementById('modalTitle').innerText = 'Edit Model';
-            document.getElementById('modelName').value = model.name;
-            document.getElementById('modelAlgo').value = model.algo;
-            updateModalColor(model.algo);
-            renderParamForm(model.algo, model.config);
-            openModal();
-        }
-
-        function saveModel(event) {
-            event.preventDefault();
-            const name = document.getElementById('modelName').value.trim();
-            const algo = document.getElementById('modelAlgo').value;
-            if (!name) {
-                alert('Nama model harus diisi');
-                return;
-            }
-            const formData = new FormData(document.getElementById('modelForm'));
-            // Parameter umum
-            const general = {
-                randomState: formData.get('general_randomState'),
-                shuffle: formData.get('general_shuffle'),
-                stratified: formData.get('general_stratified'),
-                earlyStopping: formData.get('general_earlyStopping'),
-                parallel: formData.get('general_parallel')
-            };
-            const splitType = formData.get('splitType');
-            let split = {};
-            if (splitType === 'percentage') {
-                split = { type: 'percentage', train: formData.get('trainRatio'), test: formData.get('testRatio') };
-            } else {
-                split = { type: 'crossval', crossval: { folds: formData.get('kFold'), epochPerFold: formData.get('epochPerFold') } };
-            }
-            let config = { general, split };
-            if (algo === 'hybrid') {
-                config.indobert = {
-                    modelName: formData.get('bert_modelName'),
-                    maxSeqLength: formData.get('bert_maxSeq'),
-                    pooling: formData.get('bert_pooling'),
-                    batchSize: formData.get('bert_batchSize'),
-                    learningRate: formData.get('bert_lr'),
-                    optimizer: formData.get('bert_optimizer')
-                };
-                config.umap = {
-                    nComponents: formData.get('umap_nComponents'),
-                    nNeighbors: formData.get('umap_nNeighbors'),
-                    minDist: formData.get('umap_minDist'),
-                    metric: formData.get('umap_metric'),
-                    randomState: formData.get('umap_randomState')
-                };
-                config.knn = {
-                    k: formData.get('knn_k'),
-                    metric: formData.get('knn_metric'),
-                    weights: formData.get('knn_weights'),
-                    algorithm: formData.get('knn_algorithm'),
-                    leafSize: formData.get('knn_leafSize'),
-                    p: formData.get('knn_p')
-                };
-            } else {
-                config.lexicon = {
-                    source: formData.get('lex_source'),
-                    usePMI: formData.get('lex_usePMI'),
-                    scoringMethod: formData.get('lex_scoring'),
-                    integration: formData.get('lex_integration'),
-                    customFile: null
-                };
-                config.naivebayes = {
-                    modelType: formData.get('nb_modelType'),
-                    feature: formData.get('nb_feature'),
-                    alpha: formData.get('nb_alpha')
-                };
-                config.fusion = {
-                    method: formData.get('fusion_method'),
-                    formula: formData.get('fusion_formula')
-                };
-            }
-            if (editingId !== null) {
-                const index = models.findIndex(m => m.id === editingId);
-                if (index !== -1) {
-                    models[index] = { ...models[index], name, algo, config };
-                }
-            } else {
-                models.push({ id: nextId++, name, algo, config });
-            }
-            renderModelTable();
-            closeModal();
-        }
-
-        // Event listeners
-        document.getElementById('btnAddModel').addEventListener('click', openAddModal);
-        document.getElementById('closeModal').addEventListener('click', closeModal);
-        document.getElementById('cancelModal').addEventListener('click', closeModal);
-        document.getElementById('modelForm').addEventListener('submit', saveModel);
-        document.getElementById('modelAlgo').addEventListener('change', function() {
-            const algo = this.value;
-            updateModalColor(algo);
-            const defaultConfig = algo === 'hybrid' ? getDefaultHybridConfig() : getDefaultNBConfig();
-            renderParamForm(algo, defaultConfig);
+      // Event listeners
+      document
+        .getElementById("btnAddModel")
+        .addEventListener("click", openAddModal);
+      document
+        .getElementById("closeModal")
+        .addEventListener("click", closeModal);
+      document
+        .getElementById("cancelModal")
+        .addEventListener("click", closeModal);
+      document
+        .getElementById("modelForm")
+        .addEventListener("submit", saveModel);
+      document
+        .getElementById("modelAlgo")
+        .addEventListener("change", function () {
+          const algo = this.value;
+          updateModalColor(algo);
+          const defaultConfig =
+            algo === "hybrid" ? getDefaultHybridConfig() : getDefaultNBConfig();
+          renderParamForm(algo, defaultConfig);
         });
 
-        renderModelTable();
+      renderModelTable();
 
-        // Dropdown sidebar
-        function toggleDropdown(btn, menu, icon) {
-            btn.addEventListener('click', () => {
-                menu.classList.toggle('hidden');
-                icon.classList.toggle('rotate-180');
-            });
-        }
-        const dataCollectionBtn = document.getElementById('dataCollectionBtn');
-        const dataCollectionMenu = document.getElementById('dataCollectionMenu');
-        const dataCollectionIcon = document.getElementById('dataCollectionIcon');
-        toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
-        const processingBtn = document.getElementById('processingBtn');
-        const processingMenu = document.getElementById('processingMenu');
-        const processingIcon = document.getElementById('processingIcon');
-        toggleDropdown(processingBtn, processingMenu, processingIcon);
+      // Dropdown sidebar
+      function toggleDropdown(btn, menu, icon) {
+        btn.addEventListener("click", () => {
+          menu.classList.toggle("hidden");
+          icon.classList.toggle("rotate-180");
+        });
+      }
+      const dataCollectionBtn = document.getElementById("dataCollectionBtn");
+      const dataCollectionMenu = document.getElementById("dataCollectionMenu");
+      const dataCollectionIcon = document.getElementById("dataCollectionIcon");
+      toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
+      const processingBtn = document.getElementById("processingBtn");
+      const processingMenu = document.getElementById("processingMenu");
+      const processingIcon = document.getElementById("processingIcon");
+      toggleDropdown(processingBtn, processingMenu, processingIcon);
     </script>
-</body>
+  </body>
 </html>
