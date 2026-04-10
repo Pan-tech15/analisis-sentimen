@@ -385,6 +385,7 @@
             modelType: "MultinomialNB",
             feature: "CountVectorizer",
             alpha: "1.0",
+            fitPrior: "True",     // parameter baru
           },
           fusion: {
             method: "product",
@@ -611,6 +612,7 @@
                     <div><label class="block text-sm font-medium">Model Type</label><select name="nb_modelType" class="w-full border rounded p-2"><option value="MultinomialNB" ${config.naivebayes.modelType === "MultinomialNB" ? "selected" : ""}>MultinomialNB</option><option value="BernoulliNB" ${config.naivebayes.modelType === "BernoulliNB" ? "selected" : ""}>BernoulliNB</option></select><p class="text-xs text-gray-500 mt-1">Tipe Naive Bayes.</p></div>
                     <div><label class="block text-sm font-medium">Feature</label><select name="nb_feature" class="w-full border rounded p-2"><option value="CountVectorizer" ${config.naivebayes.feature === "CountVectorizer" ? "selected" : ""}>CountVectorizer</option><option value="TfidfVectorizer" ${config.naivebayes.feature === "TfidfVectorizer" ? "selected" : ""}>TfidfVectorizer</option></select><p class="text-xs text-gray-500 mt-1">Metode ekstraksi fitur teks.</p></div>
                     <div><label class="block text-sm font-medium">Alpha (Smoothing)</label><input type="number" step="0.1" name="nb_alpha" value="${config.naivebayes.alpha}" class="w-full border rounded p-2"><p class="text-xs text-gray-500 mt-1">Parameter smoothing Laplace.</p></div>
+                    <div><label class="block text-sm font-medium">Fit Prior</label><select name="nb_fitPrior" class="w-full border rounded p-2"><option value="True" ${config.naivebayes.fitPrior === "True" ? "selected" : ""}>True (Hitung dari data)</option><option value="False" ${config.naivebayes.fitPrior === "False" ? "selected" : ""}>False (Uniform)</option></select><p class="text-xs text-gray-500 mt-1">Pelajari probabilitas prior kelas dari data.</p></div>
                 </div>
             </div>
             <div class="mb-4 p-4 rounded-lg border ${borderColor} ${bgHeader}">
@@ -822,6 +824,7 @@
             modelType: formData.get("nb_modelType"),
             feature: formData.get("nb_feature"),
             alpha: formData.get("nb_alpha"),
+            fitPrior: formData.get("nb_fitPrior"),   // simpan nilai fit prior
           };
           params.fusion = {
             method: formData.get("fusion_method"),
