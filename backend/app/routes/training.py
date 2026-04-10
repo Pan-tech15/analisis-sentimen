@@ -1,0 +1,102 @@
+import os
+import uuid
+import threading
+from flask import Blueprint, request, jsonify
+from werkzeug.utils import secure_filename
+from app import db
+from app.models.model_config import ModelConfig
+from app.models.training import Training
+from app.services.indobert_knn import train_indobert_knn
+from app.services.lexicon_nb import train_lexicon_nb
+
+training_bp = Blueprint('training', __name__, url_prefix='/api/training')
+
+UPLOAD_FOLDER = 'data/uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+ALLOWED_EXTENSIONS = {'csv', 'xlsx'}
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@training_bp.route('/upload', methods=['POST'])
+def upload_dataset():
+    if 'file' not in request.files:
+        return jsonify({'error': 'Tidak ada file yang diupload'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'Nama file kosong'}), 400
+    if not allowed_file(file.filename):
+        return jsonify({'error': 'Format file tidak didukung (hanya CSV/Excel)'}), 400
+
+    filename = secure_filename(file.filename)
+    unique_name = f"{uuid.uuid4().hex}_{filename}"
+    filepath = os.path.join(UPLOAD_FOLDER, unique_name)
+    file.save(filepath)
+
+    return jsonify({
+        'filename': unique_name,
+        'original_name': filename,
+        'path': filepath
+    }), 200
+
+
+@training_bp.route('/start', methods=['POST'])
+def start_training():
+    data = request.get_json()
+    config_id = data.get('config_id')
+    dataset_path = data.get('dataset_path')
+
+    if not config_id or not dataset_path:
+        return jsonify({'error': 'config_id dan dataset_path diperlukan'}), 400
+
+    config = ModelConfig.query.get(config_id)
+    if not config:
+        return jsonify({'error': 'Konfigurasi tidak ditemukan'}), 404
+
+    training = Training(
+        model_config_id=config_id,
+        dataset_filename=os.path.basename(dataset_path),
+        status='pending'
+    )
+    db.session.add(training)
+    db.session.commit()
+
+    # Pilih pipeline berdasarkan algoritma
+    if config.algorithm == 'IndoBERT-KNN':
+        train_func = train_indobert_knn
+    elif config.algorithm == 'Lexicon-NB':
+        train_func = train_lexicon_nb
+    else:
+        return jsonify({'error': f'Algoritma {config.algorithm} tidak didukung'}), 400
+
+    thread = threading.Thread(target=train_func, args=(training.id, config, dataset_path))
+    thread.start()
+
+    return jsonify(training.to_dict()), 201
+
+
+@training_bp.route('/status/<int:training_id>', methods=['GET'])
+def get_status(training_id):
+    training = Training.query.get(training_id)
+    if not training:
+        return jsonify({'error': 'Training tidak ditemukan'}), 404
+    return jsonify(training.to_dict()), 200
+
+
+@training_bp.route('/history', methods=['GET'])
+def get_history():
+    trainings = Training.query.order_by(Training.created_at.desc()).all()
+    return jsonify([t.to_dict() for t in trainings]), 200
+
+
+@training_bp.route('/<int:training_id>', methods=['DELETE'])
+def delete_training(training_id):
+    training = Training.query.get(training_id)
+    if not training:
+        return jsonify({'error': 'Training tidak ditemukan'}), 404
+    db.session.delete(training)
+    db.session.commit()
+    return jsonify({'message': 'Training dihapus'}), 200
