@@ -47,6 +47,9 @@ def create_app():
     from app.routes.processing import processing_bp
     app.register_blueprint(processing_bp)
 
+    from app.routes.training import training_bp
+    app.register_blueprint(training_bp)
+
     # Route test
     @app.route('/')
     def index():
