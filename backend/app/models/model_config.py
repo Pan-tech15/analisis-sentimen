@@ -11,7 +11,8 @@ class ModelConfig(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    trainings = db.relationship('Training', backref='config', lazy=True)
+    # Ganti backref dengan back_populates
+    trainings = db.relationship('Training', back_populates='config', lazy=True)
 
     def to_dict(self):
         return {
@@ -25,17 +26,13 @@ class ModelConfig(db.Model):
 
     @staticmethod
     def validate_params(algorithm, params):
-        """Validasi struktur parameter berdasarkan algoritma."""
         if algorithm == 'IndoBERT-KNN':
-            required_sections = ['general', 'split', 'indobert', 'umap', 'knn']
-            for section in required_sections:
-                if section not in params:
-                    raise ValueError(f"Parameter '{section}' harus ada untuk IndoBERT-KNN.")
+            required = ['general', 'split', 'indobert', 'umap', 'knn']
         elif algorithm == 'Lexicon-NB':
-            required_sections = ['general', 'split', 'lexicon', 'naivebayes', 'fusion']
-            for section in required_sections:
-                if section not in params:
-                    raise ValueError(f"Parameter '{section}' harus ada untuk Lexicon-NB.")
+            required = ['general', 'split', 'lexicon', 'naivebayes', 'fusion']
         else:
             raise ValueError("Algoritma tidak dikenal.")
+        for sec in required:
+            if sec not in params:
+                raise ValueError(f"Parameter '{sec}' harus ada.")
         return True

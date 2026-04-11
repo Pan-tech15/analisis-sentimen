@@ -37,6 +37,9 @@ def create_app():
     from app.routes.auth import auth_bp
     app.register_blueprint(auth_bp)
 
+    from app.routes.preprocess import preprocess_bp
+    app.register_blueprint(preprocess_bp)
+
     # Dataset blueprint
     from app.routes.dataset import dataset_bp
     app.register_blueprint(dataset_bp)
