@@ -485,6 +485,22 @@
           if (!res.ok) throw new Error("Gagal fetch status");
           const data = await res.json();
 
+          let statusText =
+            data.status === "completed"
+              ? "Selesai"
+              : data.status === "failed"
+                ? "Gagal"
+                : "Sedang berjalan...";
+
+          // Tampilkan pesan progress jika ada
+          if (data.metrics && data.metrics.progress_message) {
+            statusText += ` (${data.metrics.progress_message})`;
+          }
+
+          trainStatus.innerText = statusText;
+          progressBar.style.width = `${data.progress}%`;
+          progressPercent.innerText = `${data.progress}%`;
+
           trainStatus.innerText =
             data.status === "completed"
               ? "Selesai"
