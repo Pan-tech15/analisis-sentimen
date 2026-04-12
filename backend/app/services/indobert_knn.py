@@ -96,8 +96,6 @@ def train_indobert_knn(training_id, config, dataset_path):
             leaf_size = int(knn_params.get('leafSize', 30))
             p = int(knn_params.get('p', 2))
 
-            metrics['class_labels'] = le.classes_.tolist()
-
             update_progress(training, 5, "Memulai ekstraksi fitur IndoBERT...")
 
             # 3. Load tokenizer dan model
@@ -211,7 +209,8 @@ def train_indobert_knn(training_id, config, dataset_path):
                     'precision': round(precision, 4),
                     'recall': round(recall, 4),
                     'confusion_matrix': cm,
-                    'cv_folds': cv_folds
+                    'cv_folds': cv_folds,
+                    'class_labels': le.classes_.tolist()
                 }
                 knn.fit(X, y_encoded)
 
