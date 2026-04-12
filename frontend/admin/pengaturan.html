@@ -366,7 +366,6 @@
             shuffle: "yes",
             stratified: "yes",
             parallel: "no",
-            // earlyStopping tidak disertakan untuk NB
           },
           split: {
             type: "percentage",
@@ -374,18 +373,11 @@
             test: "20",
             crossval: { folds: "10" },
           },
-          lexicon: {
-            source: "nrc",
-            usePMI: "yes",
-            scoringMethod: "sum",
-            integration: "dictionary_pmi",
-            customFile: null,
-          },
           naivebayes: {
             modelType: "MultinomialNB",
             feature: "CountVectorizer",
             alpha: "1.0",
-            fitPrior: "True",     // parameter baru
+            fitPrior: "True",
           },
           fusion: {
             method: "product",
@@ -449,7 +441,7 @@
         });
       }
 
-      // Render form parameter (dengan urutan: Pembagian Data -> Parameter Umum -> Spesifik Algoritma)
+      // Render form parameter
       function renderParamForm(algo, config = null) {
         const container = document.getElementById("dynamicParams");
         if (!config) {
@@ -482,7 +474,6 @@
                           <p class="text-xs text-gray-500 mt-1">Jumlah fold untuk cross-validation.</p>
                       </div>`;
 
-        // Tampilkan Epoch per Fold hanya jika algoritma hybrid
         if (algo === "hybrid") {
           html += `
                       <div>
@@ -525,7 +516,6 @@
                       <p class="text-xs text-gray-500 mt-1">Menjaga proporsi kelas di setiap fold.</p>
                   </div>`;
 
-        // Tampilkan Early Stopping HANYA untuk algoritma hybrid
         if (algo === "hybrid") {
           html += `
                   <div id="earlyStoppingWrapper">
@@ -536,7 +526,6 @@
                   </div>`;
         }
 
-        // Parallel Folds tetap ditampilkan untuk semua algoritma
         html += `
                   <div id="parallelFoldsWrapper">
                       <label class="block text-sm font-medium">Parallel Folds</label>
@@ -595,17 +584,8 @@
             </div>
           `;
         } else {
-          // NB-Lexicon
+          // NB-Lexicon - Lexicon dihapus
           html += `
-            <div class="mb-4 p-4 rounded-lg border ${borderColor} ${bgHeader}">
-                <h3 class="font-bold ${textHeader} mb-3">Lexicon</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium">Lexicon Source</label><select name="lex_source" class="w-full border rounded p-2"><option value="nrc" ${config.lexicon.source === "nrc" ? "selected" : ""}>NRC</option><option value="inset" ${config.lexicon.source === "inset" ? "selected" : ""}>InSet</option><option value="custom" ${config.lexicon.source === "custom" ? "selected" : ""}>Custom</option></select><p class="text-xs text-gray-500 mt-1">Sumber lexicon emosi.</p></div>
-                    <div><label class="block text-sm font-medium">Use PMI</label><select name="lex_usePMI" class="w-full border rounded p-2"><option value="yes" ${config.lexicon.usePMI === "yes" ? "selected" : ""}>Yes</option><option value="no" ${config.lexicon.usePMI === "no" ? "selected" : ""}>No</option></select><p class="text-xs text-gray-500 mt-1">Menggunakan Pointwise Mutual Information.</p></div>
-                    <div><label class="block text-sm font-medium">Scoring Method</label><select name="lex_scoring" class="w-full border rounded p-2"><option value="sum" ${config.lexicon.scoringMethod === "sum" ? "selected" : ""}>Sum</option><option value="max" ${config.lexicon.scoringMethod === "max" ? "selected" : ""}>Max</option><option value="average" ${config.lexicon.scoringMethod === "average" ? "selected" : ""}>Average</option></select><p class="text-xs text-gray-500 mt-1">Metode agregasi skor lexicon.</p></div>
-                    <div><label class="block text-sm font-medium">Integration</label><select name="lex_integration" class="w-full border rounded p-2"><option value="dictionary_pmi" ${config.lexicon.integration === "dictionary_pmi" ? "selected" : ""}>Dictionary + PMI</option><option value="dictionary_only" ${config.lexicon.integration === "dictionary_only" ? "selected" : ""}>Dictionary Only</option><option value="pmi_only" ${config.lexicon.integration === "pmi_only" ? "selected" : ""}>PMI Only</option></select><p class="text-xs text-gray-500 mt-1">Cara menggabungkan lexicon dan PMI.</p></div>
-                </div>
-            </div>
             <div class="mb-4 p-4 rounded-lg border ${borderColor} ${bgHeader}">
                 <h3 class="font-bold ${textHeader} mb-3">Naive Bayes</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -762,7 +742,6 @@
           parallel: formData.get("general_parallel"),
         };
 
-        // earlyStopping hanya untuk hybrid
         if (algo === "hybrid") {
           general.earlyStopping = formData.get("general_earlyStopping") || "0";
         }
@@ -813,18 +792,12 @@
             p: formData.get("knn_p"),
           };
         } else {
-          params.lexicon = {
-            source: formData.get("lex_source"),
-            usePMI: formData.get("lex_usePMI"),
-            scoringMethod: formData.get("lex_scoring"),
-            integration: formData.get("lex_integration"),
-            customFile: null,
-          };
+          // Tidak ada lexicon
           params.naivebayes = {
             modelType: formData.get("nb_modelType"),
             feature: formData.get("nb_feature"),
             alpha: formData.get("nb_alpha"),
-            fitPrior: formData.get("nb_fitPrior"),   // simpan nilai fit prior
+            fitPrior: formData.get("nb_fitPrior"),
           };
           params.fusion = {
             method: formData.get("fusion_method"),
