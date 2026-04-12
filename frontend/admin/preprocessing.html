@@ -249,53 +249,128 @@
 
         startBtn.disabled = true;
         startBtn.innerHTML =
-          '<i class="fas fa-spinner fa-spin"></i> Memproses...';
-        statusText.innerText = "Sedang memproses...";
+          '<i class="fas fa-spinner fa-spin"></i> Memulai...';
+        statusText.innerText = "Memulai preprocessing...";
         progressContainer.classList.remove("hidden");
         progressBar.style.width = "0%";
         progressPercent.innerText = "0%";
         downloadBtn.disabled = true;
         downloadBtn.classList.add("opacity-50", "cursor-not-allowed");
-        downloadBtn.classList.remove("opacity-100", "cursor-pointer");
         currentPreprocId = null;
-
-        // Simulasi progress bar (karena backend tidak mengirim progress, kita polling manual)
-        let progress = 0;
-        const interval = setInterval(() => {
-          progress += 10;
-          if (progress >= 90) progress = 90;
-          progressBar.style.width = `${progress}%`;
-          progressPercent.innerText = `${progress}%`;
-        }, 500);
 
         try {
           const response = await apiFetch("/preprocess/start", {
             method: "POST",
             body: JSON.stringify({ dataset_id: datasetId }),
           });
-          clearInterval(interval);
           if (!response) return;
           const result = await response.json();
-          if (response.ok) {
+          if (!response.ok) {
+            statusText.innerText = `Gagal: ${result.error || result.message}`;
+            alert(result.error || result.message);
+            startBtn.disabled = false;
+            startBtn.innerHTML =
+              '<i class="fas fa-play"></i> Mulai Pembersihan';
+            return;
+          }
+
+          if (result.preprocessed_id) {
+            currentPreprocId = result.preprocessed_id;
+            // Mulai polling status
+            pollPreprocessingStatus(currentPreprocId);
+          } else {
+            // Jika backend tidak mengembalikan ID (fallback)
+            statusText.innerText = `Selesai (${result.row_count || "?"} baris diproses)`;
             progressBar.style.width = "100%";
             progressPercent.innerText = "100%";
-            statusText.innerText = `Selesai (${result.rows} baris diproses)`;
-            currentPreprocId = result.preprocessed_id;
             downloadBtn.disabled = false;
             downloadBtn.classList.remove("opacity-50", "cursor-not-allowed");
-            downloadBtn.classList.add("opacity-100", "cursor-pointer");
-          } else {
-            statusText.innerText = `Gagal: ${result.message}`;
-            alert(result.message);
+            startBtn.disabled = false;
+            startBtn.innerHTML =
+              '<i class="fas fa-play"></i> Mulai Pembersihan';
           }
         } catch (error) {
-          clearInterval(interval);
           console.error(error);
           statusText.innerText = "Terjadi kesalahan";
-          alert("Error saat preprocessing. Lihat console untuk detail.");
-        } finally {
+          alert("Error saat memulai preprocessing.");
           startBtn.disabled = false;
           startBtn.innerHTML = '<i class="fas fa-play"></i> Mulai Pembersihan';
+        }
+      }
+
+      async function pollPreprocessingStatus(preprocId) {
+        const pollInterval = setInterval(async () => {
+          try {
+            const response = await apiFetch(`/preprocess/status/${preprocId}`);
+            if (!response) {
+              clearInterval(pollInterval);
+              return;
+            }
+            const data = await response.json();
+
+            // Update progress bar (dengan pengecekan)
+            if (data.progress !== undefined) {
+              progressBar.style.width = `${data.progress}%`;
+              progressPercent.innerText = `${data.progress}%`;
+            } else {
+              // Jika tidak ada progress, set 100%
+              progressBar.style.width = "100%";
+              progressPercent.innerText = "100%";
+            }
+
+            // Tampilkan status yang lebih informatif
+            if (data.status === "completed") {
+              statusText.innerText = `Selesai (${data.row_count || "?"} baris diproses)`;
+            } else if (data.status === "running") {
+              statusText.innerText = "Sedang memproses...";
+            } else {
+              statusText.innerText = data.status || "Status tidak diketahui";
+            }
+
+            if (data.status === "completed") {
+              clearInterval(pollInterval);
+              statusText.innerText = `Selesai (${data.row_count} baris diproses)`;
+              downloadBtn.disabled = false;
+              downloadBtn.classList.remove("opacity-50", "cursor-not-allowed");
+              downloadBtn.classList.add("opacity-100", "cursor-pointer");
+              startBtn.disabled = false;
+              startBtn.innerHTML =
+                '<i class="fas fa-play"></i> Mulai Pembersihan';
+            } else if (data.status === "failed") {
+              clearInterval(pollInterval);
+              statusText.innerText = "Preprocessing gagal";
+              startBtn.disabled = false;
+              startBtn.innerHTML =
+                '<i class="fas fa-play"></i> Mulai Pembersihan';
+            }
+          } catch (error) {
+            console.error(error);
+            clearInterval(pollInterval);
+            statusText.innerText = "Error polling status";
+            startBtn.disabled = false;
+            startBtn.innerHTML =
+              '<i class="fas fa-play"></i> Mulai Pembersihan';
+          }
+        }, 1000); // Poll setiap 1 detik
+      }
+
+      // Fungsi download tetap sama, tapi pastikan endpoint sudah benar
+      async function downloadCSV() {
+        if (!currentPreprocId) {
+          alert(
+            "Tidak ada hasil preprocessing. Lakukan pembersihan terlebih dahulu.",
+          );
+          return;
+        }
+        try {
+          // Buka link download langsung, browser akan menangani
+          window.open(
+            `${API_BASE}/preprocess/download/${currentPreprocId}`,
+            "_blank",
+          );
+        } catch (error) {
+          console.error(error);
+          alert("Error saat mengunduh");
         }
       }
 

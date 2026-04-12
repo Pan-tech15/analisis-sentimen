@@ -9,3 +9,9 @@ class Preprocessing(db.Model):
     preprocessed_filepath = db.Column(db.String(500), nullable=False)
     row_count = db.Column(db.Integer, default=0)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Tambahan untuk progress tracking
+    status = db.Column(db.String(50), default='pending')  # pending, running, completed, failed
+    progress = db.Column(db.Integer, default=0)           # 0-100
+
+    dataset = db.relationship('Dataset', backref='preprocessings')
