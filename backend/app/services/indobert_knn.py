@@ -1,4 +1,7 @@
 import os
+import sys
+import time
+import traceback
 import pandas as pd
 import numpy as np
 import joblib
@@ -7,7 +10,7 @@ from flask import current_app
 from app import db
 from app.models.training import Training
 
-# Library ML
+# ML Libraries
 from transformers import AutoTokenizer, AutoModel
 import torch
 from sklearn.neighbors import KNeighborsClassifier
@@ -19,52 +22,65 @@ import umap
 MODEL_FOLDER = 'data/models'
 os.makedirs(MODEL_FOLDER, exist_ok=True)
 
+def log(message, training_id=None):
+    """Cetak log dengan timestamp dan training_id."""
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    prefix = f"[{timestamp}]"
+    if training_id:
+        prefix += f" [Training {training_id}]"
+    print(f"{prefix} {message}", file=sys.stdout, flush=True)
+
+def update_progress(training, progress, message=None):
+    """Update progress dan metrics.log di database."""
+    training.progress = progress
+    if message:
+        # Simpan pesan progress sementara di metrics (tanpa migrasi)
+        if training.metrics is None:
+            training.metrics = {}
+        training.metrics['progress_message'] = message
+    db.session.commit()
+    if message:
+        log(message, training.id)
 
 def train_indobert_knn(training_id, config, dataset_path):
-    """
-    Pipeline pelatihan IndoBERT-KNN-UMAP.
-    Parameter:
-        training_id (int): ID record training di database.
-        config (ModelConfig): Objek konfigurasi model.
-        dataset_path (str): Path file CSV dataset.
-    """
+    """Pipeline pelatihan IndoBERT-KNN-UMAP."""
     with current_app.app_context():
         training = Training.query.get(training_id)
         if not training:
+            log(f"Training {training_id} tidak ditemukan", training_id)
             return
         training.status = 'running'
         db.session.commit()
+        log(f"Memulai training dengan konfigurasi: {config.name}", training_id)
 
         try:
             # 1. Baca dataset
+            log(f"Membaca dataset dari {dataset_path}", training_id)
             df = pd.read_csv(dataset_path)
+            log(f"Dataset loaded: {len(df)} baris, kolom: {list(df.columns)}", training_id)
+
             if 'kalimat' not in df.columns or 'emotion' not in df.columns:
                 raise ValueError("Dataset harus memiliki kolom 'kalimat' dan 'emotion'")
 
             texts = df['kalimat'].astype(str).tolist()
             labels = df['emotion'].tolist()
+            log(f"Jumlah sampel: {len(texts)}", training_id)
 
-            # 2. Ambil parameter dari config.params
+            # 2. Parameter
             params = config.params
-
-            # Parameter umum
             random_state = int(params.get('general', {}).get('randomState', 42))
             shuffle = params.get('general', {}).get('shuffle', 'yes') == 'yes'
             stratified = params.get('general', {}).get('stratified', 'yes') == 'yes'
-
-            # Split config
             split_config = params.get('split', {})
             split_type = split_config.get('type', 'crossval')
             cv_folds = int(split_config.get('crossval', {}).get('folds', 5))
 
-            # Parameter IndoBERT
             bert_params = params.get('indobert', {})
             model_name = bert_params.get('modelName', 'indobenchmark/indobert-base-p2')
             max_seq_length = int(bert_params.get('maxSeqLength', 128))
             pooling = bert_params.get('pooling', 'CLS')
             batch_size = int(bert_params.get('batchSize', 16))
 
-            # Parameter UMAP
             umap_params = params.get('umap', {})
             n_components = int(umap_params.get('nComponents', 25))
             n_neighbors = int(umap_params.get('nNeighbors', 30))
@@ -72,7 +88,6 @@ def train_indobert_knn(training_id, config, dataset_path):
             metric = umap_params.get('metric', 'cosine')
             umap_random_state = int(umap_params.get('randomState', 42))
 
-            # Parameter KNN
             knn_params = params.get('knn', {})
             k = int(knn_params.get('k', 7))
             knn_metric = knn_params.get('metric', 'cosine')
@@ -81,18 +96,24 @@ def train_indobert_knn(training_id, config, dataset_path):
             leaf_size = int(knn_params.get('leafSize', 30))
             p = int(knn_params.get('p', 2))
 
-            # Update progress awal
-            training.progress = 10
-            db.session.commit()
+            metrics['class_labels'] = le.classes_.tolist()
 
-            # 3. Ekstraksi fitur IndoBERT
+            update_progress(training, 5, "Memulai ekstraksi fitur IndoBERT...")
+
+            # 3. Load tokenizer dan model
+            log(f"Loading IndoBERT model: {model_name}", training_id)
             device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+            log(f"Menggunakan device: {device}", training_id)
             tokenizer = AutoTokenizer.from_pretrained(model_name)
             model = AutoModel.from_pretrained(model_name).to(device)
             model.eval()
+            log("Model IndoBERT berhasil dimuat", training_id)
+            update_progress(training, 10, "Model IndoBERT dimuat, mulai ekstraksi fitur...")
 
+            # 4. Ekstraksi fitur
             embeddings = []
             total_samples = len(texts)
+            start_time = time.time()
             for i in range(0, total_samples, batch_size):
                 batch_texts = texts[i:i+batch_size]
                 encoded = tokenizer(batch_texts, padding=True, truncation=True,
@@ -109,32 +130,38 @@ def train_indobert_knn(training_id, config, dataset_path):
                     batch_emb = outputs.last_hidden_state[:, 0, :].cpu().numpy()
                 embeddings.append(batch_emb)
 
-                progress = 20 + int((i / total_samples) * 30)
-                training.progress = min(progress, 50)
-                db.session.commit()
+                # Progress 10% - 50%
+                progress = 10 + int(((i + len(batch_texts)) / total_samples) * 40)
+                elapsed = time.time() - start_time
+                if i % (batch_size * 5) == 0 or i + len(batch_texts) >= total_samples:
+                    msg = f"Ekstraksi fitur: {min(i+len(batch_texts), total_samples)}/{total_samples} sampel (progress {progress}%, elapsed {elapsed:.1f}s)"
+                    log(msg, training_id)
+                    update_progress(training, progress, msg)
 
             embeddings = np.vstack(embeddings)
-            training.progress = 55
-            db.session.commit()
+            log(f"Ekstraksi fitur selesai. Shape: {embeddings.shape}", training_id)
+            update_progress(training, 55, f"Ekstraksi fitur selesai. Shape: {embeddings.shape}")
 
-            # 4. Reduksi dimensi UMAP
+            # 5. UMAP
+            log("Memulai reduksi dimensi UMAP...", training_id)
             reducer = umap.UMAP(
                 n_components=n_components,
                 n_neighbors=n_neighbors,
                 min_dist=min_dist,
                 metric=metric,
-                random_state=umap_random_state
+                random_state=umap_random_state,
+                verbose=True  # agar UMAP mencetak progress
             )
             embeddings_reduced = reducer.fit_transform(embeddings)
-            training.progress = 70
-            db.session.commit()
+            log(f"UMAP selesai. Shape reduced: {embeddings_reduced.shape}", training_id)
+            update_progress(training, 70, f"Reduksi dimensi selesai. Dimensi: {embeddings_reduced.shape[1]}")
 
-            # 5. Klasifikasi KNN dengan validasi
+            # 6. KNN
             X = embeddings_reduced
             y = np.array(labels)
-
             le = LabelEncoder()
             y_encoded = le.fit_transform(y)
+            log(f"Label encoded: {le.classes_}", training_id)
 
             knn = KNeighborsClassifier(
                 n_neighbors=k,
@@ -146,6 +173,7 @@ def train_indobert_knn(training_id, config, dataset_path):
                 n_jobs=-1
             )
 
+            update_progress(training, 75, "Memulai pelatihan KNN dan evaluasi...")
             if split_type == 'percentage':
                 test_size = float(split_config.get('test', 20)) / 100.0
                 X_train, X_test, y_train, y_test = train_test_split(
@@ -164,7 +192,8 @@ def train_indobert_knn(training_id, config, dataset_path):
                     'f1_score': round(f1, 4),
                     'precision': round(precision, 4),
                     'recall': round(recall, 4),
-                    'confusion_matrix': cm
+                    'confusion_matrix': cm,
+                    'class_labels': le.classes_.tolist()
                 }
                 knn.fit(X, y_encoded)
             else:
@@ -186,13 +215,12 @@ def train_indobert_knn(training_id, config, dataset_path):
                 }
                 knn.fit(X, y_encoded)
 
-            training.progress = 90
-            db.session.commit()
+            log(f"Evaluasi selesai. Akurasi: {metrics['accuracy']}, F1: {metrics['f1_score']}", training_id)
+            update_progress(training, 90, f"Evaluasi selesai. Akurasi: {metrics['accuracy']}")
 
-            # 6. Simpan model
+            # 7. Simpan model
             model_filename = f"indobert_knn_{training_id}.pkl"
             model_path = os.path.join(MODEL_FOLDER, model_filename)
-
             artifacts = {
                 'tokenizer': tokenizer,
                 'bert_model': model,
@@ -205,6 +233,7 @@ def train_indobert_knn(training_id, config, dataset_path):
                 'device': str(device)
             }
             joblib.dump(artifacts, model_path)
+            log(f"Model disimpan di {model_path}", training_id)
 
             training.status = 'completed'
             training.progress = 100
@@ -212,10 +241,13 @@ def train_indobert_knn(training_id, config, dataset_path):
             training.model_path = model_path
             training.completed_at = datetime.utcnow()
             db.session.commit()
+            log(f"Training {training_id} selesai dengan sukses!", training_id)
 
         except Exception as e:
+            error_msg = f"ERROR: {str(e)}\n{traceback.format_exc()}"
+            log(error_msg, training_id)
             training.status = 'failed'
-            training.metrics = {'error': str(e)}
+            training.metrics = {'error': str(e), 'progress_message': f'Gagal: {str(e)}'}
             training.progress = 0
             db.session.commit()
             raise e

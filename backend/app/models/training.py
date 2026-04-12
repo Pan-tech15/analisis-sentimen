@@ -6,16 +6,16 @@ class Training(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     model_config_id = db.Column(db.Integer, db.ForeignKey('model_configs.id'), nullable=False)
-    dataset_filename = db.Column(db.String(255), nullable=False)  # Nama file dataset yang diupload
-    status = db.Column(db.String(50), default='pending')  # pending, running, completed, failed
-    progress = db.Column(db.Integer, default=0)            # 0-100
-    metrics = db.Column(db.JSON)                           # Akurasi, F1, dll.
-    model_path = db.Column(db.String(255))                 # Path file model terlatih
+    dataset_filename = db.Column(db.String(255), nullable=False)
+    status = db.Column(db.String(50), default='pending')
+    progress = db.Column(db.Integer, default=0)
+    metrics = db.Column(db.JSON)
+    model_path = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     completed_at = db.Column(db.DateTime)
 
-    # Relasi ke ModelConfig
-    config = db.relationship('ModelConfig', backref='trainings')
+    # Gunakan back_populates
+    config = db.relationship('ModelConfig', back_populates='trainings')
 
     def to_dict(self):
         return {

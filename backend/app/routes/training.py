@@ -100,3 +100,21 @@ def delete_training(training_id):
     db.session.delete(training)
     db.session.commit()
     return jsonify({'message': 'Training dihapus'}), 200
+
+@training_bp.route('/<int:training_id>', methods=['GET'])
+def get_training_detail(training_id):
+    """Mengembalikan detail lengkap satu sesi training."""
+    training = Training.query.get(training_id)
+    if not training:
+        return jsonify({'error': 'Training tidak ditemukan'}), 404
+
+    # Ambil data konfigurasi terkait
+    config = training.config
+    result = training.to_dict()
+    result['config_name'] = config.name if config else None
+    result['algorithm'] = config.algorithm if config else None
+
+    # Tambahkan label kelas jika ada di metrics (opsional)
+    # Untuk confusion matrix, kita perlu label kelas
+    # Bisa disimpan saat training atau diambil dari dataset
+    return jsonify(result), 200
