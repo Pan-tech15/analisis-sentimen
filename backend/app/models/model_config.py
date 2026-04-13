@@ -29,7 +29,7 @@ class ModelConfig(db.Model):
         if algorithm == 'IndoBERT-KNN':
             required = ['general', 'split', 'indobert', 'umap', 'knn']
         elif algorithm == 'Lexicon-NB':
-            required = ['general', 'split', 'lexicon', 'naivebayes', 'fusion']
+            required = ['general', 'split', 'naivebayes', 'fusion']
         else:
             raise ValueError("Algoritma tidak dikenal.")
         for sec in required:
