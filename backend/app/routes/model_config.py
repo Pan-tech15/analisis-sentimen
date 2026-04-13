@@ -42,7 +42,7 @@ class ModelConfig(db.Model):
                 if section not in params:
                     raise ValueError(f"Parameter '{section}' harus ada untuk IndoBERT-KNN.")
         elif algorithm == 'Lexicon-NB':
-            required_sections = ['general', 'split', 'lexicon', 'naivebayes', 'fusion']
+            required_sections = ['general', 'split', 'naivebayes', 'fusion']
             for section in required_sections:
                 if section not in params:
                     raise ValueError(f"Parameter '{section}' harus ada untuk Lexicon-NB.")

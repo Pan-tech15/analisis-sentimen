@@ -61,6 +61,7 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             df = pd.read_csv(dataset_path)
             log(f"Dataset loaded: {len(df)} baris, kolom: {list(df.columns)}", training_id)
 
+
             if 'kalimat' not in df.columns or 'emotion' not in df.columns:
                 raise ValueError("Dataset harus memiliki kolom 'kalimat' dan 'emotion'")
 
