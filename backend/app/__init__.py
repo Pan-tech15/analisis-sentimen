@@ -6,7 +6,6 @@ from flask_jwt_extended import JWTManager
 from flask_bcrypt import Bcrypt
 from .config import Config
 
-
 db = SQLAlchemy()
 migrate = Migrate()
 jwt = JWTManager()
@@ -25,22 +24,21 @@ def create_app():
     bcrypt.init_app(app)
 
     CORS(app, 
-     resources={r"/api/*": {"origins": ["http://localhost:5500", "http://127.0.0.1:5500"]}},
-     supports_credentials=True,
-     allow_headers=["Content-Type", "Authorization"],
-     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])  # Sesuaikan dengan port frontend nanti
+         resources={r"/api/*": {"origins": ["http://localhost:5500", "http://127.0.0.1:5500"]}},
+         supports_credentials=True,
+         allow_headers=["Content-Type", "Authorization"],
+         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
     # Import models
     from app.models import User, Dataset, Idiom, Preprocessing, ModelConfig, Training, Testing
 
-    # Register blueprint
+    # Register blueprints
     from app.routes.auth import auth_bp
     app.register_blueprint(auth_bp)
 
     from app.routes.preprocess import preprocess_bp
     app.register_blueprint(preprocess_bp)
 
-    # Dataset blueprint
     from app.routes.dataset import dataset_bp
     app.register_blueprint(dataset_bp)
 
@@ -53,9 +51,11 @@ def create_app():
     from app.routes.training import training_bp
     app.register_blueprint(training_bp)
 
-    # Route test
     @app.route('/')
     def index():
         return {'message': 'Backend is running'}
 
     return app
+
+# Buat instance app global agar bisa diimpor di file lain
+app = create_app()
