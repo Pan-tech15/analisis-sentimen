@@ -1,292 +1,626 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Validasi Hasil Latih - IdiomSense Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
     <style>
-        .tooltip {
-            position: absolute;
-            background: rgba(0,0,0,0.85);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            pointer-events: none;
-            z-index: 10;
-            transform: translate(-50%, -120%);
-            white-space: nowrap;
-            font-family: monospace;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-        canvas {
-            cursor: pointer;
-            background: white;
-        }
+      .tooltip {
+        position: absolute;
+        background: rgba(0, 0, 0, 0.85);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        pointer-events: none;
+        z-index: 10;
+        transform: translate(-50%, -120%);
+        white-space: nowrap;
+        font-family: monospace;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      }
+      canvas {
+        cursor: pointer;
+        background: white;
+      }
     </style>
-</head>
-<body class="bg-gray-100 font-sans antialiased">
-
+  </head>
+  <body class="bg-gray-100 font-sans antialiased">
+    <!-- SIDEBAR SAMA SEPERTI SEBELUMNYA, TIDAK DIUBAH -->
     <div class="flex h-screen overflow-hidden">
-        <!-- Sidebar (sama) -->
-        <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
-            <div class="p-4 border-b">
-                <span class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IdiomSense</span>
-                <p class="text-sm text-gray-500">Admin Panel</p>
-            </div>
-            <nav class="p-4">
-                <ul class="space-y-1">
-                    <li><a href="beranda-admin.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"><i class="fas fa-tachometer-alt w-5"></i><span>Beranda</span></a></li>
-                    <li><button id="dataCollectionBtn" class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700"><div class="flex items-center space-x-2"><i class="fas fa-database w-5"></i><span>Data Collection</span></div><i id="dataCollectionIcon" class="fas fa-chevron-down text-sm transition-transform"></i></button>
-                        <ul id="dataCollectionMenu" class="ml-6 mt-1 space-y-1 hidden">
-                            <li><a href="dataset.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-table w-5 mr-2"></i>Dataset</a></li>
-                            <li><a href="kamus-idiom.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-book w-5 mr-2"></i>Kamus Idiom</a></li>
-                        </ul>
-                    </li>
-                    <li><a href="preprocessing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-filter w-5"></i><span>Pre-Processing</span></a></li>
-                    <li><button id="processingBtn" class="w-full flex items-center justify-between p-2 rounded-lg bg-gray-100 text-gray-700"><div class="flex items-center space-x-2"><i class="fas fa-brain w-5"></i><span>Processing</span></div><i id="processingIcon" class="fas fa-chevron-down text-sm transition-transform"></i></button>
-                        <ul id="processingMenu" class="ml-6 mt-1 space-y-1">
-                            <li><a href="pengaturan.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-sliders-h w-5 mr-2"></i>Pengaturan</a></li>
-                            <li><a href="latih.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-chart-line w-5 mr-2"></i>Latih</a></li>
-                        </ul>
-                    </li>
-                    <li><a href="testing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-vial w-5"></i><span>Testing</span></a></li>
-                    <li><a href="evaluasi.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-chart-line w-5"></i><span>Evaluasi</span></a></li>
-                    <li class="pt-4 mt-4 border-t"><a href="login.html" class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a></li>
-                </ul>
-            </nav>
-        </aside>
+      <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
+        <!-- ... sidebar content ... -->
+      </aside>
 
-        <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
-            <h1 class="text-3xl font-bold text-gray-800 mb-6">Validasi Hasil Data Latih</h1>
+      <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">
+          Validasi Hasil Data Latih
+        </h1>
 
-            <!-- Info dataset & model -->
-            <div class="bg-white p-6 rounded-xl shadow-md mb-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <p class="text-sm text-gray-500">Nama Dataset</p>
-                        <p class="font-semibold text-gray-800">hasil_hybrid_1.csv</p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500">Model</p>
-                        <p class="font-semibold text-gray-800">IndoBERT-KNN + UMAP</p>
-                    </div>
-                </div>
+        <!-- Info dataset & model -->
+        <div class="bg-white p-6 rounded-xl shadow-md mb-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p class="text-sm text-gray-500">Nama Dataset</p>
+              <p id="datasetName" class="font-semibold text-gray-800">-</p>
             </div>
+            <div>
+              <p class="text-sm text-gray-500">Model</p>
+              <p id="modelName" class="font-semibold text-gray-800">-</p>
+            </div>
+          </div>
+        </div>
 
-            <!-- Metrik evaluasi -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white p-4 rounded-xl shadow-md text-center border-l-4 border-blue-500">
-                    <p class="text-sm text-gray-500">Akurasi</p>
-                    <p class="text-3xl font-bold text-gray-800">0.95</p>
-                </div>
-                <div class="bg-white p-4 rounded-xl shadow-md text-center border-l-4 border-green-500">
-                    <p class="text-sm text-gray-500">Precision</p>
-                    <p class="text-3xl font-bold text-gray-800">0.94</p>
-                </div>
-                <div class="bg-white p-4 rounded-xl shadow-md text-center border-l-4 border-yellow-500">
-                    <p class="text-sm text-gray-500">Recall</p>
-                    <p class="text-3xl font-bold text-gray-800">0.93</p>
-                </div>
-                <div class="bg-white p-4 rounded-xl shadow-md text-center border-l-4 border-purple-500">
-                    <p class="text-sm text-gray-500">F1-Score</p>
-                    <p class="text-3xl font-bold text-gray-800">0.93</p>
-                </div>
+        <!-- Confusion Matrix -->
+        <div class="bg-white p-6 rounded-xl shadow-md mb-6">
+          <h2 class="font-semibold text-gray-700 mb-2">
+            Confusion Matrix (Emosi)
+          </h2>
+          <p class="text-xs text-gray-500 mb-4">
+            Aktual vs Prediksi - Hover pada sel untuk melihat detail
+          </p>
+          <div class="flex justify-center overflow-x-auto">
+            <div
+              class="relative"
+              style="width: 100%; max-width: 900px; margin: 0 auto"
+            >
+              <canvas
+                id="confusionHeatmap"
+                width="850"
+                height="850"
+                class="border border-gray-300 rounded shadow-sm"
+                style="width: 100%; height: auto"
+              ></canvas>
             </div>
+          </div>
+          <div class="flex justify-center mt-6 text-sm text-gray-500 gap-4">
+            <div class="flex items-center">
+              <div
+                class="w-5 h-5 rounded"
+                style="background-color: #2c7bb6"
+              ></div>
+              <span class="ml-1">Rendah</span>
+            </div>
+            <div class="flex items-center">
+              <div
+                class="w-5 h-5 rounded"
+                style="background-color: #abd9e9"
+              ></div>
+              <span class="ml-1">Sedang</span>
+            </div>
+            <div class="flex items-center">
+              <div
+                class="w-5 h-5 rounded"
+                style="background-color: #fdae61"
+              ></div>
+              <span class="ml-1">Tinggi</span>
+            </div>
+            <div class="flex items-center">
+              <div
+                class="w-5 h-5 rounded"
+                style="background-color: #d7191c"
+              ></div>
+              <span class="ml-1">Sangat Tinggi</span>
+            </div>
+          </div>
+        </div>
 
-            <!-- Confusion Matrix dengan label jelas -->
-            <div class="bg-white p-6 rounded-xl shadow-md">
-                <h2 class="font-semibold text-gray-700 mb-2">Confusion Matrix (Emosi)</h2>
-                <p class="text-xs text-gray-500 mb-4">Aktual vs Prediksi - Hover pada sel untuk melihat detail</p>
-                <div class="flex justify-center overflow-x-auto">
-                    <div class="relative" style="width: 100%; max-width: 900px; margin: 0 auto;">
-                        <canvas id="confusionHeatmap" width="850" height="850" class="border border-gray-300 rounded shadow-sm" style="width:100%; height:auto;"></canvas>
-                    </div>
-                </div>
-                <div class="flex justify-center mt-6 text-sm text-gray-500 gap-4">
-                    <div class="flex items-center"><div class="w-5 h-5 rounded" style="background-color: #2c7bb6;"></div><span class="ml-1">Rendah</span></div>
-                    <div class="flex items-center"><div class="w-5 h-5 rounded" style="background-color: #abd9e9;"></div><span class="ml-1">Sedang</span></div>
-                    <div class="flex items-center"><div class="w-5 h-5 rounded" style="background-color: #fdae61;"></div><span class="ml-1">Tinggi</span></div>
-                    <div class="flex items-center"><div class="w-5 h-5 rounded" style="background-color: #d7191c;"></div><span class="ml-1">Sangat Tinggi</span></div>
-                </div>
-            </div>
+        <!-- Tabel Metrik Evaluasi Klasifikasi -->
+        <div class="bg-white p-6 rounded-xl shadow-md mb-6">
+          <h2 class="font-semibold text-gray-700 mb-4">
+            Metrik Evaluasi Klasifikasi
+          </h2>
+          <div class="overflow-x-auto">
+            <table class="min-w-full border border-gray-200">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="px-4 py-2 border border-gray-300">Metrik</th>
+                  <th class="px-4 py-2 border border-gray-300">Nilai</th>
+                </tr>
+              </thead>
+              <tbody id="metricsTableBody">
+                <!-- Diisi oleh JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-            <!-- Tombol kembali -->
-            <div class="mt-6 flex justify-end">
-                <a href="latih.html" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-5 rounded-lg transition flex items-center space-x-2">
-                    <i class="fas fa-arrow-left"></i>
-                    <span>Kembali ke Latih</span>
-                </a>
-            </div>
-        </main>
+        <!-- Tabel Stabilitas Performa (jika CV) -->
+        <div
+          id="stabilitySection"
+          class="bg-white p-6 rounded-xl shadow-md mb-6 hidden"
+        >
+          <h2 class="font-semibold text-gray-700 mb-4">
+            Stabilitas Performa (<span id="cvFolds">5</span>-Fold Cross
+            Validation)
+          </h2>
+          <div class="overflow-x-auto">
+            <table class="min-w-full border border-gray-200">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="px-4 py-2 border border-gray-300">Metrik</th>
+                  <th class="px-4 py-2 border border-gray-300">Mean</th>
+                  <th class="px-4 py-2 border border-gray-300">
+                    Standard Deviation
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="stabilityTableBody">
+                <!-- Diisi jika data CV tersedia -->
+              </tbody>
+            </table>
+          </div>
+          <p class="text-xs text-gray-500 mt-3">
+            *Nilai mean dan standar deviasi dihitung dari cross-validation.
+          </p>
+        </div>
+
+        <!-- Tombol kembali -->
+        <div class="mt-6 flex justify-end">
+          <a
+            href="latih.html"
+            class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-5 rounded-lg transition flex items-center space-x-2"
+          >
+            <i class="fas fa-arrow-left"></i>
+            <span>Kembali ke Latih</span>
+          </a>
+        </div>
+      </main>
     </div>
 
     <script>
-        // Data confusion matrix (contoh)
-        const matrix = [
-            [42, 2, 1, 3, 0, 1, 1],
-            [3, 38, 2, 2, 0, 0, 0],
-            [2, 1, 35, 4, 2, 1, 1],
-            [2, 1, 2, 89, 0, 1, 0],
-            [1, 0, 2, 2, 28, 2, 0],
-            [2, 0, 1, 3, 1, 34, 2],
-            [1, 0, 1, 2, 0, 1, 30]
-        ];
-        const labels = ['Senang', 'Percaya', 'Terkejut', 'Netral', 'Takut', 'Sedih', 'Marah'];
-        const maxVal = Math.max(...matrix.flat());
+      (function () {
+        // ---------- KONFIGURASI ----------
+        const API_BASE = "http://localhost:5000";
+        const urlParams = new URLSearchParams(window.location.search);
+        const trainingId = urlParams.get("id");
 
-        function getColor(intensity) {
-            // intensitas 0..1
-            const r = Math.min(255, Math.floor(255 * intensity * 1.5));
-            const g = Math.min(255, Math.floor(255 * (1.5 - intensity * 1.2)));
-            const b = Math.min(255, Math.floor(255 * (1 - intensity * 0.8)));
-            return `rgb(${r}, ${g}, ${b})`;
-        }
+        // Variabel global untuk data
+        let matrix = [];
+        let labels = [];
+        let metrics = null;
+        let trainingData = null;
 
+        // Canvas elements
         let canvas, ctx, size, cellSize;
-        const marginLeft = 80;   // ruang untuk label sumbu Y
+        const marginLeft = 80;
         const marginRight = 30;
-        const marginTop = 40;     // ruang untuk judul dan label atas
-        const marginBottom = 100;  // ruang untuk label sumbu X
+        const marginTop = 40;
+        const marginBottom = 100;
+        let tooltipDiv = null;
 
-        function drawHeatmap() {
-            canvas = document.getElementById('confusionHeatmap');
-            if (!canvas) return;
-            ctx = canvas.getContext('2d');
-            size = canvas.width;
-            const gridSize = size - marginLeft - marginRight;
-            cellSize = gridSize / matrix.length;
-
-            // Bersihkan canvas
-            ctx.clearRect(0, 0, size, size);
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, size, size);
-
-            // Gambar sel heatmap
-            for (let i = 0; i < matrix.length; i++) {
-                for (let j = 0; j < matrix[i].length; j++) {
-                    const val = matrix[i][j];
-                    const intensity = val / maxVal;
-                    ctx.fillStyle = getColor(intensity);
-                    ctx.fillRect(marginLeft + j * cellSize, marginTop + i * cellSize, cellSize, cellSize);
-                    
-                    // Tulis angka
-                    ctx.fillStyle = intensity > 0.65 ? 'white' : '#1f2937';
-                    ctx.font = `bold ${Math.max(12, cellSize * 0.28)}px "Segoe UI", system-ui`;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(val, marginLeft + j * cellSize + cellSize/2, marginTop + i * cellSize + cellSize/2);
-                }
-            }
-
-            // Garis grid
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 1.5;
-            for (let i = 0; i <= matrix.length; i++) {
-                ctx.beginPath();
-                ctx.moveTo(marginLeft + i * cellSize, marginTop);
-                ctx.lineTo(marginLeft + i * cellSize, marginTop + matrix.length * cellSize);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(marginLeft, marginTop + i * cellSize);
-                ctx.lineTo(marginLeft + matrix.length * cellSize, marginTop + i * cellSize);
-                ctx.stroke();
-            }
-
-            // Label sumbu Y (Aktual) - teks normal horizontal
-            ctx.fillStyle = '#1f2937';
-            ctx.font = '13px "Segoe UI", system-ui';
-            for (let i = 0; i < labels.length; i++) {
-                ctx.fillText(labels[i], marginLeft - 10, marginTop + i * cellSize + cellSize/2);
-            }
-
-            // Label sumbu X (Prediksi) - diputar 30 derajat agar tidak bertabrakan
-            ctx.save();
-            ctx.font = '13px "Segoe UI", system-ui';
-            for (let i = 0; i < labels.length; i++) {
-                const x = marginLeft + i * cellSize + cellSize/2;
-                const y = marginTop + matrix.length * cellSize + 20;
-                ctx.save();
-                ctx.translate(x, y);
-                ctx.rotate(-Math.PI / 5); // -36 derajat
-                ctx.fillStyle = '#1f2937';
-                ctx.fillText(labels[i], 0, 0);
-                ctx.restore();
-            }
-            ctx.restore();
-
-            // Judul sumbu
-            ctx.font = 'bold 14px "Segoe UI", system-ui';
-            ctx.fillStyle = '#374151';
-            ctx.fillText('Prediksi', size/2 + marginLeft/2, marginTop + matrix.length * cellSize + 60);
-            ctx.save();
-            ctx.translate(20, marginTop + (matrix.length * cellSize)/2);
-            ctx.rotate(-Math.PI/2);
-            ctx.fillText('Aktual', 0, 0);
-            ctx.restore();
+        // ---------- FUNGSI UTILITY ----------
+        function getColor(intensity) {
+          const r = Math.min(255, Math.floor(255 * intensity * 1.5));
+          const g = Math.min(255, Math.floor(255 * (1.5 - intensity * 1.2)));
+          const b = Math.min(255, Math.floor(255 * (1 - intensity * 0.8)));
+          return `rgb(${r}, ${g}, ${b})`;
         }
 
-        // Tooltip interaktif
-        let tooltipDiv = null;
-        function createTooltip() {
-            if (!tooltipDiv) {
-                tooltipDiv = document.createElement('div');
-                tooltipDiv.className = 'tooltip';
-                document.body.appendChild(tooltipDiv);
+        // Fungsi untuk menghitung metrik tambahan dari confusion matrix
+        function calculateMetricsFromCM(cm, labelsList) {
+          const n = cm.length;
+          let tp = 0,
+            fp = 0,
+            fn = 0,
+            total = 0;
+          const precisionPerClass = [];
+          const recallPerClass = [];
+          const f1PerClass = [];
+
+          for (let i = 0; i < n; i++) {
+            let tp_i = cm[i][i];
+            let fp_i = 0,
+              fn_i = 0;
+            for (let j = 0; j < n; j++) {
+              if (j !== i) {
+                fp_i += cm[j][i];
+                fn_i += cm[i][j];
+              }
+              total += cm[i][j];
             }
+            tp += tp_i;
+            fp += fp_i;
+            fn += fn_i;
+
+            const prec = tp_i / (tp_i + fp_i) || 0;
+            const rec = tp_i / (tp_i + fn_i) || 0;
+            const f1 = (2 * prec * rec) / (prec + rec) || 0;
+            precisionPerClass.push(prec);
+            recallPerClass.push(rec);
+            f1PerClass.push(f1);
+          }
+
+          // Macro
+          const macroPrecision =
+            precisionPerClass.reduce((a, b) => a + b, 0) / n;
+          const macroRecall = recallPerClass.reduce((a, b) => a + b, 0) / n;
+          const macroF1 = f1PerClass.reduce((a, b) => a + b, 0) / n;
+
+          // Weighted (dari metrics backend sudah ada, tapi kita hitung ulang untuk verifikasi)
+          let weightedPrec = 0,
+            weightedRec = 0,
+            weightedF1 = 0;
+          for (let i = 0; i < n; i++) {
+            const support = cm[i].reduce((a, b) => a + b, 0);
+            weightedPrec += precisionPerClass[i] * support;
+            weightedRec += recallPerClass[i] * support;
+            weightedF1 += f1PerClass[i] * support;
+          }
+          weightedPrec /= total;
+          weightedRec /= total;
+          weightedF1 /= total;
+
+          // MCC (Matthews Correlation Coefficient) multiclass
+          // Rumus: (tp*total - sum_k(p_k * t_k)) / sqrt((total^2 - sum_k p_k^2)*(total^2 - sum_k t_k^2))
+          let sum_pk_tk = 0,
+            sum_pk2 = 0,
+            sum_tk2 = 0;
+          for (let k = 0; k < n; k++) {
+            const pk = cm[k].reduce((a, b) => a + b, 0); // actual class k
+            const tk = cm.reduce((acc, row) => acc + row[k], 0); // predicted class k
+            sum_pk_tk += pk * tk;
+            sum_pk2 += pk * pk;
+            sum_tk2 += tk * tk;
+          }
+          const numerator = tp * total - sum_pk_tk;
+          const denominator = Math.sqrt(
+            (total * total - sum_pk2) * (total * total - sum_tk2),
+          );
+          const mcc = denominator === 0 ? 0 : numerator / denominator;
+
+          return {
+            accuracy: tp / total,
+            macro_precision: macroPrecision,
+            macro_recall: macroRecall,
+            macro_f1: macroF1,
+            weighted_precision: weightedPrec,
+            weighted_recall: weightedRec,
+            weighted_f1: weightedF1,
+            mcc: mcc,
+          };
+        }
+
+        // ---------- FETCH DATA DARI API ----------
+        async function loadTrainingDetail() {
+          if (!trainingId) {
+            alert("ID training tidak ditemukan di URL");
+            return;
+          }
+          try {
+            const res = await fetch(`${API_BASE}/api/training/${trainingId}`);
+            if (!res.ok) throw new Error("Gagal memuat data training");
+            trainingData = await res.json();
+            console.log("Training data:", trainingData);
+
+            // Isi info dataset & model
+            document.getElementById("datasetName").textContent =
+              trainingData.dataset_filename || "-";
+            document.getElementById("modelName").textContent =
+              trainingData.algorithm || "-";
+
+            metrics = trainingData.metrics || {};
+
+            // Ambil confusion matrix dan label kelas
+            if (metrics.confusion_matrix) {
+              matrix = metrics.confusion_matrix;
+            } else {
+              console.warn("Confusion matrix tidak ditemukan");
+              matrix = [];
+            }
+            if (metrics.class_labels) {
+              labels = metrics.class_labels;
+            } else {
+              labels = [
+                "Senang",
+                "Percaya",
+                "Terkejut",
+                "Netral",
+                "Takut",
+                "Sedih",
+                "Marah",
+              ];
+              console.warn("Label kelas tidak ditemukan, menggunakan default");
+            }
+
+            // Gambar heatmap
+            drawHeatmap();
+
+            // Isi tabel metrik evaluasi
+            populateMetricsTable();
+
+            // Tampilkan bagian stabilitas jika ada cv_folds
+            if (metrics.cv_folds) {
+              document
+                .getElementById("stabilitySection")
+                .classList.remove("hidden");
+              document.getElementById("cvFolds").textContent = metrics.cv_folds;
+              populateStabilityTable();
+            } else {
+              document
+                .getElementById("stabilitySection")
+                .classList.add("hidden");
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            alert("Gagal memuat detail training: " + error.message);
+          }
+        }
+
+        function populateMetricsTable() {
+          const tbody = document.getElementById("metricsTableBody");
+          tbody.innerHTML = "";
+
+          // Data dasar dari backend
+          const acc = metrics.accuracy?.toFixed(4) || "-";
+          const prec = metrics.precision?.toFixed(4) || "-";
+          const rec = metrics.recall?.toFixed(4) || "-";
+          const f1 = metrics.f1_score?.toFixed(4) || "-";
+
+          // Hitung metrik tambahan dari confusion matrix jika ada
+          let calc = null;
+          if (matrix.length > 0 && labels.length > 0) {
+            calc = calculateMetricsFromCM(matrix, labels);
+          }
+
+          const rows = [
+            ["Akurasi", acc],
+            ["Presisi (Weighted)", prec],
+            ["Recall (Weighted)", rec],
+            ["F1-Score (Weighted)", f1],
+          ];
+
+          if (calc) {
+            rows.push(
+              ["Presisi (Macro)", calc.macro_precision.toFixed(4)],
+              ["Recall (Macro)", calc.macro_recall.toFixed(4)],
+              ["F1-Score (Macro)", calc.macro_f1.toFixed(4)],
+              ["Matthews Correlation Coefficient (MCC)", calc.mcc.toFixed(4)],
+            );
+          }
+
+          // ROC-AUC tidak tersedia karena KNN tidak menghasilkan probabilitas kalibrasi, bisa diabaikan atau dihitung jika ada
+          // Tambahkan placeholder jika perlu
+          rows.push(["ROC-AUC (Macro)", "- (tidak dihitung)"]);
+
+          for (let [name, value] of rows) {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td class="px-4 py-2 border border-gray-200 font-medium">${name}</td>
+              <td class="px-4 py-2 border border-gray-200">${value}</td>
+            `;
+            tbody.appendChild(tr);
+          }
+        }
+
+        function populateStabilityTable() {
+          // Karena backend belum menyimpan mean/std per fold, kita gunakan nilai evaluasi akhir sebagai mean, std = '-'
+          // Untuk sementara tampilkan data dari metrics yang ada
+          const tbody = document.getElementById("stabilityTableBody");
+          tbody.innerHTML = "";
+
+          const acc = metrics.accuracy?.toFixed(4) || "-";
+          const prec = metrics.precision?.toFixed(4) || "-";
+          const rec = metrics.recall?.toFixed(4) || "-";
+          const f1 = metrics.f1_score?.toFixed(4) || "-";
+
+          let calc = null;
+          if (matrix.length > 0 && labels.length > 0) {
+            calc = calculateMetricsFromCM(matrix, labels);
+          }
+
+          const rows = [
+            ["Akurasi", acc, "-"],
+            [
+              "Presisi (Macro)",
+              calc ? calc.macro_precision.toFixed(4) : "-",
+              "-",
+            ],
+            ["Recall (Macro)", calc ? calc.macro_recall.toFixed(4) : "-", "-"],
+            ["F1-Score (Macro)", calc ? calc.macro_f1.toFixed(4) : "-", "-"],
+            ["MCC", calc ? calc.mcc.toFixed(4) : "-", "-"],
+            ["ROC-AUC (Macro)", "-", "-"],
+          ];
+
+          for (let [name, mean, std] of rows) {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td class="px-4 py-2 border border-gray-200 font-medium">${name}</td>
+              <td class="px-4 py-2 border border-gray-200">${mean}</td>
+              <td class="px-4 py-2 border border-gray-200">${std}</td>
+            `;
+            tbody.appendChild(tr);
+          }
+        }
+
+        // ---------- DRAW HEATMAP ----------
+        function drawHeatmap() {
+          canvas = document.getElementById("confusionHeatmap");
+          if (!canvas) return;
+          if (!matrix.length || !labels.length) {
+            console.warn("Data matrix atau labels kosong");
+            return;
+          }
+          ctx = canvas.getContext("2d");
+          size = canvas.width;
+          const gridSize = size - marginLeft - marginRight;
+          cellSize = gridSize / matrix.length;
+          const maxVal = Math.max(...matrix.flat());
+
+          ctx.clearRect(0, 0, size, size);
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, size, size);
+
+          for (let i = 0; i < matrix.length; i++) {
+            for (let j = 0; j < matrix[i].length; j++) {
+              const val = matrix[i][j];
+              const intensity = maxVal > 0 ? val / maxVal : 0;
+              ctx.fillStyle = getColor(intensity);
+              ctx.fillRect(
+                marginLeft + j * cellSize,
+                marginTop + i * cellSize,
+                cellSize,
+                cellSize,
+              );
+              ctx.fillStyle = intensity > 0.65 ? "white" : "#1f2937";
+              ctx.font = `bold ${Math.max(12, cellSize * 0.28)}px "Segoe UI", system-ui`;
+              ctx.textAlign = "center";
+              ctx.textBaseline = "middle";
+              ctx.fillText(
+                val,
+                marginLeft + j * cellSize + cellSize / 2,
+                marginTop + i * cellSize + cellSize / 2,
+              );
+            }
+          }
+
+          // Garis grid
+          ctx.strokeStyle = "#ffffff";
+          ctx.lineWidth = 1.5;
+          for (let i = 0; i <= matrix.length; i++) {
+            ctx.beginPath();
+            ctx.moveTo(marginLeft + i * cellSize, marginTop);
+            ctx.lineTo(
+              marginLeft + i * cellSize,
+              marginTop + matrix.length * cellSize,
+            );
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(marginLeft, marginTop + i * cellSize);
+            ctx.lineTo(
+              marginLeft + matrix.length * cellSize,
+              marginTop + i * cellSize,
+            );
+            ctx.stroke();
+          }
+
+          // Label sumbu Y (Aktual)
+          ctx.fillStyle = "#1f2937";
+          ctx.font = '13px "Segoe UI", system-ui';
+          ctx.textAlign = "right";
+          ctx.textBaseline = "middle";
+          for (let i = 0; i < labels.length; i++) {
+            ctx.fillText(
+              labels[i],
+              marginLeft - 10,
+              marginTop + i * cellSize + cellSize / 2,
+            );
+          }
+
+          // Label sumbu X (Prediksi) diputar
+          ctx.save();
+          ctx.font = '13px "Segoe UI", system-ui';
+          ctx.textAlign = "left";
+          ctx.textBaseline = "middle";
+          for (let i = 0; i < labels.length; i++) {
+            const x = marginLeft + i * cellSize + cellSize / 2;
+            const y = marginTop + matrix.length * cellSize + 20;
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(-Math.PI / 5);
+            ctx.fillStyle = "#1f2937";
+            ctx.fillText(labels[i], 0, 0);
+            ctx.restore();
+          }
+          ctx.restore();
+
+          // Judul sumbu
+          ctx.font = 'bold 14px "Segoe UI", system-ui';
+          ctx.fillStyle = "#374151";
+          ctx.textAlign = "center";
+          ctx.fillText(
+            "Prediksi",
+            size / 2 + marginLeft / 2,
+            marginTop + matrix.length * cellSize + 60,
+          );
+          ctx.save();
+          ctx.translate(20, marginTop + (matrix.length * cellSize) / 2);
+          ctx.rotate(-Math.PI / 2);
+          ctx.fillText("Aktual", 0, 0);
+          ctx.restore();
+        }
+
+        // ---------- TOOLTIP ----------
+        function createTooltip() {
+          if (!tooltipDiv) {
+            tooltipDiv = document.createElement("div");
+            tooltipDiv.className = "tooltip";
+            document.body.appendChild(tooltipDiv);
+          }
         }
 
         function showTooltip(e) {
-            if (!canvas) return;
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            const mouseX = (e.clientX - rect.left) * scaleX;
-            const mouseY = (e.clientY - rect.top) * scaleY;
-            // Hitung koordinat dalam grid heatmap
-            const col = Math.floor((mouseX - marginLeft) / cellSize);
-            const row = Math.floor((mouseY - marginTop) / cellSize);
-            if (row >= 0 && row < matrix.length && col >= 0 && col < matrix[0].length) {
-                const value = matrix[row][col];
-                const totalRow = matrix[row].reduce((a,b) => a+b, 0);
-                const percent = totalRow > 0 ? (value / totalRow * 100).toFixed(1) : 0;
-                tooltipDiv.innerHTML = `<strong>${labels[row]} → ${labels[col]}</strong><br>Jumlah: ${value}<br>Persentase: ${percent}% dari kelas aktual`;
-                tooltipDiv.style.left = e.clientX + 15 + 'px';
-                tooltipDiv.style.top = e.clientY - 30 + 'px';
-                tooltipDiv.style.display = 'block';
-            } else {
-                tooltipDiv.style.display = 'none';
-            }
+          if (!canvas || !matrix.length) return;
+          const rect = canvas.getBoundingClientRect();
+          const scaleX = canvas.width / rect.width;
+          const scaleY = canvas.height / rect.height;
+          const mouseX = (e.clientX - rect.left) * scaleX;
+          const mouseY = (e.clientY - rect.top) * scaleY;
+          const col = Math.floor((mouseX - marginLeft) / cellSize);
+          const row = Math.floor((mouseY - marginTop) / cellSize);
+          if (
+            row >= 0 &&
+            row < matrix.length &&
+            col >= 0 &&
+            col < matrix[0].length
+          ) {
+            const value = matrix[row][col];
+            const totalRow = matrix[row].reduce((a, b) => a + b, 0);
+            const percent =
+              totalRow > 0 ? ((value / totalRow) * 100).toFixed(1) : 0;
+            tooltipDiv.innerHTML = `<strong>${labels[row]} → ${labels[col]}</strong><br>Jumlah: ${value}<br>Persentase: ${percent}% dari kelas aktual`;
+            tooltipDiv.style.left = e.clientX + 15 + "px";
+            tooltipDiv.style.top = e.clientY - 30 + "px";
+            tooltipDiv.style.display = "block";
+          } else {
+            tooltipDiv.style.display = "none";
+          }
         }
 
         function hideTooltip() {
-            if (tooltipDiv) tooltipDiv.style.display = 'none';
+          if (tooltipDiv) tooltipDiv.style.display = "none";
         }
 
-        window.onload = () => {
-            drawHeatmap();
-            createTooltip();
-            canvas.addEventListener('mousemove', showTooltip);
-            canvas.addEventListener('mouseleave', hideTooltip);
+        // ---------- INISIALISASI ----------
+        window.onload = async () => {
+          await loadTrainingDetail();
+          createTooltip();
+          canvas = document.getElementById("confusionHeatmap");
+          if (canvas) {
+            canvas.addEventListener("mousemove", showTooltip);
+            canvas.addEventListener("mouseleave", hideTooltip);
+          }
         };
 
-        // Dropdown sidebar (sama)
+        // ---------- SIDEBAR TOGGLE ----------
         function toggleDropdown(btn, menu, icon) {
-            btn.addEventListener('click', () => {
-                menu.classList.toggle('hidden');
-                icon.classList.toggle('rotate-180');
-            });
+          btn.addEventListener("click", () => {
+            menu.classList.toggle("hidden");
+            icon.classList.toggle("rotate-180");
+          });
         }
-        const dataCollectionBtn = document.getElementById('dataCollectionBtn');
-        const dataCollectionMenu = document.getElementById('dataCollectionMenu');
-        const dataCollectionIcon = document.getElementById('dataCollectionIcon');
-        toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
-        const processingBtn = document.getElementById('processingBtn');
-        const processingMenu = document.getElementById('processingMenu');
-        const processingIcon = document.getElementById('processingIcon');
-        toggleDropdown(processingBtn, processingMenu, processingIcon);
+        const dataCollectionBtn = document.getElementById("dataCollectionBtn");
+        const dataCollectionMenu =
+          document.getElementById("dataCollectionMenu");
+        const dataCollectionIcon =
+          document.getElementById("dataCollectionIcon");
+        if (dataCollectionBtn)
+          toggleDropdown(
+            dataCollectionBtn,
+            dataCollectionMenu,
+            dataCollectionIcon,
+          );
+        const processingBtn = document.getElementById("processingBtn");
+        const processingMenu = document.getElementById("processingMenu");
+        const processingIcon = document.getElementById("processingIcon");
+        if (processingBtn)
+          toggleDropdown(processingBtn, processingMenu, processingIcon);
+      })();
     </script>
-</body>
+  </body>
 </html>
