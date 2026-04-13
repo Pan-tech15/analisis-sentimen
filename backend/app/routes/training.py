@@ -1,9 +1,9 @@
 import os
 import uuid
 import threading
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app  # tambahkan current_app
 from werkzeug.utils import secure_filename
-from app import db
+from app import db  # hanya impor db
 from app.models.model_config import ModelConfig
 from app.models.training import Training
 from app.services.indobert_knn import train_indobert_knn
@@ -16,10 +16,8 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 ALLOWED_EXTENSIONS = {'csv', 'xlsx'}
 
-
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 
 @training_bp.route('/upload', methods=['POST'])
 def upload_dataset():
@@ -42,7 +40,6 @@ def upload_dataset():
         'path': filepath
     }), 200
 
-
 @training_bp.route('/start', methods=['POST'])
 def start_training():
     data = request.get_json()
@@ -64,7 +61,6 @@ def start_training():
     db.session.add(training)
     db.session.commit()
 
-    # Pilih pipeline berdasarkan algoritma
     if config.algorithm == 'IndoBERT-KNN':
         train_func = train_indobert_knn
     elif config.algorithm == 'Lexicon-NB':
@@ -72,11 +68,12 @@ def start_training():
     else:
         return jsonify({'error': f'Algoritma {config.algorithm} tidak didukung'}), 400
 
-    thread = threading.Thread(target=train_func, args=(training.id, config, dataset_path))
+    # Dapatkan instance app asli dari current_app
+    app = current_app._get_current_object()
+    thread = threading.Thread(target=train_func, args=(app, training.id, config, dataset_path))
     thread.start()
 
     return jsonify(training.to_dict()), 201
-
 
 @training_bp.route('/status/<int:training_id>', methods=['GET'])
 def get_status(training_id):
@@ -85,12 +82,10 @@ def get_status(training_id):
         return jsonify({'error': 'Training tidak ditemukan'}), 404
     return jsonify(training.to_dict()), 200
 
-
 @training_bp.route('/history', methods=['GET'])
 def get_history():
     trainings = Training.query.order_by(Training.created_at.desc()).all()
     return jsonify([t.to_dict() for t in trainings]), 200
-
 
 @training_bp.route('/<int:training_id>', methods=['DELETE'])
 def delete_training(training_id):
@@ -103,18 +98,10 @@ def delete_training(training_id):
 
 @training_bp.route('/<int:training_id>', methods=['GET'])
 def get_training_detail(training_id):
-    """Mengembalikan detail lengkap satu sesi training."""
     training = Training.query.get(training_id)
     if not training:
         return jsonify({'error': 'Training tidak ditemukan'}), 404
-
-    # Ambil data konfigurasi terkait
-    config = training.config
     result = training.to_dict()
-    result['config_name'] = config.name if config else None
-    result['algorithm'] = config.algorithm if config else None
-
-    # Tambahkan label kelas jika ada di metrics (opsional)
-    # Untuk confusion matrix, kita perlu label kelas
-    # Bisa disimpan saat training atau diambil dari dataset
+    result['config_name'] = training.config.name if training.config else None
+    result['algorithm'] = training.config.algorithm if training.config else None
     return jsonify(result), 200
