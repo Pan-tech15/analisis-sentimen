@@ -34,18 +34,14 @@ def log(message, training_id=None):
     print(f"{prefix} {message}", file=sys.stdout, flush=True)
 
 def clean_and_map_emotion(raw_value):
-    """Membersihkan dan memetakan label ke 7 emosi standar."""
     if pd.isna(raw_value):
         return None
     s = str(raw_value).strip().lower()
     if s in ALLOWED_EMOTIONS:
         return s
-    # Pemetaan tambahan jika perlu (misal singkatan)
-    # Tidak ada pemetaan lain, jika tidak cocok kembalikan None
     return None
 
 def train_indobert_knn(app, training_id, config, dataset_path):
-    """Pipeline pelatihan IndoBERT-KNN-UMAP."""
     with app.app_context():
         training = Training.query.get(training_id)
         if not training:
@@ -61,16 +57,17 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             df = pd.read_csv(dataset_path)
             log(f"Dataset loaded: {len(df)} baris, kolom: {list(df.columns)}", training_id)
 
-
             if 'kalimat' not in df.columns or 'emotion' not in df.columns:
                 raise ValueError("Dataset harus memiliki kolom 'kalimat' dan 'emotion'")
 
-            # Bersihkan label
             df['emotion_clean'] = df['emotion'].apply(clean_and_map_emotion)
-            invalid_labels = df[df['emotion_clean'].isna()]
-            if not invalid_labels.empty:
-                invalid_values = invalid_labels['emotion'].unique()
-                raise ValueError(f"Dataset mengandung label emosi tidak valid: {invalid_values}. Hanya 7 emosi yang diizinkan: {ALLOWED_EMOTIONS}")
+            before = len(df)
+            df = df.dropna(subset=['emotion_clean']).reset_index(drop=True)
+            after = len(df)
+            if before != after:
+                log(f"Dibuang {before - after} baris karena label emosi tidak valid / nan.", training_id)
+            if len(df) == 0:
+                raise ValueError("Tidak ada data valid setelah membersihkan label emosi.")
 
             texts = df['kalimat'].astype(str).tolist()
             labels = df['emotion_clean'].tolist()
@@ -87,7 +84,6 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             split_type = split_config.get('type', 'crossval')
             cv_folds = int(split_config.get('crossval', {}).get('folds', 5))
 
-            # Sesuaikan cv_folds
             if split_type == 'crossval' and cv_folds > total_samples:
                 log(f"Menyesuaikan cv_folds dari {cv_folds} menjadi {total_samples}", training_id)
                 cv_folds = total_samples
@@ -97,18 +93,22 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             max_seq_length = int(bert_params.get('maxSeqLength', 128))
             pooling = bert_params.get('pooling', 'CLS')
             batch_size = int(bert_params.get('batchSize', 16))
+            # NEW: simpan warmup & weight decay (belum dipakai)
+            warmup_ratio = float(bert_params.get('warmupRatio', 0.1))
+            weight_decay = float(bert_params.get('weightDecay', 0.01))
 
             umap_params = params.get('umap', {})
-            n_components = int(umap_params.get('nComponents', 25))
-            n_neighbors = int(umap_params.get('nNeighbors', 30))
-            min_dist = float(umap_params.get('minDist', 0.1))
-            metric = umap_params.get('metric', 'cosine')
-            umap_random_state = int(umap_params.get('randomState', 42))
-
-            if n_neighbors >= total_samples:
-                new_n_neighbors = max(2, total_samples - 1)
-                log(f"Menyesuaikan n_neighbors UMAP: {n_neighbors} -> {new_n_neighbors}", training_id)
-                n_neighbors = new_n_neighbors
+            use_umap = umap_params.get('enabled', True)   # NEW: UMAP toggle
+            if use_umap:
+                n_components = int(umap_params.get('nComponents', 25))
+                n_neighbors = int(umap_params.get('nNeighbors', 30))
+                min_dist = float(umap_params.get('minDist', 0.1))
+                metric = umap_params.get('metric', 'cosine')
+                umap_random_state = int(umap_params.get('randomState', 42))
+                if n_neighbors >= total_samples:
+                    new_n_neighbors = max(2, total_samples - 1)
+                    log(f"Menyesuaikan n_neighbors UMAP: {n_neighbors} -> {new_n_neighbors}", training_id)
+                    n_neighbors = new_n_neighbors
 
             knn_params = params.get('knn', {})
             k = int(knn_params.get('k', 7))
@@ -121,6 +121,11 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             if k > total_samples:
                 k = max(1, total_samples - 1)
                 log(f"Menyesuaikan K: {knn_params.get('k')} -> {k}", training_id)
+
+            # NEW: Smart Hybrid parameters
+            hybrid_params = params.get('hybrid', {})
+            hybrid_method = hybrid_params.get('method', 'none')  # 'confidence', 'weighted', 'none'
+            hybrid_alpha = float(hybrid_params.get('alpha', 0.7))
 
             # Progress awal
             training.progress = 5
@@ -174,29 +179,36 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             training.metrics['progress_message'] = f"Ekstraksi fitur selesai. Shape: {embeddings.shape}"
             db.session.commit()
 
-            # 5. UMAP
-            original_dim = embeddings.shape[1]
-            if n_components > original_dim:
-                n_components = original_dim
-            if n_components > total_samples:
-                n_components = total_samples
-            log(f"Memulai UMAP (n_neighbors={n_neighbors}, n_components={n_components})", training_id)
-            reducer = umap.UMAP(
-                n_components=n_components,
-                n_neighbors=n_neighbors,
-                min_dist=min_dist,
-                metric=metric,
-                random_state=umap_random_state,
-                verbose=True
-            )
-            embeddings_reduced = reducer.fit_transform(embeddings)
-            log(f"UMAP selesai. Shape reduced: {embeddings_reduced.shape}", training_id)
-            training.progress = 70
-            training.metrics['progress_message'] = f"Reduksi dimensi selesai. Dimensi: {embeddings_reduced.shape[1]}"
-            db.session.commit()
+            # 5. UMAP (opsional)
+            if use_umap:
+                original_dim = embeddings.shape[1]
+                if n_components > original_dim:
+                    n_components = original_dim
+                if n_components > total_samples:
+                    n_components = total_samples
+                log(f"Memulai UMAP (n_neighbors={n_neighbors}, n_components={n_components})", training_id)
+                reducer = umap.UMAP(
+                    n_components=n_components,
+                    n_neighbors=n_neighbors,
+                    min_dist=min_dist,
+                    metric=metric,
+                    random_state=umap_random_state,
+                    verbose=True
+                )
+                X = reducer.fit_transform(embeddings)
+                log(f"UMAP selesai. Shape reduced: {X.shape}", training_id)
+                training.progress = 70
+                training.metrics['progress_message'] = f"Reduksi dimensi selesai. Dimensi: {X.shape[1]}"
+                db.session.commit()
+            else:
+                log("UMAP dinonaktifkan, menggunakan embedding BERT mentah.", training_id)
+                X = embeddings
+                reducer = None  # tidak ada reducer yang disimpan
+                training.progress = 70
+                training.metrics['progress_message'] = "UMAP dilewati, langsung ke KNN."
+                db.session.commit()
 
             # 6. KNN
-            X = embeddings_reduced
             y = np.array(labels)
             le = LabelEncoder()
             y_encoded = le.fit_transform(y)
@@ -217,7 +229,7 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             db.session.commit()
             log("Memulai KNN dan evaluasi", training_id)
 
-            # Evaluasi adaptif
+            # --- Evaluasi dengan Smart Hybrid ---
             if split_type == 'percentage':
                 test_size = float(split_config.get('test', 20)) / 100.0
                 X_train, X_test, y_train, y_test = train_test_split(
@@ -225,7 +237,21 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                     shuffle=shuffle, stratify=y_encoded if stratified and len(np.unique(y_encoded)) > 1 else None
                 )
                 knn.fit(X_train, y_train)
-                y_pred = knn.predict(X_test)
+                proba_knn = knn.predict_proba(X_test)
+                # Hitung confidence (1 / (1 + mean distance))
+                dist, _ = knn.kneighbors(X_test)
+                mean_dist = np.mean(dist, axis=1)
+                confidence = 1.0 / (1.0 + mean_dist)
+                confidence = confidence.reshape(-1, 1)
+                # Terapkan hybrid
+                if hybrid_method == 'confidence':
+                    final_scores = proba_knn * confidence
+                elif hybrid_method == 'weighted':
+                    final_scores = hybrid_alpha * proba_knn + (1 - hybrid_alpha) * confidence
+                else:  # none
+                    final_scores = proba_knn
+                y_pred = np.argmax(final_scores, axis=1)
+
                 acc = accuracy_score(y_test, y_pred)
                 f1 = f1_score(y_test, y_pred, average='weighted')
                 precision = precision_score(y_test, y_pred, average='weighted', zero_division=0)
@@ -237,10 +263,13 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                     'precision': round(precision, 4),
                     'recall': round(recall, 4),
                     'confusion_matrix': cm,
-                    'class_labels': le.classes_.tolist()
+                    'class_labels': le.classes_.tolist(),
+                    'hybrid_method': hybrid_method,
+                    'use_umap': use_umap
                 }
-                knn.fit(X, y_encoded)
+                knn.fit(X, y_encoded)  # final model on full data
             else:
+                # Cross-validation dengan hybrid
                 unique, counts = np.unique(y_encoded, return_counts=True)
                 min_class_count = counts.min()
                 max_possible_folds = min_class_count
@@ -252,7 +281,19 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                         shuffle=True, stratify=y_encoded if len(np.unique(y_encoded)) > 1 else None
                     )
                     knn.fit(X_train, y_train)
-                    y_pred = knn.predict(X_test)
+                    proba_knn = knn.predict_proba(X_test)
+                    dist, _ = knn.kneighbors(X_test)
+                    mean_dist = np.mean(dist, axis=1)
+                    confidence = 1.0 / (1.0 + mean_dist)
+                    confidence = confidence.reshape(-1, 1)
+                    if hybrid_method == 'confidence':
+                        final_scores = proba_knn * confidence
+                    elif hybrid_method == 'weighted':
+                        final_scores = hybrid_alpha * proba_knn + (1 - hybrid_alpha) * confidence
+                    else:
+                        final_scores = proba_knn
+                    y_pred = np.argmax(final_scores, axis=1)
+
                     acc = accuracy_score(y_test, y_pred)
                     f1 = f1_score(y_test, y_pred, average='weighted')
                     precision = precision_score(y_test, y_pred, average='weighted', zero_division=0)
@@ -265,7 +306,9 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                         'recall': round(recall, 4),
                         'confusion_matrix': cm,
                         'class_labels': le.classes_.tolist(),
-                        'eval_method': 'percentage_split_fallback'
+                        'eval_method': 'percentage_split_fallback',
+                        'hybrid_method': hybrid_method,
+                        'use_umap': use_umap
                     }
                     knn.fit(X, y_encoded)
                 else:
@@ -274,13 +317,39 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                         cv_folds = max_possible_folds
 
                     skf = StratifiedKFold(n_splits=cv_folds, shuffle=shuffle, random_state=random_state)
-                    cv_scores = cross_val_score(knn, X, y_encoded, cv=skf, scoring='accuracy')
-                    acc = cv_scores.mean()
-                    y_pred_cv = cross_val_predict(knn, X, y_encoded, cv=skf)
-                    f1 = f1_score(y_encoded, y_pred_cv, average='weighted')
-                    precision = precision_score(y_encoded, y_pred_cv, average='weighted', zero_division=0)
-                    recall = recall_score(y_encoded, y_pred_cv, average='weighted', zero_division=0)
-                    cm = confusion_matrix(y_encoded, y_pred_cv).tolist()
+
+                    # Dapatkan probabilitas dan confidence untuk semua data melalui CV
+                    proba_knn = cross_val_predict(knn, X, y_encoded, cv=skf, method='predict_proba')
+                    # Untuk confidence, kita perlu jarak. Lakukan manual loop agar akurat.
+                    confidences = []
+                    for train_idx, test_idx in skf.split(X, y_encoded):
+                        X_tr, X_te = X[train_idx], X[test_idx]
+                        y_tr = y_encoded[train_idx]
+                        knn_cv = KNeighborsClassifier(
+                            n_neighbors=k, metric=knn_metric, weights=weights,
+                            algorithm=algorithm, leaf_size=leaf_size, p=p, n_jobs=-1
+                        )
+                        knn_cv.fit(X_tr, y_tr)
+                        dist, _ = knn_cv.kneighbors(X_te)
+                        mean_dist = np.mean(dist, axis=1)
+                        conf = 1.0 / (1.0 + mean_dist)
+                        confidences.append(conf)
+                    confidence = np.concatenate(confidences).reshape(-1, 1)
+
+                    if hybrid_method == 'confidence':
+                        final_scores = proba_knn * confidence
+                    elif hybrid_method == 'weighted':
+                        final_scores = hybrid_alpha * proba_knn + (1 - hybrid_alpha) * confidence
+                    else:
+                        final_scores = proba_knn
+
+                    y_pred = np.argmax(final_scores, axis=1)
+                    acc = accuracy_score(y_encoded, y_pred)
+                    f1 = f1_score(y_encoded, y_pred, average='weighted')
+                    precision = precision_score(y_encoded, y_pred, average='weighted', zero_division=0)
+                    recall = recall_score(y_encoded, y_pred, average='weighted', zero_division=0)
+                    cm = confusion_matrix(y_encoded, y_pred).tolist()
+
                     metrics = {
                         'accuracy': round(acc, 4),
                         'f1_score': round(f1, 4),
@@ -288,7 +357,9 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                         'recall': round(recall, 4),
                         'confusion_matrix': cm,
                         'cv_folds': cv_folds,
-                        'class_labels': le.classes_.tolist()
+                        'class_labels': le.classes_.tolist(),
+                        'hybrid_method': hybrid_method,
+                        'use_umap': use_umap
                     }
                     knn.fit(X, y_encoded)
 
@@ -304,13 +375,14 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             artifacts = {
                 'tokenizer': tokenizer,
                 'bert_model': model,
-                'umap_reducer': reducer,
+                'umap_reducer': reducer if use_umap else None,
                 'knn_classifier': knn,
                 'label_encoder': le,
                 'config': params,
                 'pooling': pooling,
                 'max_seq_length': max_seq_length,
-                'device': str(device)
+                'device': str(device),
+                'use_umap': use_umap
             }
             joblib.dump(artifacts, model_path)
             log(f"Model disimpan di {model_path}", training_id)
