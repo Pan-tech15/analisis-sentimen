@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
@@ -161,7 +161,7 @@
         </main>
     </div>
 
-    <!-- Modal (hanya satu definisi) -->
+    <!-- Modal Tambah/Edit Model -->
     <div id="modelModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50 modal-backdrop">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden relative transform transition-all modal-container">
             <div id="modalHeader" class="sticky top-0 bg-blue-600 border-b px-6 py-4 flex justify-between items-center rounded-t-2xl text-white z-10">
@@ -213,27 +213,27 @@
                 const data = await response.json();
                 if (!Array.isArray(data)) { console.error("Response bukan array:", data); return; }
 
-models = data.map(item => {
-    let algo = 'nb-lexicon';
-    if (item.algorithm === 'IndoBERT-KNN') {
-        // Cek apakah UMAP dimatikan dan hybrid aktif -> anggap smart-hybrid
-        const umapEnabled = item.params?.umap?.enabled ?? true;
-        const hybridMethod = item.params?.hybrid?.method ?? 'none';
-        if (!umapEnabled && hybridMethod !== 'none') {
-            algo = 'smart-hybrid';
-        } else {
-            algo = 'hybrid';
-        }
-    } else if (item.algorithm === 'Lexicon-NB') {
-        algo = 'nb-lexicon';
-    }
-    return {
-        id: item.id,
-        name: item.name,
-        algo: algo,
-        config: item.params
-    };
-});
+                models = data.map(item => {
+                    let algo = 'nb-lexicon';
+                    if (item.algorithm === 'IndoBERT-KNN') {
+                        // Cek apakah UMAP dimatikan dan hybrid aktif -> anggap smart-hybrid
+                        const umapEnabled = item.params?.umap?.enabled ?? true;
+                        const hybridMethod = item.params?.hybrid?.method ?? 'none';
+                        if (!umapEnabled && hybridMethod !== 'none') {
+                            algo = 'smart-hybrid';
+                        } else {
+                            algo = 'hybrid';
+                        }
+                    } else if (item.algorithm === 'Lexicon-NB') {
+                        algo = 'nb-lexicon';
+                    }
+                    return {
+                        id: item.id,
+                        name: item.name,
+                        algo: algo,
+                        config: item.params
+                    };
+                });
                 renderModelTable();
             } catch (error) {
                 console.error("Error loading models:", error);
@@ -251,16 +251,26 @@ models = data.map(item => {
                     batchSize: "16", learningRate: "2e-5", optimizer: "AdamW",
                     warmupRatio: "0.1", weightDecay: "0.01"
                 },
-                umap: { enabled: true, nComponents: "25", nNeighbors: "30", minDist: "0.1", metric: "cosine", randomState: "42" },
+                umap: { nComponents: "25", nNeighbors: "30", minDist: "0.1", metric: "cosine", randomState: "42" },
                 knn: { k: "7", metric: "cosine", weights: "distance", algorithm: "auto", leafSize: "30", p: "2" },
                 hybrid: { method: "confidence", alpha: "0.7" }
             };
         }
 
         function getDefaultSmartHybridConfig() {
-            const cfg = getDefaultHybridConfig();
-            cfg.umap.enabled = false;
-            cfg.hybrid.method = "confidence";
+            // Smart Hybrid TIDAK punya UMAP
+            const cfg = {
+                general: { randomState: "42", shuffle: "yes", stratified: "yes", earlyStopping: "0", parallel: "no" },
+                split: { type: "percentage", train: "80", test: "20", crossval: { folds: "10", epochPerFold: "3" } },
+                indobert: {
+                    modelName: "indobenchmark/indobert-base-p2", maxSeqLength: "128", pooling: "CLS",
+                    batchSize: "16", learningRate: "2e-5", optimizer: "AdamW",
+                    warmupRatio: "0.1", weightDecay: "0.01"
+                },
+                // tanpa umap
+                knn: { k: "7", metric: "cosine", weights: "distance", algorithm: "auto", leafSize: "30", p: "2" },
+                hybrid: { method: "confidence", alpha: "0.7" }
+            };
             return cfg;
         }
 
@@ -355,6 +365,7 @@ models = data.map(item => {
             `;
 
             if (isHybrid) {
+                // IndoBERT section (sama untuk hybrid dan smart-hybrid)
                 html += `
                 <div class="mb-4 p-4 rounded-lg border ${borderColor} ${bgHeader}">
                     <h3 class="font-bold ${textHeader} mb-3">IndoBERT</h3>
@@ -371,18 +382,12 @@ models = data.map(item => {
                 </div>
                 `;
 
-                const umapEnabled = config.umap?.enabled !== false;
-                html += `
-                <div class="mb-4 p-4 rounded-lg border ${borderColor} ${bgHeader}">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="font-bold ${textHeader}">UMAP</h3>
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="checkbox" name="umap_enabled" ${umapEnabled ? 'checked' : ''} class="sr-only peer" id="umapToggle" ${isSmart ? 'disabled' : ''}>
-                            <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                            <span class="ms-3 text-sm font-medium text-gray-700">Aktifkan UMAP</span>
-                        </label>
-                    </div>
-                    <div id="umapParams" style="display: ${umapEnabled && !isSmart ? 'block' : 'none'};">
+                // UMAP section: hanya untuk hybrid (bukan smart)
+                if (!isSmart) {
+                    // Parameter UMAP tanpa tombol on/off, langsung ditampilkan
+                    html += `
+                    <div class="mb-4 p-4 rounded-lg border ${borderColor} ${bgHeader}">
+                        <h3 class="font-bold ${textHeader} mb-3">UMAP</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div><label>n_components</label><input type="number" name="umap_nComponents" value="${config.umap.nComponents||'25'}" class="w-full border rounded p-2"></div>
                             <div><label>n_neighbors</label><input type="number" name="umap_nNeighbors" value="${config.umap.nNeighbors||'30'}" class="w-full border rounded p-2"></div>
@@ -391,9 +396,10 @@ models = data.map(item => {
                             <div><label>random_state</label><input type="number" name="umap_randomState" value="${config.umap.randomState||'42'}" class="w-full border rounded p-2"></div>
                         </div>
                     </div>
-                </div>
-                `;
+                    `;
+                } // else: smart-hybrid tidak ada UMAP
 
+                // KNN section (sama untuk hybrid dan smart-hybrid)
                 html += `
                 <div class="mb-4 p-4 rounded-lg border ${borderColor} ${bgHeader}">
                     <h3 class="font-bold ${textHeader} mb-3">KNN</h3>
@@ -408,6 +414,7 @@ models = data.map(item => {
                 </div>
                 `;
 
+                // Smart Hybrid section (metode hybrid)
                 html += `
                 <div class="mb-4 p-4 rounded-lg border ${borderColor} ${bgHeader}">
                     <h3 class="font-bold ${textHeader} mb-3">Smart Hybrid (KNN + Confidence)</h3>
@@ -427,7 +434,7 @@ models = data.map(item => {
                 </div>
                 `;
             } else {
-                // NB-Lexicon (sama seperti sebelumnya)
+                // NB-Lexicon (tetap seperti sebelumnya)
                 html += `
                 <div class="mb-4 p-4 rounded-lg border ${borderColor} ${bgHeader}">
                     <h3 class="font-bold ${textHeader} mb-3">Lexicon</h3>
@@ -459,16 +466,7 @@ models = data.map(item => {
 
             container.innerHTML = html;
 
-            // Toggle UMAP
-            const umapToggle = document.getElementById('umapToggle');
-            const umapParamsDiv = document.getElementById('umapParams');
-            if (umapToggle) {
-                const updateUmap = () => { umapParamsDiv.style.display = umapToggle.checked ? 'block' : 'none'; };
-                umapToggle.addEventListener('change', updateUmap);
-                updateUmap();
-            }
-
-            // Toggle bobot hybrid
+            // Toggle bobot hybrid (weighted)
             const hybridMethod = document.querySelector('select[name="hybrid_method"]');
             const weightDiv = document.getElementById('hybridWeightDiv');
             if (hybridMethod) {
@@ -574,14 +572,17 @@ models = data.map(item => {
                     warmupRatio: formData.get('bert_warmupRatio') || '0.1',
                     weightDecay: formData.get('bert_weightDecay') || '0.01'
                 };
-                params.umap = {
-                    enabled: algo === 'smart-hybrid' ? false : (document.getElementById('umapToggle')?.checked ?? true),
-                    nComponents: formData.get('umap_nComponents'),
-                    nNeighbors: formData.get('umap_nNeighbors'),
-                    minDist: formData.get('umap_minDist'),
-                    metric: formData.get('umap_metric'),
-                    randomState: formData.get('umap_randomState')
-                };
+                // Untuk hybrid (dengan UMAP) tambahkan umap, untuk smart-hybrid jangan
+                if (algo === 'hybrid') {
+                    params.umap = {
+                        nComponents: formData.get('umap_nComponents'),
+                        nNeighbors: formData.get('umap_nNeighbors'),
+                        minDist: formData.get('umap_minDist'),
+                        metric: formData.get('umap_metric'),
+                        randomState: formData.get('umap_randomState')
+                    };
+                } // smart-hybrid tidak punya umap
+
                 params.knn = {
                     k: formData.get('knn_k'), metric: formData.get('knn_metric'), weights: formData.get('knn_weights'),
                     algorithm: formData.get('knn_algorithm'), leafSize: formData.get('knn_leafSize'), p: formData.get('knn_p')
