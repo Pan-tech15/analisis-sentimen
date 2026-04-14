@@ -27,7 +27,14 @@ class ModelConfig(db.Model):
     @staticmethod
     def validate_params(algorithm, params):
         if algorithm == 'IndoBERT-KNN':
-            required = ['general', 'split', 'indobert', 'umap', 'knn']
+            required = ['general', 'split', 'indobert', 'knn']  # Hapus 'umap' dari required
+            # UMAP boleh tidak ada atau ada dengan properti minimal
+            if 'umap' in params:
+                # Jika ada, pastikan memiliki field 'enabled'
+                if not isinstance(params['umap'], dict):
+                    raise ValueError("Parameter 'umap' harus berupa objek.")
+                # Tidak perlu validasi ketat, karena pipeline akan menggunakan default jika kurang
+            # Hybrid juga opsional, tidak wajib ada
         elif algorithm == 'Lexicon-NB':
             required = ['general', 'split', 'naivebayes', 'fusion']
         else:
