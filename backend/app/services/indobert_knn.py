@@ -116,7 +116,13 @@ def train_indobert_knn(app, training_id, config, dataset_path):
 
             # --- Parameter UMAP ---
             umap_params = params.get('umap', {})
-            use_umap_raw = umap_params.get('enabled', True)
+            use_umap = False
+            if umap_params:
+                use_umap_raw = umap_params.get('enabled', False)
+                if isinstance(use_umap_raw, str):
+                    use_umap = use_umap_raw.lower() == 'true'
+                else:
+                    use_umap = bool(use_umap_raw)
             if isinstance(use_umap_raw, str):
                 use_umap = use_umap_raw.lower() == 'true'
             else:

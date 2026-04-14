@@ -45,7 +45,7 @@ def create_app():
     from app.routes.idiom import idiom_bp
     app.register_blueprint(idiom_bp)
 
-    from app.routes.processing import processing_bp
+    from backend.app.routes.pengaturan import processing_bp
     app.register_blueprint(processing_bp)
 
     from app.routes.training import training_bp
