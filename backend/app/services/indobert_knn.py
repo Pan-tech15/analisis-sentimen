@@ -8,10 +8,12 @@ import joblib
 from datetime import datetime
 
 # ML Libraries
-from transformers import AutoTokenizer, AutoModel
 import torch
+import torch.nn as nn
+from torch.utils.data import Dataset, DataLoader
+from transformers import AutoTokenizer, AutoModel, AdamW, get_linear_schedule_with_warmup
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import StratifiedKFold, cross_val_score, train_test_split, cross_val_predict
+from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix
 from sklearn.preprocessing import LabelEncoder
 import umap
@@ -39,8 +41,62 @@ def clean_and_map_emotion(raw_value):
     s = str(raw_value).strip().lower()
     return s if s in ALLOWED_EMOTIONS else None
 
+class EmotionDataset(Dataset):
+    def __init__(self, texts, labels, tokenizer, max_length):
+        self.texts = texts
+        self.labels = labels
+        self.tokenizer = tokenizer
+        self.max_length = max_length
+
+    def __len__(self):
+        return len(self.texts)
+
+    def __getitem__(self, idx):
+        text = str(self.texts[idx])
+        label = self.labels[idx]
+        encoding = self.tokenizer(
+            text,
+            truncation=True,
+            padding='max_length',
+            max_length=self.max_length,
+            return_tensors='pt'
+        )
+        return {
+            'input_ids': encoding['input_ids'].flatten(),
+            'attention_mask': encoding['attention_mask'].flatten(),
+            'labels': torch.tensor(label, dtype=torch.long)
+        }
+
+class IndoBERTClassifier(nn.Module):
+    def __init__(self, model_name, num_classes, freeze_layers=0, pooling='MEAN'):
+        super().__init__()
+        self.bert = AutoModel.from_pretrained(model_name)
+        self.pooling = pooling
+        # Bekukan layer tertentu
+        if freeze_layers > 0:
+            for i, layer in enumerate(self.bert.encoder.layer):
+                if i < freeze_layers:
+                    for param in layer.parameters():
+                        param.requires_grad = False
+        hidden_size = self.bert.config.hidden_size
+        self.classifier = nn.Linear(hidden_size, num_classes)
+        self.dropout = nn.Dropout(0.1)
+
+    def forward(self, input_ids, attention_mask):
+        outputs = self.bert(input_ids=input_ids, attention_mask=attention_mask)
+        if self.pooling == 'CLS':
+            pooled = outputs.last_hidden_state[:, 0, :]
+        elif self.pooling == 'MEAN':
+            pooled = outputs.last_hidden_state.mean(dim=1)
+        elif self.pooling == 'MAX':
+            pooled = outputs.last_hidden_state.max(dim=1).values
+        else:
+            pooled = outputs.last_hidden_state[:, 0, :]
+        pooled = self.dropout(pooled)
+        logits = self.classifier(pooled)
+        return logits
+
 def train_indobert_knn(app, training_id, config, dataset_path):
-    """Pipeline pelatihan IndoBERT‑KNN dengan UMAP opsional dan Smart Hybrid."""
     with app.app_context():
         training = Training.query.get(training_id)
         if not training:
@@ -59,7 +115,6 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             if 'kalimat' not in df.columns or 'emotion' not in df.columns:
                 raise ValueError("Dataset harus memiliki kolom 'kalimat' dan 'emotion'")
 
-            # Bersihkan label emosi
             df['emotion_clean'] = df['emotion'].apply(clean_and_map_emotion)
             before = len(df)
             df = df.dropna(subset=['emotion_clean']).reset_index(drop=True)
@@ -76,67 +131,64 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             log(f"Jumlah sampel setelah validasi: {total_samples}", training_id)
             log(f"Label unik: {set(labels)}", training_id)
 
+            # Encode labels
+            le = LabelEncoder()
+            y_encoded = le.fit_transform(labels)
+            num_classes = len(le.classes_)
+            log(f"Label encoded: {le.classes_}", training_id)
+
             # ========== 2. Baca parameter dari config ==========
             params = config.params
 
             # --- Parameter umum ---
             general = params.get('general', {})
             random_state = int(general.get('randomState', 42))
-
-            # Konversi boolean dari string "yes"/"no" atau bool
             def to_bool(val, default=True):
-                if isinstance(val, bool):
-                    return val
-                if isinstance(val, str):
-                    return val.lower() in ('yes', 'true', '1')
+                if isinstance(val, bool): return val
+                if isinstance(val, str): return val.lower() in ('yes', 'true', '1')
                 return default
-
             shuffle = to_bool(general.get('shuffle', 'yes'))
             stratified = to_bool(general.get('stratified', 'yes'))
-            # early_stopping dan parallel tidak dipakai di pipeline saat ini
 
             split_config = params.get('split', {})
             split_type = split_config.get('type', 'crossval')
             cv_folds = int(split_config.get('crossval', {}).get('folds', 5))
             if split_type == 'crossval' and cv_folds > total_samples:
-                log(f"Menyesuaikan cv_folds dari {cv_folds} menjadi {total_samples}", training_id)
                 cv_folds = total_samples
 
             # --- Parameter IndoBERT ---
             bert_params = params.get('indobert', {})
             model_name = bert_params.get('modelName', 'indobenchmark/indobert-base-p2')
             max_seq_length = int(bert_params.get('maxSeqLength', 128))
-            pooling = bert_params.get('pooling', 'CLS')
-            batch_size = int(bert_params.get('batchSize', 16))
-            # Fine‑tuning parameters (disimpan, belum dipakai)
-            learning_rate = float(bert_params.get('learningRate', 2e-5))
-            optimizer_name = bert_params.get('optimizer', 'AdamW')
-            warmup_ratio = float(bert_params.get('warmupRatio', 0.1))
-            weight_decay = float(bert_params.get('weightDecay', 0.01))
+            pooling = bert_params.get('pooling', 'MEAN')
+            batch_size = int(bert_params.get('batchSize', 32))
+
+            # --- Parameter Fine‑Tuning ---
+            finetune_params = params.get('finetune', {})
+            do_finetune = to_bool(finetune_params.get('enabled', False))
+            ft_epochs = int(finetune_params.get('epochs', 3))
+            ft_lr = float(finetune_params.get('learningRate', 2e-5))
+            ft_optimizer = finetune_params.get('optimizer', 'AdamW')
+            ft_weight_decay = float(finetune_params.get('weightDecay', 0.01))
+            ft_warmup_ratio = float(finetune_params.get('warmupRatio', 0.1))
+            ft_freeze_layers = int(finetune_params.get('freezeLayers', 9))
+            ft_grad_accum = int(finetune_params.get('gradientAccumulation', 1))
+            ft_max_grad_norm = float(finetune_params.get('maxGradNorm', 1.0))
 
             # --- Parameter UMAP ---
             umap_params = params.get('umap', {})
             use_umap = False
             if umap_params:
-                use_umap_raw = umap_params.get('enabled', False)
-                if isinstance(use_umap_raw, str):
-                    use_umap = use_umap_raw.lower() == 'true'
+                umap_enabled = umap_params.get('enabled', False)
+                if isinstance(umap_enabled, str):
+                    use_umap = umap_enabled.lower() == 'true'
                 else:
-                    use_umap = bool(use_umap_raw)
-            if isinstance(use_umap_raw, str):
-                use_umap = use_umap_raw.lower() == 'true'
-            else:
-                use_umap = bool(use_umap_raw)
-
-            n_components = int(umap_params.get('nComponents', 25))
+                    use_umap = bool(umap_enabled)
+            n_components = int(umap_params.get('nComponents', 50))
             n_neighbors = int(umap_params.get('nNeighbors', 30))
             min_dist = float(umap_params.get('minDist', 0.1))
-            metric = umap_params.get('metric', 'cosine')
+            umap_metric = umap_params.get('metric', 'cosine')
             umap_random_state = int(umap_params.get('randomState', 42))
-
-            log(f"DEBUG: Full umap_params = {umap_params}", training_id)
-            log(f"DEBUG: use_umap_raw = {use_umap_raw} (type: {type(use_umap_raw).__name__})", training_id)
-            log(f"DEBUG: use_umap = {use_umap}", training_id)
 
             # --- Parameter KNN ---
             knn_params = params.get('knn', {})
@@ -146,72 +198,136 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             algorithm = knn_params.get('algorithm', 'auto')
             leaf_size = int(knn_params.get('leafSize', 30))
             p = int(knn_params.get('p', 2))
-
             if k > total_samples:
                 k = max(1, total_samples - 1)
                 log(f"Menyesuaikan K: {knn_params.get('k')} -> {k}", training_id)
 
-            # --- Parameter Smart Hybrid ---
+            # --- Parameter Confidence Adjustment (Hybrid) ---
             hybrid_params = params.get('hybrid', {})
-            hybrid_method = hybrid_params.get('method', 'none')  # 'confidence', 'weighted', 'none'
+            hybrid_method = hybrid_params.get('method', 'none')
             hybrid_alpha = float(hybrid_params.get('alpha', 0.7))
 
             # ========== 3. Update progress awal ==========
             training.progress = 5
-            training.metrics = {'progress_message': 'Memulai ekstraksi fitur IndoBERT...'}
+            training.metrics = {'progress_message': 'Memulai proses...'}
             db.session.commit()
-            log("Memulai ekstraksi fitur IndoBERT...", training_id)
 
-            # ========== 4. Load model IndoBERT ==========
-            log(f"Loading IndoBERT model: {model_name}", training_id)
             device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
             log(f"Device: {device}", training_id)
-            tokenizer = AutoTokenizer.from_pretrained(model_name)
-            model = AutoModel.from_pretrained(model_name).to(device)
-            model.eval()
-            training.progress = 10
-            training.metrics['progress_message'] = 'Model dimuat, ekstraksi fitur...'
-            db.session.commit()
-            log("Model IndoBERT dimuat", training_id)
 
-            # ========== 5. Ekstraksi fitur BERT ==========
+            tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+            # ========== 4. Fine‑Tuning (jika diaktifkan) ==========
+            if do_finetune:
+                log("Memulai Fine‑Tuning IndoBERT...", training_id)
+                training.progress = 10
+                training.metrics['progress_message'] = 'Fine‑Tuning IndoBERT...'
+                db.session.commit()
+
+                # Bagi data train/val untuk fine‑tuning (80/20)
+                X_train, X_val, y_train, y_val = train_test_split(
+                    texts, y_encoded, test_size=0.2, random_state=random_state,
+                    stratify=y_encoded if stratified else None
+                )
+                train_dataset = EmotionDataset(X_train, y_train, tokenizer, max_seq_length)
+                val_dataset = EmotionDataset(X_val, y_val, tokenizer, max_seq_length)
+                train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+                val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+
+                model = IndoBERTClassifier(model_name, num_classes, freeze_layers=ft_freeze_layers, pooling=pooling)
+                model.to(device)
+
+                # Optimizer
+                if ft_optimizer.lower() == 'adamw':
+                    optimizer = AdamW(model.parameters(), lr=ft_lr, weight_decay=ft_weight_decay)
+                elif ft_optimizer.lower() == 'adam':
+                    optimizer = torch.optim.Adam(model.parameters(), lr=ft_lr, weight_decay=ft_weight_decay)
+                else:
+                    optimizer = torch.optim.SGD(model.parameters(), lr=ft_lr, weight_decay=ft_weight_decay)
+
+                total_steps = len(train_loader) * ft_epochs // ft_grad_accum
+                warmup_steps = int(total_steps * ft_warmup_ratio)
+                scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps, num_training_steps=total_steps)
+
+                criterion = nn.CrossEntropyLoss()
+
+                for epoch in range(ft_epochs):
+                    model.train()
+                    total_loss = 0
+                    for step, batch in enumerate(train_loader):
+                        input_ids = batch['input_ids'].to(device)
+                        attention_mask = batch['attention_mask'].to(device)
+                        labels = batch['labels'].to(device)
+                        logits = model(input_ids, attention_mask)
+                        loss = criterion(logits, labels)
+                        loss = loss / ft_grad_accum
+                        loss.backward()
+                        if (step + 1) % ft_grad_accum == 0:
+                            torch.nn.utils.clip_grad_norm_(model.parameters(), ft_max_grad_norm)
+                            optimizer.step()
+                            scheduler.step()
+                            optimizer.zero_grad()
+                        total_loss += loss.item() * ft_grad_accum
+
+                    avg_loss = total_loss / len(train_loader)
+                    log(f"Epoch {epoch+1}/{ft_epochs} - Loss: {avg_loss:.4f}", training_id)
+                    training.progress = 10 + int((epoch+1) / ft_epochs * 20)
+                    training.metrics['progress_message'] = f'Fine‑Tuning epoch {epoch+1}/{ft_epochs}'
+                    db.session.commit()
+
+                # Simpan model fine‑tuned untuk ekstraksi fitur nanti
+                ft_model = model
+                log("Fine‑Tuning selesai.", training_id)
+            else:
+                # Load model pre‑trained tanpa fine‑tuning
+                ft_model = AutoModel.from_pretrained(model_name).to(device)
+                log("Menggunakan model pre‑trained tanpa fine‑tuning.", training_id)
+
+            # ========== 5. Ekstraksi fitur (embedding) ==========
+            training.progress = 30
+            training.metrics['progress_message'] = 'Ekstraksi fitur...'
+            db.session.commit()
+            log("Memulai ekstraksi fitur...", training_id)
+
+            ft_model.eval()
             embeddings = []
             start_time = time.time()
-            for i in range(0, total_samples, batch_size):
-                batch_texts = texts[i:i+batch_size]
-                encoded = tokenizer(batch_texts, padding=True, truncation=True,
-                                    max_length=max_seq_length, return_tensors='pt').to(device)
-                with torch.no_grad():
-                    outputs = model(**encoded)
-                if pooling == 'CLS':
-                    batch_emb = outputs.last_hidden_state[:, 0, :].cpu().numpy()
-                elif pooling == 'MEAN':
-                    batch_emb = outputs.last_hidden_state.mean(dim=1).cpu().numpy()
-                elif pooling == 'MAX':
-                    batch_emb = outputs.last_hidden_state.max(dim=1).values.cpu().numpy()
-                else:
-                    batch_emb = outputs.last_hidden_state[:, 0, :].cpu().numpy()
-                embeddings.append(batch_emb)
+            with torch.no_grad():
+                for i in range(0, total_samples, batch_size):
+                    batch_texts = texts[i:i+batch_size]
+                    encoded = tokenizer(batch_texts, padding=True, truncation=True,
+                                        max_length=max_seq_length, return_tensors='pt').to(device)
+                    if do_finetune:
+                        # Gunakan output dari model classifier (sebelum linear) atau dari BERT
+                        # Kita bisa mengambil representasi dari layer sebelum classifier
+                        outputs = ft_model.bert(**encoded)
+                    else:
+                        outputs = ft_model(**encoded)
+                    if pooling == 'CLS':
+                        batch_emb = outputs.last_hidden_state[:, 0, :].cpu().numpy()
+                    elif pooling == 'MEAN':
+                        batch_emb = outputs.last_hidden_state.mean(dim=1).cpu().numpy()
+                    elif pooling == 'MAX':
+                        batch_emb = outputs.last_hidden_state.max(dim=1).values.cpu().numpy()
+                    else:
+                        batch_emb = outputs.last_hidden_state[:, 0, :].cpu().numpy()
+                    embeddings.append(batch_emb)
 
-                progress = 10 + int(((i + len(batch_texts)) / total_samples) * 40)
-                elapsed = time.time() - start_time
-                if i % (batch_size * 5) == 0 or i + len(batch_texts) >= total_samples:
-                    msg = f"Ekstraksi fitur: {min(i+len(batch_texts), total_samples)}/{total_samples} (progress {progress}%, elapsed {elapsed:.1f}s)"
-                    log(msg, training_id)
-                    training.progress = progress
-                    training.metrics['progress_message'] = msg
-                    db.session.commit()
+                    progress = 30 + int(((i + len(batch_texts)) / total_samples) * 30)
+                    if i % (batch_size * 5) == 0 or i + len(batch_texts) >= total_samples:
+                        elapsed = time.time() - start_time
+                        msg = f"Ekstraksi: {min(i+len(batch_texts), total_samples)}/{total_samples} (progress {progress}%)"
+                        log(msg, training_id)
+                        training.progress = progress
+                        training.metrics['progress_message'] = msg
+                        db.session.commit()
 
             embeddings = np.vstack(embeddings)
             log(f"Ekstraksi fitur selesai. Shape: {embeddings.shape}", training_id)
-            training.progress = 55
-            training.metrics['progress_message'] = f"Ekstraksi fitur selesai. Shape: {embeddings.shape}"
-            db.session.commit()
 
             # ========== 6. UMAP (opsional) ==========
             reducer = None
             if use_umap:
-                # Sesuaikan parameter UMAP dengan data
                 original_dim = embeddings.shape[1]
                 if n_components > original_dim:
                     n_components = original_dim
@@ -219,60 +335,40 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                     n_components = total_samples
                 if n_neighbors >= total_samples:
                     n_neighbors = max(2, total_samples - 1)
-                    log(f"Menyesuaikan n_neighbors UMAP: -> {n_neighbors}", training_id)
-
-                log(f"Memulai UMAP (n_neighbors={n_neighbors}, n_components={n_components})", training_id)
+                log(f"UMAP: n_neighbors={n_neighbors}, n_components={n_components}", training_id)
                 reducer = umap.UMAP(
                     n_components=n_components,
                     n_neighbors=n_neighbors,
                     min_dist=min_dist,
-                    metric=metric,
+                    metric=umap_metric,
                     random_state=umap_random_state,
                     verbose=True
                 )
                 X = reducer.fit_transform(embeddings)
-                log(f"UMAP selesai. Shape reduced: {X.shape}", training_id)
-                training.progress = 70
-                training.metrics['progress_message'] = f"Reduksi dimensi selesai. Dimensi: {X.shape[1]}"
-                db.session.commit()
+                log(f"UMAP selesai. Shape: {X.shape}", training_id)
             else:
-                log("UMAP dinonaktifkan, menggunakan embedding BERT mentah.", training_id)
                 X = embeddings
-                training.progress = 70
-                training.metrics['progress_message'] = "UMAP dilewati, langsung ke KNN."
-                db.session.commit()
+                log("UMAP dilewati.", training_id)
 
-            # ========== 7. KNN dengan Smart Hybrid ==========
-            y = np.array(labels)
-            le = LabelEncoder()
-            y_encoded = le.fit_transform(y)
-            log(f"Label encoded: {le.classes_}", training_id)
+            training.progress = 70
+            training.metrics['progress_message'] = 'Memulai KNN dan evaluasi...'
+            db.session.commit()
 
+            # ========== 7. KNN dengan Confidence Adjustment ==========
             knn = KNeighborsClassifier(
-                n_neighbors=k,
-                metric=knn_metric,
-                weights=weights,
-                algorithm=algorithm,
-                leaf_size=leaf_size,
-                p=p,
-                n_jobs=-1
+                n_neighbors=k, metric=knn_metric, weights=weights,
+                algorithm=algorithm, leaf_size=leaf_size, p=p, n_jobs=-1
             )
 
-            training.progress = 75
-            training.metrics['progress_message'] = "Memulai pelatihan KNN dan evaluasi..."
-            db.session.commit()
-            log("Memulai KNN dan evaluasi", training_id)
-
-            # ---- Evaluasi sesuai split_type ----
+            # Evaluasi sesuai split_type (sama seperti sebelumnya, tidak diubah)
             if split_type == 'percentage':
                 test_size = float(split_config.get('test', 20)) / 100.0
                 X_train, X_test, y_train, y_test = train_test_split(
                     X, y_encoded, test_size=test_size, random_state=random_state,
-                    shuffle=shuffle, stratify=y_encoded if stratified and len(np.unique(y_encoded)) > 1 else None
+                    shuffle=shuffle, stratify=y_encoded if stratified and len(np.unique(y_encoded))>1 else None
                 )
                 knn.fit(X_train, y_train)
                 proba_knn = knn.predict_proba(X_test)
-                # Confidence berdasarkan jarak
                 dist, _ = knn.kneighbors(X_test)
                 mean_dist = np.mean(dist, axis=1)
                 confidence = 1.0 / (1.0 + mean_dist)
@@ -282,7 +378,7 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                     final_scores = proba_knn * confidence
                 elif hybrid_method == 'weighted':
                     final_scores = hybrid_alpha * proba_knn + (1 - hybrid_alpha) * confidence
-                else:  # none
+                else:
                     final_scores = proba_knn
 
                 y_pred = np.argmax(final_scores, axis=1)
@@ -300,41 +396,38 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                     'confusion_matrix': cm,
                     'class_labels': le.classes_.tolist(),
                     'hybrid_method': hybrid_method,
-                    'use_umap': use_umap
+                    'use_umap': use_umap,
+                    'finetuned': do_finetune
                 }
-                knn.fit(X, y_encoded)  # model final dengan seluruh data
+                knn.fit(X, y_encoded)
             else:
-                # Cross-validation
+                # Cross-validation (kode sama seperti sebelumnya, dengan penambahan metrics)
                 unique, counts = np.unique(y_encoded, return_counts=True)
                 min_class_count = counts.min()
                 max_possible_folds = min_class_count
-
                 if max_possible_folds < 2:
-                    log(f"Peringatan: Ada kelas dengan hanya {min_class_count} sampel. Beralih ke Percentage Split (80/20).", training_id)
+                    log("Fallback ke percentage split karena kelas tidak cukup.", training_id)
                     X_train, X_test, y_train, y_test = train_test_split(
-                        X, y_encoded, test_size=0.2, random_state=random_state,
-                        shuffle=True, stratify=y_encoded if len(np.unique(y_encoded)) > 1 else None
+                        X, y_encoded, test_size=0.2, random_state=random_state, shuffle=True,
+                        stratify=y_encoded if len(np.unique(y_encoded))>1 else None
                     )
                     knn.fit(X_train, y_train)
                     proba_knn = knn.predict_proba(X_test)
                     dist, _ = knn.kneighbors(X_test)
                     mean_dist = np.mean(dist, axis=1)
                     confidence = 1.0 / (1.0 + mean_dist).reshape(-1, 1)
-
                     if hybrid_method == 'confidence':
                         final_scores = proba_knn * confidence
                     elif hybrid_method == 'weighted':
                         final_scores = hybrid_alpha * proba_knn + (1 - hybrid_alpha) * confidence
                     else:
                         final_scores = proba_knn
-
                     y_pred = np.argmax(final_scores, axis=1)
                     acc = accuracy_score(y_test, y_pred)
                     f1 = f1_score(y_test, y_pred, average='weighted')
                     precision = precision_score(y_test, y_pred, average='weighted', zero_division=0)
                     recall = recall_score(y_test, y_pred, average='weighted', zero_division=0)
                     cm = confusion_matrix(y_test, y_pred).tolist()
-
                     metrics = {
                         'accuracy': round(acc, 4),
                         'f1_score': round(f1, 4),
@@ -342,27 +435,20 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                         'recall': round(recall, 4),
                         'confusion_matrix': cm,
                         'class_labels': le.classes_.tolist(),
-                        'eval_method': 'percentage_split_fallback',
                         'hybrid_method': hybrid_method,
-                        'use_umap': use_umap
+                        'use_umap': use_umap,
+                        'finetuned': do_finetune,
+                        'eval_method': 'percentage_split_fallback'
                     }
                     knn.fit(X, y_encoded)
                 else:
                     if cv_folds > max_possible_folds:
-                        log(f"Menyesuaikan cv_folds dari {cv_folds} menjadi {max_possible_folds}", training_id)
                         cv_folds = max_possible_folds
-
                     skf = StratifiedKFold(n_splits=cv_folds, shuffle=shuffle, random_state=random_state)
-
-                    # Kumpulkan proba dan confidence dari setiap fold
-                    proba_list = []
-                    conf_list = []
-                    y_true_list = []
-
+                    proba_list, conf_list, y_true_list = [], [], []
                     for train_idx, test_idx in skf.split(X, y_encoded):
                         X_tr, X_te = X[train_idx], X[test_idx]
                         y_tr, y_te = y_encoded[train_idx], y_encoded[test_idx]
-
                         knn_cv = KNeighborsClassifier(
                             n_neighbors=k, metric=knn_metric, weights=weights,
                             algorithm=algorithm, leaf_size=leaf_size, p=p, n_jobs=-1
@@ -372,29 +458,24 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                         dist, _ = knn_cv.kneighbors(X_te)
                         mean_dist = np.mean(dist, axis=1)
                         conf = 1.0 / (1.0 + mean_dist)
-
                         proba_list.append(proba)
                         conf_list.append(conf.reshape(-1, 1))
                         y_true_list.append(y_te)
-
                     proba_knn = np.vstack(proba_list)
                     confidence = np.vstack(conf_list)
                     y_true_all = np.concatenate(y_true_list)
-
                     if hybrid_method == 'confidence':
                         final_scores = proba_knn * confidence
                     elif hybrid_method == 'weighted':
                         final_scores = hybrid_alpha * proba_knn + (1 - hybrid_alpha) * confidence
                     else:
                         final_scores = proba_knn
-
                     y_pred = np.argmax(final_scores, axis=1)
                     acc = accuracy_score(y_true_all, y_pred)
                     f1 = f1_score(y_true_all, y_pred, average='weighted')
                     precision = precision_score(y_true_all, y_pred, average='weighted', zero_division=0)
                     recall = recall_score(y_true_all, y_pred, average='weighted', zero_division=0)
                     cm = confusion_matrix(y_true_all, y_pred).tolist()
-
                     metrics = {
                         'accuracy': round(acc, 4),
                         'f1_score': round(f1, 4),
@@ -404,23 +485,20 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                         'cv_folds': cv_folds,
                         'class_labels': le.classes_.tolist(),
                         'hybrid_method': hybrid_method,
-                        'use_umap': use_umap
+                        'use_umap': use_umap,
+                        'finetuned': do_finetune
                     }
                     knn.fit(X, y_encoded)
 
             log(f"Evaluasi selesai. Akurasi: {metrics['accuracy']}, F1: {metrics['f1_score']}", training_id)
-            training.progress = 90
-            training.metrics = metrics
-            training.metrics['progress_message'] = f"Evaluasi selesai. Akurasi: {metrics['accuracy']}"
-            db.session.commit()
 
             # ========== 8. Simpan model ==========
             model_filename = f"indobert_knn_{training_id}.pkl"
             model_path = os.path.join(MODEL_FOLDER, model_filename)
             artifacts = {
                 'tokenizer': tokenizer,
-                'bert_model': model,
-                'umap_reducer': reducer if use_umap else None,
+                'bert_model': ft_model,  # bisa jadi classifier atau bare model
+                'umap_reducer': reducer,
                 'knn_classifier': knn,
                 'label_encoder': le,
                 'config': params,
@@ -428,7 +506,8 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                 'max_seq_length': max_seq_length,
                 'device': str(device),
                 'use_umap': use_umap,
-                'hybrid_method': hybrid_method
+                'hybrid_method': hybrid_method,
+                'finetuned': do_finetune
             }
             joblib.dump(artifacts, model_path)
             log(f"Model disimpan di {model_path}", training_id)
@@ -436,9 +515,11 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             training.status = 'completed'
             training.progress = 100
             training.model_path = model_path
+            training.metrics = metrics
+            training.metrics['progress_message'] = f"Selesai. Akurasi: {metrics['accuracy']}"
             training.completed_at = datetime.utcnow()
             db.session.commit()
-            log(f"Training {training_id} selesai dengan sukses!", training_id)
+            log(f"Training {training_id} selesai!", training_id)
 
         except Exception as e:
             error_msg = f"ERROR: {str(e)}\n{traceback.format_exc()}"

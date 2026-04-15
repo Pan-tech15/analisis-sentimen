@@ -56,6 +56,17 @@
           </div>
         </div>
 
+                <!-- Konfigurasi Model -->
+        <div class="bg-white p-6 rounded-xl shadow-md mb-6">
+          <h2 class="font-semibold text-gray-700 mb-4 flex items-center">
+            <i class="fas fa-sliders-h mr-2 text-blue-600"></i>
+            Konfigurasi Model
+          </h2>
+          <div id="configContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+            <!-- Diisi oleh JavaScript -->
+          </div>
+        </div>
+
         <!-- Confusion Matrix -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-6">
           <h2 class="font-semibold text-gray-700 mb-2">
@@ -286,71 +297,177 @@
           };
         }
 
-        // ---------- FETCH DATA DARI API ----------
-        async function loadTrainingDetail() {
-          if (!trainingId) {
-            alert("ID training tidak ditemukan di URL");
-            return;
-          }
-          try {
-            const res = await fetch(`${API_BASE}/api/training/${trainingId}`);
-            if (!res.ok) throw new Error("Gagal memuat data training");
-            trainingData = await res.json();
-            console.log("Training data:", trainingData);
+        function renderConfigParams(params, algorithm) {
+      const container = document.getElementById('configContainer');
+      if (!container) return;
+      container.innerHTML = '';
 
-            // Isi info dataset & model
-            document.getElementById("datasetName").textContent =
-              trainingData.dataset_filename || "-";
-            document.getElementById("modelName").textContent =
-              trainingData.algorithm || "-";
+      if (!params) {
+        container.innerHTML = '<p class="text-gray-500 col-span-full">Konfigurasi tidak tersedia.</p>';
+        return;
+      }
 
-            metrics = trainingData.metrics || {};
+      function addItem(label, value, icon = 'fa-cog') {
+        const div = document.createElement('div');
+        div.className = 'flex items-start space-x-2 p-2 bg-gray-50 rounded-lg';
+        div.innerHTML = `
+          <i class="fas ${icon} text-blue-500 mt-1 w-5"></i>
+          <div>
+            <p class="text-xs text-gray-500">${label}</p>
+            <p class="font-medium text-gray-800 break-all">${value}</p>
+          </div>
+        `;
+        container.appendChild(div);
+      }
 
-            // Ambil confusion matrix dan label kelas
-            if (metrics.confusion_matrix) {
-              matrix = metrics.confusion_matrix;
-            } else {
-              console.warn("Confusion matrix tidak ditemukan");
-              matrix = [];
-            }
-            if (metrics.class_labels) {
-              labels = metrics.class_labels;
-            } else {
-              labels = [
-                "Senang",
-                "Percaya",
-                "Terkejut",
-                "Netral",
-                "Takut",
-                "Sedih",
-                "Marah",
-              ];
-              console.warn("Label kelas tidak ditemukan, menggunakan default");
-            }
+      // Data Split
+      const split = params.split || {};
+      addItem('Pembagian Data',
+        split.type === 'crossval'
+          ? `Cross Validation (${split.crossval?.folds || '-'} folds)`
+          : `Percentage Split (${split.train || '-'}:${split.test || '-'})`,
+        'fa-code-branch');
 
-            // Gambar heatmap
-            drawHeatmap();
+      // General
+      const general = params.general || {};
+      addItem('Random State', general.randomState || '-', 'fa-dice');
+      addItem('Shuffle', general.shuffle === 'yes' ? 'Ya' : 'Tidak', 'fa-random');
+      addItem('Stratified', general.stratified === 'yes' ? 'Ya' : 'Tidak', 'fa-layer-group');
 
-            // Isi tabel metrik evaluasi
-            populateMetricsTable();
+      // IndoBERT
+      const bert = params.indobert || {};
+      addItem('Model BERT', bert.modelName || '-', 'fa-robot');
+      addItem('Max Seq Length', bert.maxSeqLength || '-', 'fa-text-width');
+      addItem('Pooling', bert.pooling || '-', 'fa-water');
+      addItem('Batch Size', bert.batchSize || '-', 'fa-layer-group');
 
-            // Tampilkan bagian stabilitas jika ada cv_folds
-            if (metrics.cv_folds) {
-              document
-                .getElementById("stabilitySection")
-                .classList.remove("hidden");
-              document.getElementById("cvFolds").textContent = metrics.cv_folds;
-              populateStabilityTable();
-            } else {
-              document
-                .getElementById("stabilitySection")
-                .classList.add("hidden");
-            }
-          } catch (error) {
-            console.error("Error:", error);
-            alert("Gagal memuat detail training: " + error.message);
-          }
+      // Fine-Tuning
+      const ft = params.finetune || {};
+      if (ft.enabled) {
+        addItem('Fine-Tuning', 'Aktif', 'fa-microchip');
+        addItem('Epochs', ft.epochs || '-', 'fa-clock');
+        addItem('Learning Rate', ft.learningRate || '-', 'fa-tachometer-alt');
+        addItem('Optimizer', ft.optimizer || '-', 'fa-cogs');
+        addItem('Freeze Layers', ft.freezeLayers || '-', 'fa-lock');
+        addItem('Weight Decay', ft.weightDecay || '-', 'fa-weight-scale');
+        addItem('Warmup Ratio', ft.warmupRatio || '-', 'fa-temperature-high');
+      } else {
+        addItem('Fine-Tuning', 'Tidak Aktif', 'fa-ban');
+      }
+
+      // UMAP
+      const umap = params.umap || {};
+      if (umap.enabled) {
+        addItem('UMAP', 'Aktif', 'fa-project-diagram');
+        addItem('n_components', umap.nComponents || '-', 'fa-arrows-alt');
+        addItem('n_neighbors', umap.nNeighbors || '-', 'fa-users');
+        addItem('min_dist', umap.minDist || '-', 'fa-arrows-alt-h');
+        addItem('metric', umap.metric || '-', 'fa-ruler');
+      } else {
+        addItem('UMAP', 'Tidak Aktif', 'fa-ban');
+      }
+
+      // KNN
+      const knn = params.knn || {};
+      addItem('K (n_neighbors)', knn.k || '-', 'fa-neuter');
+      addItem('Metric', knn.metric || '-', 'fa-ruler');
+      addItem('Weights', knn.weights || '-', 'fa-balance-scale');
+      addItem('Algorithm', knn.algorithm || '-', 'fa-code');
+
+      // Confidence Adjustment
+      const hybrid = params.hybrid || {};
+      const hybridMethod = hybrid.method || 'none';
+      let hybridText = 'Tidak Aktif';
+      if (hybridMethod === 'confidence') hybridText = 'Confidence‑Based';
+      else if (hybridMethod === 'weighted') hybridText = `Weighted Average (α=${hybrid.alpha || '0.7'})`;
+      addItem('Confidence Adjustment', hybridText, 'fa-sliders-h');
+    }
+
+      // ---------- FETCH DATA DARI API (DIMODIFIKASI) ----------
+      async function loadTrainingDetail() {
+        if (!trainingId) {
+          alert("ID training tidak ditemukan di URL");
+          return;
         }
+        try {
+          const res = await fetch(`${API_BASE}/api/training/${trainingId}`);
+          if (!res.ok) throw new Error("Gagal memuat data training");
+          trainingData = await res.json();
+          console.log("Training data:", trainingData);
+
+          // Isi info dataset & model
+          document.getElementById("datasetName").textContent =
+            trainingData.dataset_filename || "-";
+          document.getElementById("modelName").textContent =
+            trainingData.algorithm || "-";
+
+          // --- Ambil konfigurasi parameter ---
+          let params = trainingData.params;
+          // Jika backend belum mengembalikan params, coba fetch dari config terpisah
+          if (!params && trainingData.model_config_id) {
+            try {
+              const configRes = await fetch(`${API_BASE}/api/processing/configs/${trainingData.model_config_id}`);
+              if (configRes.ok) {
+                const configData = await configRes.json();
+                params = configData.params;
+              }
+            } catch (e) {
+              console.warn("Gagal fetch config terpisah:", e);
+            }
+          }
+          // Render konfigurasi
+          renderConfigParams(params, trainingData.algorithm);
+          // --- Akhir penambahan ---
+
+          metrics = trainingData.metrics || {};
+
+          // Ambil confusion matrix dan label kelas
+          if (metrics.confusion_matrix) {
+            matrix = metrics.confusion_matrix;
+          } else {
+            console.warn("Confusion matrix tidak ditemukan");
+            matrix = [];
+          }
+          if (metrics.class_labels) {
+            labels = metrics.class_labels;
+          } else {
+            labels = [
+              "Senang",
+              "Percaya",
+              "Terkejut",
+              "Netral",
+              "Takut",
+              "Sedih",
+              "Marah",
+            ];
+            console.warn("Label kelas tidak ditemukan, menggunakan default");
+          }
+
+          // Gambar heatmap
+          drawHeatmap();
+
+          // Isi tabel metrik evaluasi
+          populateMetricsTable();
+
+          // Tampilkan bagian stabilitas jika ada cv_folds
+          if (metrics.cv_folds) {
+            document
+              .getElementById("stabilitySection")
+              .classList.remove("hidden");
+            document.getElementById("cvFolds").textContent = metrics.cv_folds;
+            populateStabilityTable();
+          } else {
+            document
+              .getElementById("stabilitySection")
+              .classList.add("hidden");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          alert("Gagal memuat detail training: " + error.message);
+        }
+      }
+
+        
 
         function populateMetricsTable() {
           const tbody = document.getElementById("metricsTableBody");
@@ -554,6 +671,8 @@
           }
         }
 
+        
+
         function showTooltip(e) {
           if (!canvas || !matrix.length) return;
           const rect = canvas.getBoundingClientRect();
@@ -587,15 +706,15 @@
         }
 
         // ---------- INISIALISASI ----------
-        window.onload = async () => {
-          await loadTrainingDetail();
-          createTooltip();
-          canvas = document.getElementById("confusionHeatmap");
-          if (canvas) {
-            canvas.addEventListener("mousemove", showTooltip);
-            canvas.addEventListener("mouseleave", hideTooltip);
-          }
-        };
+            window.onload = async () => {
+      await loadTrainingDetail();
+      createTooltip();
+      canvas = document.getElementById("confusionHeatmap");
+      if (canvas) {
+        canvas.addEventListener("mousemove", showTooltip);
+        canvas.addEventListener("mouseleave", hideTooltip);
+      }
+    };
 
         // ---------- SIDEBAR TOGGLE ----------
         function toggleDropdown(btn, menu, icon) {

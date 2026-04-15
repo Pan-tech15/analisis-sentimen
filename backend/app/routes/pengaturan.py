@@ -73,6 +73,14 @@ def update_config(config_id):
     db.session.commit()
     return jsonify(config.to_dict()), 200
 
+@processing_bp.route('/configs/<int:config_id>', methods=['GET'])
+# @jwt_required()  # aktifkan jika perlu
+def get_config(config_id):
+    config = ModelConfig.query.get(config_id)
+    if not config:
+        return jsonify({'error': 'Konfigurasi tidak ditemukan'}), 404
+    return jsonify(config.to_dict()), 200
+
 @processing_bp.route('/configs/<int:config_id>', methods=['DELETE'])
 # @jwt_required()
 def delete_config(config_id):
