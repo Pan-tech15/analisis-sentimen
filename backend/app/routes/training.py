@@ -1,9 +1,9 @@
 import os
 import uuid
 import threading
-from flask import Blueprint, request, jsonify, current_app  # tambahkan current_app
+from flask import Blueprint, request, jsonify, current_app
 from werkzeug.utils import secure_filename
-from app import db  # hanya impor db
+from app import db
 from app.models.model_config import ModelConfig
 from app.models.training import Training
 from app.services.indobert_knn import train_indobert_knn
@@ -68,7 +68,6 @@ def start_training():
     else:
         return jsonify({'error': f'Algoritma {config.algorithm} tidak didukung'}), 400
 
-    # Dapatkan instance app asli dari current_app
     app = current_app._get_current_object()
     thread = threading.Thread(target=train_func, args=(app, training.id, config, dataset_path))
     thread.start()
@@ -96,6 +95,7 @@ def delete_training(training_id):
     db.session.commit()
     return jsonify({'message': 'Training dihapus'}), 200
 
+# HANYA SATU DEFINISI get_training_detail DENGAN LENGKAP
 @training_bp.route('/<int:training_id>', methods=['GET'])
 def get_training_detail(training_id):
     training = Training.query.get(training_id)
@@ -104,4 +104,6 @@ def get_training_detail(training_id):
     result = training.to_dict()
     result['config_name'] = training.config.name if training.config else None
     result['algorithm'] = training.config.algorithm if training.config else None
+    result['model_config_id'] = training.model_config_id
+    result['params'] = training.config.params if training.config else None
     return jsonify(result), 200
