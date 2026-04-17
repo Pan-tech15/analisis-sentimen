@@ -11,7 +11,8 @@ from datetime import datetime
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
-from transformers import AutoTokenizer, AutoModel, AdamW, get_linear_schedule_with_warmup
+from torch.optim import AdamW
+from transformers import AutoTokenizer, AutoModel, get_linear_schedule_with_warmup
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix
