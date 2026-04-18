@@ -23,7 +23,7 @@
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- Sidebar (konsisten) -->
+      <!-- Sidebar (tidak diubah) -->
       <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
         <div class="p-4 border-b">
           <span
@@ -257,9 +257,9 @@
 
         function getDefaultNBConfig() {
             return {
-                general: { randomState: "42", shuffle: "yes", stratified: "yes", parallel: "no" },
-                split: { type: "percentage", train: "80", test: "20", crossval: { folds: "10" } },
-                lexicon: { source: "nrc", usePMI: "yes", scoringMethod: "sum", integration: "dictionary_pmi", customFile: null },
+                general: { randomState: "42", shuffle: "yes", stratified: "yes" },
+                split: { train: "80", test: "20", crossval: { folds: "10" } },
+                // Lexicon dihapus
                 naivebayes: { modelType: "MultinomialNB", feature: "CountVectorizer", alpha: "1.0", fitPrior: "True" },
                 fusion: { method: "product", formula: "\\text{NB} \\times (1 + \\text{Lexicon})" }
             };
@@ -306,7 +306,12 @@
             const bgHeader = isHybrid ? 'bg-blue-50' : 'bg-green-50';
             const textHeader = isHybrid ? 'text-blue-800' : 'text-green-800';
 
-            let html = `
+            let html = '';
+
+            // ========== BLOK PEMBAGIAN DATA ==========
+            if (isHybrid) {
+                // Hybrid: radio button (tidak berubah)
+                html += `
                 <div class="mb-6 p-4 bg-gray-50 rounded-lg">
                     <h3 class="font-medium text-gray-700 mb-2">Pembagian Data</h3>
                     <div class="flex flex-wrap gap-6">
@@ -324,23 +329,57 @@
                     <div id="splitCrossvalDiv" class="mt-3 ${config.split.type !== 'crossval' ? 'hidden' : ''}">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div><label class="block text-sm font-medium">Jumlah Fold (k)</label><input type="number" name="kFold" value="${config.split.crossval?.folds || '10'}" class="mt-1 w-24 border rounded p-1"></div>
-                            ${isHybrid ? `<div><label class="block text-sm font-medium">Epoch per Fold</label><input type="number" name="epochPerFold" value="${config.split.crossval?.epochPerFold || '3'}" class="mt-1 w-24 border rounded p-1"></div>` : ''}
+                            <div><label class="block text-sm font-medium">Epoch per Fold</label><input type="number" name="epochPerFold" value="${config.split.crossval?.epochPerFold || '3'}" class="mt-1 w-24 border rounded p-1"></div>
                         </div>
                     </div>
                 </div>
+                `;
+            } else {
+                // NB-Lexicon: tampilan gabungan langsung
+                html += `
+                <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                    <h3 class="font-medium text-gray-700 mb-3">Pembagian Data</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Rasio Train / Test (Percentage Split)</label>
+                            <div class="flex items-center gap-2">
+                                <input type="text" name="trainRatio" value="${config.split?.train || '80'}" class="w-20 border rounded p-1 text-center">%
+                                <span>:</span>
+                                <input type="text" name="testRatio" value="${config.split?.test || '20'}" class="w-20 border rounded p-1 text-center">%
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Proporsi data training dan testing.</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Jumlah Fold (k) untuk Cross Validation</label>
+                            <input type="number" name="kFold" value="${config.split?.crossval?.folds || '10'}" class="w-24 border rounded p-1">
+                            <p class="text-xs text-gray-500 mt-1">Jumlah fold yang akan digunakan saat cross-validation.</p>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-3 italic">* Model akan dilatih dengan percentage split terlebih dahulu, kemudian cross-validation menggunakan fold di atas untuk evaluasi.</p>
+                </div>
+                `;
+            }
 
+            // ========== PARAMETER UMUM ==========
+            html += `
                 <div class="mb-6 p-4 bg-gray-50 rounded-lg">
                     <h3 class="font-bold text-gray-800 mb-3">Parameter Umum</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div><label>Random State</label><input type="number" name="general_randomState" value="${config.general.randomState}" class="w-full border rounded p-2"></div>
                         <div><label>Shuffle Before Split</label><select name="general_shuffle" class="w-full border rounded p-2"><option value="yes" ${config.general.shuffle==='yes'?'selected':''}>Ya</option><option value="no" ${config.general.shuffle==='no'?'selected':''}>Tidak</option></select></div>
                         <div><label>Stratified Folds</label><select name="general_stratified" class="w-full border rounded p-2"><option value="yes" ${config.general.stratified==='yes'?'selected':''}>Ya</option><option value="no" ${config.general.stratified==='no'?'selected':''}>Tidak</option></select></div>
-                        ${isHybrid ? `<div><label>Early Stopping Patience</label><input type="number" name="general_earlyStopping" value="${config.general.earlyStopping||'0'}" class="w-full border rounded p-2"></div>` : ''}
-                        <div><label>Parallel Folds</label><select name="general_parallel" class="w-full border rounded p-2"><option value="no" ${config.general.parallel==='no'?'selected':''}>Tidak</option><option value="yes" ${config.general.parallel==='yes'?'selected':''}>Ya</option></select></div>
-                    </div>
-                </div>
             `;
 
+            if (isHybrid) {
+                html += `
+                        <div><label>Early Stopping Patience</label><input type="number" name="general_earlyStopping" value="${config.general.earlyStopping||'0'}" class="w-full border rounded p-2"></div>
+                        <div><label>Parallel Folds</label><select name="general_parallel" class="w-full border rounded p-2"><option value="no" ${config.general.parallel==='no'?'selected':''}>Tidak</option><option value="yes" ${config.general.parallel==='yes'?'selected':''}>Ya</option></select></div>
+                `;
+            }
+
+            html += `</div></div>`;
+
+            // ========== PARAMETER SPESIFIK ==========
             if (isHybrid) {
                 // IndoBERT (parameter dasar)
                 html += `
@@ -369,7 +408,7 @@
                 </div>
                 `;
 
-                // ========== FINE‑TUNING PANEL (TOGGLE) ==========
+                // Fine‑Tuning Toggle
                 const ftEnabled = config.finetune?.enabled !== undefined ? config.finetune.enabled : false;
                 html += `
                 <div class="mb-4 p-4 rounded-lg border ${borderColor} ${bgHeader}">
@@ -409,7 +448,7 @@
                 </div>
                 `;
 
-                // UMAP dengan toggle
+                // UMAP toggle
                 const umapEnabled = config.umap?.enabled !== false;
                 html += `
                 <div class="mb-4 p-4 rounded-lg border ${borderColor} ${bgHeader}">
@@ -435,7 +474,7 @@
                 </div>
                 `;
 
-                // ========== KNN + CONFIDENCE ADJUSTMENT (DIGABUNG) ==========
+                // KNN + Confidence Adjustment
                 html += `
                 <div class="mb-4 p-4 rounded-lg border ${borderColor} ${bgHeader}">
                     <h3 class="font-bold ${textHeader} mb-3">KNN</h3>
@@ -460,7 +499,6 @@
                         <div><label>p (Minkowski)</label><input type="number" name="knn_p" value="${config.knn.p}" class="w-full border rounded p-2"></div>
                     </div>
 
-                    <!-- Sub‑bagian Confidence Adjustment -->
                     <div class="border-t border-blue-200 pt-4 mt-4">
                         <div class="flex items-center gap-2 mb-3">
                             <i class="fas fa-sliders-h text-blue-600"></i>
@@ -484,17 +522,8 @@
                 </div>
                 `;
             } else {
-                // NB-Lexicon (tidak diubah)
+                // NB-Lexicon: Hanya Naive Bayes & Hybrid Fusion (Lexicon dihapus)
                 html += `
-                <div class="mb-4 p-4 rounded-lg border ${borderColor} ${bgHeader}">
-                    <h3 class="font-bold ${textHeader} mb-3">Lexicon</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div><label class="block text-sm font-medium">Lexicon Source</label><select name="lex_source" class="w-full border rounded p-2"><option value="nrc" ${config.lexicon.source === "nrc" ? "selected" : ""}>NRC</option><option value="inset" ${config.lexicon.source === "inset" ? "selected" : ""}>InSet</option><option value="custom" ${config.lexicon.source === "custom" ? "selected" : ""}>Custom</option></select></div>
-                        <div><label class="block text-sm font-medium">Use PMI</label><select name="lex_usePMI" class="w-full border rounded p-2"><option value="yes" ${config.lexicon.usePMI === "yes" ? "selected" : ""}>Yes</option><option value="no" ${config.lexicon.usePMI === "no" ? "selected" : ""}>No</option></select></div>
-                        <div><label class="block text-sm font-medium">Scoring Method</label><select name="lex_scoring" class="w-full border rounded p-2"><option value="sum" ${config.lexicon.scoringMethod === "sum" ? "selected" : ""}>Sum</option><option value="max" ${config.lexicon.scoringMethod === "max" ? "selected" : ""}>Max</option><option value="average" ${config.lexicon.scoringMethod === "average" ? "selected" : ""}>Average</option></select></div>
-                        <div><label class="block text-sm font-medium">Integration</label><select name="lex_integration" class="w-full border rounded p-2"><option value="dictionary_pmi" ${config.lexicon.integration === "dictionary_pmi" ? "selected" : ""}>Dictionary + PMI</option><option value="dictionary_only" ${config.lexicon.integration === "dictionary_only" ? "selected" : ""}>Dictionary Only</option><option value="pmi_only" ${config.lexicon.integration === "pmi_only" ? "selected" : ""}>PMI Only</option></select></div>
-                    </div>
-                </div>
                 <div class="mb-4 p-4 rounded-lg border ${borderColor} ${bgHeader}">
                     <h3 class="font-bold ${textHeader} mb-3">Naive Bayes</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -516,46 +545,45 @@
 
             container.innerHTML = html;
 
-            // --- Event Listener untuk Fine‑Tuning Toggle ---
-            const ftCheckbox = document.getElementById('finetune-enabled');
-            if (ftCheckbox) {
-                const ftPanel = document.getElementById('finetune-params-panel');
-                ftCheckbox.addEventListener('change', (e) => {
-                    ftPanel.style.display = e.target.checked ? 'grid' : 'none';
-                });
-            }
-
-            // --- Event Listener untuk Toggle UMAP ---
-            const umapCheckbox = document.getElementById('umap-enabled');
-            if (umapCheckbox) {
-                const panel = document.getElementById('umap-params-panel');
-                umapCheckbox.addEventListener('change', (e) => {
-                    panel.style.display = e.target.checked ? 'grid' : 'none';
-                });
-            }
-
-            // --- Event Listener untuk Hybrid Weighted (sekarang di dalam KNN) ---
-            const hybridMethod = document.querySelector('select[name="hybrid_method"]');
-            if (hybridMethod) {
-                const weightDiv = document.getElementById('hybridWeightDiv');
-                const updateWeight = () => { weightDiv.style.display = hybridMethod.value === 'weighted' ? 'block' : 'none'; };
-                hybridMethod.addEventListener('change', updateWeight);
-                updateWeight();
-            }
-
-            // Radio split
-            const radios = document.querySelectorAll('input[name="splitType"]');
-            const percentageDiv = document.getElementById('splitPercentageDiv');
-            const crossvalDiv = document.getElementById('splitCrossvalDiv');
-            radios.forEach(r => r.addEventListener('change', e => {
-                if (e.target.value === 'percentage') {
-                    percentageDiv.classList.remove('hidden');
-                    crossvalDiv.classList.add('hidden');
-                } else {
-                    percentageDiv.classList.add('hidden');
-                    crossvalDiv.classList.remove('hidden');
+            // Event Listener untuk Hybrid (toggle-toggles, radio, dsb.)
+            if (isHybrid) {
+                const ftCheckbox = document.getElementById('finetune-enabled');
+                if (ftCheckbox) {
+                    const ftPanel = document.getElementById('finetune-params-panel');
+                    ftCheckbox.addEventListener('change', (e) => {
+                        ftPanel.style.display = e.target.checked ? 'grid' : 'none';
+                    });
                 }
-            }));
+
+                const umapCheckbox = document.getElementById('umap-enabled');
+                if (umapCheckbox) {
+                    const panel = document.getElementById('umap-params-panel');
+                    umapCheckbox.addEventListener('change', (e) => {
+                        panel.style.display = e.target.checked ? 'grid' : 'none';
+                    });
+                }
+
+                const hybridMethod = document.querySelector('select[name="hybrid_method"]');
+                if (hybridMethod) {
+                    const weightDiv = document.getElementById('hybridWeightDiv');
+                    const updateWeight = () => { weightDiv.style.display = hybridMethod.value === 'weighted' ? 'block' : 'none'; };
+                    hybridMethod.addEventListener('change', updateWeight);
+                    updateWeight();
+                }
+
+                const radios = document.querySelectorAll('input[name="splitType"]');
+                const percentageDiv = document.getElementById('splitPercentageDiv');
+                const crossvalDiv = document.getElementById('splitCrossvalDiv');
+                radios.forEach(r => r.addEventListener('change', e => {
+                    if (e.target.value === 'percentage') {
+                        percentageDiv.classList.remove('hidden');
+                        crossvalDiv.classList.add('hidden');
+                    } else {
+                        percentageDiv.classList.add('hidden');
+                        crossvalDiv.classList.remove('hidden');
+                    }
+                }));
+            }
         }
 
         // ---------- MODAL ----------
@@ -615,24 +643,36 @@
             const general = {
                 randomState: formData.get('general_randomState'),
                 shuffle: formData.get('general_shuffle'),
-                stratified: formData.get('general_stratified'),
-                parallel: formData.get('general_parallel')
+                stratified: formData.get('general_stratified')
             };
-            if (algo !== 'nb-lexicon') general.earlyStopping = formData.get('general_earlyStopping') || '0';
+            if (algo === 'hybrid') {
+                general.parallel = formData.get('general_parallel');
+                general.earlyStopping = formData.get('general_earlyStopping') || '0';
+            }
 
-            const splitType = formData.get('splitType');
-            let split = { type: splitType };
-            if (splitType === 'percentage') {
-                split.train = formData.get('trainRatio');
-                split.test = formData.get('testRatio');
+            let split;
+            if (algo === 'hybrid') {
+                const splitType = formData.get('splitType');
+                split = { type: splitType };
+                if (splitType === 'percentage') {
+                    split.train = formData.get('trainRatio');
+                    split.test = formData.get('testRatio');
+                } else {
+                    split.crossval = { folds: formData.get('kFold') };
+                    split.crossval.epochPerFold = formData.get('epochPerFold') || '3';
+                }
             } else {
-                split.crossval = { folds: formData.get('kFold') };
-                if (algo !== 'nb-lexicon') split.crossval.epochPerFold = formData.get('epochPerFold') || '3';
+                // NB-Lexicon: langsung train/test + crossval
+                split = {
+                    train: formData.get('trainRatio'),
+                    test: formData.get('testRatio'),
+                    crossval: { folds: formData.get('kFold') }
+                };
             }
 
             let params = { general, split };
 
-            if (algo !== 'nb-lexicon') {
+            if (algo === 'hybrid') {
                 params.indobert = {
                     modelName: formData.get('bert_modelName'),
                     maxSeqLength: formData.get('bert_maxSeq'),
@@ -640,7 +680,6 @@
                     batchSize: formData.get('bert_batchSize')
                 };
 
-                // Fine‑Tuning params
                 const ftEnabled = document.getElementById('finetune-enabled')?.checked ?? false;
                 params.finetune = { enabled: ftEnabled };
                 if (ftEnabled) {
@@ -654,17 +693,14 @@
                     params.finetune.maxGradNorm = formData.get('ft_max_grad_norm') || '1.0';
                 }
 
-                // UMAP
-                if (algo === 'hybrid') {
-                    const umapEnabled = document.getElementById('umap-enabled')?.checked ?? false;
-                    params.umap = { enabled: umapEnabled };
-                    if (umapEnabled) {
-                        params.umap.nComponents = formData.get('umap_nComponents') || '50';
-                        params.umap.nNeighbors = formData.get('umap_nNeighbors') || '30';
-                        params.umap.minDist = formData.get('umap_minDist') || '0.1';
-                        params.umap.metric = formData.get('umap_metric') || 'cosine';
-                        params.umap.randomState = formData.get('umap_randomState') || '42';
-                    }
+                const umapEnabled = document.getElementById('umap-enabled')?.checked ?? false;
+                params.umap = { enabled: umapEnabled };
+                if (umapEnabled) {
+                    params.umap.nComponents = formData.get('umap_nComponents') || '50';
+                    params.umap.nNeighbors = formData.get('umap_nNeighbors') || '30';
+                    params.umap.minDist = formData.get('umap_minDist') || '0.1';
+                    params.umap.metric = formData.get('umap_metric') || 'cosine';
+                    params.umap.randomState = formData.get('umap_randomState') || '42';
                 }
 
                 params.knn = {
@@ -676,13 +712,7 @@
                     alpha: formData.get('hybrid_alpha') || '0.7'
                 };
             } else {
-                params.lexicon = {
-                    source: formData.get("lex_source"),
-                    usePMI: formData.get("lex_usePMI"),
-                    scoringMethod: formData.get("lex_scoring"),
-                    integration: formData.get("lex_integration"),
-                    customFile: null,
-                };
+                // Tidak ada lexicon lagi
                 params.naivebayes = {
                     modelType: formData.get("nb_modelType"),
                     feature: formData.get("nb_feature"),
