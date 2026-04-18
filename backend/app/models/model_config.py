@@ -11,8 +11,7 @@ class ModelConfig(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Ganti backref dengan back_populates
-    trainings = db.relationship('Training', back_populates='config', lazy=True)
+    trainings = db.relationship('Training', back_populates='config', lazy=True, cascade='all, delete-orphan', passive_deletes=True)
 
     def to_dict(self):
         return {
