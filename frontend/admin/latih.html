@@ -217,7 +217,8 @@
                   <th class="px-4 py-2 border border-blue-400">Nama</th>
                   <th class="px-4 py-2 border border-blue-400">Model</th>
                   <th class="px-4 py-2 border border-blue-400">Akurasi</th>
-                  <th class="px-4 py-2 border border-blue-400">F1-Score</th>
+                  <th class="px-4 py-2 border border-blue-400">Tanggal</th>
+                  <th class="px-4 py-2 border border-blue-400">Durasi</th>
                   <th class="px-4 py-2 border border-blue-400">Aksi</th>
                 </tr>
               </thead>
@@ -292,26 +293,77 @@
         const pageData = trainingHistory.slice(start, end);
         const tbody = document.getElementById("trainingResultsBody");
         tbody.innerHTML = "";
+
         pageData.forEach((item) => {
           const row = tbody.insertRow();
+
+          // Kolom 0: Nama file dataset
           row.insertCell(0).innerHTML = item.dataset_filename;
+
+          // Kolom 1: Algoritma
           row.insertCell(1).innerHTML = item.algorithm || "-";
+
+          // Kolom 2: Akurasi
           row.insertCell(2).innerHTML =
             item.metrics?.accuracy?.toFixed(3) || "-";
-          row.insertCell(3).innerHTML =
-            item.metrics?.f1_score?.toFixed(3) || "-";
-          const actionCell = row.insertCell(4);
+
+          // Kolom 3: Tanggal (dari created_at)
+          const createdDate = item.created_at
+            ? new Date(item.created_at)
+            : null;
+          const dateStr = createdDate
+            ? createdDate.toLocaleString("id-ID", {
+                dateStyle: "short",
+                timeStyle: "short",
+              })
+            : "-";
+          row.insertCell(3).innerHTML = dateStr;
+
+          // Kolom 4: Durasi (Waktu Latih)
+          let durationStr = "-";
+          if (item.created_at) {
+            const startTime = new Date(item.created_at);
+            const endTime = item.completed_at
+              ? new Date(item.completed_at)
+              : new Date(); // jika belum selesai, gunakan waktu sekarang
+            const diffMs = endTime - startTime;
+
+            if (diffMs >= 0) {
+              const seconds = Math.floor(diffMs / 1000);
+              const minutes = Math.floor(seconds / 60);
+              const hours = Math.floor(minutes / 60);
+
+              if (hours > 0) {
+                durationStr = `${hours} jam ${minutes % 60} mnt`;
+              } else if (minutes > 0) {
+                durationStr = `${minutes} menit ${seconds % 60} dtk`;
+              } else {
+                durationStr = `${seconds} detik`;
+              }
+
+              // Jika belum selesai, tambahkan indikator
+              if (!item.completed_at && item.status !== "completed") {
+                durationStr += " (berjalan)";
+              }
+            }
+          }
+          row.insertCell(4).innerHTML = durationStr;
+
+          // Kolom 5: Aksi
+          const actionCell = row.insertCell(5);
           actionCell.className = "px-4 py-2 border border-gray-200 text-center";
-          // Tautan ke halaman detail (validasi.html) atau download model
           actionCell.innerHTML = `
             <a href="validasi.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2"><i class="fas fa-eye"></i></a>
             <button class="text-green-600 hover:text-green-800 download-model" data-id="${item.id}" ${!item.model_path ? "disabled" : ""}><i class="fas fa-download"></i></button>
         `;
+
+          // Tambahkan class border pada semua sel
           for (let cell of row.cells) {
             cell.classList.add("border", "border-gray-200", "px-4", "py-2");
           }
         });
-        // Event download
+
+        // Event listener untuk tombol download (tetap sama)
         document.querySelectorAll(".download-model").forEach((btn) => {
           btn.addEventListener("click", (e) => {
             const id = btn.dataset.id;
