@@ -73,7 +73,6 @@ class IndoBERTClassifier(nn.Module):
         super().__init__()
         self.bert = AutoModel.from_pretrained(model_name)
         self.pooling = pooling
-        # Bekukan layer tertentu
         if freeze_layers > 0:
             for i, layer in enumerate(self.bert.encoder.layer):
                 if i < freeze_layers:
@@ -132,7 +131,6 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             log(f"Jumlah sampel setelah validasi: {total_samples}", training_id)
             log(f"Label unik: {set(labels)}", training_id)
 
-            # Encode labels
             le = LabelEncoder()
             y_encoded = le.fit_transform(labels)
             num_classes = len(le.classes_)
@@ -208,6 +206,11 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             hybrid_method = hybrid_params.get('method', 'none')
             hybrid_alpha = float(hybrid_params.get('alpha', 0.7))
 
+            # Tampilkan dengan jelas metode yang digunakan
+            log("=" * 60, training_id)
+            log(f"KONFIGURASI HYBRID: method = '{hybrid_method}', alpha = {hybrid_alpha}", training_id)
+            log("=" * 60, training_id)
+
             # ========== 3. Update progress awal ==========
             training.progress = 5
             training.metrics = {'progress_message': 'Memulai proses...'}
@@ -225,7 +228,6 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                 training.metrics['progress_message'] = 'Fine‑Tuning IndoBERT...'
                 db.session.commit()
 
-                # Bagi data train/val untuk fine‑tuning (80/20)
                 X_train, X_val, y_train, y_val = train_test_split(
                     texts, y_encoded, test_size=0.2, random_state=random_state,
                     stratify=y_encoded if stratified else None
@@ -238,7 +240,6 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                 model = IndoBERTClassifier(model_name, num_classes, freeze_layers=ft_freeze_layers, pooling=pooling)
                 model.to(device)
 
-                # Optimizer
                 if ft_optimizer.lower() == 'adamw':
                     optimizer = AdamW(model.parameters(), lr=ft_lr, weight_decay=ft_weight_decay)
                 elif ft_optimizer.lower() == 'adam':
@@ -276,11 +277,9 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                     training.metrics['progress_message'] = f'Fine‑Tuning epoch {epoch+1}/{ft_epochs}'
                     db.session.commit()
 
-                # Simpan model fine‑tuned untuk ekstraksi fitur nanti
                 ft_model = model
                 log("Fine‑Tuning selesai.", training_id)
             else:
-                # Load model pre‑trained tanpa fine‑tuning
                 ft_model = AutoModel.from_pretrained(model_name).to(device)
                 log("Menggunakan model pre‑trained tanpa fine‑tuning.", training_id)
 
@@ -299,8 +298,6 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                     encoded = tokenizer(batch_texts, padding=True, truncation=True,
                                         max_length=max_seq_length, return_tensors='pt').to(device)
                     if do_finetune:
-                        # Gunakan output dari model classifier (sebelum linear) atau dari BERT
-                        # Kita bisa mengambil representasi dari layer sebelum classifier
                         outputs = ft_model.bert(**encoded)
                     else:
                         outputs = ft_model(**encoded)
@@ -361,7 +358,7 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                 algorithm=algorithm, leaf_size=leaf_size, p=p, n_jobs=-1
             )
 
-            # Evaluasi sesuai split_type (sama seperti sebelumnya, tidak diubah)
+            # Evaluasi
             if split_type == 'percentage':
                 test_size = float(split_config.get('test', 20)) / 100.0
                 X_train, X_test, y_train, y_test = train_test_split(
@@ -375,6 +372,11 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                 confidence = 1.0 / (1.0 + mean_dist)
                 confidence = confidence.reshape(-1, 1)
 
+                # Hitung KNN murni
+                y_pred_knn_only = np.argmax(proba_knn, axis=1)
+                acc_knn_only = accuracy_score(y_test, y_pred_knn_only)
+
+                # Hybrid
                 if hybrid_method == 'confidence':
                     final_scores = proba_knn * confidence
                 elif hybrid_method == 'weighted':
@@ -389,6 +391,8 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                 recall = recall_score(y_test, y_pred, average='weighted', zero_division=0)
                 cm = confusion_matrix(y_test, y_pred).tolist()
 
+                log(f"AKURASI PERBANDINGAN: KNN murni = {acc_knn_only:.4f}, Hybrid ({hybrid_method}) = {acc:.4f}", training_id)
+
                 metrics = {
                     'accuracy': round(acc, 4),
                     'f1_score': round(f1, 4),
@@ -402,7 +406,7 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                 }
                 knn.fit(X, y_encoded)
             else:
-                # Cross-validation (kode sama seperti sebelumnya, dengan penambahan metrics)
+                # Cross-validation
                 unique, counts = np.unique(y_encoded, return_counts=True)
                 min_class_count = counts.min()
                 max_possible_folds = min_class_count
@@ -417,6 +421,10 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                     dist, _ = knn.kneighbors(X_test)
                     mean_dist = np.mean(dist, axis=1)
                     confidence = 1.0 / (1.0 + mean_dist).reshape(-1, 1)
+
+                    y_pred_knn_only = np.argmax(proba_knn, axis=1)
+                    acc_knn_only = accuracy_score(y_test, y_pred_knn_only)
+
                     if hybrid_method == 'confidence':
                         final_scores = proba_knn * confidence
                     elif hybrid_method == 'weighted':
@@ -429,6 +437,9 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                     precision = precision_score(y_test, y_pred, average='weighted', zero_division=0)
                     recall = recall_score(y_test, y_pred, average='weighted', zero_division=0)
                     cm = confusion_matrix(y_test, y_pred).tolist()
+
+                    log(f"AKURASI PERBANDINGAN (fallback): KNN murni = {acc_knn_only:.4f}, Hybrid = {acc:.4f}", training_id)
+
                     metrics = {
                         'accuracy': round(acc, 4),
                         'f1_score': round(f1, 4),
@@ -462,9 +473,15 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                         proba_list.append(proba)
                         conf_list.append(conf.reshape(-1, 1))
                         y_true_list.append(y_te)
+
                     proba_knn = np.vstack(proba_list)
                     confidence = np.vstack(conf_list)
                     y_true_all = np.concatenate(y_true_list)
+
+                    # Hitung KNN murni
+                    y_pred_knn_only = np.argmax(proba_knn, axis=1)
+                    acc_knn_only = accuracy_score(y_true_all, y_pred_knn_only)
+
                     if hybrid_method == 'confidence':
                         final_scores = proba_knn * confidence
                     elif hybrid_method == 'weighted':
@@ -477,6 +494,9 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                     precision = precision_score(y_true_all, y_pred, average='weighted', zero_division=0)
                     recall = recall_score(y_true_all, y_pred, average='weighted', zero_division=0)
                     cm = confusion_matrix(y_true_all, y_pred).tolist()
+
+                    log(f"AKURASI PERBANDINGAN (CV): KNN murni = {acc_knn_only:.4f}, Hybrid ({hybrid_method}) = {acc:.4f}", training_id)
+
                     metrics = {
                         'accuracy': round(acc, 4),
                         'f1_score': round(f1, 4),
@@ -498,7 +518,7 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             model_path = os.path.join(MODEL_FOLDER, model_filename)
             artifacts = {
                 'tokenizer': tokenizer,
-                'bert_model': ft_model,  # bisa jadi classifier atau bare model
+                'bert_model': ft_model,
                 'umap_reducer': reducer,
                 'knn_classifier': knn,
                 'label_encoder': le,

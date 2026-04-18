@@ -5,7 +5,7 @@ class Training(db.Model):
     __tablename__ = 'trainings'
 
     id = db.Column(db.Integer, primary_key=True)
-    model_config_id = db.Column(db.Integer, db.ForeignKey('model_configs.id'), nullable=False)
+    model_config_id = db.Column(db.Integer, db.ForeignKey('model_configs.id', ondelete='CASCADE'), nullable=False)
     dataset_filename = db.Column(db.String(255), nullable=False)
     status = db.Column(db.String(50), default='pending')
     progress = db.Column(db.Integer, default=0)
@@ -15,7 +15,7 @@ class Training(db.Model):
     completed_at = db.Column(db.DateTime)
 
     # Gunakan back_populates
-    config = db.relationship('ModelConfig', back_populates='trainings')
+    config = db.relationship('ModelConfig', back_populates='trainings', passive_deletes=True)
 
     def to_dict(self):
         return {
