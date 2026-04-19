@@ -23,27 +23,34 @@ class ModelConfig(db.Model):
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
 
-@staticmethod
-def validate_params(algorithm, params):
-    if algorithm == 'IndoBERT-KNN':
-        required = ['general', 'split', 'indobert', 'knn']
-        for sec in required:
-            if sec not in params:
-                raise ValueError(f"Parameter '{sec}' harus ada untuk IndoBERT-KNN.")
-        # UMAP opsional, jika ada pastikan objek
-        if 'umap' in params and not isinstance(params['umap'], dict):
-            raise ValueError("Parameter 'umap' harus berupa objek.")
-        # Fine‑tuning opsional
-        if 'finetune' in params and not isinstance(params['finetune'], dict):
-            raise ValueError("Parameter 'finetune' harus berupa objek.")
-        # Hybrid opsional
-        if 'hybrid' in params and not isinstance(params['hybrid'], dict):
-            raise ValueError("Parameter 'hybrid' harus berupa objek.")
-    elif algorithm == 'Lexicon-NB':
-        required = ['general', 'split', 'naivebayes', 'fusion']
-        for sec in required:
-            if sec not in params:
-                raise ValueError(f"Parameter '{sec}' harus ada untuk Lexicon-NB.")
-    else:
-        raise ValueError("Algoritma tidak dikenal.")
-    return True
+    @staticmethod
+    def validate_params(algorithm, params):
+        if algorithm == 'IndoBERT-KNN':
+            required = ['general', 'split', 'indobert', 'knn']
+            for sec in required:
+                if sec not in params:
+                    raise ValueError(f"Parameter '{sec}' harus ada untuk IndoBERT-KNN.")
+            if 'umap' in params and not isinstance(params['umap'], dict):
+                raise ValueError("Parameter 'umap' harus berupa objek.")
+            if 'finetune' in params and not isinstance(params['finetune'], dict):
+                raise ValueError("Parameter 'finetune' harus berupa objek.")
+            if 'hybrid' in params and not isinstance(params['hybrid'], dict):
+                raise ValueError("Parameter 'hybrid' harus berupa objek.")
+        elif algorithm == 'Lexicon-NB':
+            required = ['general', 'split', 'naivebayes', 'fusion']
+            for sec in required:
+                if sec not in params:
+                    raise ValueError(f"Parameter '{sec}' harus ada untuk Lexicon-NB.")
+            fusion = params.get('fusion', {})
+            if not isinstance(fusion, dict):
+                raise ValueError("Parameter 'fusion' harus berupa objek.")
+            if 'method' not in fusion:
+                raise ValueError("Parameter 'fusion.method' harus ada.")
+            if fusion.get('method') == 'weighted' and 'weight' in fusion:
+                try:
+                    float(fusion['weight'])
+                except (ValueError, TypeError):
+                    raise ValueError("Parameter 'fusion.weight' harus berupa angka.")
+        else:
+            raise ValueError("Algoritma tidak dikenal.")
+        return True
