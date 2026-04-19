@@ -366,7 +366,7 @@
           },
           fusion: {
             method: "product",
-            formula: "\\text{NB} \\times (1 + \\text{Lexicon})",
+            formula: "P_final = P_NB × (1 + S_lexicon)",  // DISESUAIKAN DENGAN FORMAT BARU
           },
         };
       }
@@ -738,7 +738,7 @@
             </div>
             `;
         } else {
-          // NB-Lexicon (tidak disentuh)
+          // NB-Lexicon
           html += `
             <div class="mb-4 p-4 rounded-lg border ${borderColor} ${bgHeader}">
                 <h3 class="font-bold ${textHeader} mb-3">Naive Bayes</h3>
@@ -752,8 +752,18 @@
             <div class="mb-4 p-4 rounded-lg border ${borderColor} ${bgHeader}">
                 <h3 class="font-bold ${textHeader} mb-3">Hybrid Fusion</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium">Fusion Method</label><select name="fusion_method" class="w-full border rounded p-2"><option value="product" ${cfg.fusion.method === "product" ? "selected" : ""}>Product</option><option value="sum" ${cfg.fusion.method === "sum" ? "selected" : ""}>Sum</option><option value="weighted" ${cfg.fusion.method === "weighted" ? "selected" : ""}>Weighted Average</option></select></div>
-                    <div><label class="block text-sm font-medium">Formula</label><input type="text" name="fusion_formula" value="${cfg.fusion.formula.replace(/\\/g, "\\\\")}" class="w-full border rounded p-2"></div>
+                    <div>
+                        <label class="block text-sm font-medium">Fusion Method</label>
+                        <select name="fusion_method" id="fusionMethodSelect" class="w-full border rounded p-2">
+                            <option value="product" ${cfg.fusion.method === "product" ? "selected" : ""}>Product</option>
+                            <option value="sum" ${cfg.fusion.method === "sum" ? "selected" : ""}>Sum</option>
+                            <option value="weighted" ${cfg.fusion.method === "weighted" ? "selected" : ""}>Weighted Average</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium">Formula</label>
+                        <input type="text" name="fusion_formula" id="fusionFormulaInput" readonly class="w-full border rounded p-2 bg-gray-100 cursor-default" value="${cfg.fusion.formula}">
+                    </div>
                 </div>
             </div>
             `;
@@ -806,6 +816,35 @@
               }
             }),
           );
+        } else {
+          // Khusus NB-Lexicon: update rumus sesuai metode fusi
+          const methodSelect = document.getElementById("fusionMethodSelect");
+          const formulaInput = document.getElementById("fusionFormulaInput");
+
+          function getFormulaByMethod(method) {
+            switch (method) {
+              case "product":
+                return "P_final = P_NB × (1 + S_lexicon)";
+              case "sum":
+                return "P_final = P_NB + S_lexicon";
+              case "weighted":
+                return "P_final = α · P_NB + (1 − α) · S_lexicon";
+              default:
+                return "";
+            }
+          }
+
+          function updateFormulaDisplay() {
+            if (methodSelect && formulaInput) {
+              formulaInput.value = getFormulaByMethod(methodSelect.value);
+            }
+          }
+
+          // Set awal dan tambahkan event listener
+          updateFormulaDisplay();
+          if (methodSelect) {
+            methodSelect.addEventListener("change", updateFormulaDisplay);
+          }
         }
       }
 

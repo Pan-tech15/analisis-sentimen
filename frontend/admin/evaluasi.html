@@ -3,331 +3,279 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evaluasi Model Performa - IdiomSense Admin</title>
+    <title>Evaluasi Model - IdiomSense Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        .tooltip {
-            position: absolute;
-            background: rgba(0,0,0,0.85);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            pointer-events: none;
-            z-index: 10;
-            white-space: nowrap;
-            font-family: monospace;
-        }
-        canvas { cursor: pointer; }
-        .tab-active { background-color: #3b82f6; color: white; }
-        .tab-inactive { background-color: #e5e7eb; color: #374151; }
-    </style>
 </head>
 <body class="bg-gray-100 font-sans antialiased">
 
-    <div class="flex h-screen overflow-hidden">
-        <!-- Sidebar (sama seperti halaman admin lain) -->
-        <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
-            <div class="p-4 border-b">
-                <span class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IdiomSense</span>
-                <p class="text-sm text-gray-500">Admin Panel</p>
-            </div>
-            <nav class="p-4">
-                <ul class="space-y-1">
-                    <li><a href="beranda-admin.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"><i class="fas fa-tachometer-alt w-5"></i><span>Beranda</span></a></li>
-                    <li><button id="dataCollectionBtn" class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700"><div class="flex items-center space-x-2"><i class="fas fa-database w-5"></i><span>Data Collection</span></div><i id="dataCollectionIcon" class="fas fa-chevron-down text-sm transition-transform"></i></button>
-                        <ul id="dataCollectionMenu" class="ml-6 mt-1 space-y-1 hidden">
-                            <li><a href="dataset.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-table w-5 mr-2"></i>Dataset</a></li>
-                            <li><a href="kamus-idiom.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-book w-5 mr-2"></i>Kamus Idiom</a></li>
-                        </ul>
-                    </li>
-                    <li><a href="preprocessing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-filter w-5"></i><span>Pre-Processing</span></a></li>
-                    <li>
-                        <button id="processingBtn" class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700">
-                            <div class="flex items-center space-x-2"><i class="fas fa-brain w-5"></i><span>Processing</span></div>
-                            <i id="processingIcon" class="fas fa-chevron-down text-sm transition-transform"></i>
-                        </button>
-                        <ul id="processingMenu" class="ml-6 mt-1 space-y-1 hidden">
-                            <li><a href="pengaturan.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-sliders-h w-5 mr-2"></i>Pengaturan</a></li>
-                            <li><a href="latih.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-chart-line w-5 mr-2"></i>Latih</a></li>
-                        </ul>
-                    </li>
-                    <li><a href="testing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-vial w-5"></i><span>Testing</span></a></li>
-                    <li><a href="evaluasi.html" class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-chart-simple w-5"></i><span>Evaluasi</span></a></li>
-                    <li class="pt-4 mt-4 border-t"><a href="login.html" class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a></li>
-                </ul>
-            </nav>
-        </aside>
+<div class="flex h-screen overflow-hidden">
+    <!-- Sidebar (konsisten) -->
+    <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
+        <div class="p-4 border-b">
+            <span class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IdiomSense</span>
+            <p class="text-sm text-gray-500">Admin Panel</p>
+        </div>
+        <nav class="p-4">
+            <ul class="space-y-1">
+                <li><a href="beranda-admin.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"><i class="fas fa-tachometer-alt w-5"></i><span>Beranda</span></a></li>
+                <li>
+                    <button id="dataCollectionBtn" class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700">
+                        <div class="flex items-center space-x-2"><i class="fas fa-database w-5"></i><span>Data Collection</span></div>
+                        <i id="dataCollectionIcon" class="fas fa-chevron-down text-sm transition-transform"></i>
+                    </button>
+                    <ul id="dataCollectionMenu" class="ml-6 mt-1 space-y-1 hidden">
+                        <li><a href="dataset.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-table w-5 mr-2"></i>Dataset</a></li>
+                        <li><a href="kamus-idiom.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-book w-5 mr-2"></i>Kamus Idiom</a></li>
+                    </ul>
+                </li>
+                <li><a href="preprocessing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-filter w-5"></i><span>Pre-Processing</span></a></li>
+                <li>
+                    <button id="processingBtn" class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700">
+                        <div class="flex items-center space-x-2"><i class="fas fa-brain w-5"></i><span>Processing</span></div>
+                        <i id="processingIcon" class="fas fa-chevron-down text-sm transition-transform"></i>
+                    </button>
+                    <ul id="processingMenu" class="ml-6 mt-1 space-y-1 hidden">
+                        <li><a href="pengaturan.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-sliders-h w-5 mr-2"></i>Pengaturan</a></li>
+                        <li><a href="latih.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-chart-line w-5 mr-2"></i>Latih</a></li>
+                    </ul>
+                </li>
+                <li><a href="testing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-vial w-5"></i><span>Testing</span></a></li>
+                <li><a href="evaluasi.html" class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-chart-simple w-5"></i><span>Evaluasi</span></a></li>
+                <li class="pt-4 mt-4 border-t"><a href="login.html" class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a></li>
+            </ul>
+        </nav>
+    </aside>
 
-        <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
-            <h1 class="text-3xl font-bold text-gray-800 mb-6">Evaluasi Model Performa</h1>
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Evaluasi Model</h1>
 
-            <!-- Tab untuk memilih model -->
-            <div class="flex space-x-2 mb-6">
-                <button id="tabHybrid" class="tab-active px-4 py-2 rounded-lg transition">IndoBERT-KNN + UMAP</button>
-                <button id="tabNB" class="tab-inactive px-4 py-2 rounded-lg transition">Naive Bayes-Lexicon</button>
-            </div>
-
-            <!-- Konten untuk model Hybrid -->
-            <div id="hybridContent" class="space-y-6">
-                <!-- Confusion Matrix -->
-                <div class="bg-white p-6 rounded-xl shadow-md">
-                    <h2 class="font-bold text-gray-800 text-lg mb-2">Confusion Matrix</h2>
-                    <p class="text-xs text-gray-500 mb-4">Aktual vs Prediksi - Hover pada sel untuk melihat detail</p>
-                    <div class="flex justify-center">
-                        <canvas id="hybridHeatmap" width="600" height="600" class="border border-gray-300 rounded shadow-sm"></canvas>
-                    </div>
-                    <div class="flex justify-center mt-4 text-sm gap-4">
-                        <span class="inline-flex items-center"><div class="w-4 h-4 rounded" style="background:#2c7bb6"></div><span class="ml-1">Rendah</span></span>
-                        <span class="inline-flex items-center"><div class="w-4 h-4 rounded" style="background:#abd9e9"></div><span class="ml-1">Sedang</span></span>
-                        <span class="inline-flex items-center"><div class="w-4 h-4 rounded" style="background:#fdae61"></div><span class="ml-1">Tinggi</span></span>
-                        <span class="inline-flex items-center"><div class="w-4 h-4 rounded" style="background:#d7191c"></div><span class="ml-1">Sangat Tinggi</span></span>
-                    </div>
-                </div>
-
-                <!-- Tabel Metrik Evaluasi -->
-                <div class="bg-white p-6 rounded-xl shadow-md">
-                    <h2 class="font-bold text-gray-800 text-lg mb-4">Metrik Evaluasi</h2>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full border border-gray-200">
-                            <thead class="bg-blue-500 text-white">
-                                <tr><th class="px-4 py-2 border border-blue-400">Metrik</th><th class="px-4 py-2 border border-blue-400">Nilai</th></tr>
-                            </thead>
-                            <tbody id="hybridMetricsTable"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Mean & Standard Deviation -->
-                <div class="bg-white p-6 rounded-xl shadow-md">
-                    <h2 class="font-bold text-gray-800 text-lg mb-4">Stabilitas Performa (5-Fold Cross Validation)</h2>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full border border-gray-200">
-                            <thead class="bg-blue-500 text-white">
-                                <tr><th class="px-4 py-2 border border-blue-400">Metrik</th><th class="px-4 py-2 border border-blue-400">Mean</th><th class="px-4 py-2 border border-blue-400">Std. Dev</th></tr>
-                            </thead>
-                            <tbody id="hybridStatsTable"></tbody>
-                        </table>
-                    </div>
+        <!-- Tabel Riwayat Hasil Latih -->
+        <div class="bg-white p-6 rounded-xl shadow-md">
+            <!-- Search bar dipindah ke sini, di atas judul tabel -->
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="font-semibold text-gray-700">Daftar Hasil Data Latih</h2>
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="searchInput" placeholder="Cari Model Terbaik Anda" 
+                           class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-80 focus:ring-2 focus:ring-blue-400 focus:outline-none">
                 </div>
             </div>
 
-            <!-- Konten untuk model NB-Lexicon (sama strukturnya) -->
-            <div id="nbContent" class="space-y-6 hidden">
-                <div class="bg-white p-6 rounded-xl shadow-md">
-                    <h2 class="font-bold text-gray-800 text-lg mb-2">Confusion Matrix</h2>
-                    <p class="text-xs text-gray-500 mb-4">Aktual vs Prediksi - Hover pada sel untuk melihat detail</p>
-                    <div class="flex justify-center"><canvas id="nbHeatmap" width="600" height="600" class="border border-gray-300 rounded shadow-sm"></canvas></div>
-                    <div class="flex justify-center mt-4 text-sm gap-4">
-                        <span class="inline-flex items-center"><div class="w-4 h-4 rounded" style="background:#2c7bb6"></div><span class="ml-1">Rendah</span></span>
-                        <span class="inline-flex items-center"><div class="w-4 h-4 rounded" style="background:#abd9e9"></div><span class="ml-1">Sedang</span></span>
-                        <span class="inline-flex items-center"><div class="w-4 h-4 rounded" style="background:#fdae61"></div><span class="ml-1">Tinggi</span></span>
-                        <span class="inline-flex items-center"><div class="w-4 h-4 rounded" style="background:#d7191c"></div><span class="ml-1">Sangat Tinggi</span></span>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-md">
-                    <h2 class="font-bold text-gray-800 text-lg mb-4">Metrik Evaluasi</h2>
-                    <div class="overflow-x-auto"><table class="min-w-full border border-gray-200"><thead class="bg-green-500 text-white"><tr><th class="px-4 py-2 border border-green-400">Metrik</th><th class="px-4 py-2 border border-green-400">Nilai</th></tr></thead><tbody id="nbMetricsTable"></tbody></table></div>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-md">
-                    <h2 class="font-bold text-gray-800 text-lg mb-4">Stabilitas Performa (5-Fold Cross Validation)</h2>
-                    <div class="overflow-x-auto"><table class="min-w-full border border-gray-200"><thead class="bg-green-500 text-white"><tr><th class="px-4 py-2 border border-green-400">Metrik</th><th class="px-4 py-2 border border-green-400">Mean</th><th class="px-4 py-2 border border-green-400">Std. Dev</th></tr></thead><tbody id="nbStatsTable"></tbody></table></div>
-                </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full border border-gray-200">
+                    <thead class="bg-blue-500 text-white">
+                        <tr>
+                            <th class="px-4 py-2 border border-blue-400">Nama Dataset</th>
+                            <th class="px-4 py-2 border border-blue-400">Model</th>
+                            <th class="px-4 py-2 border border-blue-400">Akurasi</th>
+                            <th class="px-4 py-2 border border-blue-400">Tanggal</th>
+                            <th class="px-4 py-2 border border-blue-400">Durasi</th>
+                            <th class="px-4 py-2 border border-blue-400">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="evaluationTableBody"></tbody>
+                </table>
             </div>
-        </main>
-    </div>
+            <div id="pagination" class="flex justify-center mt-4 space-x-2"></div>
+        </div>
+    </main>
+</div>
 
-    <script>
-        // Data confusion matrix untuk Hybrid (IndoBERT-KNN+UMAP)
-        const hybridMatrix = [
-            [42, 2, 1, 3, 0, 1, 1],
-            [3, 38, 2, 2, 0, 0, 0],
-            [2, 1, 35, 4, 2, 1, 1],
-            [2, 1, 2, 89, 0, 1, 0],
-            [1, 0, 2, 2, 28, 2, 0],
-            [2, 0, 1, 3, 1, 34, 2],
-            [1, 0, 1, 2, 0, 1, 30]
-        ];
-        // Data untuk NB-Lexicon
-        const nbMatrix = [
-            [38, 3, 2, 4, 1, 1, 1],
-            [4, 34, 3, 3, 0, 1, 0],
-            [3, 2, 30, 5, 2, 2, 1],
-            [3, 2, 3, 82, 1, 2, 0],
-            [2, 0, 2, 3, 24, 2, 0],
-            [2, 1, 2, 4, 2, 30, 2],
-            [2, 0, 2, 3, 0, 2, 26]
-        ];
-        const labels = ['Senang', 'Percaya', 'Terkejut', 'Netral', 'Takut', 'Sedih', 'Marah'];
-        const maxHybrid = Math.max(...hybridMatrix.flat());
-        const maxNB = Math.max(...nbMatrix.flat());
+<script>
+    (function() {
+        const API_BASE = "http://localhost:5000";
+        let allTrainingData = [];
+        let filteredData = [];
+        let currentPage = 1;
+        const rowsPerPage = 5;
 
-        // Metrik evaluasi untuk Hybrid
-        const hybridMetrics = {
-            accuracy: 0.94, precision: 0.93, recall: 0.92, f1: 0.92,
-            macro_avg: 0.91, weighted_avg: 0.92, mcc: 0.91, roc_auc: 0.96
-        };
-        // Metrik untuk NB
-        const nbMetrics = {
-            accuracy: 0.88, precision: 0.87, recall: 0.86, f1: 0.86,
-            macro_avg: 0.85, weighted_avg: 0.86, mcc: 0.84, roc_auc: 0.91
-        };
-        // Mean & Std (contoh dari 5-fold CV)
-        const hybridStats = {
-            accuracy: { mean: 0.936, std: 0.012 }, precision: { mean: 0.925, std: 0.014 },
-            recall: { mean: 0.918, std: 0.015 }, f1: { mean: 0.921, std: 0.013 },
-            mcc: { mean: 0.908, std: 0.016 }, roc_auc: { mean: 0.955, std: 0.008 }
-        };
-        const nbStats = {
-            accuracy: { mean: 0.876, std: 0.018 }, precision: { mean: 0.865, std: 0.020 },
-            recall: { mean: 0.858, std: 0.019 }, f1: { mean: 0.861, std: 0.018 },
-            mcc: { mean: 0.838, std: 0.022 }, roc_auc: { mean: 0.905, std: 0.015 }
-        };
+        const tbody = document.getElementById('evaluationTableBody');
+        const searchInput = document.getElementById('searchInput');
+        const paginationDiv = document.getElementById('pagination');
 
-        function renderHeatmap(canvasId, matrix, maxVal) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const size = canvas.width;
-            const cellSize = size / matrix.length;
-            ctx.clearRect(0, 0, size, size);
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, size, size);
-            for (let i = 0; i < matrix.length; i++) {
-                for (let j = 0; j < matrix[i].length; j++) {
-                    const val = matrix[i][j];
-                    const intensity = val / maxVal;
-                    const r = Math.min(255, Math.floor(255 * intensity * 1.5));
-                    const g = Math.min(255, Math.floor(255 * (1.5 - intensity * 1.2)));
-                    const b = Math.min(255, Math.floor(255 * (1 - intensity * 0.8)));
-                    ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-                    ctx.fillRect(j * cellSize, i * cellSize, cellSize, cellSize);
-                    ctx.fillStyle = intensity > 0.65 ? 'white' : '#1f2937';
-                    ctx.font = `bold ${Math.max(12, cellSize * 0.28)}px "Segoe UI"`;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(val, j * cellSize + cellSize/2, i * cellSize + cellSize/2);
+        async function loadTrainingHistory() {
+            try {
+                const res = await fetch(`${API_BASE}/api/training/history`);
+                if (!res.ok) throw new Error("Gagal memuat riwayat");
+                allTrainingData = await res.json();
+                allTrainingData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                filterData();
+            } catch (err) {
+                console.error(err);
+                alert("Gagal memuat data evaluasi.");
+            }
+        }
+
+        function filterData() {
+            const query = searchInput.value.trim().toLowerCase();
+            if (!query) {
+                filteredData = [...allTrainingData];
+            } else {
+                filteredData = allTrainingData.filter(item => {
+                    const nama = (item.dataset_filename || '').toLowerCase();
+                    const model = (item.algorithm || '').toLowerCase();
+                    const akurasi = item.metrics?.accuracy != null ? item.metrics.accuracy.toFixed(3) : '-';
+                    const tanggal = item.created_at ? new Date(item.created_at).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }).toLowerCase() : '-';
+                    
+                    let durasiStr = '-';
+                    if (item.created_at) {
+                        const start = new Date(item.created_at);
+                        const end = item.completed_at ? new Date(item.completed_at) : new Date();
+                        const diff = end - start;
+                        if (diff >= 0) {
+                            const sec = Math.floor(diff / 1000);
+                            const min = Math.floor(sec / 60);
+                            const hr = Math.floor(min / 60);
+                            durasiStr = hr > 0 ? `${hr} jam ${min % 60} mnt` :
+                                        min > 0 ? `${min} menit ${sec % 60} dtk` : `${sec} detik`;
+                            if (!item.completed_at && item.status !== 'completed') durasiStr += ' (berjalan)';
+                        }
+                    }
+                    durasiStr = durasiStr.toLowerCase();
+
+                    return nama.includes(query) || model.includes(query) || akurasi.includes(query) || tanggal.includes(query) || durasiStr.includes(query);
+                });
+            }
+            currentPage = 1;
+            renderTable();
+            renderPagination();
+        }
+
+        function renderTable() {
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const pageData = filteredData.slice(start, end);
+            
+            tbody.innerHTML = '';
+            if (pageData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-500">Tidak ada data yang sesuai.</td></tr>`;
+                return;
+            }
+
+            pageData.forEach(item => {
+                const row = tbody.insertRow();
+                
+                row.insertCell(0).innerHTML = item.dataset_filename || '-';
+                row.insertCell(1).innerHTML = item.algorithm || '-';
+                
+                const acc = item.metrics?.accuracy != null ? item.metrics.accuracy.toFixed(3) : '-';
+                row.insertCell(2).innerHTML = acc;
+                
+                const d = item.created_at ? new Date(item.created_at) : null;
+                row.insertCell(3).innerHTML = d ? d.toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+                
+                let dur = '-';
+                if (item.created_at) {
+                    const start = new Date(item.created_at);
+                    const end = item.completed_at ? new Date(item.completed_at) : new Date();
+                    const diff = end - start;
+                    if (diff >= 0) {
+                        const sec = Math.floor(diff / 1000);
+                        const min = Math.floor(sec / 60);
+                        const hr = Math.floor(min / 60);
+                        dur = hr > 0 ? `${hr} jam ${min % 60} mnt` :
+                              min > 0 ? `${min} menit ${sec % 60} dtk` : `${sec} detik`;
+                        if (!item.completed_at && item.status !== 'completed') dur += ' (berjalan)';
+                    }
                 }
-            }
-            // Grid
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 1.5;
-            for (let i = 0; i <= matrix.length; i++) {
-                ctx.beginPath(); ctx.moveTo(i * cellSize, 0); ctx.lineTo(i * cellSize, size); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(0, i * cellSize); ctx.lineTo(size, i * cellSize); ctx.stroke();
-            }
-            // Label sumbu X
-            ctx.fillStyle = '#1f2937';
-            ctx.font = '11px "Segoe UI"';
-            for (let i = 0; i < labels.length; i++) {
-                ctx.save();
-                ctx.translate(i * cellSize + cellSize/2, size + 15);
-                ctx.rotate(Math.PI / 5);
-                ctx.fillText(labels[i], 0, 0);
-                ctx.restore();
-            }
-            // Label sumbu Y
-            for (let i = 0; i < labels.length; i++) {
-                ctx.fillText(labels[i], -10, i * cellSize + cellSize/2);
-            }
-        }
+                row.insertCell(4).innerHTML = dur;
+                
+                const actCell = row.insertCell(5);
+                actCell.className = 'px-4 py-2 border border-gray-200 text-center';
+                actCell.innerHTML = `
+                    <a href="validasi.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2" title="Lihat detail"><i class="fas fa-eye"></i></a>
+                    <button class="text-green-600 hover:text-green-800 download-model" data-id="${item.id}" ${!item.model_path ? 'disabled' : ''} title="Download model"><i class="fas fa-download"></i></button>
+                `;
 
-        function renderMetricsTable(containerId, metrics) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-            const items = [
-                { label: 'Akurasi', value: metrics.accuracy },
-                { label: 'Presisi', value: metrics.precision },
-                { label: 'Recall', value: metrics.recall },
-                { label: 'F1-Score', value: metrics.f1 },
-                { label: 'Macro-average', value: metrics.macro_avg },
-                { label: 'Weighted average', value: metrics.weighted_avg },
-                { label: 'Matthews Correlation Coefficient (MCC)', value: metrics.mcc },
-                { label: 'ROC-AUC', value: metrics.roc_auc }
-            ];
-            container.innerHTML = items.map(item => `<tr class="border-b"><td class="px-4 py-2 border border-gray-200">${item.label}</td><td class="px-4 py-2 border border-gray-200 text-center font-semibold">${item.value.toFixed(3)}</td></tr>`).join('');
-        }
-
-        function renderStatsTable(containerId, stats) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-            const items = [
-                { label: 'Akurasi', mean: stats.accuracy.mean, std: stats.accuracy.std },
-                { label: 'Presisi', mean: stats.precision.mean, std: stats.precision.std },
-                { label: 'Recall', mean: stats.recall.mean, std: stats.recall.std },
-                { label: 'F1-Score', mean: stats.f1.mean, std: stats.f1.std },
-                { label: 'MCC', mean: stats.mcc.mean, std: stats.mcc.std },
-                { label: 'ROC-AUC', mean: stats.roc_auc.mean, std: stats.roc_auc.std }
-            ];
-            container.innerHTML = items.map(item => `<tr class="border-b"><td class="px-4 py-2 border border-gray-200">${item.label}</td><td class="px-4 py-2 border border-gray-200 text-center">${item.mean.toFixed(3)}</td><td class="px-4 py-2 border border-gray-200 text-center">${item.std.toFixed(3)}</td></tr>`).join('');
-        }
-
-        // Tooltip interaktif untuk heatmap (sederhana)
-        let tooltip = null;
-        function addTooltip(canvasId, matrix) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas) return;
-            canvas.addEventListener('mousemove', (e) => {
-                const rect = canvas.getBoundingClientRect();
-                const scaleX = canvas.width / rect.width;
-                const scaleY = canvas.height / rect.height;
-                const x = (e.clientX - rect.left) * scaleX;
-                const y = (e.clientY - rect.top) * scaleY;
-                const cellSize = canvas.width / matrix.length;
-                const col = Math.floor(x / cellSize);
-                const row = Math.floor(y / cellSize);
-                if (row >= 0 && row < matrix.length && col >= 0 && col < matrix[0].length) {
-                    const val = matrix[row][col];
-                    if (!tooltip) { tooltip = document.createElement('div'); tooltip.className = 'tooltip'; document.body.appendChild(tooltip); }
-                    tooltip.innerHTML = `<strong>${labels[row]} → ${labels[col]}</strong><br>Jumlah: ${val}`;
-                    tooltip.style.left = e.clientX + 15 + 'px';
-                    tooltip.style.top = e.clientY - 30 + 'px';
-                    tooltip.style.display = 'block';
-                } else if (tooltip) tooltip.style.display = 'none';
+                for (let cell of row.cells) {
+                    cell.classList.add('border', 'border-gray-200', 'px-4', 'py-2');
+                }
             });
-            canvas.addEventListener('mouseleave', () => { if (tooltip) tooltip.style.display = 'none'; });
+
+            document.querySelectorAll('.download-model').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = btn.dataset.id;
+                    const training = allTrainingData.find(t => t.id == id);
+                    if (training && training.model_path) {
+                        window.open(`${API_BASE}/data/models/${training.model_path.split('/').pop()}`, '_blank');
+                    }
+                });
+            });
         }
 
-        // Tab switching
-        const hybridDiv = document.getElementById('hybridContent');
-        const nbDiv = document.getElementById('nbContent');
-        const tabHybrid = document.getElementById('tabHybrid');
-        const tabNB = document.getElementById('tabNB');
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+            paginationDiv.innerHTML = '';
+            if (totalPages <= 1) return;
 
-        tabHybrid.addEventListener('click', () => {
-            hybridDiv.classList.remove('hidden'); nbDiv.classList.add('hidden');
-            tabHybrid.classList.add('tab-active'); tabHybrid.classList.remove('tab-inactive');
-            tabNB.classList.add('tab-inactive'); tabNB.classList.remove('tab-active');
+            const prevBtn = document.createElement('button');
+            prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            prevBtn.className = `px-3 py-1 rounded border ${currentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTable();
+                    renderPagination();
+                }
+            };
+            paginationDiv.appendChild(prevBtn);
+
+            for (let i = 1; i <= totalPages; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.innerText = i;
+                pageBtn.className = `px-3 py-1 rounded border ${currentPage === i ? 'bg-blue-500 text-white' : 'bg-white hover:bg-blue-50'}`;
+                pageBtn.onclick = () => {
+                    currentPage = i;
+                    renderTable();
+                    renderPagination();
+                };
+                paginationDiv.appendChild(pageBtn);
+            }
+
+            const nextBtn = document.createElement('button');
+            nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            nextBtn.className = `px-3 py-1 rounded border ${currentPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTable();
+                    renderPagination();
+                }
+            };
+            paginationDiv.appendChild(nextBtn);
+        }
+
+        let debounceTimer;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                filterData();
+            }, 300);
         });
-        tabNB.addEventListener('click', () => {
-            nbDiv.classList.remove('hidden'); hybridDiv.classList.add('hidden');
-            tabNB.classList.add('tab-active'); tabNB.classList.remove('tab-inactive');
-            tabHybrid.classList.add('tab-inactive'); tabHybrid.classList.remove('tab-active');
-        });
 
-        // Render semua
-        renderHeatmap('hybridHeatmap', hybridMatrix, maxHybrid);
-        renderHeatmap('nbHeatmap', nbMatrix, maxNB);
-        renderMetricsTable('hybridMetricsTable', hybridMetrics);
-        renderMetricsTable('nbMetricsTable', nbMetrics);
-        renderStatsTable('hybridStatsTable', hybridStats);
-        renderStatsTable('nbStatsTable', nbStats);
-        addTooltip('hybridHeatmap', hybridMatrix);
-        addTooltip('nbHeatmap', nbMatrix);
-
-        // Dropdown sidebar
+        // Sidebar toggle
         function toggleDropdown(btn, menu, icon) {
-            btn.addEventListener('click', () => { menu.classList.toggle('hidden'); icon.classList.toggle('rotate-180'); });
+            btn.addEventListener('click', () => {
+                menu.classList.toggle('hidden');
+                icon.classList.toggle('rotate-180');
+            });
         }
         const dataCollectionBtn = document.getElementById('dataCollectionBtn');
         const dataCollectionMenu = document.getElementById('dataCollectionMenu');
         const dataCollectionIcon = document.getElementById('dataCollectionIcon');
         toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
+        
         const processingBtn = document.getElementById('processingBtn');
         const processingMenu = document.getElementById('processingMenu');
         const processingIcon = document.getElementById('processingIcon');
         toggleDropdown(processingBtn, processingMenu, processingIcon);
-    </script>
+
+        loadTrainingHistory();
+    })();
+</script>
 </body>
 </html>
