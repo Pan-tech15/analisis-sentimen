@@ -23,22 +23,27 @@ class ModelConfig(db.Model):
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
 
-    @staticmethod
-    def validate_params(algorithm, params):
-        if algorithm == 'IndoBERT-KNN':
-            required = ['general', 'split', 'indobert', 'knn']  # Hapus 'umap' dari required
-            # UMAP boleh tidak ada atau ada dengan properti minimal
-            if 'umap' in params:
-                # Jika ada, pastikan memiliki field 'enabled'
-                if not isinstance(params['umap'], dict):
-                    raise ValueError("Parameter 'umap' harus berupa objek.")
-                # Tidak perlu validasi ketat, karena pipeline akan menggunakan default jika kurang
-            # Hybrid juga opsional, tidak wajib ada
-        elif algorithm == 'Lexicon-NB':
-            required = ['general', 'split', 'naivebayes', 'fusion']
-        else:
-            raise ValueError("Algoritma tidak dikenal.")
+@staticmethod
+def validate_params(algorithm, params):
+    if algorithm == 'IndoBERT-KNN':
+        required = ['general', 'split', 'indobert', 'knn']
         for sec in required:
             if sec not in params:
-                raise ValueError(f"Parameter '{sec}' harus ada.")
-        return True
+                raise ValueError(f"Parameter '{sec}' harus ada untuk IndoBERT-KNN.")
+        # UMAP opsional, jika ada pastikan objek
+        if 'umap' in params and not isinstance(params['umap'], dict):
+            raise ValueError("Parameter 'umap' harus berupa objek.")
+        # Fine‑tuning opsional
+        if 'finetune' in params and not isinstance(params['finetune'], dict):
+            raise ValueError("Parameter 'finetune' harus berupa objek.")
+        # Hybrid opsional
+        if 'hybrid' in params and not isinstance(params['hybrid'], dict):
+            raise ValueError("Parameter 'hybrid' harus berupa objek.")
+    elif algorithm == 'Lexicon-NB':
+        required = ['general', 'split', 'naivebayes', 'fusion']
+        for sec in required:
+            if sec not in params:
+                raise ValueError(f"Parameter '{sec}' harus ada untuk Lexicon-NB.")
+    else:
+        raise ValueError("Algoritma tidak dikenal.")
+    return True
