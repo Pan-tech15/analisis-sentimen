@@ -34,32 +34,115 @@
     <!-- SIDEBAR SAMA SEPERTI SEBELUMNYA, TIDAK DIUBAH -->
     <div class="flex h-screen overflow-hidden">
       <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
-            <div class="p-4 border-b">
-                <span class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IdiomSense</span>
-                <p class="text-sm text-gray-500">Admin Panel</p>
-            </div>
-            <nav class="p-4">
-                <ul class="space-y-1">
-                    <li><a href="beranda-admin.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"><i class="fas fa-tachometer-alt w-5"></i><span>Beranda</span></a></li>
-                    <li><button id="dataCollectionBtn" class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700"><div class="flex items-center space-x-2"><i class="fas fa-database w-5"></i><span>Data Collection</span></div><i id="dataCollectionIcon" class="fas fa-chevron-down text-sm transition-transform"></i></button>
-                        <ul id="dataCollectionMenu" class="ml-6 mt-1 space-y-1 hidden">
-                            <li><a href="dataset.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-table w-5 mr-2"></i>Dataset</a></li>
-                            <li><a href="kamus-idiom.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-book w-5 mr-2"></i>Kamus Idiom</a></li>
-                        </ul>
-                    </li>
-                    <li><a href="preprocessing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-filter w-5"></i><span>Pre-Processing</span></a></li>
-                    <li><button id="processingBtn" class="w-full flex items-center justify-between p-2 rounded-lg bg-gray-100 text-gray-700"><div class="flex items-center space-x-2"><i class="fas fa-brain w-5"></i><span>Processing</span></div><i id="processingIcon" class="fas fa-chevron-down text-sm transition-transform"></i></button>
-                        <ul id="processingMenu" class="ml-6 mt-1 space-y-1">
-                            <li><a href="pengaturan.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-sliders-h w-5 mr-2"></i>Pengaturan</a></li>
-                            <li><a href="latih.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-chart-line w-5 mr-2"></i>Latih</a></li>
-                        </ul>
-                    </li>
-                    <li><a href="testing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-vial w-5"></i><span>Testing</span></a></li>
-                    <li><a href="evaluasi.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-chart-line w-5"></i><span>Evaluasi</span></a></li>
-                    <li class="pt-4 mt-4 border-t"><a href="login.html" class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a></li>
-                </ul>
-            </nav>
-        </aside>
+        <div class="p-4 border-b">
+          <span
+            class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
+            >IdiomSense</span
+          >
+          <p class="text-sm text-gray-500">Admin Panel</p>
+        </div>
+        <nav class="p-4">
+          <ul class="space-y-1">
+            <li>
+              <a
+                href="beranda-admin.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"
+                ><i class="fas fa-tachometer-alt w-5"></i
+                ><span>Beranda</span></a
+              >
+            </li>
+            <li>
+              <button
+                id="dataCollectionBtn"
+                class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+              >
+                <div class="flex items-center space-x-2">
+                  <i class="fas fa-database w-5"></i
+                  ><span>Data Collection</span>
+                </div>
+                <i
+                  id="dataCollectionIcon"
+                  class="fas fa-chevron-down text-sm transition-transform"
+                ></i>
+              </button>
+              <ul id="dataCollectionMenu" class="ml-6 mt-1 space-y-1 hidden">
+                <li>
+                  <a
+                    href="dataset.html"
+                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                    ><i class="fas fa-table w-5 mr-2"></i>Dataset</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="kamus-idiom.html"
+                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                    ><i class="fas fa-book w-5 mr-2"></i>Kamus Idiom</a
+                  >
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a
+                href="preprocessing.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                ><i class="fas fa-filter w-5"></i><span>Pre-Processing</span></a
+              >
+            </li>
+            <li>
+              <button
+                id="processingBtn"
+                class="w-full flex items-center justify-between p-2 rounded-lg bg-gray-100 text-gray-700"
+              >
+                <div class="flex items-center space-x-2">
+                  <i class="fas fa-brain w-5"></i><span>Processing</span>
+                </div>
+                <i
+                  id="processingIcon"
+                  class="fas fa-chevron-down text-sm transition-transform"
+                ></i>
+              </button>
+              <ul id="processingMenu" class="ml-6 mt-1 space-y-1">
+                <li>
+                  <a
+                    href="pengaturan.html"
+                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                    ><i class="fas fa-sliders-h w-5 mr-2"></i>Pengaturan</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="latih.html"
+                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                    ><i class="fas fa-chart-line w-5 mr-2"></i>Latih</a
+                  >
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a
+                href="testing.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                ><i class="fas fa-vial w-5"></i><span>Testing</span></a
+              >
+            </li>
+            <li>
+              <a
+                href="evaluasi.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                ><i class="fas fa-chart-line w-5"></i><span>Evaluasi</span></a
+              >
+            </li>
+            <li class="pt-4 mt-4 border-t">
+              <a
+                href="login.html"
+                class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"
+                ><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a
+              >
+            </li>
+          </ul>
+        </nav>
+      </aside>
 
       <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
         <h1 class="text-3xl font-bold text-gray-800 mb-6">
@@ -80,13 +163,16 @@
           </div>
         </div>
 
-                <!-- Konfigurasi Model -->
+        <!-- Konfigurasi Model -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-6">
           <h2 class="font-semibold text-gray-700 mb-4 flex items-center">
             <i class="fas fa-sliders-h mr-2 text-blue-600"></i>
             Konfigurasi Model
           </h2>
-          <div id="configContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+          <div
+            id="configContainer"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm"
+          >
             <!-- Diisi oleh JavaScript -->
           </div>
         </div>
@@ -322,176 +408,250 @@
         }
 
         function renderConfigParams(params, algorithm) {
-      const container = document.getElementById('configContainer');
-      if (!container) return;
-      container.innerHTML = '';
+          const container = document.getElementById("configContainer");
+          if (!container) return;
+          container.innerHTML = "";
 
-      if (!params) {
-        container.innerHTML = '<p class="text-gray-500 col-span-full">Konfigurasi tidak tersedia.</p>';
-        return;
-      }
+          if (!params) {
+            container.innerHTML =
+              '<p class="text-gray-500 col-span-full">Konfigurasi tidak tersedia.</p>';
+            return;
+          }
 
-      function addItem(label, value, icon = 'fa-cog') {
-        const div = document.createElement('div');
-        div.className = 'flex items-start space-x-2 p-2 bg-gray-50 rounded-lg';
-        div.innerHTML = `
-          <i class="fas ${icon} text-blue-500 mt-1 w-5"></i>
-          <div>
-            <p class="text-xs text-gray-500">${label}</p>
-            <p class="font-medium text-gray-800 break-all">${value}</p>
-          </div>
+          // Fungsi bantu untuk membuat item parameter
+          function addItem(label, value, icon = "fa-cog") {
+            const div = document.createElement("div");
+            div.className =
+              "flex items-start space-x-2 p-2 bg-gray-50 rounded-lg";
+            div.innerHTML = `
+            <i class="fas ${icon} text-blue-500 mt-1 w-5"></i>
+            <div>
+                <p class="text-xs text-gray-500">${label}</p>
+                <p class="font-medium text-gray-800 break-all">${value}</p>
+            </div>
         `;
-        container.appendChild(div);
-      }
+            container.appendChild(div);
+          }
 
-      // Data Split
-      const split = params.split || {};
-      addItem('Pembagian Data',
-        split.type === 'crossval'
-          ? `Cross Validation (${split.crossval?.folds || '-'} folds)`
-          : `Percentage Split (${split.train || '-'}:${split.test || '-'})`,
-        'fa-code-branch');
+          // Fungsi untuk membuat header kategori
+          function addCategoryHeader(title) {
+            const header = document.createElement("div");
+            header.className = "col-span-full mt-3 mb-1 first:mt-0";
+            header.innerHTML = `<h3 class="font-semibold text-sm text-gray-600 border-b pb-1">${title}</h3>`;
+            container.appendChild(header);
+          }
 
-      // General
-      const general = params.general || {};
-      addItem('Random State', general.randomState || '-', 'fa-dice');
-      addItem('Shuffle', general.shuffle === 'yes' ? 'Ya' : 'Tidak', 'fa-random');
-      addItem('Stratified', general.stratified === 'yes' ? 'Ya' : 'Tidak', 'fa-layer-group');
+          // ========== CROSS VALIDATION ==========
+          const split = params.split || {};
+          addCategoryHeader("🔀 Cross Validation");
+          addItem(
+            "Metode Pembagian",
+            split.type === "crossval"
+              ? `Cross Validation (${split.crossval?.folds || "-"} folds)`
+              : `Percentage Split (${split.train || "-"}:${split.test || "-"})`,
+            "fa-code-branch",
+          );
+          if (split.type === "crossval") {
+            addItem(
+              "Jumlah Fold",
+              split.crossval?.folds || "-",
+              "fa-layer-group",
+            );
+            addItem(
+              "Epoch per Fold",
+              split.crossval?.epochPerFold || "-",
+              "fa-clock",
+            );
+          } else {
+            addItem("Rasio Train", split.train || "-", "fa-chart-pie");
+            addItem("Rasio Test", split.test || "-", "fa-chart-pie");
+          }
 
-      // IndoBERT
-      const bert = params.indobert || {};
-      addItem('Model BERT', bert.modelName || '-', 'fa-robot');
-      addItem('Max Seq Length', bert.maxSeqLength || '-', 'fa-text-width');
-      addItem('Pooling', bert.pooling || '-', 'fa-water');
-      addItem('Batch Size', bert.batchSize || '-', 'fa-layer-group');
+          // ========== PARAMETER UMUM ==========
+          const general = params.general || {};
+          addCategoryHeader("⚙️ Parameter Umum");
+          addItem("Random State", general.randomState || "-", "fa-dice");
+          addItem(
+            "Shuffle Before Split",
+            general.shuffle === "yes" ? "Ya" : "Tidak",
+            "fa-random",
+          );
+          addItem(
+            "Stratified Folds",
+            general.stratified === "yes" ? "Ya" : "Tidak",
+            "fa-layer-group",
+          );
+          addItem(
+            "Early Stopping Patience",
+            general.earlyStopping || "-",
+            "fa-stopwatch",
+          );
+          addItem(
+            "Parallel Folds",
+            general.parallel === "yes" ? "Ya" : "Tidak",
+            "fa-microchip",
+          );
 
-      // Fine-Tuning
-      const ft = params.finetune || {};
-      if (ft.enabled) {
-        addItem('Fine-Tuning', 'Aktif', 'fa-microchip');
-        addItem('Epochs', ft.epochs || '-', 'fa-clock');
-        addItem('Learning Rate', ft.learningRate || '-', 'fa-tachometer-alt');
-        addItem('Optimizer', ft.optimizer || '-', 'fa-cogs');
-        addItem('Freeze Layers', ft.freezeLayers || '-', 'fa-lock');
-        addItem('Weight Decay', ft.weightDecay || '-', 'fa-weight-scale');
-        addItem('Warmup Ratio', ft.warmupRatio || '-', 'fa-temperature-high');
-      } else {
-        addItem('Fine-Tuning', 'Tidak Aktif', 'fa-ban');
-      }
+          // ========== IndoBERT ==========
+          const bert = params.indobert || {};
+          addCategoryHeader("🤖 IndoBERT");
+          addItem("Model Name", bert.modelName || "-", "fa-robot");
+          addItem(
+            "Max Sequence Length",
+            bert.maxSeqLength || "-",
+            "fa-text-width",
+          );
+          addItem("Pooling Strategy", bert.pooling || "-", "fa-water");
+          addItem("Batch Size", bert.batchSize || "-", "fa-layer-group");
 
-      // UMAP
-      const umap = params.umap || {};
-      if (umap.enabled) {
-        addItem('UMAP', 'Aktif', 'fa-project-diagram');
-        addItem('n_components', umap.nComponents || '-', 'fa-arrows-alt');
-        addItem('n_neighbors', umap.nNeighbors || '-', 'fa-users');
-        addItem('min_dist', umap.minDist || '-', 'fa-arrows-alt-h');
-        addItem('metric', umap.metric || '-', 'fa-ruler');
-      } else {
-        addItem('UMAP', 'Tidak Aktif', 'fa-ban');
-      }
+          // ========== Fine-Tuning ==========
+          const ft = params.finetune || {};
+          addCategoryHeader("🎯 Fine-Tuning IndoBERT");
+          if (ft.enabled) {
+            addItem("Status", "Aktif", "fa-check-circle text-green-600");
+            addItem("Epochs", ft.epochs || "-", "fa-clock");
+            addItem(
+              "Learning Rate",
+              ft.learningRate || "-",
+              "fa-tachometer-alt",
+            );
+            addItem("Optimizer", ft.optimizer || "-", "fa-cogs");
+            addItem("Weight Decay", ft.weightDecay || "-", "fa-weight-scale");
+            addItem(
+              "Warmup Ratio",
+              ft.warmupRatio || "-",
+              "fa-temperature-high",
+            );
+            addItem("Freeze Layers", ft.freezeLayers || "-", "fa-lock");
+            addItem(
+              "Gradient Accumulation",
+              ft.gradientAccumulation || "-",
+              "fa-layer-group",
+            );
+            addItem("Max Grad Norm", ft.maxGradNorm || "-", "fa-chart-line");
+          } else {
+            addItem("Status", "Tidak Aktif", "fa-ban text-red-500");
+          }
 
-      // KNN
-      const knn = params.knn || {};
-      addItem('K (n_neighbors)', knn.k || '-', 'fa-neuter');
-      addItem('Metric', knn.metric || '-', 'fa-ruler');
-      addItem('Weights', knn.weights || '-', 'fa-balance-scale');
-      addItem('Algorithm', knn.algorithm || '-', 'fa-code');
+          // ========== UMAP ==========
+          const umap = params.umap || {};
+          addCategoryHeader("📉 UMAP (Reduksi Dimensi)");
+          if (umap.enabled) {
+            addItem("Status", "Aktif", "fa-check-circle text-green-600");
+            addItem("n_components", umap.nComponents || "-", "fa-arrows-alt");
+            addItem("n_neighbors", umap.nNeighbors || "-", "fa-users");
+            addItem("min_dist", umap.minDist || "-", "fa-arrows-alt-h");
+            addItem("metric", umap.metric || "-", "fa-ruler");
+            addItem("random_state", umap.randomState || "-", "fa-dice");
+          } else {
+            addItem("Status", "Tidak Aktif", "fa-ban text-red-500");
+          }
 
-      // Confidence Adjustment
-      const hybrid = params.hybrid || {};
-      const hybridMethod = hybrid.method || 'none';
-      let hybridText = 'Tidak Aktif';
-      if (hybridMethod === 'confidence') hybridText = 'Confidence‑Based';
-      else if (hybridMethod === 'weighted') hybridText = `Weighted Average (α=${hybrid.alpha || '0.7'})`;
-      addItem('Confidence Adjustment', hybridText, 'fa-sliders-h');
-    }
+          // ========== KNN ==========
+          const knn = params.knn || {};
+          addCategoryHeader("👥 KNN");
+          addItem("K (n_neighbors)", knn.k || "-", "fa-neuter");
+          addItem("Metrik Jarak", knn.metric || "-", "fa-ruler");
+          addItem("weights", knn.weights || "-", "fa-balance-scale");
+          addItem("algorithm", knn.algorithm || "-", "fa-code-branch");
+          addItem("leaf_size", knn.leafSize || "-", "fa-leaf");
+          addItem("p (Minkowski)", knn.p || "-", "fa-chart-line");
 
-      // ---------- FETCH DATA DARI API (DIMODIFIKASI) ----------
-      async function loadTrainingDetail() {
-        if (!trainingId) {
-          alert("ID training tidak ditemukan di URL");
-          return;
+          // Confidence Adjustment
+          const hybrid = params.hybrid || {};
+          const hybridMethod = hybrid.method || "none";
+          let hybridText = "Tidak Aktif";
+          if (hybridMethod === "confidence") hybridText = "Confidence‑Based";
+          else if (hybridMethod === "weighted")
+            hybridText = `Weighted Average (α=${hybrid.alpha || "0.7"})`;
+          addItem("Confidence Adjustment", hybridText, "fa-sliders-h");
         }
-        try {
-          const res = await fetch(`${API_BASE}/api/training/${trainingId}`);
-          if (!res.ok) throw new Error("Gagal memuat data training");
-          trainingData = await res.json();
-          console.log("Training data:", trainingData);
 
-          // Isi info dataset & model
-          document.getElementById("datasetName").textContent =
-            trainingData.dataset_filename || "-";
-          document.getElementById("modelName").textContent =
-            trainingData.algorithm || "-";
+        // ---------- FETCH DATA DARI API (DIMODIFIKASI) ----------
+        async function loadTrainingDetail() {
+          if (!trainingId) {
+            alert("ID training tidak ditemukan di URL");
+            return;
+          }
+          try {
+            const res = await fetch(`${API_BASE}/api/training/${trainingId}`);
+            if (!res.ok) throw new Error("Gagal memuat data training");
+            trainingData = await res.json();
+            console.log("Training data:", trainingData);
 
-          // --- Ambil konfigurasi parameter ---
-          let params = trainingData.params;
-          // Jika backend belum mengembalikan params, coba fetch dari config terpisah
-          if (!params && trainingData.model_config_id) {
-            try {
-              const configRes = await fetch(`${API_BASE}/api/processing/configs/${trainingData.model_config_id}`);
-              if (configRes.ok) {
-                const configData = await configRes.json();
-                params = configData.params;
+            // Isi info dataset & model
+            document.getElementById("datasetName").textContent =
+              trainingData.dataset_filename || "-";
+            document.getElementById("modelName").textContent =
+              trainingData.algorithm || "-";
+
+            // --- Ambil konfigurasi parameter ---
+            let params = trainingData.params;
+            // Jika backend belum mengembalikan params, coba fetch dari config terpisah
+            if (!params && trainingData.model_config_id) {
+              try {
+                const configRes = await fetch(
+                  `${API_BASE}/api/processing/configs/${trainingData.model_config_id}`,
+                );
+                if (configRes.ok) {
+                  const configData = await configRes.json();
+                  params = configData.params;
+                }
+              } catch (e) {
+                console.warn("Gagal fetch config terpisah:", e);
               }
-            } catch (e) {
-              console.warn("Gagal fetch config terpisah:", e);
             }
+            // Render konfigurasi
+            renderConfigParams(params, trainingData.algorithm);
+            // --- Akhir penambahan ---
+
+            metrics = trainingData.metrics || {};
+
+            // Ambil confusion matrix dan label kelas
+            if (metrics.confusion_matrix) {
+              matrix = metrics.confusion_matrix;
+            } else {
+              console.warn("Confusion matrix tidak ditemukan");
+              matrix = [];
+            }
+            if (metrics.class_labels) {
+              labels = metrics.class_labels;
+            } else {
+              labels = [
+                "Senang",
+                "Percaya",
+                "Terkejut",
+                "Netral",
+                "Takut",
+                "Sedih",
+                "Marah",
+              ];
+              console.warn("Label kelas tidak ditemukan, menggunakan default");
+            }
+
+            // Gambar heatmap
+            drawHeatmap();
+
+            // Isi tabel metrik evaluasi
+            populateMetricsTable();
+
+            // Tampilkan bagian stabilitas jika ada cv_folds
+            if (metrics.cv_folds) {
+              document
+                .getElementById("stabilitySection")
+                .classList.remove("hidden");
+              document.getElementById("cvFolds").textContent = metrics.cv_folds;
+              populateStabilityTable();
+            } else {
+              document
+                .getElementById("stabilitySection")
+                .classList.add("hidden");
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            alert("Gagal memuat detail training: " + error.message);
           }
-          // Render konfigurasi
-          renderConfigParams(params, trainingData.algorithm);
-          // --- Akhir penambahan ---
-
-          metrics = trainingData.metrics || {};
-
-          // Ambil confusion matrix dan label kelas
-          if (metrics.confusion_matrix) {
-            matrix = metrics.confusion_matrix;
-          } else {
-            console.warn("Confusion matrix tidak ditemukan");
-            matrix = [];
-          }
-          if (metrics.class_labels) {
-            labels = metrics.class_labels;
-          } else {
-            labels = [
-              "Senang",
-              "Percaya",
-              "Terkejut",
-              "Netral",
-              "Takut",
-              "Sedih",
-              "Marah",
-            ];
-            console.warn("Label kelas tidak ditemukan, menggunakan default");
-          }
-
-          // Gambar heatmap
-          drawHeatmap();
-
-          // Isi tabel metrik evaluasi
-          populateMetricsTable();
-
-          // Tampilkan bagian stabilitas jika ada cv_folds
-          if (metrics.cv_folds) {
-            document
-              .getElementById("stabilitySection")
-              .classList.remove("hidden");
-            document.getElementById("cvFolds").textContent = metrics.cv_folds;
-            populateStabilityTable();
-          } else {
-            document
-              .getElementById("stabilitySection")
-              .classList.add("hidden");
-          }
-        } catch (error) {
-          console.error("Error:", error);
-          alert("Gagal memuat detail training: " + error.message);
         }
-      }
-
-        
 
         function populateMetricsTable() {
           const tbody = document.getElementById("metricsTableBody");
@@ -695,8 +855,6 @@
           }
         }
 
-        
-
         function showTooltip(e) {
           if (!canvas || !matrix.length) return;
           const rect = canvas.getBoundingClientRect();
@@ -730,15 +888,15 @@
         }
 
         // ---------- INISIALISASI ----------
-            window.onload = async () => {
-      await loadTrainingDetail();
-      createTooltip();
-      canvas = document.getElementById("confusionHeatmap");
-      if (canvas) {
-        canvas.addEventListener("mousemove", showTooltip);
-        canvas.addEventListener("mouseleave", hideTooltip);
-      }
-    };
+        window.onload = async () => {
+          await loadTrainingDetail();
+          createTooltip();
+          canvas = document.getElementById("confusionHeatmap");
+          if (canvas) {
+            canvas.addEventListener("mousemove", showTooltip);
+            canvas.addEventListener("mouseleave", hideTooltip);
+          }
+        };
 
         // ---------- SIDEBAR TOGGLE ----------
         function toggleDropdown(btn, menu, icon) {

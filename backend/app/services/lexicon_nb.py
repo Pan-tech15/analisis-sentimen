@@ -160,8 +160,14 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
             random_state = int(general.get('randomState', 42))
             shuffle = general.get('shuffle', 'yes') == 'yes'
             stratified = general.get('stratified', 'yes') == 'yes'
-            split_type = split_cfg.get('type', 'percentage')
+
             test_ratio = float(split_cfg.get('test', 20)) / 100
+
+            # Baca jumlah fold (dukung struktur dari frontend: split.crossval.folds)
+            if 'crossval' in split_cfg and isinstance(split_cfg['crossval'], dict):
+                n_folds = int(split_cfg['crossval'].get('folds', 10))
+            else:
+                n_folds = int(split_cfg.get('folds', 10))
 
             model_type = nb_params.get('modelType', 'MultinomialNB')
             feature_type = nb_params.get('feature', 'TfidfVectorizer')
@@ -229,14 +235,31 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
 
             update_progress(app, training_id, 45, "Memulai pelatihan model...")
 
-            # 9. Split data
-            X_train, X_test, y_train, y_test, lex_train, lex_test = train_test_split(
-                X_text, y, lexicon_scores,
-                test_size=test_ratio,
-                random_state=random_state,
-                shuffle=shuffle,
-                stratify=y if stratified and len(np.unique(y)) > 1 else None
-            )
+            # 9. Split data (METODE BARU: percentage split via StratifiedKFold)
+            log(f"Menggunakan percentage split berbasis fold: test_ratio={test_ratio}, n_folds={n_folds}", training_id)
+
+            n_test_folds = int(round(test_ratio * n_folds))
+            if n_test_folds < 1:
+                n_test_folds = 1
+            if n_test_folds >= n_folds:
+                n_test_folds = n_folds - 1
+
+            log(f"StratifiedKFold (n_splits={n_folds}) dengan {n_test_folds} fold untuk testing", training_id)
+
+            skf = StratifiedKFold(n_splits=n_folds, shuffle=shuffle, random_state=random_state)
+            test_indices_per_fold = [test_idx for _, test_idx in skf.split(X_text, y)]
+
+            # Gabungkan test index dari n_test_folds pertama
+            test_idx = np.concatenate(test_indices_per_fold[:n_test_folds])
+            train_idx = np.setdiff1d(np.arange(len(y)), test_idx)
+
+            X_train = X_text[train_idx]
+            X_test = X_text[test_idx]
+            y_train = y[train_idx]
+            y_test = y[test_idx]
+            lex_train = lexicon_scores[train_idx]
+            lex_test = lexicon_scores[test_idx]
+
             log(f"Data split: train={X_train.shape[0]}, test={X_test.shape[0]}", training_id)
 
             # 10. Training NB
