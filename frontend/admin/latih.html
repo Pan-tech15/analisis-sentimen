@@ -12,7 +12,7 @@
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- Sidebar (konsisten dengan halaman admin lain) -->
+      <!-- Sidebar (konsisten) -->
       <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
         <div class="p-4 border-b">
           <span
@@ -128,7 +128,6 @@
       <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
         <h1 class="text-3xl font-bold text-gray-800 mb-6">Latih Model</h1>
 
-        <!-- Form Training -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-6">
           <h2 class="font-semibold text-gray-700 mb-4">Training</h2>
 
@@ -138,20 +137,20 @@
               >Upload Dataset</label
             >
             <div
-              id="uploadArea"
-              class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-blue-400 transition"
+              id="dropzoneArea"
+              class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 transition"
             >
               <i
-                class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"
+                class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"
               ></i>
-              <p class="text-gray-600">
-                Drag atau
-                <span class="text-blue-600 font-medium"
-                  >klik untuk memilih</span
-                >
+              <p id="uploadMainText" class="text-gray-700 font-medium">
+                Drag & drop file di sini
               </p>
-              <p class="text-xs text-gray-400">
-                Format CSV/Excel (kalimat mentah atau sudah diproses)
+              <p class="text-sm text-gray-500 mt-1">
+                atau <span class="text-blue-600">klik untuk memilih</span>
+              </p>
+              <p class="text-xs text-gray-400 mt-2">
+                Format CSV / Excel (hasil preprocessing)
               </p>
               <input
                 type="file"
@@ -160,9 +159,35 @@
                 accept=".csv,.xlsx"
               />
             </div>
+
+            <div
+              id="uploadInfo"
+              class="mt-3 flex items-center justify-between bg-gray-50 p-3 rounded-lg hidden"
+            >
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-file-csv text-green-600 text-xl"></i>
+                <div>
+                  <p
+                    id="uploadedFileName"
+                    class="font-medium text-gray-800"
+                  ></p>
+                  <p class="text-xs text-gray-500">
+                    File siap digunakan untuk training
+                  </p>
+                </div>
+              </div>
+              <button
+                id="changeFileBtn"
+                type="button"
+                class="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              >
+                <i class="fas fa-exchange-alt mr-1"></i>Ganti File
+              </button>
+            </div>
+            <div id="uploadMessage" class="mt-2 text-sm"></div>
           </div>
 
-          <!-- Pilih Konfigurasi Model -->
+          <!-- Pilih Konfigurasi -->
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-1"
               >Pilih Konfigurasi Model</label
@@ -172,8 +197,6 @@
               class="w-full border border-gray-300 rounded-lg p-2"
             >
               <option value="">-- Pilih konfigurasi --</option>
-              <option value="hybrid">IndoBERT-KNN + UMAP (default)</option>
-              <option value="nb">Naive Bayes-Lexicon (default)</option>
             </select>
           </div>
 
@@ -182,11 +205,10 @@
             id="startTrainBtn"
             class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition flex items-center space-x-2"
           >
-            <i class="fas fa-play"></i>
-            <span>Mulai Latih</span>
+            <i class="fas fa-play"></i><span>Mulai Latih</span>
           </button>
 
-          <!-- Status -->
+          <!-- Status Training -->
           <div class="mt-4 p-3 bg-gray-50 rounded-lg">
             <p class="text-sm text-gray-600">
               Status :
@@ -205,7 +227,7 @@
           </div>
         </div>
 
-        <!-- Daftar Hasil Data Latih (dengan pagination) -->
+        <!-- Tabel Riwayat -->
         <div class="bg-white p-6 rounded-xl shadow-md">
           <h2 class="font-semibold text-gray-700 mb-4">
             Daftar Hasil Data Latih
@@ -222,381 +244,389 @@
                   <th class="px-4 py-2 border border-blue-400">Aksi</th>
                 </tr>
               </thead>
-              <tbody id="trainingResultsBody">
-                <!-- Data diisi JavaScript -->
-              </tbody>
+              <tbody id="trainingResultsBody"></tbody>
             </table>
           </div>
-          <!-- Pagination controls -->
           <div id="pagination" class="flex justify-center mt-4 space-x-2"></div>
         </div>
       </main>
     </div>
 
     <script>
-      // Konstanta API
-      const API_BASE = "http://localhost:5000";
+      (function () {
+        "use strict";
 
-      // State global
-      let trainingHistory = [];
-      let currentPage = 1;
-      const rowsPerPage = 5;
-      let pollingInterval = null;
+        const API_BASE = "http://localhost:5000";
+        let trainingHistory = [];
+        let currentPage = 1;
+        const rowsPerPage = 5;
+        let pollingInterval = null;
 
-      // Fungsi fetch dengan header
-      function getHeaders() {
-        return { "Content-Type": "application/json" };
-      }
+        // State upload
+        let uploadedFilePath = null;
+        let isUploading = false;
 
-      // ========== 1. Muat Konfigurasi Model untuk Dropdown ==========
-      async function loadModelConfigs() {
-        try {
-          const res = await fetch(`${API_BASE}/api/processing/configs`, {
-            headers: getHeaders(),
-          });
-          if (!res.ok) throw new Error("Gagal memuat konfigurasi");
-          const configs = await res.json();
-          const select = document.getElementById("configSelect");
-          select.innerHTML =
-            '<option value="">-- Pilih konfigurasi --</option>';
-          configs.forEach((cfg) => {
-            const option = document.createElement("option");
-            option.value = cfg.id;
-            option.textContent = `${cfg.name} (${cfg.algorithm})`;
-            select.appendChild(option);
-          });
-        } catch (err) {
-          console.error(err);
-          alert("Gagal memuat daftar model.");
-        }
-      }
+        // Elemen DOM
+        const dropzoneArea = document.getElementById("dropzoneArea");
+        const fileInput = document.getElementById("datasetFile");
+        const uploadInfo = document.getElementById("uploadInfo");
+        const uploadedFileName = document.getElementById("uploadedFileName");
+        const changeFileBtn = document.getElementById("changeFileBtn");
+        const uploadMessage = document.getElementById("uploadMessage");
+        const startBtn = document.getElementById("startTrainBtn");
+        const configSelect = document.getElementById("configSelect");
 
-      // ========== 2. Muat Riwayat Training ==========
-      async function loadTrainingHistory() {
-        try {
-          const res = await fetch(`${API_BASE}/api/training/history`, {
-            headers: getHeaders(),
-          });
-          if (!res.ok) throw new Error("Gagal memuat riwayat");
-          trainingHistory = await res.json();
-          renderTable();
-          renderPagination();
-        } catch (err) {
-          console.error(err);
-        }
-      }
-
-      // Render tabel dengan data trainingHistory (client-side pagination)
-      function renderTable() {
-        const start = (currentPage - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
-        const pageData = trainingHistory.slice(start, end);
-        const tbody = document.getElementById("trainingResultsBody");
-        tbody.innerHTML = "";
-
-        pageData.forEach((item) => {
-          const row = tbody.insertRow();
-
-          // Kolom 0: Nama file dataset
-          row.insertCell(0).innerHTML = item.dataset_filename;
-
-          // Kolom 1: Algoritma
-          row.insertCell(1).innerHTML = item.algorithm || "-";
-
-          // Kolom 2: Akurasi
-          row.insertCell(2).innerHTML =
-            item.metrics?.accuracy?.toFixed(3) || "-";
-
-          // Kolom 3: Tanggal (dari created_at)
-          const createdDate = item.created_at
-            ? new Date(item.created_at)
-            : null;
-          const dateStr = createdDate
-            ? createdDate.toLocaleString("id-ID", {
-                dateStyle: "short",
-                timeStyle: "short",
-              })
-            : "-";
-          row.insertCell(3).innerHTML = dateStr;
-
-          // Kolom 4: Durasi (Waktu Latih)
-          let durationStr = "-";
-          if (item.created_at) {
-            const startTime = new Date(item.created_at);
-            const endTime = item.completed_at
-              ? new Date(item.completed_at)
-              : new Date(); // jika belum selesai, gunakan waktu sekarang
-            const diffMs = endTime - startTime;
-
-            if (diffMs >= 0) {
-              const seconds = Math.floor(diffMs / 1000);
-              const minutes = Math.floor(seconds / 60);
-              const hours = Math.floor(minutes / 60);
-
-              if (hours > 0) {
-                durationStr = `${hours} jam ${minutes % 60} mnt`;
-              } else if (minutes > 0) {
-                durationStr = `${minutes} menit ${seconds % 60} dtk`;
-              } else {
-                durationStr = `${seconds} detik`;
-              }
-
-              // Jika belum selesai, tambahkan indikator
-              if (!item.completed_at && item.status !== "completed") {
-                durationStr += " (berjalan)";
-              }
-            }
-          }
-          row.insertCell(4).innerHTML = durationStr;
-
-          // Kolom 5: Aksi
-          const actionCell = row.insertCell(5);
-          actionCell.className = "px-4 py-2 border border-gray-200 text-center";
-          actionCell.innerHTML = `
-            <a href="validasi.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2"><i class="fas fa-eye"></i></a>
-            <button class="text-green-600 hover:text-green-800 download-model" data-id="${item.id}" ${!item.model_path ? "disabled" : ""}><i class="fas fa-download"></i></button>
-        `;
-
-          // Tambahkan class border pada semua sel
-          for (let cell of row.cells) {
-            cell.classList.add("border", "border-gray-200", "px-4", "py-2");
-          }
-        });
-
-        // Event listener untuk tombol download (tetap sama)
-        document.querySelectorAll(".download-model").forEach((btn) => {
-          btn.addEventListener("click", (e) => {
-            const id = btn.dataset.id;
-            const training = trainingHistory.find((t) => t.id == id);
-            if (training && training.model_path) {
-              window.open(
-                `${API_BASE}/data/models/${training.model_path.split("/").pop()}`,
-                "_blank",
-              );
-            }
-          });
-        });
-      }
-
-      function renderPagination() {
-        const totalPages = Math.ceil(trainingHistory.length / rowsPerPage);
-        const paginationDiv = document.getElementById("pagination");
-        paginationDiv.innerHTML = "";
-        if (totalPages <= 1) return;
-
-        const prevBtn = document.createElement("button");
-        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-        prevBtn.className = `px-3 py-1 rounded border ${currentPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
-        prevBtn.disabled = currentPage === 1;
-        prevBtn.onclick = () => {
-          if (currentPage > 1) {
-            currentPage--;
-            renderTable();
-            renderPagination();
-          }
-        };
-        paginationDiv.appendChild(prevBtn);
-
-        for (let i = 1; i <= totalPages; i++) {
-          const btn = document.createElement("button");
-          btn.innerText = i;
-          btn.className = `px-3 py-1 rounded border ${currentPage === i ? "bg-blue-500 text-white" : "bg-white hover:bg-blue-50"}`;
-          btn.onclick = () => {
-            currentPage = i;
-            renderTable();
-            renderPagination();
-          };
-          paginationDiv.appendChild(btn);
+        function getHeaders() {
+          return { "Content-Type": "application/json" };
         }
 
-        const nextBtn = document.createElement("button");
-        nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-        nextBtn.className = `px-3 py-1 rounded border ${currentPage === totalPages ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
-        nextBtn.disabled = currentPage === totalPages;
-        nextBtn.onclick = () => {
-          if (currentPage < totalPages) {
-            currentPage++;
-            renderTable();
-            renderPagination();
-          }
-        };
-        paginationDiv.appendChild(nextBtn);
-      }
-
-      // ========== 3. Upload File ==========
-      const uploadArea = document.getElementById("uploadArea");
-      const fileInput = document.getElementById("datasetFile");
-      let selectedFile = null;
-      let uploadedFilePath = null;
-
-      function handleFileSelect(file) {
-        selectedFile = file;
-        uploadArea.innerHTML = `
-        <i class="fas fa-check-circle text-green-500 text-3xl mb-2"></i>
-        <p class="text-gray-700">File terpilih: <span class="font-medium">${file.name}</span></p>
-        <p class="text-xs text-gray-400 mt-1">Klik untuk mengganti</p>
-    `;
-        // Upload file ke server
-        uploadFile(file);
-      }
-
-      async function uploadFile(file) {
-        const formData = new FormData();
-        formData.append("file", file);
-        try {
-          const res = await fetch(`${API_BASE}/api/training/upload`, {
-            method: "POST",
-            body: formData,
-          });
-          if (!res.ok) throw new Error("Upload gagal");
-          const data = await res.json();
-          uploadedFilePath = data.path;
-          console.log("File uploaded:", uploadedFilePath);
-        } catch (err) {
-          alert("Gagal mengupload file: " + err.message);
-        }
-      }
-
-      // Event listeners upload
-      uploadArea.addEventListener("click", () => fileInput.click());
-      uploadArea.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        uploadArea.classList.add("border-blue-500", "bg-blue-50");
-      });
-      uploadArea.addEventListener("dragleave", () => {
-        uploadArea.classList.remove("border-blue-500", "bg-blue-50");
-      });
-      uploadArea.addEventListener("drop", (e) => {
-        e.preventDefault();
-        uploadArea.classList.remove("border-blue-500", "bg-blue-50");
-        if (e.dataTransfer.files.length) {
-          fileInput.files = e.dataTransfer.files;
-          handleFileSelect(e.dataTransfer.files[0]);
-        }
-      });
-      fileInput.addEventListener("change", () => {
-        if (fileInput.files.length) handleFileSelect(fileInput.files[0]);
-      });
-
-      // ========== 4. Mulai Training ==========
-      const startBtn = document.getElementById("startTrainBtn");
-      const trainStatus = document.getElementById("trainStatus");
-      const progressContainer = document.getElementById("progressContainer");
-      const progressBar = document.getElementById("progressBar");
-      const progressPercent = document.getElementById("progressPercent");
-      const configSelect = document.getElementById("configSelect");
-
-      startBtn.addEventListener("click", async () => {
-        if (!uploadedFilePath) {
-          alert("Upload file dataset terlebih dahulu!");
-          return;
-        }
-        const configId = configSelect.value;
-        if (!configId) {
-          alert("Pilih konfigurasi model!");
-          return;
-        }
-
-        startBtn.disabled = true;
-        trainStatus.innerText = "Memulai training...";
-        progressContainer.classList.remove("hidden");
-        progressBar.style.width = "0%";
-        progressPercent.innerText = "0%";
-
-        try {
-          const res = await fetch(`${API_BASE}/api/training/start`, {
-            method: "POST",
-            headers: getHeaders(),
-            body: JSON.stringify({
-              config_id: parseInt(configId),
-              dataset_path: uploadedFilePath,
-            }),
-          });
-          if (!res.ok) throw new Error("Gagal memulai training");
-          const training = await res.json();
-          const trainingId = training.id;
-
-          // Mulai polling status
-          if (pollingInterval) clearInterval(pollingInterval);
-          pollingInterval = setInterval(
-            () => pollTrainingStatus(trainingId),
-            2000,
-          );
-        } catch (err) {
-          alert(err.message);
-          trainStatus.innerText = "Gagal";
+        // ========== UPLOAD ==========
+        function resetUploadUI() {
+          console.log("🔄 Reset upload UI");
+          uploadedFilePath = null;
+          uploadInfo.classList.add("hidden");
+          dropzoneArea.classList.remove("hidden");
+          uploadMessage.innerHTML = "";
+          fileInput.value = "";
+          isUploading = false;
           startBtn.disabled = false;
         }
-      });
 
-      async function pollTrainingStatus(trainingId) {
-        try {
-          const res = await fetch(
-            `${API_BASE}/api/training/status/${trainingId}`,
-          );
-          if (!res.ok) throw new Error("Gagal fetch status");
-          const data = await res.json();
+        function showUploadLoading() {
+          console.log("⏳ Upload loading...");
+          isUploading = true;
+          startBtn.disabled = true;
+          dropzoneArea.classList.add("hidden");
+          uploadInfo.classList.add("hidden");
+          uploadMessage.innerHTML = `<div class="flex items-center text-blue-600"><i class="fas fa-spinner fa-spin mr-2"></i><span>Mengunggah file...</span></div>`;
+        }
 
-          let statusText =
-            data.status === "completed"
-              ? "Selesai"
-              : data.status === "failed"
-                ? "Gagal"
-                : "Sedang berjalan...";
+        function showUploadSuccess(fileName, filePath) {
+          console.log("✅ Upload success:", filePath);
+          isUploading = false;
+          uploadedFilePath = filePath;
+          uploadedFileName.textContent = fileName;
+          dropzoneArea.classList.add("hidden");
+          uploadInfo.classList.remove("hidden");
+          uploadMessage.innerHTML = `<div class="text-green-600"><i class="fas fa-check-circle mr-1"></i>Upload berhasil!</div>`;
+          startBtn.disabled = false;
+        }
 
-          // Tampilkan pesan progress jika ada
-          if (data.metrics && data.metrics.progress_message) {
-            statusText += ` (${data.metrics.progress_message})`;
+        function showUploadError(message) {
+          console.error("❌ Upload error:", message);
+          isUploading = false;
+          dropzoneArea.classList.remove("hidden");
+          uploadInfo.classList.add("hidden");
+          uploadMessage.innerHTML = `<div class="text-red-600"><i class="fas fa-exclamation-circle mr-1"></i>${message}</div>`;
+          uploadedFilePath = null;
+          startBtn.disabled = false;
+        }
+
+        async function uploadFile(file) {
+          if (isUploading) {
+            console.warn("⚠️ Upload sedang berlangsung, abaikan.");
+            return;
           }
+          showUploadLoading();
+          const formData = new FormData();
+          formData.append("file", file);
+          try {
+            const res = await fetch(`${API_BASE}/api/training/upload`, {
+              method: "POST",
+              body: formData,
+            });
+            if (!res.ok) {
+              const errData = await res.json().catch(() => ({}));
+              throw new Error(errData.error || "Upload gagal");
+            }
+            const data = await res.json();
+            showUploadSuccess(file.name, data.path);
+          } catch (err) {
+            showUploadError(err.message);
+          }
+        }
 
-          trainStatus.innerText = statusText;
-          progressBar.style.width = `${data.progress}%`;
-          progressPercent.innerText = `${data.progress}%`;
+        // Event Listeners (dengan pencegahan double)
+        function initUploadEvents() {
+          dropzoneArea.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (isUploading) return;
+            fileInput.click();
+          });
 
-          trainStatus.innerText =
-            data.status === "completed"
-              ? "Selesai"
-              : data.status === "failed"
-                ? "Gagal"
-                : "Sedang berjalan...";
-          progressBar.style.width = `${data.progress}%`;
-          progressPercent.innerText = `${data.progress}%`;
+          dropzoneArea.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            if (!isUploading)
+              dropzoneArea.classList.add("border-blue-500", "bg-blue-50");
+          });
+          dropzoneArea.addEventListener("dragleave", () => {
+            dropzoneArea.classList.remove("border-blue-500", "bg-blue-50");
+          });
+          dropzoneArea.addEventListener("drop", (e) => {
+            e.preventDefault();
+            dropzoneArea.classList.remove("border-blue-500", "bg-blue-50");
+            if (isUploading) return;
+            const files = e.dataTransfer.files;
+            if (files.length) {
+              fileInput.files = files;
+              uploadFile(files[0]);
+            }
+          });
 
-          if (data.status === "completed" || data.status === "failed") {
+          fileInput.addEventListener("change", (e) => {
+            e.stopPropagation();
+            if (fileInput.files.length) {
+              uploadFile(fileInput.files[0]);
+            }
+          });
+
+          changeFileBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            resetUploadUI();
+            fileInput.click();
+          });
+        }
+
+        // ========== LOAD CONFIGS & HISTORY ==========
+        async function loadModelConfigs() {
+          try {
+            const res = await fetch(`${API_BASE}/api/processing/configs`, {
+              headers: getHeaders(),
+            });
+            if (!res.ok) throw new Error("Gagal memuat konfigurasi");
+            const configs = await res.json();
+            configSelect.innerHTML =
+              '<option value="">-- Pilih konfigurasi --</option>';
+            configs.forEach((cfg) => {
+              const option = document.createElement("option");
+              option.value = cfg.id;
+              option.textContent = `${cfg.name} (${cfg.algorithm})`;
+              configSelect.appendChild(option);
+            });
+          } catch (err) {
+            console.error(err);
+            alert("Gagal memuat daftar model.");
+          }
+        }
+
+        async function loadTrainingHistory() {
+          try {
+            const res = await fetch(`${API_BASE}/api/training/history`, {
+              headers: getHeaders(),
+            });
+            if (!res.ok) throw new Error("Gagal memuat riwayat");
+            trainingHistory = await res.json();
+            renderTable();
+            renderPagination();
+          } catch (err) {
+            console.error(err);
+          }
+        }
+
+        function renderTable() {
+          const start = (currentPage - 1) * rowsPerPage;
+          const end = start + rowsPerPage;
+          const pageData = trainingHistory.slice(start, end);
+          const tbody = document.getElementById("trainingResultsBody");
+          tbody.innerHTML = "";
+          pageData.forEach((item) => {
+            const row = tbody.insertRow();
+            row.insertCell(0).innerHTML = item.dataset_filename;
+            row.insertCell(1).innerHTML = item.algorithm || "-";
+            row.insertCell(2).innerHTML =
+              item.metrics?.accuracy?.toFixed(3) || "-";
+            const d = item.created_at ? new Date(item.created_at) : null;
+            row.insertCell(3).innerHTML = d
+              ? d.toLocaleString("id-ID", {
+                  dateStyle: "short",
+                  timeStyle: "short",
+                })
+              : "-";
+            let dur = "-";
+            if (item.created_at) {
+              const start = new Date(item.created_at);
+              const end = item.completed_at
+                ? new Date(item.completed_at)
+                : new Date();
+              const diff = end - start;
+              if (diff >= 0) {
+                const sec = Math.floor(diff / 1000);
+                const min = Math.floor(sec / 60);
+                const hr = Math.floor(min / 60);
+                dur =
+                  hr > 0
+                    ? `${hr} jam ${min % 60} mnt`
+                    : min > 0
+                      ? `${min} menit ${sec % 60} dtk`
+                      : `${sec} detik`;
+                if (!item.completed_at && item.status !== "completed")
+                  dur += " (berjalan)";
+              }
+            }
+            row.insertCell(4).innerHTML = dur;
+            const act = row.insertCell(5);
+            act.className = "px-4 py-2 border border-gray-200 text-center";
+            act.innerHTML = `<a href="validasi.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2"><i class="fas fa-eye"></i></a><button class="text-green-600 hover:text-green-800 download-model" data-id="${item.id}" ${!item.model_path ? "disabled" : ""}><i class="fas fa-download"></i></button>`;
+            for (let c of row.cells)
+              c.classList.add("border", "border-gray-200", "px-4", "py-2");
+          });
+          document.querySelectorAll(".download-model").forEach((b) => {
+            b.addEventListener("click", (e) => {
+              const id = b.dataset.id;
+              const t = trainingHistory.find((x) => x.id == id);
+              if (t && t.model_path)
+                window.open(
+                  `${API_BASE}/data/models/${t.model_path.split("/").pop()}`,
+                  "_blank",
+                );
+            });
+          });
+        }
+
+        function renderPagination() {
+          const total = Math.ceil(trainingHistory.length / rowsPerPage);
+          const pg = document.getElementById("pagination");
+          pg.innerHTML = "";
+          if (total <= 1) return;
+          const prev = document.createElement("button");
+          prev.innerHTML = '<i class="fas fa-chevron-left"></i>';
+          prev.className = `px-3 py-1 rounded border ${currentPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
+          prev.disabled = currentPage === 1;
+          prev.onclick = () => {
+            if (currentPage > 1) {
+              currentPage--;
+              renderTable();
+              renderPagination();
+            }
+          };
+          pg.appendChild(prev);
+          for (let i = 1; i <= total; i++) {
+            const btn = document.createElement("button");
+            btn.innerText = i;
+            btn.className = `px-3 py-1 rounded border ${currentPage === i ? "bg-blue-500 text-white" : "bg-white hover:bg-blue-50"}`;
+            btn.onclick = () => {
+              currentPage = i;
+              renderTable();
+              renderPagination();
+            };
+            pg.appendChild(btn);
+          }
+          const next = document.createElement("button");
+          next.innerHTML = '<i class="fas fa-chevron-right"></i>';
+          next.className = `px-3 py-1 rounded border ${currentPage === total ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
+          next.disabled = currentPage === total;
+          next.onclick = () => {
+            if (currentPage < total) {
+              currentPage++;
+              renderTable();
+              renderPagination();
+            }
+          };
+          pg.appendChild(next);
+        }
+
+        // ========== TRAINING ==========
+        async function pollTrainingStatus(trainingId) {
+          try {
+            const res = await fetch(
+              `${API_BASE}/api/training/status/${trainingId}`,
+            );
+            if (!res.ok) throw new Error("Gagal fetch status");
+            const data = await res.json();
+            let txt =
+              data.status === "completed"
+                ? "Selesai"
+                : data.status === "failed"
+                  ? "Gagal"
+                  : "Sedang berjalan...";
+            if (data.metrics?.progress_message)
+              txt += ` (${data.metrics.progress_message})`;
+            document.getElementById("trainStatus").innerText = txt;
+            document.getElementById("progressBar").style.width =
+              `${data.progress}%`;
+            document.getElementById("progressPercent").innerText =
+              `${data.progress}%`;
+            if (data.status === "completed" || data.status === "failed") {
+              clearInterval(pollingInterval);
+              pollingInterval = null;
+              startBtn.disabled = false;
+              await loadTrainingHistory();
+            }
+          } catch (err) {
+            console.error(err);
             clearInterval(pollingInterval);
             pollingInterval = null;
             startBtn.disabled = false;
-            // Refresh riwayat training
-            await loadTrainingHistory();
-            // Reset upload state (opsional)
           }
-        } catch (err) {
-          console.error(err);
-          clearInterval(pollingInterval);
-          pollingInterval = null;
-          startBtn.disabled = false;
         }
-      }
 
-      // ========== Inisialisasi ==========
-      loadModelConfigs();
-      loadTrainingHistory();
+        startBtn.addEventListener("click", async () => {
+          if (!uploadedFilePath) {
+            alert("Upload file dataset terlebih dahulu!");
+            return;
+          }
+          const configId = configSelect.value;
+          if (!configId) {
+            alert("Pilih konfigurasi model!");
+            return;
+          }
 
-      // Dropdown sidebar (sama seperti sebelumnya)
-      function toggleDropdown(btn, menu, icon) {
-        btn.addEventListener("click", () => {
-          menu.classList.toggle("hidden");
-          icon.classList.toggle("rotate-180");
+          startBtn.disabled = true;
+          document.getElementById("trainStatus").innerText =
+            "Memulai training...";
+          document
+            .getElementById("progressContainer")
+            .classList.remove("hidden");
+          document.getElementById("progressBar").style.width = "0%";
+          document.getElementById("progressPercent").innerText = "0%";
+
+          try {
+            const res = await fetch(`${API_BASE}/api/training/start`, {
+              method: "POST",
+              headers: getHeaders(),
+              body: JSON.stringify({
+                config_id: parseInt(configId),
+                dataset_path: uploadedFilePath,
+              }),
+            });
+            if (!res.ok) throw new Error("Gagal memulai training");
+            const training = await res.json();
+            if (pollingInterval) clearInterval(pollingInterval);
+            pollingInterval = setInterval(
+              () => pollTrainingStatus(training.id),
+              7000,
+            );
+          } catch (err) {
+            alert(err.message);
+            document.getElementById("trainStatus").innerText = "Gagal";
+            startBtn.disabled = false;
+          }
         });
-      }
-      const dataCollectionBtn = document.getElementById("dataCollectionBtn");
-      const dataCollectionMenu = document.getElementById("dataCollectionMenu");
-      const dataCollectionIcon = document.getElementById("dataCollectionIcon");
-      toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
-      const processingBtn = document.getElementById("processingBtn");
-      const processingMenu = document.getElementById("processingMenu");
-      const processingIcon = document.getElementById("processingIcon");
-      toggleDropdown(processingBtn, processingMenu, processingIcon);
+
+        // Sidebar toggle
+        function toggleDropdown(btn, menu, icon) {
+          btn.addEventListener("click", () => {
+            menu.classList.toggle("hidden");
+            icon.classList.toggle("rotate-180");
+          });
+        }
+        toggleDropdown(
+          document.getElementById("dataCollectionBtn"),
+          document.getElementById("dataCollectionMenu"),
+          document.getElementById("dataCollectionIcon"),
+        );
+        toggleDropdown(
+          document.getElementById("processingBtn"),
+          document.getElementById("processingMenu"),
+          document.getElementById("processingIcon"),
+        );
+
+        // Inisialisasi
+        initUploadEvents();
+        loadModelConfigs();
+        loadTrainingHistory();
+      })();
     </script>
   </body>
 </html>
