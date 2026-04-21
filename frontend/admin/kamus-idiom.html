@@ -13,7 +13,7 @@
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- Sidebar -->
+      <!-- Sidebar (disesuaikan: Processing menjadi link langsung) -->
       <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
         <div class="p-4 border-b">
           <span
@@ -72,40 +72,27 @@
               >
             </li>
             <li>
-              <button
-                id="processingBtn"
-                class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+              <!-- Processing sekarang menjadi link langsung -->
+              <a
+                href="processing.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
               >
-                <div class="flex items-center space-x-2">
-                  <i class="fas fa-brain w-5"></i><span>Processing</span>
-                </div>
-                <i
-                  id="processingIcon"
-                  class="fas fa-chevron-down text-sm transition-transform"
-                ></i>
-              </button>
-              <ul id="processingMenu" class="ml-6 mt-1 space-y-1 hidden">
-                <li>
-                  <a
-                    href="pengaturan.html"
-                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
-                    ><i class="fas fa-sliders-h w-5 mr-2"></i>Pengaturan</a
-                  >
-                </li>
-                <li>
-                  <a
-                    href="latih.html"
-                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
-                    ><i class="fas fa-chart-line w-5 mr-2"></i>Latih</a
-                  >
-                </li>
-              </ul>
+                <i class="fas fa-brain w-5"></i>
+                <span>Processing</span>
+              </a>
             </li>
             <li>
               <a
                 href="testing.html"
                 class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
                 ><i class="fas fa-vial w-5"></i><span>Testing</span></a
+              >
+            </li>
+            <li>
+              <a
+                href="evaluasi.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                ><i class="fas fa-chart-line w-5"></i><span>Evaluasi</span></a
               >
             </li>
             <li class="pt-4 mt-4 border-t">
@@ -119,7 +106,7 @@
         </nav>
       </aside>
 
-      <!-- Main Content -->
+      <!-- Main Content (tidak berubah) -->
       <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
         <h1 class="text-3xl font-bold text-gray-800 mb-6">Kamus Idiom</h1>
 
@@ -591,9 +578,8 @@
         const files = e.dataTransfer.files;
         if (files.length) fileInput.files = files;
       });
-      let uploadedData = []; // menyimpan data hasil parsing CSV
+      let uploadedData = [];
 
-      // Saat user memilih file, parse dan tampilkan preview
       fileInput.addEventListener("change", function (e) {
         if (fileInput.files.length === 0) return;
         const file = fileInput.files[0];
@@ -601,13 +587,11 @@
           header: true,
           skipEmptyLines: true,
           complete: function (results) {
-            // Cari kolom idiom dan makna
             const data = results.data;
             if (data.length === 0) {
               alert("File kosong");
               return;
             }
-            // Deteksi kolom
             let idiomKey = null;
             let meaningKey = null;
             const firstRow = data[0];
@@ -624,7 +608,6 @@
               );
               return;
             }
-            // Ekstrak data
             uploadedData = [];
             for (let row of data) {
               let idiom = row[idiomKey] ? row[idiomKey].trim() : "";
@@ -640,7 +623,6 @@
               alert("Tidak ada data valid yang ditemukan");
               return;
             }
-            // Tampilkan preview (10 baris pertama)
             const previewBody = document.getElementById("previewTableBody");
             previewBody.innerHTML = "";
             const previewRows = uploadedData.slice(0, 10);
@@ -674,7 +656,6 @@
         });
       });
 
-      // Tombol ekstrak
       document
         .getElementById("extractBtn")
         .addEventListener("click", async () => {
@@ -691,7 +672,6 @@
             const result = await response.json();
             if (response.ok) {
               alert(result.message);
-              // Reset
               uploadedData = [];
               document.getElementById("previewSection").classList.add("hidden");
               fileInput.value = "";
@@ -706,13 +686,11 @@
           }
         });
 
-      // Hapus event listener uploadBtn sebelumnya (yang langsung upload), ganti dengan yang baru.
-      // Pastikan tombol "Upload" sekarang hanya memicu file input, bukan langsung upload.
       document.getElementById("uploadBtn").addEventListener("click", () => {
         fileInput.click();
       });
 
-      // Dropdown sidebar
+      // Sidebar dropdown (hanya untuk Data Collection, Processing sudah jadi link)
       function toggleDropdown(btn, menu, icon) {
         btn.addEventListener("click", () => {
           menu.classList.toggle("hidden");
@@ -723,10 +701,7 @@
       const dataCollectionMenu = document.getElementById("dataCollectionMenu");
       const dataCollectionIcon = document.getElementById("dataCollectionIcon");
       toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
-      const processingBtn = document.getElementById("processingBtn");
-      const processingMenu = document.getElementById("processingMenu");
-      const processingIcon = document.getElementById("processingIcon");
-      toggleDropdown(processingBtn, processingMenu, processingIcon);
+      // Tidak perlu toggle untuk Processing karena sudah link
 
       // Load initial data
       if (authToken) {
