@@ -10,7 +10,6 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     />
     <style>
-      /* Tambahan untuk inline editing */
       .editable-name {
         cursor: pointer;
       }
@@ -141,7 +140,6 @@
         <div class="bg-white p-6 rounded-xl shadow-md max-w-2xl mb-8">
           <h2 class="font-semibold text-gray-700 mb-4">Proses Pembersihan</h2>
 
-          <!-- Pilih Data Mentah -->
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-1"
               >Pilih Data Mentah</label
@@ -154,7 +152,6 @@
             </select>
           </div>
 
-          <!-- Tombol Mulai Pembersihan -->
           <button
             id="startCleanBtn"
             class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition flex items-center space-x-2"
@@ -163,7 +160,6 @@
             <span>Mulai Pembersihan</span>
           </button>
 
-          <!-- Status -->
           <div class="mt-6 p-4 bg-gray-50 rounded-lg">
             <p class="text-sm text-gray-600">
               Status :
@@ -181,7 +177,6 @@
             </div>
           </div>
 
-          <!-- Tombol Unduh CSV -->
           <div class="mt-6 text-right">
             <button
               id="downloadBtn"
@@ -196,13 +191,25 @@
 
         <!-- Bagian History Preprocessing -->
         <div class="bg-white p-6 rounded-xl shadow-md">
-          <!-- Header dengan Search -->
-          <div class="flex justify-between items-center mb-4">
+          <!-- Header dengan Search dan Filter Tanggal -->
+          <div class="flex flex-wrap justify-between items-center mb-4 gap-3">
             <h2 class="font-semibold text-gray-700 text-lg">History Preprocessing</h2>
-            <div class="relative">
-              <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-              <input type="text" id="historySearchInput" placeholder="Cari nama atau tanggal..." 
-                     class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-64 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+            <div class="flex flex-wrap items-center gap-2">
+              <!-- Filter Tanggal -->
+              <div class="flex items-center gap-1">
+                <span class="text-sm text-gray-600">Dari</span>
+                <input type="date" id="startDateFilter" class="border border-gray-300 rounded px-2 py-1 text-sm w-36 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+              </div>
+              <div class="flex items-center gap-1">
+                <span class="text-sm text-gray-600">Sampai</span>
+                <input type="date" id="endDateFilter" class="border border-gray-300 rounded px-2 py-1 text-sm w-36 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+              </div>
+              <!-- Search -->
+              <div class="relative">
+                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input type="text" id="historySearchInput" placeholder="Cari nama..." 
+                       class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-56 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+              </div>
             </div>
           </div>
 
@@ -216,9 +223,7 @@
                   <th class="px-4 py-2 border border-blue-400 w-24">Aksi</th>
                 </tr>
               </thead>
-              <tbody id="historyTableBody">
-                <!-- Data akan diisi oleh JavaScript -->
-              </tbody>
+              <tbody id="historyTableBody"></tbody>
             </table>
           </div>
           <!-- Pagination -->
@@ -231,462 +236,441 @@
     </div>
 
     <script>
-      // === Konfigurasi ===
-      const API_BASE = "http://localhost:5000/api";
-      let authToken = localStorage.getItem("access_token");
-      let currentPreprocId = null;
+      (function() {
+        const API_BASE = "http://localhost:5000/api";
+        let authToken = localStorage.getItem("access_token");
+        let currentPreprocId = null;
 
-      const datasetSelect = document.getElementById("datasetSelect");
-      const startBtn = document.getElementById("startCleanBtn");
-      const statusText = document.getElementById("statusText");
-      const progressContainer = document.getElementById("progressContainer");
-      const progressBar = document.getElementById("progressBar");
-      const progressPercent = document.getElementById("progressPercent");
-      const downloadBtn = document.getElementById("downloadBtn");
-      const historyTbody = document.getElementById("historyTableBody");
-      const historySearchInput = document.getElementById("historySearchInput");
-      const historyPagination = document.getElementById("historyPagination");
+        const datasetSelect = document.getElementById("datasetSelect");
+        const startBtn = document.getElementById("startCleanBtn");
+        const statusText = document.getElementById("statusText");
+        const progressContainer = document.getElementById("progressContainer");
+        const progressBar = document.getElementById("progressBar");
+        const progressPercent = document.getElementById("progressPercent");
+        const downloadBtn = document.getElementById("downloadBtn");
+        const historyTbody = document.getElementById("historyTableBody");
+        const historySearchInput = document.getElementById("historySearchInput");
+        const startDateFilter = document.getElementById("startDateFilter");
+        const endDateFilter = document.getElementById("endDateFilter");
+        const historyPagination = document.getElementById("historyPagination");
 
-      // State untuk history
-      let allHistory = [];           // Data asli dari server
-      let filteredHistory = [];      // Data setelah filter search
-      let currentPage = 1;
-      const rowsPerPage = 10;
+        let allHistory = [];
+        let filteredHistory = [];
+        let currentPage = 1;
+        const rowsPerPage = 10;
 
-      // Helper fetch dengan token
-      async function apiFetch(endpoint, options = {}) {
-        const headers = {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authToken}`,
-        };
-        const response = await fetch(`${API_BASE}${endpoint}`, {
-          ...options,
-          headers: { ...headers, ...options.headers },
-        });
-        if (response.status === 401) {
-          localStorage.clear();
-          window.location.href = "login.html";
-          return null;
-        }
-        return response;
-      }
-
-      // Memuat daftar dataset dari server
-      async function loadDatasets() {
-        try {
-          const response = await apiFetch("/datasets/");
-          if (!response) return;
-          if (!response.ok) throw new Error("Gagal memuat dataset");
-          const datasets = await response.json();
-          datasetSelect.innerHTML =
-            '<option value="">-- Pilih dataset --</option>';
-          if (datasets.length === 0) {
-            datasetSelect.innerHTML +=
-              "<option disabled>Belum ada dataset. Upload dulu di halaman Dataset.</option>";
-          } else {
-            datasets.forEach((ds) => {
-              const option = document.createElement("option");
-              option.value = ds.id;
-              option.textContent = `${ds.filename} (${ds.rows} baris) - Upload: ${new Date(ds.uploaded_at).toLocaleDateString()}`;
-              datasetSelect.appendChild(option);
-            });
+        async function apiFetch(endpoint, options = {}) {
+          const headers = {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          };
+          const response = await fetch(`${API_BASE}${endpoint}`, {
+            ...options,
+            headers: { ...headers, ...options.headers },
+          });
+          if (response.status === 401) {
+            localStorage.clear();
+            window.location.href = "login.html";
+            return null;
           }
-        } catch (error) {
-          console.error(error);
-          datasetSelect.innerHTML =
-            '<option value="">Gagal memuat dataset</option>';
-          alert("Gagal memuat daftar dataset. Pastikan backend berjalan.");
+          return response;
         }
-      }
 
-      // Memuat history preprocessing
-      async function loadHistory() {
-        try {
-          const response = await apiFetch("/preprocess/history");
-          if (!response) return;
-          if (!response.ok) throw new Error("Gagal memuat history");
-          allHistory = await response.json();
-          // Sorting default: terbaru di atas
-          allHistory.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-          filterHistory();
-        } catch (error) {
-          console.error(error);
-          allHistory = [];
-          filterHistory();
-          historyTbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-500">Gagal memuat history preprocessing.</td></tr>`;
+        async function loadDatasets() {
+          try {
+            const response = await apiFetch("/datasets/");
+            if (!response) return;
+            if (!response.ok) throw new Error("Gagal memuat dataset");
+            const datasets = await response.json();
+            datasetSelect.innerHTML = '<option value="">-- Pilih dataset --</option>';
+            if (datasets.length === 0) {
+              datasetSelect.innerHTML += "<option disabled>Belum ada dataset. Upload dulu di halaman Dataset.</option>";
+            } else {
+              datasets.forEach((ds) => {
+                const option = document.createElement("option");
+                option.value = ds.id;
+                option.textContent = `${ds.filename} (${ds.rows} baris) - Upload: ${new Date(ds.uploaded_at).toLocaleDateString()}`;
+                datasetSelect.appendChild(option);
+              });
+            }
+          } catch (error) {
+            console.error(error);
+            datasetSelect.innerHTML = '<option value="">Gagal memuat dataset</option>';
+            alert("Gagal memuat daftar dataset.");
+          }
         }
-      }
 
-      // Filter history berdasarkan search input
-      function filterHistory() {
-        const query = historySearchInput.value.trim().toLowerCase();
-        if (!query) {
-          filteredHistory = [...allHistory];
-        } else {
+        async function loadHistory() {
+          try {
+            const response = await apiFetch("/preprocess/history");
+            if (!response) return;
+            if (!response.ok) throw new Error("Gagal memuat history");
+            allHistory = await response.json();
+            allHistory.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            filterHistory();
+          } catch (error) {
+            console.error(error);
+            allHistory = [];
+            filterHistory();
+            historyTbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-500">Gagal memuat history.</td></tr>`;
+          }
+        }
+
+        function filterHistory() {
+          const query = historySearchInput.value.trim().toLowerCase();
+          const startDate = startDateFilter.value ? new Date(startDateFilter.value) : null;
+          const endDate = endDateFilter.value ? new Date(endDateFilter.value) : null;
+          // Set endDate ke akhir hari jika ada
+          if (endDate) {
+            endDate.setHours(23, 59, 59, 999);
+          }
+
           filteredHistory = allHistory.filter(item => {
+            // Filter teks
             const name = (item.name || `Preprocessing #${item.id}`).toLowerCase();
-            const date = item.created_at ? new Date(item.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }).toLowerCase() : '';
-            return name.includes(query) || date.includes(query);
+            const dateStr = item.created_at ? new Date(item.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }).toLowerCase() : '';
+            const textMatch = !query || name.includes(query) || dateStr.includes(query);
+
+            // Filter tanggal
+            let dateMatch = true;
+            if (startDate || endDate) {
+              const itemDate = item.created_at ? new Date(item.created_at) : null;
+              if (!itemDate) dateMatch = false;
+              else {
+                if (startDate && itemDate < startDate) dateMatch = false;
+                if (endDate && itemDate > endDate) dateMatch = false;
+              }
+            }
+
+            return textMatch && dateMatch;
+          });
+
+          currentPage = 1;
+          renderHistoryTable();
+          renderHistoryPagination();
+        }
+
+        function renderHistoryTable() {
+          const start = (currentPage - 1) * rowsPerPage;
+          const end = start + rowsPerPage;
+          const pageData = filteredHistory.slice(start, end);
+
+          if (pageData.length === 0) {
+            historyTbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500">Tidak ada data.</td></tr>`;
+            return;
+          }
+
+          historyTbody.innerHTML = "";
+          pageData.forEach((item, index) => {
+            const row = document.createElement("tr");
+            row.className = "hover:bg-gray-50";
+
+            const cellNo = document.createElement("td");
+            cellNo.className = "border border-gray-200 px-4 py-2 text-center";
+            cellNo.textContent = start + index + 1;
+            row.appendChild(cellNo);
+
+            const cellName = document.createElement("td");
+            cellName.className = "border border-gray-200 px-4 py-2 editable-name";
+            cellName.textContent = item.name || `Preprocessing #${item.id}`;
+            cellName.dataset.id = item.id;
+            cellName.dataset.originalName = cellName.textContent;
+            cellName.addEventListener("dblclick", () => enableInlineEdit(cellName, item.id));
+            row.appendChild(cellName);
+
+            const cellDate = document.createElement("td");
+            cellDate.className = "border border-gray-200 px-4 py-2";
+            const date = item.created_at ? new Date(item.created_at) : null;
+            cellDate.textContent = date
+              ? date.toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })
+              : "-";
+            row.appendChild(cellDate);
+
+            const cellAction = document.createElement("td");
+            cellAction.className = "border border-gray-200 px-4 py-2 text-center";
+            cellAction.innerHTML = `
+              <button class="text-blue-600 hover:text-blue-800 mr-2 download-history" data-id="${item.id}" title="Unduh CSV"><i class="fas fa-download"></i></button>
+              <button class="text-red-600 hover:text-red-800 delete-history" data-id="${item.id}" title="Hapus"><i class="fas fa-trash"></i></button>
+            `;
+            row.appendChild(cellAction);
+            historyTbody.appendChild(row);
+          });
+
+          document.querySelectorAll(".download-history").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+              downloadHistoryCSV(btn.dataset.id);
+            });
+          });
+
+          document.querySelectorAll(".delete-history").forEach(btn => {
+            btn.addEventListener("click", async (e) => {
+              const id = btn.dataset.id;
+              if (!confirm("Hapus hasil preprocessing ini?")) return;
+              try {
+                const response = await apiFetch(`/preprocess/history/${id}`, { method: "DELETE" });
+                if (!response) return;
+                if (!response.ok) {
+                  const err = await response.json();
+                  alert(err.error || "Gagal menghapus");
+                  return;
+                }
+                await loadHistory();
+              } catch (error) {
+                console.error(error);
+                alert("Error saat menghapus.");
+              }
+            });
           });
         }
-        currentPage = 1;
-        renderHistoryTable();
-        renderHistoryPagination();
-      }
 
-      // Render tabel history dengan pagination
-      function renderHistoryTable() {
-        const start = (currentPage - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
-        const pageData = filteredHistory.slice(start, end);
+        function renderHistoryPagination() {
+          const totalPages = Math.ceil(filteredHistory.length / rowsPerPage);
+          historyPagination.innerHTML = '';
+          if (totalPages <= 1) return;
 
-        if (pageData.length === 0) {
-          historyTbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500">Tidak ada data yang sesuai.</td></tr>`;
-          return;
+          const prevBtn = document.createElement('button');
+          prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+          prevBtn.className = `px-3 py-1 rounded border ${currentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
+          prevBtn.disabled = currentPage === 1;
+          prevBtn.onclick = () => {
+            if (currentPage > 1) {
+              currentPage--;
+              renderHistoryTable();
+              renderHistoryPagination();
+            }
+          };
+          historyPagination.appendChild(prevBtn);
+
+          for (let i = 1; i <= totalPages; i++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.innerText = i;
+            pageBtn.className = `px-3 py-1 rounded border ${currentPage === i ? 'bg-blue-500 text-white' : 'bg-white hover:bg-blue-50'}`;
+            pageBtn.onclick = () => {
+              currentPage = i;
+              renderHistoryTable();
+              renderHistoryPagination();
+            };
+            historyPagination.appendChild(pageBtn);
+          }
+
+          const nextBtn = document.createElement('button');
+          nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+          nextBtn.className = `px-3 py-1 rounded border ${currentPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
+          nextBtn.disabled = currentPage === totalPages;
+          nextBtn.onclick = () => {
+            if (currentPage < totalPages) {
+              currentPage++;
+              renderHistoryTable();
+              renderHistoryPagination();
+            }
+          };
+          historyPagination.appendChild(nextBtn);
         }
 
-        historyTbody.innerHTML = "";
-        pageData.forEach((item, index) => {
-          const row = document.createElement("tr");
-          row.className = "hover:bg-gray-50";
+        function enableInlineEdit(cell, id) {
+          const originalName = cell.dataset.originalName;
+          const currentText = cell.textContent;
+          const input = document.createElement("input");
+          input.type = "text";
+          input.value = currentText;
+          input.className = "editable-input";
+          cell.textContent = "";
+          cell.appendChild(input);
+          input.focus();
 
-          // Nomor (berdasarkan urutan di halaman saat ini, bisa juga global)
-          const cellNo = document.createElement("td");
-          cellNo.className = "border border-gray-200 px-4 py-2 text-center";
-          cellNo.textContent = start + index + 1;
-          row.appendChild(cellNo);
-
-          // Nama Preprocessing (dengan double‑click edit)
-          const cellName = document.createElement("td");
-          cellName.className = "border border-gray-200 px-4 py-2 editable-name";
-          cellName.textContent = item.name || `Preprocessing #${item.id}`;
-          cellName.dataset.id = item.id;
-          cellName.dataset.originalName = cellName.textContent;
-          cellName.addEventListener("dblclick", () => enableInlineEdit(cellName, item.id));
-          row.appendChild(cellName);
-
-          // Tanggal
-          const cellDate = document.createElement("td");
-          cellDate.className = "border border-gray-200 px-4 py-2";
-          const date = item.created_at ? new Date(item.created_at) : null;
-          cellDate.textContent = date
-            ? date.toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })
-            : "-";
-          row.appendChild(cellDate);
-
-          // Aksi (Unduh & Hapus)
-          const cellAction = document.createElement("td");
-          cellAction.className = "border border-gray-200 px-4 py-2 text-center";
-          cellAction.innerHTML = `
-            <button class="text-blue-600 hover:text-blue-800 mr-2 download-history" data-id="${item.id}" title="Unduh CSV"><i class="fas fa-download"></i></button>
-            <button class="text-red-600 hover:text-red-800 delete-history" data-id="${item.id}" title="Hapus"><i class="fas fa-trash"></i></button>
-          `;
-          row.appendChild(cellAction);
-
-          historyTbody.appendChild(row);
-        });
-
-        // Event listener untuk tombol unduh di history
-        document.querySelectorAll(".download-history").forEach(btn => {
-          btn.addEventListener("click", (e) => {
-            const id = btn.dataset.id;
-            downloadHistoryCSV(id);
-          });
-        });
-
-        // Event listener untuk tombol hapus di history
-        document.querySelectorAll(".delete-history").forEach(btn => {
-          btn.addEventListener("click", async (e) => {
-            const id = btn.dataset.id;
-            if (!confirm("Hapus hasil preprocessing ini?")) return;
+          const saveEdit = async () => {
+            const newName = input.value.trim();
+            if (newName === "" || newName === originalName) {
+              cell.textContent = originalName;
+              return;
+            }
             try {
-              const response = await apiFetch(`/preprocess/history/${id}`, { method: "DELETE" });
-              if (!response) return;
-              if (!response.ok) {
-                const err = await response.json();
-                alert(err.error || "Gagal menghapus");
+              const response = await apiFetch(`/preprocess/history/${id}`, {
+                method: "PUT",
+                body: JSON.stringify({ name: newName }),
+              });
+              if (!response) {
+                cell.textContent = originalName;
                 return;
               }
-              await loadHistory(); // Refresh
+              if (!response.ok) {
+                const err = await response.json();
+                alert(err.error || "Gagal mengubah nama");
+                cell.textContent = originalName;
+                return;
+              }
+              cell.textContent = newName;
+              cell.dataset.originalName = newName;
+              const item = allHistory.find(h => h.id == id);
+              if (item) item.name = newName;
             } catch (error) {
               console.error(error);
-              alert("Error saat menghapus.");
+              alert("Error saat menyimpan nama");
+              cell.textContent = originalName;
             }
-          });
-        });
-      }
-
-      // Render pagination
-      function renderHistoryPagination() {
-        const totalPages = Math.ceil(filteredHistory.length / rowsPerPage);
-        historyPagination.innerHTML = '';
-        if (totalPages <= 1) return;
-
-        const prevBtn = document.createElement('button');
-        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-        prevBtn.className = `px-3 py-1 rounded border ${currentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
-        prevBtn.disabled = currentPage === 1;
-        prevBtn.onclick = () => {
-          if (currentPage > 1) {
-            currentPage--;
-            renderHistoryTable();
-            renderHistoryPagination();
-          }
-        };
-        historyPagination.appendChild(prevBtn);
-
-        for (let i = 1; i <= totalPages; i++) {
-          const pageBtn = document.createElement('button');
-          pageBtn.innerText = i;
-          pageBtn.className = `px-3 py-1 rounded border ${currentPage === i ? 'bg-blue-500 text-white' : 'bg-white hover:bg-blue-50'}`;
-          pageBtn.onclick = () => {
-            currentPage = i;
-            renderHistoryTable();
-            renderHistoryPagination();
           };
-          historyPagination.appendChild(pageBtn);
-        }
 
-        const nextBtn = document.createElement('button');
-        nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-        nextBtn.className = `px-3 py-1 rounded border ${currentPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
-        nextBtn.disabled = currentPage === totalPages;
-        nextBtn.onclick = () => {
-          if (currentPage < totalPages) {
-            currentPage++;
-            renderHistoryTable();
-            renderHistoryPagination();
-          }
-        };
-        historyPagination.appendChild(nextBtn);
-      }
-
-      // Inline editing nama
-      function enableInlineEdit(cell, id) {
-        const originalName = cell.dataset.originalName;
-        const currentText = cell.textContent;
-
-        // Buat input
-        const input = document.createElement("input");
-        input.type = "text";
-        input.value = currentText;
-        input.className = "editable-input";
-
-        // Ganti isi cell dengan input
-        cell.textContent = "";
-        cell.appendChild(input);
-        input.focus();
-
-        // Simpan saat blur atau tekan Enter
-        const saveEdit = async () => {
-          const newName = input.value.trim();
-          if (newName === "" || newName === originalName) {
-            // Kembalikan teks semula
-            cell.textContent = originalName;
-            return;
-          }
-
-          // Kirim ke server
-          try {
-            const response = await apiFetch(`/preprocess/history/${id}`, {
-              method: "PUT",
-              body: JSON.stringify({ name: newName }),
-            });
-            if (!response) {
-              cell.textContent = originalName;
-              return;
+          input.addEventListener("blur", saveEdit);
+          input.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              input.blur();
             }
-            if (!response.ok) {
-              const err = await response.json();
-              alert(err.error || "Gagal mengubah nama");
-              cell.textContent = originalName;
-              return;
-            }
-            // Berhasil
-            cell.textContent = newName;
-            cell.dataset.originalName = newName;
-            // Update data di allHistory juga (opsional)
-            const item = allHistory.find(h => h.id == id);
-            if (item) item.name = newName;
-          } catch (error) {
-            console.error(error);
-            alert("Error saat menyimpan nama");
-            cell.textContent = originalName;
-          }
-        };
-
-        input.addEventListener("blur", saveEdit);
-        input.addEventListener("keypress", (e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            input.blur();
-          }
-        });
-      }
-
-      // Unduh CSV dari history
-      function downloadHistoryCSV(id) {
-        window.open(`${API_BASE}/preprocess/download/${id}`, "_blank");
-      }
-
-      // Proses preprocessing (tidak berubah)
-      async function startCleaning() {
-        const datasetId = datasetSelect.value;
-        if (!datasetId) {
-          alert("Pilih dataset terlebih dahulu!");
-          return;
-        }
-
-        startBtn.disabled = true;
-        startBtn.innerHTML =
-          '<i class="fas fa-spinner fa-spin"></i> Memulai...';
-        statusText.innerText = "Memulai preprocessing...";
-        progressContainer.classList.remove("hidden");
-        progressBar.style.width = "0%";
-        progressPercent.innerText = "0%";
-        downloadBtn.disabled = true;
-        downloadBtn.classList.add("opacity-50", "cursor-not-allowed");
-        currentPreprocId = null;
-
-        try {
-          const response = await apiFetch("/preprocess/start", {
-            method: "POST",
-            body: JSON.stringify({ dataset_id: datasetId }),
           });
-          if (!response) return;
-          const result = await response.json();
-          if (!response.ok) {
-            statusText.innerText = `Gagal: ${result.error || result.message}`;
-            alert(result.error || result.message);
-            startBtn.disabled = false;
-            startBtn.innerHTML =
-              '<i class="fas fa-play"></i> Mulai Pembersihan';
+        }
+
+        function downloadHistoryCSV(id) {
+          window.open(`${API_BASE}/preprocess/download/${id}`, "_blank");
+        }
+
+        async function startCleaning() {
+          const datasetId = datasetSelect.value;
+          if (!datasetId) {
+            alert("Pilih dataset terlebih dahulu!");
             return;
           }
 
-          if (result.preprocessed_id) {
-            currentPreprocId = result.preprocessed_id;
-            pollPreprocessingStatus(currentPreprocId);
-          } else {
-            statusText.innerText = `Selesai (${result.row_count || "?"} baris diproses)`;
-            progressBar.style.width = "100%";
-            progressPercent.innerText = "100%";
-            downloadBtn.disabled = false;
-            downloadBtn.classList.remove("opacity-50", "cursor-not-allowed");
-            startBtn.disabled = false;
-            startBtn.innerHTML =
-              '<i class="fas fa-play"></i> Mulai Pembersihan';
-            loadHistory(); // Refresh history setelah selesai
-          }
-        } catch (error) {
-          console.error(error);
-          statusText.innerText = "Terjadi kesalahan";
-          alert("Error saat memulai preprocessing.");
-          startBtn.disabled = false;
-          startBtn.innerHTML = '<i class="fas fa-play"></i> Mulai Pembersihan';
-        }
-      }
+          startBtn.disabled = true;
+          startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memulai...';
+          statusText.innerText = "Memulai preprocessing...";
+          progressContainer.classList.remove("hidden");
+          progressBar.style.width = "0%";
+          progressPercent.innerText = "0%";
+          downloadBtn.disabled = true;
+          downloadBtn.classList.add("opacity-50", "cursor-not-allowed");
+          currentPreprocId = null;
 
-      async function pollPreprocessingStatus(preprocId) {
-        const pollInterval = setInterval(async () => {
           try {
-            const response = await apiFetch(`/preprocess/status/${preprocId}`);
-            if (!response) {
-              clearInterval(pollInterval);
+            const response = await apiFetch("/preprocess/start", {
+              method: "POST",
+              body: JSON.stringify({ dataset_id: datasetId }),
+            });
+            if (!response) return;
+            const result = await response.json();
+            if (!response.ok) {
+              statusText.innerText = `Gagal: ${result.error || result.message}`;
+              alert(result.error || result.message);
+              startBtn.disabled = false;
+              startBtn.innerHTML = '<i class="fas fa-play"></i> Mulai Pembersihan';
               return;
             }
-            const data = await response.json();
 
-            if (data.progress !== undefined) {
-              progressBar.style.width = `${data.progress}%`;
-              progressPercent.innerText = `${data.progress}%`;
+            if (result.preprocessed_id) {
+              currentPreprocId = result.preprocessed_id;
+              pollPreprocessingStatus(currentPreprocId);
             } else {
+              statusText.innerText = `Selesai (${result.row_count || "?"} baris diproses)`;
               progressBar.style.width = "100%";
               progressPercent.innerText = "100%";
-            }
-
-            if (data.status === "completed") {
-              statusText.innerText = `Selesai (${data.row_count || "?"} baris diproses)`;
-            } else if (data.status === "running") {
-              statusText.innerText = "Sedang memproses...";
-            } else {
-              statusText.innerText = data.status || "Status tidak diketahui";
-            }
-
-            if (data.status === "completed") {
-              clearInterval(pollInterval);
-              statusText.innerText = `Selesai (${data.row_count} baris diproses)`;
               downloadBtn.disabled = false;
               downloadBtn.classList.remove("opacity-50", "cursor-not-allowed");
-              downloadBtn.classList.add("opacity-100", "cursor-pointer");
               startBtn.disabled = false;
-              startBtn.innerHTML =
-                '<i class="fas fa-play"></i> Mulai Pembersihan';
-              loadHistory(); // Refresh history
-            } else if (data.status === "failed") {
-              clearInterval(pollInterval);
-              statusText.innerText = "Preprocessing gagal";
-              startBtn.disabled = false;
-              startBtn.innerHTML =
-                '<i class="fas fa-play"></i> Mulai Pembersihan';
+              startBtn.innerHTML = '<i class="fas fa-play"></i> Mulai Pembersihan';
+              loadHistory();
             }
           } catch (error) {
             console.error(error);
-            clearInterval(pollInterval);
-            statusText.innerText = "Error polling status";
+            statusText.innerText = "Terjadi kesalahan";
+            alert("Error saat memulai preprocessing.");
             startBtn.disabled = false;
-            startBtn.innerHTML =
-              '<i class="fas fa-play"></i> Mulai Pembersihan';
+            startBtn.innerHTML = '<i class="fas fa-play"></i> Mulai Pembersihan';
           }
-        }, 1000);
-      }
-
-      // Unduh CSV hasil preprocessing terbaru
-      async function downloadCSV() {
-        if (!currentPreprocId) {
-          alert(
-            "Tidak ada hasil preprocessing. Lakukan pembersihan terlebih dahulu.",
-          );
-          return;
         }
-        downloadHistoryCSV(currentPreprocId);
-      }
 
-      // Debounce untuk search
-      let debounceTimer;
-      historySearchInput.addEventListener('input', () => {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-          filterHistory();
-        }, 300);
-      });
+        async function pollPreprocessingStatus(preprocId) {
+          const pollInterval = setInterval(async () => {
+            try {
+              const response = await apiFetch(`/preprocess/status/${preprocId}`);
+              if (!response) {
+                clearInterval(pollInterval);
+                return;
+              }
+              const data = await response.json();
 
-      startBtn.addEventListener("click", startCleaning);
-      downloadBtn.addEventListener("click", downloadCSV);
+              if (data.progress !== undefined) {
+                progressBar.style.width = `${data.progress}%`;
+                progressPercent.innerText = `${data.progress}%`;
+              } else {
+                progressBar.style.width = "100%";
+                progressPercent.innerText = "100%";
+              }
 
-      // Dropdown sidebar
-      function toggleDropdown(btn, menu, icon) {
-        btn.addEventListener("click", () => {
-          menu.classList.toggle("hidden");
-          icon.classList.toggle("rotate-180");
-        });
-      }
-      const dataCollectionBtn = document.getElementById("dataCollectionBtn");
-      const dataCollectionMenu = document.getElementById("dataCollectionMenu");
-      const dataCollectionIcon = document.getElementById("dataCollectionIcon");
-      toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
-      const processingBtn = document.getElementById("processingBtn");
-      const processingMenu = document.getElementById("processingMenu");
-      const processingIcon = document.getElementById("processingIcon");
-      toggleDropdown(processingBtn, processingMenu, processingIcon);
+              if (data.status === "completed") {
+                statusText.innerText = `Selesai (${data.row_count || "?"} baris diproses)`;
+              } else if (data.status === "running") {
+                statusText.innerText = "Sedang memproses...";
+              } else {
+                statusText.innerText = data.status || "Status tidak diketahui";
+              }
 
-      // Inisialisasi
-      if (authToken) {
-        loadDatasets();
-        loadHistory();
-      } else {
-        window.location.href = "login.html";
-      }
+              if (data.status === "completed") {
+                clearInterval(pollInterval);
+                statusText.innerText = `Selesai (${data.row_count} baris diproses)`;
+                downloadBtn.disabled = false;
+                downloadBtn.classList.remove("opacity-50", "cursor-not-allowed");
+                startBtn.disabled = false;
+                startBtn.innerHTML = '<i class="fas fa-play"></i> Mulai Pembersihan';
+                loadHistory();
+              } else if (data.status === "failed") {
+                clearInterval(pollInterval);
+                statusText.innerText = "Preprocessing gagal";
+                startBtn.disabled = false;
+                startBtn.innerHTML = '<i class="fas fa-play"></i> Mulai Pembersihan';
+              }
+            } catch (error) {
+              console.error(error);
+              clearInterval(pollInterval);
+              statusText.innerText = "Error polling status";
+              startBtn.disabled = false;
+              startBtn.innerHTML = '<i class="fas fa-play"></i> Mulai Pembersihan';
+            }
+          }, 1000);
+        }
+
+        async function downloadCSV() {
+          if (!currentPreprocId) {
+            alert("Tidak ada hasil preprocessing.");
+            return;
+          }
+          downloadHistoryCSV(currentPreprocId);
+        }
+
+        // Debounce untuk search dan filter tanggal
+        let debounceTimer;
+        function debouncedFilter() {
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(() => filterHistory(), 300);
+        }
+
+        historySearchInput.addEventListener('input', debouncedFilter);
+        startDateFilter.addEventListener('change', debouncedFilter);
+        endDateFilter.addEventListener('change', debouncedFilter);
+
+        startBtn.addEventListener("click", startCleaning);
+        downloadBtn.addEventListener("click", downloadCSV);
+
+        function toggleDropdown(btn, menu, icon) {
+          btn.addEventListener("click", () => {
+            menu.classList.toggle("hidden");
+            icon.classList.toggle("rotate-180");
+          });
+        }
+        const dataCollectionBtn = document.getElementById("dataCollectionBtn");
+        const dataCollectionMenu = document.getElementById("dataCollectionMenu");
+        const dataCollectionIcon = document.getElementById("dataCollectionIcon");
+        toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
+        const processingBtn = document.getElementById("processingBtn");
+        const processingMenu = document.getElementById("processingMenu");
+        const processingIcon = document.getElementById("processingIcon");
+        toggleDropdown(processingBtn, processingMenu, processingIcon);
+
+        if (authToken) {
+          loadDatasets();
+          loadHistory();
+        } else {
+          window.location.href = "login.html";
+        }
+      })();
     </script>
   </body>
 </html>
