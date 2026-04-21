@@ -1,0 +1,756 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Processing - IdiomSense Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <style>
+      .modal-backdrop {
+        transition: opacity 0.3s ease;
+      }
+      .modal-container {
+        transition:
+          transform 0.3s ease,
+          opacity 0.3s ease;
+        transform: scale(0.95);
+        opacity: 0;
+      }
+      .modal-container.show {
+        transform: scale(1);
+        opacity: 1;
+      }
+      .custom-scroll::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scroll::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+      .custom-scroll::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 font-sans antialiased">
+    <div class="flex h-screen overflow-hidden">
+      <!-- Sidebar (konsisten) -->
+      <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
+        <div class="p-4 border-b">
+          <span
+            class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
+            >IdiomSense</span
+          >
+          <p class="text-sm text-gray-500">Admin Panel</p>
+        </div>
+        <nav class="p-4">
+          <ul class="space-y-1">
+            <li>
+              <a
+                href="beranda-admin.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"
+                ><i class="fas fa-tachometer-alt w-5"></i
+                ><span>Beranda</span></a
+              >
+            </li>
+            <li>
+              <button
+                id="dataCollectionBtn"
+                class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+              >
+                <div class="flex items-center space-x-2">
+                  <i class="fas fa-database w-5"></i
+                  ><span>Data Collection</span>
+                </div>
+                <i
+                  id="dataCollectionIcon"
+                  class="fas fa-chevron-down text-sm transition-transform"
+                ></i>
+              </button>
+              <ul id="dataCollectionMenu" class="ml-6 mt-1 space-y-1 hidden">
+                <li>
+                  <a
+                    href="dataset.html"
+                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                    ><i class="fas fa-table w-5 mr-2"></i>Dataset</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="kamus-idiom.html"
+                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                    ><i class="fas fa-book w-5 mr-2"></i>Kamus Idiom</a
+                  >
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a
+                href="preprocessing.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                ><i class="fas fa-filter w-5"></i><span>Pre-Processing</span></a
+              >
+            </li>
+            <li>
+              <!-- Processing sekarang menjadi link langsung, bukan dropdown -->
+              <a
+                href="processing.html"
+                class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"
+                ><i class="fas fa-brain w-5"></i><span>Processing</span></a
+              >
+            </li>
+            <li>
+              <a
+                href="testing.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                ><i class="fas fa-vial w-5"></i><span>Testing</span></a
+              >
+            </li>
+            <li>
+              <a
+                href="evaluasi.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                ><i class="fas fa-chart-line w-5"></i><span>Evaluasi</span></a
+              >
+            </li>
+            <li class="pt-4 mt-4 border-t">
+              <a
+                href="login.html"
+                class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"
+                ><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a
+              >
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Processing</h1>
+
+        <!-- Bagian Manajemen Model dengan Pagination -->
+        <div class="bg-white p-6 rounded-xl shadow-md mb-8">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="font-semibold text-gray-700">Daftar Model</h2>
+            <button
+              id="btnAddModel"
+              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 shadow-md transition"
+            >
+              <i class="fas fa-plus"></i><span>Tambah Model Baru</span>
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full border border-gray-200">
+              <thead class="bg-blue-500 text-white">
+                <tr>
+                  <th class="px-4 py-2 border border-blue-400">Nama Model</th>
+                  <th class="px-4 py-2 border border-blue-400">Algoritma</th>
+                  <th class="px-4 py-2 border border-blue-400">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="modelTableBody"></tbody>
+            </table>
+          </div>
+          <!-- Pagination untuk daftar model (10 baris per halaman) -->
+          <div
+            id="modelPagination"
+            class="flex justify-center mt-4 space-x-2"
+          ></div>
+        </div>
+
+        <!-- Bagian Training (sama seperti sebelumnya) -->
+        <div class="bg-white p-6 rounded-xl shadow-md mb-8">
+          <h2 class="font-semibold text-gray-700 mb-4">Training Model</h2>
+          <!-- Upload Dataset -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Upload Dataset (Hasil Preprocessing)</label
+            >
+            <div
+              id="dropzoneArea"
+              class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 transition"
+            >
+              <i
+                class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"
+              ></i>
+              <p id="uploadMainText" class="text-gray-700 font-medium">
+                Drag & drop file di sini
+              </p>
+              <p class="text-sm text-gray-500 mt-1">
+                atau <span class="text-blue-600">klik untuk memilih</span>
+              </p>
+              <p class="text-xs text-gray-400 mt-2">
+                Format CSV / Excel (hasil preprocessing)
+              </p>
+              <input
+                type="file"
+                id="datasetFile"
+                class="hidden"
+                accept=".csv,.xlsx"
+              />
+            </div>
+            <div
+              id="uploadInfo"
+              class="mt-3 flex items-center justify-between bg-gray-50 p-3 rounded-lg hidden"
+            >
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-file-csv text-green-600 text-xl"></i>
+                <div>
+                  <p
+                    id="uploadedFileName"
+                    class="font-medium text-gray-800"
+                  ></p>
+                  <p class="text-xs text-gray-500">
+                    File siap digunakan untuk training
+                  </p>
+                </div>
+              </div>
+              <button
+                id="changeFileBtn"
+                type="button"
+                class="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              >
+                <i class="fas fa-exchange-alt mr-1"></i>Ganti File
+              </button>
+            </div>
+            <div id="uploadMessage" class="mt-2 text-sm"></div>
+          </div>
+
+          <!-- Pilih Konfigurasi Model -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Pilih Konfigurasi Model</label
+            >
+            <select
+              id="configSelect"
+              class="w-full border border-gray-300 rounded-lg p-2"
+            >
+              <option value="">-- Pilih konfigurasi --</option>
+            </select>
+          </div>
+
+          <!-- Tombol Mulai Latih -->
+          <button
+            id="startTrainBtn"
+            class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition flex items-center space-x-2"
+          >
+            <i class="fas fa-play"></i><span>Mulai Latih</span>
+          </button>
+
+          <!-- Status Training -->
+          <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+            <p class="text-sm text-gray-600">
+              Status :
+              <span id="trainStatus" class="font-medium">Belum Mulai</span>
+            </p>
+            <div id="progressContainer" class="mt-2 hidden">
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  id="progressBar"
+                  class="bg-blue-600 h-2 rounded-full"
+                  style="width: 0%"
+                ></div>
+              </div>
+              <p id="progressPercent" class="text-xs text-gray-500 mt-1">0%</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabel Riwayat Training -->
+        <div class="bg-white p-6 rounded-xl shadow-md">
+          <h2 class="font-semibold text-gray-700 mb-4">
+            Daftar Hasil Data Latih
+          </h2>
+          <div class="overflow-x-auto">
+            <table class="min-w-full border border-gray-200">
+              <thead class="bg-blue-500 text-white">
+                <tr>
+                  <th class="px-4 py-2 border border-blue-400">Nama Dataset</th>
+                  <th class="px-4 py-2 border border-blue-400">Model</th>
+                  <th class="px-4 py-2 border border-blue-400">Akurasi</th>
+                  <th class="px-4 py-2 border border-blue-400">Tanggal</th>
+                  <th class="px-4 py-2 border border-blue-400">Durasi</th>
+                  <th class="px-4 py-2 border border-blue-400">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="trainingResultsBody"></tbody>
+            </table>
+          </div>
+          <div id="pagination" class="flex justify-center mt-4 space-x-2"></div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Modal Tambah/Edit Model (sama seperti sebelumnya) -->
+    <div
+      id="modelModal"
+      class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50 modal-backdrop"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden relative transform transition-all modal-container"
+      >
+        <div
+          id="modalHeader"
+          class="sticky top-0 bg-blue-600 border-b px-6 py-4 flex justify-between items-center rounded-t-2xl text-white z-10"
+        >
+          <h2 id="modalTitle" class="text-xl font-bold">Tambah Model Baru</h2>
+          <button
+            id="closeModal"
+            class="text-white hover:text-gray-200 transition"
+          >
+            <i class="fas fa-times text-2xl"></i>
+          </button>
+        </div>
+        <div
+          class="overflow-y-auto custom-scroll"
+          style="max-height: calc(90vh - 80px)"
+        >
+          <div class="p-6">
+            <form id="modelForm">
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700"
+                  >Nama Model</label
+                >
+                <input
+                  type="text"
+                  id="modelName"
+                  required
+                  class="w-full border rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                />
+                <p class="text-xs text-gray-500 mt-1">
+                  Nama unik untuk mengidentifikasi model ini.
+                </p>
+              </div>
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700"
+                  >Algoritma</label
+                >
+                <select
+                  id="modelAlgo"
+                  class="w-full border rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-400"
+                >
+                  <option value="hybrid">IndoBERT‑KNN</option>
+                  <option value="nb-lexicon">Naive Bayes‑Lexicon</option>
+                </select>
+                <p class="text-xs text-gray-500 mt-1">
+                  Pilih algoritma yang akan digunakan untuk model ini.
+                </p>
+              </div>
+              <div id="dynamicParams"></div>
+              <div class="mt-6 flex justify-end space-x-3">
+                <button
+                  type="button"
+                  id="cancelModal"
+                  class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg transition"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  id="submitBtn"
+                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
+                >
+                  Simpan Model
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ==================== KONFIGURASI API ====================
+      const API_BASE = "http://localhost:5000";
+      let models = [];
+      let editingId = null;
+      let trainingHistory = [];
+      let currentModelPage = 1;
+      let currentTrainingPage = 1;
+      const rowsPerModelPage = 10;
+      const rowsPerTrainingPage = 5;
+      let pollingInterval = null;
+      let uploadedFilePath = null;
+      let isUploading = false;
+
+      function getHeaders() {
+        const token = localStorage.getItem("access_token");
+        return {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        };
+      }
+
+      // ==================== MANAJEMEN MODEL (dengan pagination) ====================
+      async function loadModels() {
+        try {
+          const res = await fetch(`${API_BASE}/api/processing/configs`, {
+            headers: getHeaders(),
+          });
+          if (!res.ok) throw new Error("Gagal memuat konfigurasi");
+          const data = await res.json();
+          models = data.map((item) => ({
+            id: item.id,
+            name: item.name,
+            algo: item.algorithm === "Lexicon-NB" ? "nb-lexicon" : "hybrid",
+            config: item.params,
+          }));
+          renderModelTable();
+          renderModelPagination();
+          // Isi dropdown konfigurasi untuk training
+          const configSelect = document.getElementById("configSelect");
+          configSelect.innerHTML =
+            '<option value="">-- Pilih konfigurasi --</option>';
+          data.forEach((cfg) => {
+            const opt = document.createElement("option");
+            opt.value = cfg.id;
+            opt.textContent = `${cfg.name} (${cfg.algorithm})`;
+            configSelect.appendChild(opt);
+          });
+        } catch (err) {
+          console.error(err);
+          alert("Gagal memuat daftar model.");
+        }
+      }
+
+      function renderModelTable() {
+        const start = (currentModelPage - 1) * rowsPerModelPage;
+        const end = start + rowsPerModelPage;
+        const pageData = models.slice(start, end);
+        const tbody = document.getElementById("modelTableBody");
+        tbody.innerHTML = "";
+        pageData.forEach((model) => {
+          const row = tbody.insertRow();
+          row.insertCell(0).innerHTML =
+            `<span class="font-medium">${model.name}</span>`;
+          let algoName =
+            model.algo === "hybrid" ? "IndoBERT‑KNN" : "Lexicon‑NB";
+          row.insertCell(1).innerHTML = algoName;
+          const actions = document.createElement("td");
+          actions.className = "px-4 py-2 border border-gray-200 text-center";
+          actions.innerHTML = `<i class="fas fa-edit text-blue-500 mr-3 cursor-pointer hover:text-blue-700" data-id="${model.id}"></i><i class="fas fa-trash text-red-500 cursor-pointer hover:text-red-700" data-id="${model.id}"></i>`;
+          row.appendChild(actions);
+          for (let cell of row.cells)
+            cell.classList.add("border", "border-gray-200", "px-4", "py-2");
+        });
+        // Event listeners untuk edit/hapus
+        document
+          .querySelectorAll(".fa-edit")
+          .forEach((icon) =>
+            icon.addEventListener("click", (e) =>
+              openEditModal(parseInt(icon.dataset.id)),
+            ),
+          );
+        document.querySelectorAll(".fa-trash").forEach((icon) =>
+          icon.addEventListener("click", async (e) => {
+            const id = parseInt(icon.dataset.id);
+            if (!confirm("Hapus model ini?")) return;
+            try {
+              const res = await fetch(
+                `${API_BASE}/api/processing/configs/${id}`,
+                { method: "DELETE", headers: getHeaders() },
+              );
+              if (!res.ok)
+                throw new Error((await res.json()).error || "Gagal hapus");
+              await loadModels();
+            } catch (err) {
+              alert(err.message);
+            }
+          }),
+        );
+      }
+
+      function renderModelPagination() {
+        const total = Math.ceil(models.length / rowsPerModelPage);
+        const pg = document.getElementById("modelPagination");
+        pg.innerHTML = "";
+        if (total <= 1) return;
+        const prev = document.createElement("button");
+        prev.innerHTML = '<i class="fas fa-chevron-left"></i>';
+        prev.className = `px-3 py-1 rounded border ${currentModelPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
+        prev.onclick = () => {
+          if (currentModelPage > 1) {
+            currentModelPage--;
+            renderModelTable();
+            renderModelPagination();
+          }
+        };
+        pg.appendChild(prev);
+        for (let i = 1; i <= total; i++) {
+          const btn = document.createElement("button");
+          btn.innerText = i;
+          btn.className = `px-3 py-1 rounded border ${currentModelPage === i ? "bg-blue-500 text-white" : "bg-white hover:bg-blue-50"}`;
+          btn.onclick = () => {
+            currentModelPage = i;
+            renderModelTable();
+            renderModelPagination();
+          };
+          pg.appendChild(btn);
+        }
+        const next = document.createElement("button");
+        next.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        next.className = `px-3 py-1 rounded border ${currentModelPage === total ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
+        next.onclick = () => {
+          if (currentModelPage < total) {
+            currentModelPage++;
+            renderModelTable();
+            renderModelPagination();
+          }
+        };
+        pg.appendChild(next);
+      }
+
+      // ==================== TRAINING ====================
+      async function loadTrainingHistory() {
+        try {
+          const res = await fetch(`${API_BASE}/api/training/history`, {
+            headers: getHeaders(),
+          });
+          if (!res.ok) throw new Error("Gagal memuat riwayat");
+          trainingHistory = await res.json();
+          renderTrainingTable();
+          renderTrainingPagination();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      function renderTrainingTable() {
+        const start = (currentTrainingPage - 1) * rowsPerTrainingPage;
+        const end = start + rowsPerTrainingPage;
+        const pageData = trainingHistory.slice(start, end);
+        const tbody = document.getElementById("trainingResultsBody");
+        tbody.innerHTML = "";
+        pageData.forEach((item) => {
+          const row = tbody.insertRow();
+          row.insertCell(0).innerHTML = item.dataset_filename;
+          row.insertCell(1).innerHTML = item.algorithm || "-";
+          row.insertCell(2).innerHTML =
+            item.metrics?.accuracy?.toFixed(3) || "-";
+          const d = item.created_at ? new Date(item.created_at) : null;
+          row.insertCell(3).innerHTML = d
+            ? d.toLocaleString("id-ID", {
+                dateStyle: "short",
+                timeStyle: "short",
+              })
+            : "-";
+          let dur = "-";
+          if (item.created_at) {
+            const startTime = new Date(item.created_at);
+            const endTime = item.completed_at
+              ? new Date(item.completed_at)
+              : new Date();
+            const diff = endTime - startTime;
+            if (diff >= 0) {
+              const sec = Math.floor(diff / 1000);
+              const min = Math.floor(sec / 60);
+              const hr = Math.floor(min / 60);
+              dur =
+                hr > 0
+                  ? `${hr} jam ${min % 60} mnt`
+                  : min > 0
+                    ? `${min} menit ${sec % 60} dtk`
+                    : `${sec} detik`;
+              if (!item.completed_at && item.status !== "completed")
+                dur += " (berjalan)";
+            }
+          }
+          row.insertCell(4).innerHTML = dur;
+          const act = row.insertCell(5);
+          act.className = "px-4 py-2 border border-gray-200 text-center";
+          act.innerHTML = `<a href="validasi.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2"><i class="fas fa-eye"></i></a><button class="text-green-600 hover:text-green-800 download-model" data-id="${item.id}" ${!item.model_path ? "disabled" : ""}><i class="fas fa-download"></i></button>`;
+          for (let c of row.cells)
+            c.classList.add("border", "border-gray-200", "px-4", "py-2");
+        });
+        document.querySelectorAll(".download-model").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            const id = btn.dataset.id;
+            const t = trainingHistory.find((x) => x.id == id);
+            if (t && t.model_path)
+              window.open(
+                `${API_BASE}/data/models/${t.model_path.split("/").pop()}`,
+                "_blank",
+              );
+          });
+        });
+      }
+
+      function renderTrainingPagination() {
+        const total = Math.ceil(trainingHistory.length / rowsPerTrainingPage);
+        const pg = document.getElementById("pagination");
+        pg.innerHTML = "";
+        if (total <= 1) return;
+        const prev = document.createElement("button");
+        prev.innerHTML = '<i class="fas fa-chevron-left"></i>';
+        prev.className = `px-3 py-1 rounded border ${currentTrainingPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
+        prev.onclick = () => {
+          if (currentTrainingPage > 1) {
+            currentTrainingPage--;
+            renderTrainingTable();
+            renderTrainingPagination();
+          }
+        };
+        pg.appendChild(prev);
+        for (let i = 1; i <= total; i++) {
+          const btn = document.createElement("button");
+          btn.innerText = i;
+          btn.className = `px-3 py-1 rounded border ${currentTrainingPage === i ? "bg-blue-500 text-white" : "bg-white hover:bg-blue-50"}`;
+          btn.onclick = () => {
+            currentTrainingPage = i;
+            renderTrainingTable();
+            renderTrainingPagination();
+          };
+          pg.appendChild(btn);
+        }
+        const next = document.createElement("button");
+        next.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        next.className = `px-3 py-1 rounded border ${currentTrainingPage === total ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
+        next.onclick = () => {
+          if (currentTrainingPage < total) {
+            currentTrainingPage++;
+            renderTrainingTable();
+            renderTrainingPagination();
+          }
+        };
+        pg.appendChild(next);
+      }
+
+      // ==================== MODAL (sederhana untuk demo) ====================
+      function openEditModal(id) {
+        alert(
+          "Fungsi edit model belum diimplementasikan. Silakan gunakan kode dari pengaturan.html.",
+        );
+      }
+      function openAddModal() {
+        alert(
+          "Fungsi tambah model belum diimplementasikan. Silakan gunakan kode dari pengaturan.html.",
+        );
+      }
+      document
+        .getElementById("btnAddModel")
+        .addEventListener("click", openAddModal);
+      document
+        .getElementById("closeModal")
+        .addEventListener("click", () =>
+          document.getElementById("modelModal").classList.add("hidden"),
+        );
+      document
+        .getElementById("cancelModal")
+        .addEventListener("click", () =>
+          document.getElementById("modelModal").classList.add("hidden"),
+        );
+
+      // ==================== UPLOAD & TRAINING ====================
+      const dropzone = document.getElementById("dropzoneArea");
+      const fileInputDataset = document.getElementById("datasetFile");
+      dropzone.addEventListener("click", () => fileInputDataset.click());
+      fileInputDataset.addEventListener("change", async (e) => {
+        if (fileInputDataset.files.length) {
+          const file = fileInputDataset.files[0];
+          const formData = new FormData();
+          formData.append("file", file);
+          try {
+            const res = await fetch(`${API_BASE}/api/training/upload`, {
+              method: "POST",
+              body: formData,
+            });
+            if (!res.ok) throw new Error("Upload gagal");
+            const data = await res.json();
+            uploadedFilePath = data.path;
+            document.getElementById("uploadInfo").classList.remove("hidden");
+            document.getElementById("uploadedFileName").innerText = file.name;
+            document.getElementById("dropzoneArea").classList.add("hidden");
+            document.getElementById("uploadMessage").innerHTML =
+              '<div class="text-green-600">Upload berhasil!</div>';
+          } catch (err) {
+            alert(err.message);
+          }
+        }
+      });
+      document.getElementById("changeFileBtn").addEventListener("click", () => {
+        uploadedFilePath = null;
+        document.getElementById("uploadInfo").classList.add("hidden");
+        document.getElementById("dropzoneArea").classList.remove("hidden");
+        fileInputDataset.value = "";
+        document.getElementById("uploadMessage").innerHTML = "";
+      });
+
+      const startTrainBtn = document.getElementById("startTrainBtn");
+      startTrainBtn.addEventListener("click", async () => {
+        if (!uploadedFilePath) {
+          alert("Upload file dataset terlebih dahulu!");
+          return;
+        }
+        const configId = document.getElementById("configSelect").value;
+        if (!configId) {
+          alert("Pilih konfigurasi model!");
+          return;
+        }
+        startTrainBtn.disabled = true;
+        document.getElementById("trainStatus").innerText =
+          "Memulai training...";
+        document.getElementById("progressContainer").classList.remove("hidden");
+        try {
+          const res = await fetch(`${API_BASE}/api/training/start`, {
+            method: "POST",
+            headers: getHeaders(),
+            body: JSON.stringify({
+              config_id: parseInt(configId),
+              dataset_path: uploadedFilePath,
+            }),
+          });
+          if (!res.ok) throw new Error("Gagal memulai training");
+          const training = await res.json();
+          if (pollingInterval) clearInterval(pollingInterval);
+          pollingInterval = setInterval(async () => {
+            const statusRes = await fetch(
+              `${API_BASE}/api/training/status/${training.id}`,
+            );
+            const data = await statusRes.json();
+            document.getElementById("trainStatus").innerText =
+              data.status === "completed"
+                ? "Selesai"
+                : data.status === "failed"
+                  ? "Gagal"
+                  : "Sedang berjalan...";
+            document.getElementById("progressBar").style.width =
+              `${data.progress}%`;
+            document.getElementById("progressPercent").innerText =
+              `${data.progress}%`;
+            if (data.status === "completed" || data.status === "failed") {
+              clearInterval(pollingInterval);
+              startTrainBtn.disabled = false;
+              await loadTrainingHistory();
+            }
+          }, 7000);
+        } catch (err) {
+          alert(err.message);
+          startTrainBtn.disabled = false;
+        }
+      });
+
+      // ==================== SIDEBAR TOGGLE (hanya untuk Data Collection) ====================
+      function toggleDropdown(btn, menu, icon) {
+        btn.addEventListener("click", () => {
+          menu.classList.toggle("hidden");
+          icon.classList.toggle("rotate-180");
+        });
+      }
+      toggleDropdown(
+        document.getElementById("dataCollectionBtn"),
+        document.getElementById("dataCollectionMenu"),
+        document.getElementById("dataCollectionIcon"),
+      );
+      // Tidak perlu toggle untuk Processing karena sudah menjadi link
+
+      // ==================== INISIALISASI ====================
+      loadModels();
+      loadTrainingHistory();
+    </script>
+  </body>
+</html>
