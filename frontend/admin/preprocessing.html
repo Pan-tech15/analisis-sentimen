@@ -27,7 +27,7 @@
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- Sidebar (tidak diubah) -->
+      <!-- Sidebar (disesuaikan: Processing menjadi link langsung) -->
       <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
         <div class="p-4 border-b">
           <span
@@ -46,6 +46,7 @@
                 ><span>Beranda</span></a
               >
             </li>
+            <!-- Data Collection dropdown (tetap) -->
             <li>
               <button
                 id="dataCollectionBtn"
@@ -78,6 +79,7 @@
               </ul>
             </li>
             <li>
+              <!-- Pre-Processing aktif -->
               <a
                 href="preprocessing.html"
                 class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"
@@ -85,40 +87,27 @@
               >
             </li>
             <li>
-              <button
-                id="processingBtn"
-                class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+              <!-- Processing sekarang menjadi link langsung -->
+              <a
+                href="processing.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
               >
-                <div class="flex items-center space-x-2">
-                  <i class="fas fa-brain w-5"></i><span>Processing</span>
-                </div>
-                <i
-                  id="processingIcon"
-                  class="fas fa-chevron-down text-sm transition-transform"
-                ></i>
-              </button>
-              <ul id="processingMenu" class="ml-6 mt-1 space-y-1 hidden">
-                <li>
-                  <a
-                    href="pengaturan.html"
-                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
-                    ><i class="fas fa-sliders-h w-5 mr-2"></i>Pengaturan</a
-                  >
-                </li>
-                <li>
-                  <a
-                    href="latih.html"
-                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
-                    ><i class="fas fa-chart-line w-5 mr-2"></i>Latih</a
-                  >
-                </li>
-              </ul>
+                <i class="fas fa-brain w-5"></i>
+                <span>Processing</span>
+              </a>
             </li>
             <li>
               <a
                 href="testing.html"
                 class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
                 ><i class="fas fa-vial w-5"></i><span>Testing</span></a
+              >
+            </li>
+            <li>
+              <a
+                href="evaluasi.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                ><i class="fas fa-chart-line w-5"></i><span>Evaluasi</span></a
               >
             </li>
             <li class="pt-4 mt-4 border-t">
@@ -132,7 +121,7 @@
         </nav>
       </aside>
 
-      <!-- Main Content -->
+      <!-- Main Content (tidak berubah) -->
       <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
         <h1 class="text-3xl font-bold text-gray-800 mb-6">Pre-Processing</h1>
 
@@ -320,18 +309,15 @@
           const query = historySearchInput.value.trim().toLowerCase();
           const startDate = startDateFilter.value ? new Date(startDateFilter.value) : null;
           const endDate = endDateFilter.value ? new Date(endDateFilter.value) : null;
-          // Set endDate ke akhir hari jika ada
           if (endDate) {
             endDate.setHours(23, 59, 59, 999);
           }
 
           filteredHistory = allHistory.filter(item => {
-            // Filter teks
             const name = (item.name || `Preprocessing #${item.id}`).toLowerCase();
             const dateStr = item.created_at ? new Date(item.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }).toLowerCase() : '';
             const textMatch = !query || name.includes(query) || dateStr.includes(query);
 
-            // Filter tanggal
             let dateMatch = true;
             if (startDate || endDate) {
               const itemDate = item.created_at ? new Date(item.created_at) : null;
@@ -341,7 +327,6 @@
                 if (endDate && itemDate > endDate) dateMatch = false;
               }
             }
-
             return textMatch && dateMatch;
           });
 
@@ -635,7 +620,6 @@
           downloadHistoryCSV(currentPreprocId);
         }
 
-        // Debounce untuk search dan filter tanggal
         let debounceTimer;
         function debouncedFilter() {
           clearTimeout(debounceTimer);
@@ -649,6 +633,7 @@
         startBtn.addEventListener("click", startCleaning);
         downloadBtn.addEventListener("click", downloadCSV);
 
+        // Sidebar dropdown (hanya untuk Data Collection, Processing sudah jadi link)
         function toggleDropdown(btn, menu, icon) {
           btn.addEventListener("click", () => {
             menu.classList.toggle("hidden");
@@ -659,10 +644,7 @@
         const dataCollectionMenu = document.getElementById("dataCollectionMenu");
         const dataCollectionIcon = document.getElementById("dataCollectionIcon");
         toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
-        const processingBtn = document.getElementById("processingBtn");
-        const processingMenu = document.getElementById("processingMenu");
-        const processingIcon = document.getElementById("processingIcon");
-        toggleDropdown(processingBtn, processingMenu, processingIcon);
+        // Tidak perlu toggle untuk Processing karena sudah link
 
         if (authToken) {
           loadDatasets();

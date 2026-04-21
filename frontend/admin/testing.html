@@ -10,7 +10,7 @@
 <body class="bg-gray-100 font-sans antialiased">
 
     <div class="flex h-screen overflow-hidden">
-        <!-- Sidebar (konsisten) -->
+        <!-- Sidebar (disesuaikan: Processing menjadi link langsung) -->
         <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
             <div class="p-4 border-b">
                 <span class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IdiomSense</span>
@@ -27,14 +27,11 @@
                     </li>
                     <li><a href="preprocessing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-filter w-5"></i><span>Pre-Processing</span></a></li>
                     <li>
-                        <button id="processingBtn" class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700">
-                            <div class="flex items-center space-x-2"><i class="fas fa-brain w-5"></i><span>Processing</span></div>
-                            <i id="processingIcon" class="fas fa-chevron-down text-sm transition-transform"></i>
-                        </button>
-                        <ul id="processingMenu" class="ml-6 mt-1 space-y-1 hidden">
-                            <li><a href="pengaturan.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-sliders-h w-5 mr-2"></i>Pengaturan</a></li>
-                            <li><a href="latih.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-chart-line w-5 mr-2"></i>Latih</a></li>
-                        </ul>
+                        <!-- Processing sekarang menjadi link langsung -->
+                        <a href="processing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700">
+                            <i class="fas fa-brain w-5"></i>
+                            <span>Processing</span>
+                        </a>
                     </li>
                     <li><a href="testing.html" class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-vial w-5"></i><span>Testing</span></a></li>
                     <li><a href="evaluasi.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-chart-line w-5"></i><span>Evaluasi</span></a></li>
@@ -43,7 +40,7 @@
             </nav>
         </aside>
 
-        <!-- Main Content -->
+        <!-- Main Content (tidak berubah) -->
         <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
             <h1 class="text-3xl font-bold text-gray-800 mb-6">Testing</h1>
 
@@ -113,10 +110,9 @@
                                 <td class="px-4 py-2 border border-gray-200">0.95</td>
                                 <td class="px-4 py-2 border border-gray-200 text-center">
                                     <a href="validasi-testing.html?id=1" class="text-blue-500 hover:text-blue-700"><i class="fas fa-search"></i></a>
-                                    
                                 </td>
-                             </tr>
-                             <tr>
+                              </tr>
+                              <tr>
                                 <td class="px-4 py-2 border border-gray-200">test_nb_1.csv</td>
                                 <td class="px-4 py-2 border border-gray-200">Naive Bayes-Lexicon</td>
                                 <td class="px-4 py-2 border border-gray-200">0.92</td>
@@ -124,7 +120,7 @@
                                 <td class="px-4 py-2 border border-gray-200 text-center">
                                     <a href="detail-testing.html?id=2" class="text-blue-500 hover:text-blue-700"><i class="fas fa-search"></i></a>
                                 </td>
-                             </tr>
+                              </tr>
                         </tbody>
                     </table>
                 </div>
@@ -159,7 +155,6 @@
                 const actionCell = row.insertCell(4);
                 actionCell.className = 'px-4 py-2 border border-gray-200 text-center';
                 actionCell.innerHTML = `<a href="detail-testing.html?id=${item.id}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-search"></i></a>`;
-                // Tambahkan border
                 for (let cell of row.cells) {
                     cell.classList.add('border', 'border-gray-200', 'px-4', 'py-2');
                 }
@@ -172,7 +167,6 @@
             paginationDiv.innerHTML = '';
             if (totalPages <= 1) return;
 
-            // Prev button
             const prevBtn = document.createElement('button');
             prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
             prevBtn.className = `px-3 py-1 rounded border ${currentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
@@ -180,7 +174,6 @@
             prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderTestTable(); renderPagination(); } };
             paginationDiv.appendChild(prevBtn);
 
-            // Page numbers
             for (let i = 1; i <= totalPages; i++) {
                 const btn = document.createElement('button');
                 btn.innerText = i;
@@ -189,7 +182,6 @@
                 paginationDiv.appendChild(btn);
             }
 
-            // Next button
             const nextBtn = document.createElement('button');
             nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
             nextBtn.className = `px-3 py-1 rounded border ${currentPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
@@ -261,14 +253,12 @@
                     clearInterval(interval);
                     progress = 100;
                     testStatus.innerText = 'Selesai';
-                    // Tambahkan hasil ke tabel
                     const modelName = modelSelect.value === 'hybrid' ? 'IndoBERT-KNN + UMAP' : 'Naive Bayes-Lexicon';
                     const newName = selectedFile.name.replace(/\.[^/.]+$/, "") + '_test.csv';
                     const acc = (Math.random() * 0.1 + 0.85).toFixed(3);
                     const f1 = (Math.random() * 0.1 + 0.85).toFixed(3);
                     const newId = Date.now();
                     testResults.push({ name: newName, model: modelName, acc: parseFloat(acc), f1: parseFloat(f1), id: newId });
-                    // Refresh tabel dan pagination
                     const totalPages = Math.ceil(testResults.length / rowsPerPage);
                     if (currentPage > totalPages) currentPage = totalPages;
                     renderTestTable();
@@ -283,7 +273,7 @@
         renderTestTable();
         renderPagination();
 
-        // Dropdown sidebar (sama seperti sebelumnya)
+        // Sidebar dropdown (hanya untuk Data Collection, Processing sudah jadi link)
         function toggleDropdown(btn, menu, icon) {
             btn.addEventListener('click', () => {
                 menu.classList.toggle('hidden');
@@ -294,10 +284,7 @@
         const dataCollectionMenu = document.getElementById('dataCollectionMenu');
         const dataCollectionIcon = document.getElementById('dataCollectionIcon');
         toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
-        const processingBtn = document.getElementById('processingBtn');
-        const processingMenu = document.getElementById('processingMenu');
-        const processingIcon = document.getElementById('processingIcon');
-        toggleDropdown(processingBtn, processingMenu, processingIcon);
+        // Tidak perlu toggle untuk Processing karena sudah link
     </script>
 </body>
 </html>
