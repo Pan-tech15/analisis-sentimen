@@ -13,7 +13,7 @@
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- Sidebar (sama seperti sebelumnya) -->
+      <!-- Sidebar -->
       <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
         <div class="p-4 border-b">
           <span
@@ -74,35 +74,14 @@
               </a>
             </li>
             <li>
-              <button
-                id="processingBtn"
-                class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+              <!-- Processing sekarang menjadi link langsung, bukan dropdown -->
+              <a
+                href="processing.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
               >
-                <div class="flex items-center space-x-2">
-                  <i class="fas fa-brain w-5"></i>
-                  <span>Processing</span>
-                </div>
-                <i
-                  id="processingIcon"
-                  class="fas fa-chevron-down text-sm transition-transform"
-                ></i>
-              </button>
-              <ul id="processingMenu" class="ml-6 mt-1 space-y-1 hidden">
-                <li>
-                  <a
-                    href="pengaturan.html"
-                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
-                    ><i class="fas fa-sliders-h w-5 mr-2"></i>Pengaturan</a
-                  >
-                </li>
-                <li>
-                  <a
-                    href="latih.html"
-                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
-                    ><i class="fas fa-chart-line w-5 mr-2"></i>Latih</a
-                  >
-                </li>
-              </ul>
+                <i class="fas fa-brain w-5"></i>
+                <span>Processing</span>
+              </a>
             </li>
             <li>
               <a
@@ -183,7 +162,7 @@
     </div>
 
     <script>
-      // Dropdown toggle
+      // Dropdown toggle untuk Data Collection (Processing sudah tidak perlu)
       function toggleDropdown(btn, menu, icon) {
         btn.addEventListener("click", () => {
           menu.classList.toggle("hidden");
@@ -194,11 +173,6 @@
       const dataCollectionMenu = document.getElementById("dataCollectionMenu");
       const dataCollectionIcon = document.getElementById("dataCollectionIcon");
       toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
-
-      const processingBtn = document.getElementById("processingBtn");
-      const processingMenu = document.getElementById("processingMenu");
-      const processingIcon = document.getElementById("processingIcon");
-      toggleDropdown(processingBtn, processingMenu, processingIcon);
 
       // Bar Chart: Distribusi Emosi
       const ctxBar = document.getElementById("emotionChart").getContext("2d");
