@@ -21,7 +21,7 @@
 <body class="bg-gray-100 font-sans antialiased">
 
 <div class="flex h-screen overflow-hidden">
-    <!-- Sidebar (sama seperti sebelumnya) -->
+    <!-- Sidebar (disesuaikan: Processing menjadi link langsung) -->
     <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
         <div class="p-4 border-b">
             <span class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IdiomSense</span>
@@ -42,14 +42,11 @@
                 </li>
                 <li><a href="preprocessing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-filter w-5"></i><span>Pre-Processing</span></a></li>
                 <li>
-                    <button id="processingBtn" class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700">
-                        <div class="flex items-center space-x-2"><i class="fas fa-brain w-5"></i><span>Processing</span></div>
-                        <i id="processingIcon" class="fas fa-chevron-down text-sm transition-transform"></i>
-                    </button>
-                    <ul id="processingMenu" class="ml-6 mt-1 space-y-1 hidden">
-                        <li><a href="pengaturan.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-sliders-h w-5 mr-2"></i>Pengaturan</a></li>
-                        <li><a href="latih.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-chart-line w-5 mr-2"></i>Latih</a></li>
-                    </ul>
+                    <!-- Processing sekarang menjadi link langsung -->
+                    <a href="processing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700">
+                        <i class="fas fa-brain w-5"></i>
+                        <span>Processing</span>
+                    </a>
                 </li>
                 <li><a href="testing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-vial w-5"></i><span>Testing</span></a></li>
                 <li><a href="evaluasi.html" class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-chart-simple w-5"></i><span>Evaluasi</span></a></li>
@@ -58,7 +55,7 @@
         </nav>
     </aside>
 
-    <!-- Main Content -->
+    <!-- Main Content (tidak berubah) -->
     <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
         <h1 class="text-3xl font-bold text-gray-800 mb-6">Evaluasi Model</h1>
 
@@ -175,7 +172,7 @@
                 tbody: document.getElementById('trainingTableBody'),
                 pagination: document.getElementById('trainingPagination'),
                 searchInput: document.getElementById('trainingSearch'),
-                endpoint: '/api/evaluation/training'  // Sesuaikan dengan endpoint Anda
+                endpoint: '/api/evaluation/training'
             },
             testing: {
                 data: [],
@@ -201,7 +198,6 @@
 
         const algoSelect = document.getElementById('algoSelect');
 
-        // Fungsi umum untuk memuat data tabel tertentu
         async function loadTableData(tableKey) {
             const table = tables[tableKey];
             const algo = algoSelect.value;
@@ -210,21 +206,17 @@
                 const res = await fetch(url);
                 if (!res.ok) throw new Error(`Gagal memuat data ${tableKey}`);
                 const data = await res.json();
-                // Asumsikan response adalah array
                 table.data = Array.isArray(data) ? data : [];
-                // Sorting default: tanggal terbaru
                 table.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
                 filterTableData(tableKey);
             } catch (err) {
                 console.error(err);
                 table.data = [];
                 filterTableData(tableKey);
-                // Tampilkan pesan error di tabel
                 table.tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-red-500">Gagal memuat data: ${err.message}</td></tr>`;
             }
         }
 
-        // Fungsi filter data berdasarkan search input
         function filterTableData(tableKey) {
             const table = tables[tableKey];
             const query = table.searchInput.value.trim().toLowerCase();
@@ -232,16 +224,13 @@
                 table.filtered = [...table.data];
             } else {
                 table.filtered = table.data.filter(item => {
-                    // Cari di berbagai field (sesuaikan dengan struktur data)
                     const nama = (item.dataset_filename || item.name || '').toLowerCase();
                     const model = (item.algorithm || '').toLowerCase();
                     const akurasi = item.metrics?.accuracy != null ? item.metrics.accuracy.toFixed(3) : '-';
                     const tanggal = item.created_at ? new Date(item.created_at).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }).toLowerCase() : '-';
-                    // Untuk testing & comparison mungkin ada field lain
                     const presisi = item.metrics?.precision != null ? item.metrics.precision.toFixed(3) : '';
                     const recall = item.metrics?.recall != null ? item.metrics.recall.toFixed(3) : '';
                     const f1 = item.metrics?.f1_score != null ? item.metrics.f1_score.toFixed(3) : '';
-                    
                     let durasiStr = '-';
                     if (item.created_at) {
                         const start = new Date(item.created_at);
@@ -251,13 +240,11 @@
                             const sec = Math.floor(diff / 1000);
                             const min = Math.floor(sec / 60);
                             const hr = Math.floor(min / 60);
-                            durasiStr = hr > 0 ? `${hr} jam ${min % 60} mnt` :
-                                        min > 0 ? `${min} menit ${sec % 60} dtk` : `${sec} detik`;
+                            durasiStr = hr > 0 ? `${hr} jam ${min % 60} mnt` : min > 0 ? `${min} menit ${sec % 60} dtk` : `${sec} detik`;
                             if (!item.completed_at && item.status !== 'completed') durasiStr += ' (berjalan)';
                         }
                     }
                     durasiStr = durasiStr.toLowerCase();
-
                     return nama.includes(query) || model.includes(query) || akurasi.includes(query) || 
                            tanggal.includes(query) || durasiStr.includes(query) || 
                            presisi.includes(query) || recall.includes(query) || f1.includes(query);
@@ -268,7 +255,6 @@
             renderPagination(tableKey);
         }
 
-        // Render tabel tertentu
         function renderTable(tableKey) {
             const table = tables[tableKey];
             const start = (table.currentPage - 1) * table.rowsPerPage;
@@ -285,19 +271,14 @@
             pageData.forEach(item => {
                 const row = table.tbody.insertRow();
                 
-                // Kolom Nama (dataset_filename atau name)
                 row.insertCell(0).innerHTML = item.dataset_filename || item.name || '-';
-                // Kolom Model (algorithm)
                 row.insertCell(1).innerHTML = item.algorithm || '-';
                 
                 if (tableKey === 'training') {
-                    // Akurasi
                     const acc = item.metrics?.accuracy != null ? item.metrics.accuracy.toFixed(3) : '-';
                     row.insertCell(2).innerHTML = acc;
-                    // Tanggal
                     const d = item.created_at ? new Date(item.created_at) : null;
                     row.insertCell(3).innerHTML = d ? d.toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '-';
-                    // Durasi
                     let dur = '-';
                     if (item.created_at) {
                         const start = new Date(item.created_at);
@@ -307,21 +288,15 @@
                             const sec = Math.floor(diff / 1000);
                             const min = Math.floor(sec / 60);
                             const hr = Math.floor(min / 60);
-                            dur = hr > 0 ? `${hr} jam ${min % 60} mnt` :
-                                  min > 0 ? `${min} menit ${sec % 60} dtk` : `${sec} detik`;
+                            dur = hr > 0 ? `${hr} jam ${min % 60} mnt` : min > 0 ? `${min} menit ${sec % 60} dtk` : `${sec} detik`;
                             if (!item.completed_at && item.status !== 'completed') dur += ' (berjalan)';
                         }
                     }
                     row.insertCell(4).innerHTML = dur;
-                    
                     const actCell = row.insertCell(5);
                     actCell.className = 'px-4 py-2 border border-gray-200 text-center';
-                    actCell.innerHTML = `
-                        <a href="validasi.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2" title="Lihat detail"><i class="fas fa-eye"></i></a>
-                        <button class="text-green-600 hover:text-green-800 download-model" data-id="${item.id}" ${!item.model_path ? 'disabled' : ''} title="Download model"><i class="fas fa-download"></i></button>
-                    `;
+                    actCell.innerHTML = `<a href="validasi.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2" title="Lihat detail"><i class="fas fa-eye"></i></a><button class="text-green-600 hover:text-green-800 download-model" data-id="${item.id}" ${!item.model_path ? 'disabled' : ''} title="Download model"><i class="fas fa-download"></i></button>`;
                 } else {
-                    // Untuk testing & comparison: Akurasi, Presisi, Recall, F1, Tanggal, Aksi
                     const acc = item.metrics?.accuracy != null ? item.metrics.accuracy.toFixed(3) : '-';
                     const prec = item.metrics?.precision != null ? item.metrics.precision.toFixed(3) : '-';
                     const rec = item.metrics?.recall != null ? item.metrics.recall.toFixed(3) : '-';
@@ -330,25 +305,18 @@
                     row.insertCell(3).innerHTML = prec;
                     row.insertCell(4).innerHTML = rec;
                     row.insertCell(5).innerHTML = f1;
-                    
                     const d = item.created_at ? new Date(item.created_at) : null;
                     row.insertCell(6).innerHTML = d ? d.toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '-';
-                    
                     const actCell = row.insertCell(7);
                     actCell.className = 'px-4 py-2 border border-gray-200 text-center';
-                    actCell.innerHTML = `
-                        <a href="validasi.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2" title="Lihat detail"><i class="fas fa-eye"></i></a>
-                        <button class="text-green-600 hover:text-green-800 download-model" data-id="${item.id}" ${!item.model_path ? 'disabled' : ''} title="Download model"><i class="fas fa-download"></i></button>
-                    `;
+                    actCell.innerHTML = `<a href="validasi.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2" title="Lihat detail"><i class="fas fa-eye"></i></a><button class="text-green-600 hover:text-green-800 download-model" data-id="${item.id}" ${!item.model_path ? 'disabled' : ''} title="Download model"><i class="fas fa-download"></i></button>`;
                 }
 
-                // Tambahkan class border ke semua cell
                 for (let cell of row.cells) {
                     cell.classList.add('border', 'border-gray-200', 'px-4', 'py-2');
                 }
             });
 
-            // Event listener untuk tombol download
             table.tbody.querySelectorAll('.download-model').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const id = btn.dataset.id;
@@ -360,7 +328,6 @@
             });
         }
 
-        // Render pagination untuk tabel tertentu
         function renderPagination(tableKey) {
             const table = tables[tableKey];
             const totalPages = Math.ceil(table.filtered.length / table.rowsPerPage);
@@ -371,24 +338,14 @@
             prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
             prevBtn.className = `px-3 py-1 rounded border ${table.currentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
             prevBtn.disabled = table.currentPage === 1;
-            prevBtn.onclick = () => {
-                if (table.currentPage > 1) {
-                    table.currentPage--;
-                    renderTable(tableKey);
-                    renderPagination(tableKey);
-                }
-            };
+            prevBtn.onclick = () => { if (table.currentPage > 1) { table.currentPage--; renderTable(tableKey); renderPagination(tableKey); } };
             table.pagination.appendChild(prevBtn);
 
             for (let i = 1; i <= totalPages; i++) {
                 const pageBtn = document.createElement('button');
                 pageBtn.innerText = i;
                 pageBtn.className = `px-3 py-1 rounded border ${table.currentPage === i ? 'bg-blue-500 text-white' : 'bg-white hover:bg-blue-50'}`;
-                pageBtn.onclick = () => {
-                    table.currentPage = i;
-                    renderTable(tableKey);
-                    renderPagination(tableKey);
-                };
+                pageBtn.onclick = () => { table.currentPage = i; renderTable(tableKey); renderPagination(tableKey); };
                 table.pagination.appendChild(pageBtn);
             }
 
@@ -396,17 +353,10 @@
             nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
             nextBtn.className = `px-3 py-1 rounded border ${table.currentPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
             nextBtn.disabled = table.currentPage === totalPages;
-            nextBtn.onclick = () => {
-                if (table.currentPage < totalPages) {
-                    table.currentPage++;
-                    renderTable(tableKey);
-                    renderPagination(tableKey);
-                }
-            };
+            nextBtn.onclick = () => { if (table.currentPage < totalPages) { table.currentPage++; renderTable(tableKey); renderPagination(tableKey); } };
             table.pagination.appendChild(nextBtn);
         }
 
-        // Debounce helper
         function debounce(func, delay) {
             let timer;
             return function(...args) {
@@ -415,14 +365,11 @@
             };
         }
 
-        // Inisialisasi semua tabel
         function initTables() {
-            // Load data untuk semua tabel
             loadTableData('training');
             loadTableData('testing');
             loadTableData('comparison');
 
-            // Setup search input dengan debounce
             const debouncedFilterTraining = debounce(() => filterTableData('training'), 300);
             const debouncedFilterTesting = debounce(() => filterTableData('testing'), 300);
             const debouncedFilterComparison = debounce(() => filterTableData('comparison'), 300);
@@ -432,12 +379,11 @@
             tables.comparison.searchInput.addEventListener('input', debouncedFilterComparison);
         }
 
-        // Event listener untuk dropdown algoritma
         algoSelect.addEventListener('change', () => {
-            initTables(); // Muat ulang semua data
+            initTables();
         });
 
-        // Sidebar toggle (sama seperti sebelumnya)
+        // Sidebar toggle (hanya untuk Data Collection)
         function toggleDropdown(btn, menu, icon) {
             btn.addEventListener('click', () => {
                 menu.classList.toggle('hidden');
@@ -448,13 +394,8 @@
         const dataCollectionMenu = document.getElementById('dataCollectionMenu');
         const dataCollectionIcon = document.getElementById('dataCollectionIcon');
         toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
-        
-        const processingBtn = document.getElementById('processingBtn');
-        const processingMenu = document.getElementById('processingMenu');
-        const processingIcon = document.getElementById('processingIcon');
-        toggleDropdown(processingBtn, processingMenu, processingIcon);
+        // Processing sudah menjadi link, tidak perlu toggle
 
-        // Mulai
         initTables();
     })();
 </script>
