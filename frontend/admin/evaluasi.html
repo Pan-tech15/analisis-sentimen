@@ -6,11 +6,22 @@
     <title>Evaluasi Model - IdiomSense Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .table-section {
+            margin-bottom: 2rem;
+        }
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+    </style>
 </head>
 <body class="bg-gray-100 font-sans antialiased">
 
 <div class="flex h-screen overflow-hidden">
-    <!-- Sidebar (konsisten) -->
+    <!-- Sidebar (sama seperti sebelumnya) -->
     <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
         <div class="p-4 border-b">
             <span class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IdiomSense</span>
@@ -51,18 +62,25 @@
     <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
         <h1 class="text-3xl font-bold text-gray-800 mb-6">Evaluasi Model</h1>
 
-        <!-- Tabel Riwayat Hasil Latih -->
-        <div class="bg-white p-6 rounded-xl shadow-md">
-            <!-- Search bar dipindah ke sini, di atas judul tabel -->
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="font-semibold text-gray-700">Daftar Hasil Data Latih</h2>
+        <!-- Dropdown Pilih Algoritma -->
+        <div class="bg-white p-4 rounded-xl shadow-md mb-6">
+            <label for="algoSelect" class="block text-sm font-medium text-gray-700 mb-2">Pilih Algoritma</label>
+            <select id="algoSelect" class="w-full md:w-64 border rounded-lg p-2 focus:ring-2 focus:ring-blue-400">
+                <option value="IndoBERT-KNN+UMAP">IndoBERT‑KNN+UMAP</option>
+                <option value="Lexicon-NB">Naive Bayes‑Lexicon</option>
+            </select>
+        </div>
+
+        <!-- Tabel Daftar Hasil Data Latih -->
+        <div class="table-section bg-white p-6 rounded-xl shadow-md">
+            <div class="table-header">
+                <h2 class="font-semibold text-gray-700 text-lg">Evaluasi Training</h2>
                 <div class="relative">
                     <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                    <input type="text" id="searchInput" placeholder="Cari Model Terbaik Anda" 
-                           class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-80 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+                    <input type="text" id="trainingSearch" placeholder="Cari..." 
+                           class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-64 focus:ring-2 focus:ring-blue-400 focus:outline-none">
                 </div>
             </div>
-
             <div class="overflow-x-auto">
                 <table class="min-w-full border border-gray-200">
                     <thead class="bg-blue-500 text-white">
@@ -75,10 +93,70 @@
                             <th class="px-4 py-2 border border-blue-400">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody id="evaluationTableBody"></tbody>
+                    <tbody id="trainingTableBody"></tbody>
                 </table>
             </div>
-            <div id="pagination" class="flex justify-center mt-4 space-x-2"></div>
+            <div id="trainingPagination" class="flex justify-center mt-4 space-x-2"></div>
+        </div>
+
+        <!-- Tabel Evaluasi Testing -->
+        <div class="table-section bg-white p-6 rounded-xl shadow-md">
+            <div class="table-header">
+                <h2 class="font-semibold text-gray-700 text-lg">Evaluasi Testing</h2>
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="testingSearch" placeholder="Cari..." 
+                           class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-64 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full border border-gray-200">
+                    <thead class="bg-green-500 text-white">
+                        <tr>
+                            <th class="px-4 py-2 border border-green-400">Nama</th>
+                            <th class="px-4 py-2 border border-green-400">Model</th>
+                            <th class="px-4 py-2 border border-green-400">Akurasi</th>
+                            <th class="px-4 py-2 border border-green-400">Presisi</th>
+                            <th class="px-4 py-2 border border-green-400">Recall</th>
+                            <th class="px-4 py-2 border border-green-400">F1-Score</th>
+                            <th class="px-4 py-2 border border-green-400">Tanggal</th>
+                            <th class="px-4 py-2 border border-green-400">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="testingTableBody"></tbody>
+                </table>
+            </div>
+            <div id="testingPagination" class="flex justify-center mt-4 space-x-2"></div>
+        </div>
+
+        <!-- Tabel Evaluasi Comparison -->
+        <div class="table-section bg-white p-6 rounded-xl shadow-md">
+            <div class="table-header">
+                <h2 class="font-semibold text-gray-700 text-lg">Evaluasi Comparison</h2>
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="comparisonSearch" placeholder="Cari..." 
+                           class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-64 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full border border-gray-200">
+                    <thead class="bg-purple-500 text-white">
+                        <tr>
+                            <th class="px-4 py-2 border border-purple-400">Nama</th>
+                            <th class="px-4 py-2 border border-purple-400">Model</th>
+                            <th class="px-4 py-2 border border-purple-400">Akurasi</th>
+                            <th class="px-4 py-2 border border-purple-400">Presisi</th>
+                            <th class="px-4 py-2 border border-purple-400">Recall</th>
+                            <th class="px-4 py-2 border border-purple-400">F1-Score</th>
+                            <th class="px-4 py-2 border border-purple-400">Tanggal</th>
+                            <th class="px-4 py-2 border border-purple-400">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="comparisonTableBody"></tbody>
+                </table>
+            </div>
+            <div id="comparisonPagination" class="flex justify-center mt-4 space-x-2"></div>
         </div>
     </main>
 </div>
@@ -86,38 +164,83 @@
 <script>
     (function() {
         const API_BASE = "http://localhost:5000";
-        let allTrainingData = [];
-        let filteredData = [];
-        let currentPage = 1;
-        const rowsPerPage = 5;
 
-        const tbody = document.getElementById('evaluationTableBody');
-        const searchInput = document.getElementById('searchInput');
-        const paginationDiv = document.getElementById('pagination');
+        // State untuk masing-masing tabel
+        const tables = {
+            training: {
+                data: [],
+                filtered: [],
+                currentPage: 1,
+                rowsPerPage: 5,
+                tbody: document.getElementById('trainingTableBody'),
+                pagination: document.getElementById('trainingPagination'),
+                searchInput: document.getElementById('trainingSearch'),
+                endpoint: '/api/evaluation/training'  // Sesuaikan dengan endpoint Anda
+            },
+            testing: {
+                data: [],
+                filtered: [],
+                currentPage: 1,
+                rowsPerPage: 5,
+                tbody: document.getElementById('testingTableBody'),
+                pagination: document.getElementById('testingPagination'),
+                searchInput: document.getElementById('testingSearch'),
+                endpoint: '/api/evaluation/testing'
+            },
+            comparison: {
+                data: [],
+                filtered: [],
+                currentPage: 1,
+                rowsPerPage: 5,
+                tbody: document.getElementById('comparisonTableBody'),
+                pagination: document.getElementById('comparisonPagination'),
+                searchInput: document.getElementById('comparisonSearch'),
+                endpoint: '/api/evaluation/comparison'
+            }
+        };
 
-        async function loadTrainingHistory() {
+        const algoSelect = document.getElementById('algoSelect');
+
+        // Fungsi umum untuk memuat data tabel tertentu
+        async function loadTableData(tableKey) {
+            const table = tables[tableKey];
+            const algo = algoSelect.value;
             try {
-                const res = await fetch(`${API_BASE}/api/training/history`);
-                if (!res.ok) throw new Error("Gagal memuat riwayat");
-                allTrainingData = await res.json();
-                allTrainingData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                filterData();
+                const url = `${API_BASE}${table.endpoint}?algorithm=${encodeURIComponent(algo)}`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`Gagal memuat data ${tableKey}`);
+                const data = await res.json();
+                // Asumsikan response adalah array
+                table.data = Array.isArray(data) ? data : [];
+                // Sorting default: tanggal terbaru
+                table.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                filterTableData(tableKey);
             } catch (err) {
                 console.error(err);
-                alert("Gagal memuat data evaluasi.");
+                table.data = [];
+                filterTableData(tableKey);
+                // Tampilkan pesan error di tabel
+                table.tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-red-500">Gagal memuat data: ${err.message}</td></tr>`;
             }
         }
 
-        function filterData() {
-            const query = searchInput.value.trim().toLowerCase();
+        // Fungsi filter data berdasarkan search input
+        function filterTableData(tableKey) {
+            const table = tables[tableKey];
+            const query = table.searchInput.value.trim().toLowerCase();
             if (!query) {
-                filteredData = [...allTrainingData];
+                table.filtered = [...table.data];
             } else {
-                filteredData = allTrainingData.filter(item => {
-                    const nama = (item.dataset_filename || '').toLowerCase();
+                table.filtered = table.data.filter(item => {
+                    // Cari di berbagai field (sesuaikan dengan struktur data)
+                    const nama = (item.dataset_filename || item.name || '').toLowerCase();
                     const model = (item.algorithm || '').toLowerCase();
                     const akurasi = item.metrics?.accuracy != null ? item.metrics.accuracy.toFixed(3) : '-';
                     const tanggal = item.created_at ? new Date(item.created_at).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }).toLowerCase() : '-';
+                    // Untuk testing & comparison mungkin ada field lain
+                    const presisi = item.metrics?.precision != null ? item.metrics.precision.toFixed(3) : '';
+                    const recall = item.metrics?.recall != null ? item.metrics.recall.toFixed(3) : '';
+                    const f1 = item.metrics?.f1_score != null ? item.metrics.f1_score.toFixed(3) : '';
                     
                     let durasiStr = '-';
                     if (item.created_at) {
@@ -135,129 +258,186 @@
                     }
                     durasiStr = durasiStr.toLowerCase();
 
-                    return nama.includes(query) || model.includes(query) || akurasi.includes(query) || tanggal.includes(query) || durasiStr.includes(query);
+                    return nama.includes(query) || model.includes(query) || akurasi.includes(query) || 
+                           tanggal.includes(query) || durasiStr.includes(query) || 
+                           presisi.includes(query) || recall.includes(query) || f1.includes(query);
                 });
             }
-            currentPage = 1;
-            renderTable();
-            renderPagination();
+            table.currentPage = 1;
+            renderTable(tableKey);
+            renderPagination(tableKey);
         }
 
-        function renderTable() {
-            const start = (currentPage - 1) * rowsPerPage;
-            const end = start + rowsPerPage;
-            const pageData = filteredData.slice(start, end);
+        // Render tabel tertentu
+        function renderTable(tableKey) {
+            const table = tables[tableKey];
+            const start = (table.currentPage - 1) * table.rowsPerPage;
+            const end = start + table.rowsPerPage;
+            const pageData = table.filtered.slice(start, end);
             
-            tbody.innerHTML = '';
+            table.tbody.innerHTML = '';
             if (pageData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-500">Tidak ada data yang sesuai.</td></tr>`;
+                const colSpan = tableKey === 'training' ? 6 : 8;
+                table.tbody.innerHTML = `<tr><td colspan="${colSpan}" class="text-center py-4 text-gray-500">Tidak ada data.</td></tr>`;
                 return;
             }
 
             pageData.forEach(item => {
-                const row = tbody.insertRow();
+                const row = table.tbody.insertRow();
                 
-                row.insertCell(0).innerHTML = item.dataset_filename || '-';
+                // Kolom Nama (dataset_filename atau name)
+                row.insertCell(0).innerHTML = item.dataset_filename || item.name || '-';
+                // Kolom Model (algorithm)
                 row.insertCell(1).innerHTML = item.algorithm || '-';
                 
-                const acc = item.metrics?.accuracy != null ? item.metrics.accuracy.toFixed(3) : '-';
-                row.insertCell(2).innerHTML = acc;
-                
-                const d = item.created_at ? new Date(item.created_at) : null;
-                row.insertCell(3).innerHTML = d ? d.toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '-';
-                
-                let dur = '-';
-                if (item.created_at) {
-                    const start = new Date(item.created_at);
-                    const end = item.completed_at ? new Date(item.completed_at) : new Date();
-                    const diff = end - start;
-                    if (diff >= 0) {
-                        const sec = Math.floor(diff / 1000);
-                        const min = Math.floor(sec / 60);
-                        const hr = Math.floor(min / 60);
-                        dur = hr > 0 ? `${hr} jam ${min % 60} mnt` :
-                              min > 0 ? `${min} menit ${sec % 60} dtk` : `${sec} detik`;
-                        if (!item.completed_at && item.status !== 'completed') dur += ' (berjalan)';
+                if (tableKey === 'training') {
+                    // Akurasi
+                    const acc = item.metrics?.accuracy != null ? item.metrics.accuracy.toFixed(3) : '-';
+                    row.insertCell(2).innerHTML = acc;
+                    // Tanggal
+                    const d = item.created_at ? new Date(item.created_at) : null;
+                    row.insertCell(3).innerHTML = d ? d.toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+                    // Durasi
+                    let dur = '-';
+                    if (item.created_at) {
+                        const start = new Date(item.created_at);
+                        const end = item.completed_at ? new Date(item.completed_at) : new Date();
+                        const diff = end - start;
+                        if (diff >= 0) {
+                            const sec = Math.floor(diff / 1000);
+                            const min = Math.floor(sec / 60);
+                            const hr = Math.floor(min / 60);
+                            dur = hr > 0 ? `${hr} jam ${min % 60} mnt` :
+                                  min > 0 ? `${min} menit ${sec % 60} dtk` : `${sec} detik`;
+                            if (!item.completed_at && item.status !== 'completed') dur += ' (berjalan)';
+                        }
                     }
+                    row.insertCell(4).innerHTML = dur;
+                    
+                    const actCell = row.insertCell(5);
+                    actCell.className = 'px-4 py-2 border border-gray-200 text-center';
+                    actCell.innerHTML = `
+                        <a href="validasi.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2" title="Lihat detail"><i class="fas fa-eye"></i></a>
+                        <button class="text-green-600 hover:text-green-800 download-model" data-id="${item.id}" ${!item.model_path ? 'disabled' : ''} title="Download model"><i class="fas fa-download"></i></button>
+                    `;
+                } else {
+                    // Untuk testing & comparison: Akurasi, Presisi, Recall, F1, Tanggal, Aksi
+                    const acc = item.metrics?.accuracy != null ? item.metrics.accuracy.toFixed(3) : '-';
+                    const prec = item.metrics?.precision != null ? item.metrics.precision.toFixed(3) : '-';
+                    const rec = item.metrics?.recall != null ? item.metrics.recall.toFixed(3) : '-';
+                    const f1 = item.metrics?.f1_score != null ? item.metrics.f1_score.toFixed(3) : '-';
+                    row.insertCell(2).innerHTML = acc;
+                    row.insertCell(3).innerHTML = prec;
+                    row.insertCell(4).innerHTML = rec;
+                    row.insertCell(5).innerHTML = f1;
+                    
+                    const d = item.created_at ? new Date(item.created_at) : null;
+                    row.insertCell(6).innerHTML = d ? d.toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+                    
+                    const actCell = row.insertCell(7);
+                    actCell.className = 'px-4 py-2 border border-gray-200 text-center';
+                    actCell.innerHTML = `
+                        <a href="validasi.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2" title="Lihat detail"><i class="fas fa-eye"></i></a>
+                        <button class="text-green-600 hover:text-green-800 download-model" data-id="${item.id}" ${!item.model_path ? 'disabled' : ''} title="Download model"><i class="fas fa-download"></i></button>
+                    `;
                 }
-                row.insertCell(4).innerHTML = dur;
-                
-                const actCell = row.insertCell(5);
-                actCell.className = 'px-4 py-2 border border-gray-200 text-center';
-                actCell.innerHTML = `
-                    <a href="validasi.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2" title="Lihat detail"><i class="fas fa-eye"></i></a>
-                    <button class="text-green-600 hover:text-green-800 download-model" data-id="${item.id}" ${!item.model_path ? 'disabled' : ''} title="Download model"><i class="fas fa-download"></i></button>
-                `;
 
+                // Tambahkan class border ke semua cell
                 for (let cell of row.cells) {
                     cell.classList.add('border', 'border-gray-200', 'px-4', 'py-2');
                 }
             });
 
-            document.querySelectorAll('.download-model').forEach(btn => {
+            // Event listener untuk tombol download
+            table.tbody.querySelectorAll('.download-model').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const id = btn.dataset.id;
-                    const training = allTrainingData.find(t => t.id == id);
-                    if (training && training.model_path) {
-                        window.open(`${API_BASE}/data/models/${training.model_path.split('/').pop()}`, '_blank');
+                    const item = table.data.find(t => t.id == id);
+                    if (item && item.model_path) {
+                        window.open(`${API_BASE}/data/models/${item.model_path.split('/').pop()}`, '_blank');
                     }
                 });
             });
         }
 
-        function renderPagination() {
-            const totalPages = Math.ceil(filteredData.length / rowsPerPage);
-            paginationDiv.innerHTML = '';
+        // Render pagination untuk tabel tertentu
+        function renderPagination(tableKey) {
+            const table = tables[tableKey];
+            const totalPages = Math.ceil(table.filtered.length / table.rowsPerPage);
+            table.pagination.innerHTML = '';
             if (totalPages <= 1) return;
 
             const prevBtn = document.createElement('button');
             prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-            prevBtn.className = `px-3 py-1 rounded border ${currentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
-            prevBtn.disabled = currentPage === 1;
+            prevBtn.className = `px-3 py-1 rounded border ${table.currentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
+            prevBtn.disabled = table.currentPage === 1;
             prevBtn.onclick = () => {
-                if (currentPage > 1) {
-                    currentPage--;
-                    renderTable();
-                    renderPagination();
+                if (table.currentPage > 1) {
+                    table.currentPage--;
+                    renderTable(tableKey);
+                    renderPagination(tableKey);
                 }
             };
-            paginationDiv.appendChild(prevBtn);
+            table.pagination.appendChild(prevBtn);
 
             for (let i = 1; i <= totalPages; i++) {
                 const pageBtn = document.createElement('button');
                 pageBtn.innerText = i;
-                pageBtn.className = `px-3 py-1 rounded border ${currentPage === i ? 'bg-blue-500 text-white' : 'bg-white hover:bg-blue-50'}`;
+                pageBtn.className = `px-3 py-1 rounded border ${table.currentPage === i ? 'bg-blue-500 text-white' : 'bg-white hover:bg-blue-50'}`;
                 pageBtn.onclick = () => {
-                    currentPage = i;
-                    renderTable();
-                    renderPagination();
+                    table.currentPage = i;
+                    renderTable(tableKey);
+                    renderPagination(tableKey);
                 };
-                paginationDiv.appendChild(pageBtn);
+                table.pagination.appendChild(pageBtn);
             }
 
             const nextBtn = document.createElement('button');
             nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-            nextBtn.className = `px-3 py-1 rounded border ${currentPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
-            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.className = `px-3 py-1 rounded border ${table.currentPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
+            nextBtn.disabled = table.currentPage === totalPages;
             nextBtn.onclick = () => {
-                if (currentPage < totalPages) {
-                    currentPage++;
-                    renderTable();
-                    renderPagination();
+                if (table.currentPage < totalPages) {
+                    table.currentPage++;
+                    renderTable(tableKey);
+                    renderPagination(tableKey);
                 }
             };
-            paginationDiv.appendChild(nextBtn);
+            table.pagination.appendChild(nextBtn);
         }
 
-        let debounceTimer;
-        searchInput.addEventListener('input', () => {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                filterData();
-            }, 300);
+        // Debounce helper
+        function debounce(func, delay) {
+            let timer;
+            return function(...args) {
+                clearTimeout(timer);
+                timer = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+
+        // Inisialisasi semua tabel
+        function initTables() {
+            // Load data untuk semua tabel
+            loadTableData('training');
+            loadTableData('testing');
+            loadTableData('comparison');
+
+            // Setup search input dengan debounce
+            const debouncedFilterTraining = debounce(() => filterTableData('training'), 300);
+            const debouncedFilterTesting = debounce(() => filterTableData('testing'), 300);
+            const debouncedFilterComparison = debounce(() => filterTableData('comparison'), 300);
+
+            tables.training.searchInput.addEventListener('input', debouncedFilterTraining);
+            tables.testing.searchInput.addEventListener('input', debouncedFilterTesting);
+            tables.comparison.searchInput.addEventListener('input', debouncedFilterComparison);
+        }
+
+        // Event listener untuk dropdown algoritma
+        algoSelect.addEventListener('change', () => {
+            initTables(); // Muat ulang semua data
         });
 
-        // Sidebar toggle
+        // Sidebar toggle (sama seperti sebelumnya)
         function toggleDropdown(btn, menu, icon) {
             btn.addEventListener('click', () => {
                 menu.classList.toggle('hidden');
@@ -274,7 +454,8 @@
         const processingIcon = document.getElementById('processingIcon');
         toggleDropdown(processingBtn, processingMenu, processingIcon);
 
-        loadTrainingHistory();
+        // Mulai
+        initTables();
     })();
 </script>
 </body>
