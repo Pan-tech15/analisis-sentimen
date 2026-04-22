@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="id">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Kamus Idiom - IdiomSense Admin</title>
+    <title>Idiom Dictionary - IdiomSense Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
       rel="stylesheet"
@@ -13,7 +13,7 @@
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- Sidebar (disesuaikan: Processing menjadi link langsung) -->
+      <!-- Sidebar (English, Processing as direct link) -->
       <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
         <div class="p-4 border-b">
           <span
@@ -29,7 +29,7 @@
                 href="beranda-admin.html"
                 class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"
                 ><i class="fas fa-tachometer-alt w-5"></i
-                ><span>Beranda</span></a
+                ><span>Dashboard</span></a
               >
             </li>
             <!-- Data Collection dropdown -->
@@ -59,7 +59,7 @@
                   <a
                     href="kamus-idiom.html"
                     class="block p-2 rounded-lg bg-blue-50 text-blue-600"
-                    ><i class="fas fa-book w-5 mr-2"></i>Kamus Idiom</a
+                    ><i class="fas fa-book w-5 mr-2"></i>Idiom Dictionary</a
                   >
                 </li>
               </ul>
@@ -72,7 +72,7 @@
               >
             </li>
             <li>
-              <!-- Processing sekarang menjadi link langsung -->
+              <!-- Processing as direct link -->
               <a
                 href="processing.html"
                 class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
@@ -92,7 +92,7 @@
               <a
                 href="evaluasi.html"
                 class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
-                ><i class="fas fa-chart-line w-5"></i><span>Evaluasi</span></a
+                ><i class="fas fa-chart-line w-5"></i><span>Evaluation</span></a
               >
             </li>
             <li class="pt-4 mt-4 border-t">
@@ -106,24 +106,24 @@
         </nav>
       </aside>
 
-      <!-- Main Content (tidak berubah) -->
+      <!-- Main Content -->
       <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">Kamus Idiom</h1>
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Idiom Dictionary</h1>
 
         <!-- Upload CSV -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-6">
-          <h2 class="font-semibold text-gray-700 mb-4">Upload Data Idiom</h2>
+          <h2 class="font-semibold text-gray-700 mb-4">Upload Idiom Data</h2>
           <div
             class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 transition"
             id="uploadArea"
           >
             <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
             <p class="text-gray-600">
-              Drag atau
-              <span class="text-blue-600 font-medium">klik untuk memilih</span>
+              Drag or
+              <span class="text-blue-600 font-medium">click to select</span>
             </p>
             <p class="text-xs text-gray-400 mt-1">
-              Upload file CSV dengan kolom: idiom_text, idiom_meaning
+              Upload CSV file with columns: idiom_text, idiom_meaning
             </p>
             <input type="file" id="fileInput" class="hidden" accept=".csv" />
           </div>
@@ -133,21 +133,19 @@
           >
             Upload
           </button>
-          <!-- Preview Data CSV (hidden awal) -->
+          <!-- CSV Preview (initially hidden) -->
           <div
             id="previewSection"
             class="bg-white p-6 rounded-xl shadow-md mt-6 hidden"
           >
-            <h2 class="font-semibold text-gray-700 mb-4">
-              Preview Data dari CSV
-            </h2>
+            <h2 class="font-semibold text-gray-700 mb-4">CSV Data Preview</h2>
             <div class="overflow-x-auto">
               <table class="min-w-full border border-gray-200">
                 <thead class="bg-blue-500 text-white">
                   <tr>
                     <th class="px-4 py-2 border border-blue-400">No</th>
                     <th class="px-4 py-2 border border-blue-400">Idiom</th>
-                    <th class="px-4 py-2 border border-blue-400">Makna</th>
+                    <th class="px-4 py-2 border border-blue-400">Meaning</th>
                   </tr>
                 </thead>
                 <tbody id="previewTableBody"></tbody>
@@ -158,36 +156,36 @@
                 id="extractBtn"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
               >
-                Ekstrak ke Kamus
+                Extract to Dictionary
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Tambah Idiom Manual -->
+        <!-- Add Idiom Manually -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-6">
-          <h2 class="font-semibold text-gray-700 mb-4">Tambah Idiom</h2>
+          <h2 class="font-semibold text-gray-700 mb-4">Add Idiom</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700"
-                >Nama Idiom</label
+                >Idiom</label
               >
               <input
                 type="text"
                 id="newIdiom"
                 class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                placeholder="Contoh: angkat kaki"
+                placeholder="e.g., angkat kaki"
               />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700"
-                >Makna Idiom</label
+                >Meaning</label
               >
               <input
                 type="text"
                 id="newMeaning"
                 class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                placeholder="Contoh: pergi, meninggalkan tempat"
+                placeholder="e.g., to leave, to go away"
               />
             </div>
           </div>
@@ -195,48 +193,48 @@
             id="addIdiomBtn"
             class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
           >
-            Simpan
+            Save
           </button>
         </div>
 
-        <!-- Filter & Pencarian -->
+        <!-- Filter & Search -->
         <div class="bg-white p-6 rounded-xl shadow-md">
           <div class="flex flex-wrap gap-4 mb-4">
             <div class="flex-1">
               <input
                 type="text"
                 id="searchInput"
-                placeholder="Cari idiom..."
+                placeholder="Search idiom..."
                 class="w-full border rounded-lg p-2"
               />
             </div>
             <div>
               <select id="sortSelect" class="border rounded-lg p-2">
-                <option value="asc">Urut A-Z</option>
-                <option value="desc">Urut Z-A</option>
+                <option value="asc">Sort A-Z</option>
+                <option value="desc">Sort Z-A</option>
               </select>
             </div>
             <button
               id="applyFilterBtn"
               class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
             >
-              Terapkan Filter
+              Apply Filter
             </button>
           </div>
 
-          <!-- Tabel -->
+          <!-- Table -->
           <div class="overflow-x-auto">
             <table class="min-w-full border border-gray-200">
               <thead class="bg-blue-500 text-white">
                 <tr>
                   <th class="px-4 py-2 border border-blue-400">No</th>
                   <th class="px-4 py-2 border border-blue-400">Idiom</th>
-                  <th class="px-4 py-2 border border-blue-400">Makna Idiom</th>
-                  <th class="px-4 py-2 border border-blue-400">Aksi</th>
+                  <th class="px-4 py-2 border border-blue-400">Meaning</th>
+                  <th class="px-4 py-2 border border-blue-400">Actions</th>
                 </tr>
               </thead>
               <tbody id="idiomTableBody" class="bg-white">
-                <!-- Data diisi oleh JavaScript -->
+                <!-- Data filled by JavaScript -->
               </tbody>
             </table>
           </div>
@@ -247,7 +245,7 @@
       </main>
     </div>
 
-    <!-- Modal Edit Idiom (hidden) -->
+    <!-- Edit Idiom Modal (hidden) -->
     <div
       id="editModal"
       class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50"
@@ -263,7 +261,7 @@
           />
         </div>
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700">Makna</label>
+          <label class="block text-sm font-medium text-gray-700">Meaning</label>
           <input
             type="text"
             id="editMeaning"
@@ -275,20 +273,20 @@
             id="closeModalBtn"
             class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
           >
-            Batal
+            Cancel
           </button>
           <button
             id="saveEditBtn"
             class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
-            Simpan
+            Save
           </button>
         </div>
       </div>
     </div>
 
     <script>
-      // === Konfigurasi ===
+      // === Configuration ===
       const API_BASE = "http://localhost:5000/api";
       let authToken = localStorage.getItem("access_token");
       let currentPage = 1;
@@ -297,7 +295,7 @@
       let currentSort = "asc";
       let currentSearch = "";
 
-      // Helper fetch dengan token
+      // Helper fetch with token
       async function apiFetch(endpoint, options = {}) {
         const headers = {
           "Content-Type": "application/json",
@@ -315,13 +313,13 @@
         return response;
       }
 
-      // Load idioms dari server
+      // Load idioms from server
       async function loadIdioms() {
         try {
           const url = `/idioms?page=${currentPage}&per_page=${rowsPerPage}&search=${encodeURIComponent(currentSearch)}&sort=${currentSort}`;
           const response = await apiFetch(url);
           if (!response) return;
-          if (!response.ok) throw new Error("Gagal memuat data");
+          if (!response.ok) throw new Error("Failed to load data");
           const result = await response.json();
           window.idiomsData = result.data;
           totalPages = result.total_pages;
@@ -329,7 +327,7 @@
           renderPagination();
         } catch (error) {
           console.error(error);
-          alert("Gagal memuat kamus idiom");
+          alert("Failed to load idiom dictionary");
         }
       }
 
@@ -339,7 +337,7 @@
         if (!window.idiomsData || window.idiomsData.length === 0) {
           const row = tbody.insertRow();
           row.insertCell(0).colSpan = 4;
-          row.insertCell(0).innerHTML = "Tidak ada data";
+          row.insertCell(0).innerHTML = "No data available";
           row.cells[0].classList.add("text-center", "py-4");
           return;
         }
@@ -353,12 +351,12 @@
           actionsCell.innerHTML = `
             <i class="fas fa-edit text-blue-500 mr-3 cursor-pointer hover:text-blue-700" data-id="${item.id}"></i>
             <i class="fas fa-trash text-red-500 cursor-pointer hover:text-red-700" data-id="${item.id}"></i>
-        `;
+          `;
           for (let cell of row.cells) {
             cell.classList.add("border", "border-gray-200", "px-4", "py-2");
           }
         });
-        // Event edit & hapus
+        // Edit & delete events
         document.querySelectorAll(".fa-edit").forEach((icon) => {
           icon.addEventListener("click", (e) => {
             const id = parseInt(icon.dataset.id);
@@ -369,7 +367,7 @@
         document.querySelectorAll(".fa-trash").forEach((icon) => {
           icon.addEventListener("click", async (e) => {
             const id = parseInt(icon.dataset.id);
-            if (confirm("Yakin hapus idiom ini?")) {
+            if (confirm("Delete this idiom?")) {
               await deleteIdiom(id);
             }
           });
@@ -397,13 +395,13 @@
         };
         container.appendChild(prevBtn);
 
-        // Info halaman
+        // Page info
         const pageInfo = document.createElement("span");
         pageInfo.className = "text-gray-700";
-        pageInfo.innerText = `Halaman ${currentPage} dari ${totalPages}`;
+        pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
         container.appendChild(pageInfo);
 
-        // Input nomor
+        // Page number input
         const pageInput = document.createElement("input");
         pageInput.type = "number";
         pageInput.min = 1;
@@ -412,6 +410,7 @@
         pageInput.className = "w-16 border rounded px-2 py-1 text-center";
         container.appendChild(pageInput);
 
+        // Go button
         const goBtn = document.createElement("button");
         goBtn.innerText = "Go";
         goBtn.className =
@@ -442,12 +441,12 @@
         paginationDiv.appendChild(container);
       }
 
-      // Tambah idiom manual
+      // Add manual idiom
       async function addIdiom() {
         const idiomText = document.getElementById("newIdiom").value.trim();
         const meaning = document.getElementById("newMeaning").value.trim();
         if (!idiomText || !meaning) {
-          alert("Idiom dan makna harus diisi");
+          alert("Idiom and meaning are required");
           return;
         }
         try {
@@ -461,21 +460,21 @@
           if (!response) return;
           const result = await response.json();
           if (response.ok) {
-            alert("Idiom berhasil ditambahkan");
+            alert("Idiom added successfully");
             document.getElementById("newIdiom").value = "";
             document.getElementById("newMeaning").value = "";
             currentPage = 1;
             loadIdioms();
           } else {
-            alert(result.message || "Gagal menambahkan");
+            alert(result.message || "Failed to add idiom");
           }
         } catch (error) {
           console.error(error);
-          alert("Error saat menambah idiom");
+          alert("Error adding idiom");
         }
       }
 
-      // Hapus idiom
+      // Delete idiom
       async function deleteIdiom(id) {
         try {
           const response = await apiFetch(`/idioms/${id}`, {
@@ -483,17 +482,17 @@
           });
           if (!response) return;
           if (response.ok) {
-            alert("Idiom dihapus");
+            alert("Idiom deleted");
             if (window.idiomsData.length === 1 && currentPage > 1)
               currentPage--;
             loadIdioms();
           } else {
             const err = await response.json();
-            alert(err.message || "Gagal hapus");
+            alert(err.message || "Failed to delete");
           }
         } catch (error) {
           console.error(error);
-          alert("Error saat menghapus");
+          alert("Error deleting idiom");
         }
       }
 
@@ -513,7 +512,7 @@
         const newIdiom = document.getElementById("editIdiom").value.trim();
         const newMeaning = document.getElementById("editMeaning").value.trim();
         if (!newIdiom || !newMeaning) {
-          alert("Idiom dan makna harus diisi");
+          alert("Idiom and meaning are required");
           return;
         }
         try {
@@ -527,15 +526,15 @@
           if (!response) return;
           const result = await response.json();
           if (response.ok) {
-            alert("Idiom berhasil diupdate");
+            alert("Idiom updated successfully");
             closeModal();
             loadIdioms();
           } else {
-            alert(result.message || "Gagal update");
+            alert(result.message || "Failed to update");
           }
         } catch (error) {
           console.error(error);
-          alert("Error saat update");
+          alert("Error updating idiom");
         }
       }
 
@@ -589,7 +588,7 @@
           complete: function (results) {
             const data = results.data;
             if (data.length === 0) {
-              alert("File kosong");
+              alert("File is empty");
               return;
             }
             let idiomKey = null;
@@ -604,7 +603,7 @@
             }
             if (!idiomKey || !meaningKey) {
               alert(
-                'Tidak ditemukan kolom idiom_text atau idiom_meaning. Gunakan kolom seperti "idiom", "idiom_text", "meaning", "arti"',
+                'No columns named "idiom_text" or "idiom_meaning" found. Use columns like "idiom", "idiom_text", "meaning", "arti".',
               );
               return;
             }
@@ -620,7 +619,7 @@
               }
             }
             if (uploadedData.length === 0) {
-              alert("Tidak ada data valid yang ditemukan");
+              alert("No valid data found");
               return;
             }
             const previewBody = document.getElementById("previewTableBody");
@@ -638,7 +637,7 @@
               const infoRow = previewBody.insertRow();
               infoRow.insertCell(0).colSpan = 3;
               infoRow.insertCell(0).innerHTML =
-                `... dan ${uploadedData.length - 10} data lainnya`;
+                `... and ${uploadedData.length - 10} more entries`;
               infoRow.cells[0].classList.add(
                 "text-center",
                 "text-gray-500",
@@ -651,7 +650,7 @@
           },
           error: function (err) {
             console.error(err);
-            alert("Gagal membaca file CSV");
+            alert("Failed to read CSV file");
           },
         });
       });
@@ -660,7 +659,7 @@
         .getElementById("extractBtn")
         .addEventListener("click", async () => {
           if (uploadedData.length === 0) {
-            alert("Tidak ada data untuk diekstrak");
+            alert("No data to extract");
             return;
           }
           try {
@@ -678,11 +677,11 @@
               currentPage = 1;
               loadIdioms();
             } else {
-              alert(result.message || "Gagal mengekstrak");
+              alert(result.message || "Failed to extract idioms");
             }
           } catch (error) {
             console.error(error);
-            alert("Error saat mengekstrak");
+            alert("Error extracting idioms");
           }
         });
 
@@ -690,7 +689,7 @@
         fileInput.click();
       });
 
-      // Sidebar dropdown (hanya untuk Data Collection, Processing sudah jadi link)
+      // Sidebar dropdown (only for Data Collection)
       function toggleDropdown(btn, menu, icon) {
         btn.addEventListener("click", () => {
           menu.classList.toggle("hidden");
@@ -701,7 +700,7 @@
       const dataCollectionMenu = document.getElementById("dataCollectionMenu");
       const dataCollectionIcon = document.getElementById("dataCollectionIcon");
       toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
-      // Tidak perlu toggle untuk Processing karena sudah link
+      // Processing is already a direct link, no toggle needed
 
       // Load initial data
       if (authToken) {

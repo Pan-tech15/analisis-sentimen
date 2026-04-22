@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="id">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -39,7 +39,7 @@
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- Sidebar (konsisten) -->
+      <!-- Sidebar (English labels) -->
       <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
         <div class="p-4 border-b">
           <span
@@ -55,7 +55,7 @@
                 href="beranda-admin.html"
                 class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"
                 ><i class="fas fa-tachometer-alt w-5"></i
-                ><span>Beranda</span></a
+                ><span>Dashboard</span></a
               >
             </li>
             <li>
@@ -84,7 +84,7 @@
                   <a
                     href="kamus-idiom.html"
                     class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
-                    ><i class="fas fa-book w-5 mr-2"></i>Kamus Idiom</a
+                    ><i class="fas fa-book w-5 mr-2"></i>Idiom Dictionary</a
                   >
                 </li>
               </ul>
@@ -97,7 +97,6 @@
               >
             </li>
             <li>
-              <!-- Processing sekarang menjadi link langsung, bukan dropdown -->
               <a
                 href="processing.html"
                 class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"
@@ -115,7 +114,7 @@
               <a
                 href="evaluasi.html"
                 class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
-                ><i class="fas fa-chart-line w-5"></i><span>Evaluasi</span></a
+                ><i class="fas fa-chart-line w-5"></i><span>Evaluation</span></a
               >
             </li>
             <li class="pt-4 mt-4 border-t">
@@ -133,43 +132,324 @@
       <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
         <h1 class="text-3xl font-bold text-gray-800 mb-6">Processing</h1>
 
-        <!-- Bagian Manajemen Model dengan Pagination -->
+        <!-- Split Data Ratio Section -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-8">
           <div class="flex justify-between items-center mb-4">
-            <h2 class="font-semibold text-gray-700">Daftar Model</h2>
+            <h2 class="font-semibold text-gray-700">Split Data Ratio</h2>
+            <button
+              id="btnAddSplit"
+              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 shadow-md transition"
+            >
+              <i class="fas fa-plus"></i><span>Add Split Ratio</span>
+            </button>
+          </div>
+
+          <!-- Filters -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Filter Train %</label
+              >
+              <input
+                type="text"
+                id="filterTrain"
+                placeholder="e.g., 70, 80"
+                class="w-full border rounded-lg p-2"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Filter Test %</label
+              >
+              <input
+                type="text"
+                id="filterTest"
+                placeholder="e.g., 30, 20"
+                class="w-full border rounded-lg p-2"
+              />
+            </div>
+          </div>
+          <button
+            id="applyFilterSplit"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mb-4"
+          >
+            Apply Filter
+          </button>
+
+          <!-- Split Ratio Table -->
+          <div class="overflow-x-auto">
+            <table class="min-w-full border border-gray-200">
+              <thead class="bg-blue-500 text-white">
+                <tr>
+                  <th class="px-4 py-2 border border-blue-400">Name</th>
+                  <th class="px-4 py-2 border border-blue-400">Train (%)</th>
+                  <th class="px-4 py-2 border border-blue-400">Test (%)</th>
+                  <th class="px-4 py-2 border border-blue-400">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="splitTableBody"></tbody>
+            </table>
+          </div>
+          <!-- Pagination for split ratio -->
+          <div id="splitPagination" class="flex justify-center mt-4"></div>
+        </div>
+
+        <!-- NEW SECTION: Model Parameter Tuning (IndoBERT / LexiconNB) -->
+        <div class="bg-white p-6 rounded-xl shadow-md mb-8">
+          <h2 class="font-semibold text-gray-700 mb-4">
+            Model Parameter Tuning
+          </h2>
+
+          <!-- Algorithm selection -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Select Algorithm</label
+            >
+            <select
+              id="tuningAlgo"
+              class="w-full md:w-64 border rounded-lg p-2 focus:ring-2 focus:ring-blue-400"
+            >
+              <option value="indobert">IndoBERT‑KNN+UMAP</option>
+              <option value="lexicon">Naive Bayes‑Lexicon</option>
+            </select>
+          </div>
+
+          <!-- Dynamic content based on algorithm -->
+          <div id="tuningContent">
+            <!-- IndoBERT content (default) -->
+            <div id="indobertTuning">
+              <!-- Select Old Model -->
+              <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Select Old Model</label
+                >
+                <select
+                  id="oldModelSelect"
+                  class="w-full border rounded-lg p-2"
+                >
+                  <option value="">-- No previous model --</option>
+                </select>
+              </div>
+
+              <!-- Find the Best Ratio button -->
+              <div class="mb-6">
+                <button
+                  id="findBestRatioBtn"
+                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                >
+                  Find the Best Ratio
+                </button>
+              </div>
+
+              <!-- Final Training Using the Best Ratio -->
+              <div class="border-t pt-4 mt-2">
+                <h3 class="font-medium text-gray-800 mb-4">
+                  Final Training Using the Best Ratio
+                </h3>
+                <div
+                  class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                >
+                  <div>
+                    <label class="block text-sm text-gray-600"
+                      >Learning Rate</label
+                    >
+                    <input
+                      type="text"
+                      id="lr"
+                      value="2e-5"
+                      class="w-full border rounded p-2 mt-1"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm text-gray-600">Epoch</label>
+                    <input
+                      type="number"
+                      id="epoch"
+                      value="6"
+                      class="w-full border rounded p-2 mt-1"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm text-gray-600"
+                      >Batch Size</label
+                    >
+                    <input
+                      type="number"
+                      id="batchSize"
+                      value="16"
+                      class="w-full border rounded p-2 mt-1"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm text-gray-600"
+                      >Max Length</label
+                    >
+                    <input
+                      type="number"
+                      id="maxLen"
+                      value="128"
+                      class="w-full border rounded p-2 mt-1"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm text-gray-600">Optimizer</label>
+                    <select
+                      id="optimizer"
+                      class="w-full border rounded p-2 mt-1"
+                    >
+                      <option value="AdamW">AdamW</option>
+                      <option value="Adam">Adam</option>
+                      <option value="SGD">SGD</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm text-gray-600"
+                      >Weight Decay</label
+                    >
+                    <input
+                      type="text"
+                      id="weightDecay"
+                      value="0.01"
+                      class="w-full border rounded p-2 mt-1"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm text-gray-600">Scheduler</label>
+                    <select
+                      id="scheduler"
+                      class="w-full border rounded p-2 mt-1"
+                    >
+                      <option value="linear">Linear</option>
+                      <option value="cosine">Cosine</option>
+                      <option value="constant">Constant</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm text-gray-600">Dropout</label>
+                    <input
+                      type="text"
+                      id="dropout"
+                      value="0.1"
+                      class="w-full border rounded p-2 mt-1"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm text-gray-600"
+                      >Early Stopping</label
+                    >
+                    <input
+                      type="number"
+                      id="earlyStopping"
+                      value="2"
+                      class="w-full border rounded p-2 mt-1"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm text-gray-600"
+                      >Gradient Accumulation</label
+                    >
+                    <input
+                      type="number"
+                      id="gradAccum"
+                      value="1"
+                      class="w-full border rounded p-2 mt-1"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Lexicon-NB content (simplified, hidden initially) -->
+            <div id="lexiconTuning" class="hidden">
+              <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Select Old Model</label
+                >
+                <select
+                  id="oldModelSelectNB"
+                  class="w-full border rounded-lg p-2"
+                >
+                  <option value="">-- No previous model --</option>
+                </select>
+              </div>
+              <div class="mb-6">
+                <button
+                  id="findBestRatioBtnNB"
+                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                >
+                  Find the Best Ratio
+                </button>
+              </div>
+              <div class="border-t pt-4">
+                <h3 class="font-medium text-gray-800 mb-4">
+                  Final Training Using the Best Ratio
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm text-gray-600">Alpha</label>
+                    <input
+                      type="text"
+                      value="1.0"
+                      class="w-full border rounded p-2 mt-1"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm text-gray-600"
+                      >Model Type</label
+                    >
+                    <select class="w-full border rounded p-2 mt-1">
+                      <option>MultinomialNB</option>
+                      <option>BernoulliNB</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm text-gray-600"
+                      >Vectorizer</label
+                    >
+                    <select class="w-full border rounded p-2 mt-1">
+                      <option>CountVectorizer</option>
+                      <option>TfidfVectorizer</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Model Management Section -->
+        <div class="bg-white p-6 rounded-xl shadow-md mb-8">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="font-semibold text-gray-700">Model List</h2>
             <button
               id="btnAddModel"
               class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 shadow-md transition"
             >
-              <i class="fas fa-plus"></i><span>Tambah Model Baru</span>
+              <i class="fas fa-plus"></i><span>Add New Model</span>
             </button>
           </div>
           <div class="overflow-x-auto">
             <table class="min-w-full border border-gray-200">
               <thead class="bg-blue-500 text-white">
                 <tr>
-                  <th class="px-4 py-2 border border-blue-400">Nama Model</th>
-                  <th class="px-4 py-2 border border-blue-400">Algoritma</th>
-                  <th class="px-4 py-2 border border-blue-400">Aksi</th>
+                  <th class="px-4 py-2 border border-blue-400">Model Name</th>
+                  <th class="px-4 py-2 border border-blue-400">Algorithm</th>
+                  <th class="px-4 py-2 border border-blue-400">Actions</th>
                 </tr>
               </thead>
               <tbody id="modelTableBody"></tbody>
             </table>
           </div>
-          <!-- Pagination untuk daftar model (10 baris per halaman) -->
-          <div
-            id="modelPagination"
-            class="flex justify-center mt-4 space-x-2"
-          ></div>
+          <div id="modelPagination" class="flex justify-center mt-4"></div>
         </div>
 
-        <!-- Bagian Training (sama seperti sebelumnya) -->
+        <!-- Training Section -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-8">
-          <h2 class="font-semibold text-gray-700 mb-4">Training Model</h2>
+          <h2 class="font-semibold text-gray-700 mb-4">Model Training</h2>
           <!-- Upload Dataset -->
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Upload Dataset (Hasil Preprocessing)</label
+              >Upload Dataset (Preprocessed Result)</label
             >
             <div
               id="dropzoneArea"
@@ -179,13 +459,13 @@
                 class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"
               ></i>
               <p id="uploadMainText" class="text-gray-700 font-medium">
-                Drag & drop file di sini
+                Drag & drop file here
               </p>
               <p class="text-sm text-gray-500 mt-1">
-                atau <span class="text-blue-600">klik untuk memilih</span>
+                or <span class="text-blue-600">click to select</span>
               </p>
               <p class="text-xs text-gray-400 mt-2">
-                Format CSV / Excel (hasil preprocessing)
+                CSV / Excel format (preprocessed result)
               </p>
               <input
                 type="file"
@@ -205,9 +485,7 @@
                     id="uploadedFileName"
                     class="font-medium text-gray-800"
                   ></p>
-                  <p class="text-xs text-gray-500">
-                    File siap digunakan untuk training
-                  </p>
+                  <p class="text-xs text-gray-500">File ready for training</p>
                 </div>
               </div>
               <button
@@ -215,38 +493,38 @@
                 type="button"
                 class="text-sm text-blue-600 hover:text-blue-800 font-medium"
               >
-                <i class="fas fa-exchange-alt mr-1"></i>Ganti File
+                <i class="fas fa-exchange-alt mr-1"></i>Change File
               </button>
             </div>
             <div id="uploadMessage" class="mt-2 text-sm"></div>
           </div>
 
-          <!-- Pilih Konfigurasi Model -->
+          <!-- Select Model Configuration -->
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Pilih Konfigurasi Model</label
+              >Select Model Configuration</label
             >
             <select
               id="configSelect"
               class="w-full border border-gray-300 rounded-lg p-2"
             >
-              <option value="">-- Pilih konfigurasi --</option>
+              <option value="">-- Select configuration --</option>
             </select>
           </div>
 
-          <!-- Tombol Mulai Latih -->
+          <!-- Start Training Button -->
           <button
             id="startTrainBtn"
             class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition flex items-center space-x-2"
           >
-            <i class="fas fa-play"></i><span>Mulai Latih</span>
+            <i class="fas fa-play"></i><span>Start Training</span>
           </button>
 
-          <!-- Status Training -->
+          <!-- Training Status -->
           <div class="mt-4 p-3 bg-gray-50 rounded-lg">
             <p class="text-sm text-gray-600">
               Status :
-              <span id="trainStatus" class="font-medium">Belum Mulai</span>
+              <span id="trainStatus" class="font-medium">Not Started</span>
             </p>
             <div id="progressContainer" class="mt-2 hidden">
               <div class="w-full bg-gray-200 rounded-full h-2">
@@ -261,32 +539,116 @@
           </div>
         </div>
 
-        <!-- Tabel Riwayat Training -->
+        <!-- Training History Table -->
         <div class="bg-white p-6 rounded-xl shadow-md">
-          <h2 class="font-semibold text-gray-700 mb-4">
-            Daftar Hasil Data Latih
-          </h2>
+          <h2 class="font-semibold text-gray-700 mb-4">Training History</h2>
           <div class="overflow-x-auto">
             <table class="min-w-full border border-gray-200">
               <thead class="bg-blue-500 text-white">
                 <tr>
-                  <th class="px-4 py-2 border border-blue-400">Nama Dataset</th>
+                  <th class="px-4 py-2 border border-blue-400">Dataset Name</th>
                   <th class="px-4 py-2 border border-blue-400">Model</th>
-                  <th class="px-4 py-2 border border-blue-400">Akurasi</th>
-                  <th class="px-4 py-2 border border-blue-400">Tanggal</th>
-                  <th class="px-4 py-2 border border-blue-400">Durasi</th>
-                  <th class="px-4 py-2 border border-blue-400">Aksi</th>
+                  <th class="px-4 py-2 border border-blue-400">Accuracy</th>
+                  <th class="px-4 py-2 border border-blue-400">Date</th>
+                  <th class="px-4 py-2 border border-blue-400">Duration</th>
+                  <th class="px-4 py-2 border border-blue-400">Actions</th>
                 </tr>
               </thead>
               <tbody id="trainingResultsBody"></tbody>
             </table>
           </div>
-          <div id="pagination" class="flex justify-center mt-4 space-x-2"></div>
+          <div id="trainingPagination" class="flex justify-center mt-4"></div>
         </div>
       </main>
     </div>
 
-    <!-- Modal Tambah/Edit Model (sama seperti sebelumnya) -->
+    <!-- Modal Add/Edit Split Ratio -->
+    <div
+      id="splitModal"
+      class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50 modal-backdrop"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative transform transition-all modal-container"
+      >
+        <div
+          id="splitModalHeader"
+          class="sticky top-0 bg-blue-600 border-b px-6 py-4 flex justify-between items-center rounded-t-2xl text-white z-10"
+        >
+          <h2 id="splitModalTitle" class="text-xl font-bold">
+            Add Split Ratio
+          </h2>
+          <button
+            id="closeSplitModal"
+            class="text-white hover:text-gray-200 transition"
+          >
+            <i class="fas fa-times text-2xl"></i>
+          </button>
+        </div>
+        <div class="p-6">
+          <form id="splitForm">
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700"
+                >Name</label
+              >
+              <input
+                type="text"
+                id="splitName"
+                required
+                class="w-full border rounded-lg p-2 mt-1"
+              />
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700"
+                >Train (%)</label
+              >
+              <input
+                type="number"
+                id="splitTrain"
+                required
+                min="0"
+                max="100"
+                step="1"
+                class="w-full border rounded-lg p-2 mt-1"
+              />
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700"
+                >Test (%)</label
+              >
+              <input
+                type="number"
+                id="splitTest"
+                required
+                min="0"
+                max="100"
+                step="1"
+                class="w-full border rounded-lg p-2 mt-1"
+              />
+              <p class="text-xs text-gray-500 mt-1">
+                Total Train + Test must be 100
+              </p>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+              <button
+                type="button"
+                id="cancelSplitModal"
+                class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
+              >
+                Save
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Add/Edit Model (simplified for demo) -->
     <div
       id="modelModal"
       class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50 modal-backdrop"
@@ -298,7 +660,7 @@
           id="modalHeader"
           class="sticky top-0 bg-blue-600 border-b px-6 py-4 flex justify-between items-center rounded-t-2xl text-white z-10"
         >
-          <h2 id="modalTitle" class="text-xl font-bold">Tambah Model Baru</h2>
+          <h2 id="modalTitle" class="text-xl font-bold">Add New Model</h2>
           <button
             id="closeModal"
             class="text-white hover:text-gray-200 transition"
@@ -314,31 +676,31 @@
             <form id="modelForm">
               <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700"
-                  >Nama Model</label
+                  >Model Name</label
                 >
                 <input
                   type="text"
                   id="modelName"
                   required
-                  class="w-full border rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                  class="w-full border rounded-lg p-2 mt-1"
                 />
                 <p class="text-xs text-gray-500 mt-1">
-                  Nama unik untuk mengidentifikasi model ini.
+                  Unique name to identify this model.
                 </p>
               </div>
               <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700"
-                  >Algoritma</label
+                  >Algorithm</label
                 >
                 <select
                   id="modelAlgo"
-                  class="w-full border rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-400"
+                  class="w-full border rounded-lg p-2 mt-1"
                 >
                   <option value="hybrid">IndoBERT‑KNN</option>
                   <option value="nb-lexicon">Naive Bayes‑Lexicon</option>
                 </select>
                 <p class="text-xs text-gray-500 mt-1">
-                  Pilih algoritma yang akan digunakan untuk model ini.
+                  Choose algorithm for this model.
                 </p>
               </div>
               <div id="dynamicParams"></div>
@@ -348,14 +710,14 @@
                   id="cancelModal"
                   class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg transition"
                 >
-                  Batal
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   id="submitBtn"
                   class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
                 >
-                  Simpan Model
+                  Save Model
                 </button>
               </div>
             </form>
@@ -365,7 +727,7 @@
     </div>
 
     <script>
-      // ==================== KONFIGURASI API ====================
+      // ==================== CONFIGURATION ====================
       const API_BASE = "http://localhost:5000";
       let models = [];
       let editingId = null;
@@ -378,6 +740,217 @@
       let uploadedFilePath = null;
       let isUploading = false;
 
+      // ==================== SPLIT RATIO DATA (dummy) ====================
+      let splitRatios = [
+        { id: 1, name: "Default 80:20", train: 80, test: 20 },
+        { id: 2, name: "Balanced 70:30", train: 70, test: 30 },
+        { id: 3, name: "Large Train 90:10", train: 90, test: 10 },
+      ];
+      let currentSplitPage = 1;
+      const rowsPerSplitPage = 5;
+      let editingSplitId = null;
+
+      // Helper: render pagination with Previous, page info, input+Go, Next
+      function renderPaginationControls(
+        containerId,
+        currentPage,
+        totalPages,
+        onPageChange,
+      ) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = "";
+        if (totalPages <= 1) return;
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "flex items-center space-x-2";
+
+        // Previous button
+        const prevBtn = document.createElement("button");
+        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
+        prevBtn.className = `px-3 py-1 rounded border ${currentPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.onclick = () => {
+          if (currentPage > 1) onPageChange(currentPage - 1);
+        };
+        wrapper.appendChild(prevBtn);
+
+        // Page info
+        const pageInfo = document.createElement("span");
+        pageInfo.className = "text-gray-700";
+        pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
+        wrapper.appendChild(pageInfo);
+
+        // Input number + Go button
+        const pageInput = document.createElement("input");
+        pageInput.type = "number";
+        pageInput.min = 1;
+        pageInput.max = totalPages;
+        pageInput.value = currentPage;
+        pageInput.className = "w-16 border rounded px-2 py-1 text-center";
+        wrapper.appendChild(pageInput);
+
+        const goBtn = document.createElement("button");
+        goBtn.innerText = "Go";
+        goBtn.className =
+          "px-3 py-1 rounded border bg-blue-500 text-white hover:bg-blue-600";
+        goBtn.onclick = () => {
+          let newPage = parseInt(pageInput.value);
+          if (isNaN(newPage)) newPage = 1;
+          if (newPage < 1) newPage = 1;
+          if (newPage > totalPages) newPage = totalPages;
+          onPageChange(newPage);
+        };
+        wrapper.appendChild(goBtn);
+
+        // Next button
+        const nextBtn = document.createElement("button");
+        nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
+        nextBtn.className = `px-3 py-1 rounded border ${currentPage === totalPages ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.onclick = () => {
+          if (currentPage < totalPages) onPageChange(currentPage + 1);
+        };
+        wrapper.appendChild(nextBtn);
+
+        container.appendChild(wrapper);
+      }
+
+      // Split Ratio functions
+      function renderSplitTable() {
+        const filterTrain = document.getElementById("filterTrain").value.trim();
+        const filterTest = document.getElementById("filterTest").value.trim();
+        let filtered = splitRatios;
+        if (filterTrain) {
+          const trainVal = parseInt(filterTrain);
+          if (!isNaN(trainVal))
+            filtered = filtered.filter((s) => s.train === trainVal);
+        }
+        if (filterTest) {
+          const testVal = parseInt(filterTest);
+          if (!isNaN(testVal))
+            filtered = filtered.filter((s) => s.test === testVal);
+        }
+        const start = (currentSplitPage - 1) * rowsPerSplitPage;
+        const end = start + rowsPerSplitPage;
+        const pageData = filtered.slice(start, end);
+        const tbody = document.getElementById("splitTableBody");
+        tbody.innerHTML = "";
+        pageData.forEach((s) => {
+          const row = tbody.insertRow();
+          row.insertCell(0).innerHTML =
+            `<span class="font-medium">${s.name}</span>`;
+          row.insertCell(1).innerHTML = s.train;
+          row.insertCell(2).innerHTML = s.test;
+          const actions = document.createElement("td");
+          actions.className = "px-4 py-2 border border-gray-200 text-center";
+          actions.innerHTML = `<i class="fas fa-edit text-blue-500 mr-3 cursor-pointer hover:text-blue-700" data-id="${s.id}"></i><i class="fas fa-trash text-red-500 cursor-pointer hover:text-red-700" data-id="${s.id}"></i>`;
+          row.appendChild(actions);
+          for (let cell of row.cells)
+            cell.classList.add("border", "border-gray-200", "px-4", "py-2");
+        });
+        document
+          .querySelectorAll("#splitTableBody .fa-edit")
+          .forEach((icon) => {
+            icon.addEventListener("click", () =>
+              openEditSplitModal(parseInt(icon.dataset.id)),
+            );
+          });
+        document
+          .querySelectorAll("#splitTableBody .fa-trash")
+          .forEach((icon) => {
+            icon.addEventListener("click", () => {
+              const id = parseInt(icon.dataset.id);
+              if (confirm("Delete this split ratio?")) {
+                splitRatios = splitRatios.filter((s) => s.id !== id);
+                renderSplitTable();
+                renderSplitPagination();
+              }
+            });
+          });
+        renderSplitPagination();
+      }
+
+      function renderSplitPagination() {
+        const filterTrain = document.getElementById("filterTrain").value.trim();
+        const filterTest = document.getElementById("filterTest").value.trim();
+        let filtered = splitRatios;
+        if (filterTrain) {
+          const val = parseInt(filterTrain);
+          if (!isNaN(val)) filtered = filtered.filter((s) => s.train === val);
+        }
+        if (filterTest) {
+          const val = parseInt(filterTest);
+          if (!isNaN(val)) filtered = filtered.filter((s) => s.test === val);
+        }
+        const totalPages = Math.ceil(filtered.length / rowsPerSplitPage);
+        renderPaginationControls(
+          "splitPagination",
+          currentSplitPage,
+          totalPages,
+          (newPage) => {
+            currentSplitPage = newPage;
+            renderSplitTable();
+          },
+        );
+      }
+
+      function openAddSplitModal() {
+        editingSplitId = null;
+        document.getElementById("splitModalTitle").innerText =
+          "Add Split Ratio";
+        document.getElementById("splitName").value = "";
+        document.getElementById("splitTrain").value = "";
+        document.getElementById("splitTest").value = "";
+        document.getElementById("splitModal").classList.remove("hidden");
+      }
+
+      function openEditSplitModal(id) {
+        const split = splitRatios.find((s) => s.id === id);
+        if (!split) return;
+        editingSplitId = id;
+        document.getElementById("splitModalTitle").innerText =
+          "Edit Split Ratio";
+        document.getElementById("splitName").value = split.name;
+        document.getElementById("splitTrain").value = split.train;
+        document.getElementById("splitTest").value = split.test;
+        document.getElementById("splitModal").classList.remove("hidden");
+      }
+
+      function saveSplit(e) {
+        e.preventDefault();
+        const name = document.getElementById("splitName").value.trim();
+        const train = parseInt(document.getElementById("splitTrain").value);
+        const test = parseInt(document.getElementById("splitTest").value);
+        if (!name || isNaN(train) || isNaN(test)) {
+          alert("All fields must be filled correctly.");
+          return;
+        }
+        if (train + test !== 100) {
+          alert("Train + Test must equal 100");
+          return;
+        }
+        if (editingSplitId !== null) {
+          const index = splitRatios.findIndex((s) => s.id === editingSplitId);
+          if (index !== -1)
+            splitRatios[index] = { ...splitRatios[index], name, train, test };
+        } else {
+          const newId =
+            splitRatios.length > 0
+              ? Math.max(...splitRatios.map((s) => s.id)) + 1
+              : 1;
+          splitRatios.push({ id: newId, name, train, test });
+        }
+        renderSplitTable();
+        closeSplitModal();
+      }
+
+      function closeSplitModal() {
+        document.getElementById("splitModal").classList.add("hidden");
+        editingSplitId = null;
+      }
+
+      // ==================== MODELS ====================
       function getHeaders() {
         const token = localStorage.getItem("access_token");
         return {
@@ -386,13 +959,12 @@
         };
       }
 
-      // ==================== MANAJEMEN MODEL (dengan pagination) ====================
       async function loadModels() {
         try {
           const res = await fetch(`${API_BASE}/api/processing/configs`, {
             headers: getHeaders(),
           });
-          if (!res.ok) throw new Error("Gagal memuat konfigurasi");
+          if (!res.ok) throw new Error("Failed to load configurations");
           const data = await res.json();
           models = data.map((item) => ({
             id: item.id,
@@ -402,10 +974,9 @@
           }));
           renderModelTable();
           renderModelPagination();
-          // Isi dropdown konfigurasi untuk training
           const configSelect = document.getElementById("configSelect");
           configSelect.innerHTML =
-            '<option value="">-- Pilih konfigurasi --</option>';
+            '<option value="">-- Select configuration --</option>';
           data.forEach((cfg) => {
             const opt = document.createElement("option");
             opt.value = cfg.id;
@@ -414,7 +985,7 @@
           });
         } catch (err) {
           console.error(err);
-          alert("Gagal memuat daftar model.");
+          alert("Failed to load model list.");
         }
       }
 
@@ -438,7 +1009,6 @@
           for (let cell of row.cells)
             cell.classList.add("border", "border-gray-200", "px-4", "py-2");
         });
-        // Event listeners untuk edit/hapus
         document
           .querySelectorAll(".fa-edit")
           .forEach((icon) =>
@@ -449,14 +1019,14 @@
         document.querySelectorAll(".fa-trash").forEach((icon) =>
           icon.addEventListener("click", async (e) => {
             const id = parseInt(icon.dataset.id);
-            if (!confirm("Hapus model ini?")) return;
+            if (!confirm("Delete this model?")) return;
             try {
               const res = await fetch(
                 `${API_BASE}/api/processing/configs/${id}`,
                 { method: "DELETE", headers: getHeaders() },
               );
               if (!res.ok)
-                throw new Error((await res.json()).error || "Gagal hapus");
+                throw new Error((await res.json()).error || "Delete failed");
               await loadModels();
             } catch (err) {
               alert(err.message);
@@ -466,57 +1036,65 @@
       }
 
       function renderModelPagination() {
-        const total = Math.ceil(models.length / rowsPerModelPage);
-        const pg = document.getElementById("modelPagination");
-        pg.innerHTML = "";
-        if (total <= 1) return;
-        const prev = document.createElement("button");
-        prev.innerHTML = '<i class="fas fa-chevron-left"></i>';
-        prev.className = `px-3 py-1 rounded border ${currentModelPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
-        prev.onclick = () => {
-          if (currentModelPage > 1) {
-            currentModelPage--;
+        const totalPages = Math.ceil(models.length / rowsPerModelPage);
+        renderPaginationControls(
+          "modelPagination",
+          currentModelPage,
+          totalPages,
+          (newPage) => {
+            currentModelPage = newPage;
             renderModelTable();
-            renderModelPagination();
-          }
-        };
-        pg.appendChild(prev);
-        for (let i = 1; i <= total; i++) {
-          const btn = document.createElement("button");
-          btn.innerText = i;
-          btn.className = `px-3 py-1 rounded border ${currentModelPage === i ? "bg-blue-500 text-white" : "bg-white hover:bg-blue-50"}`;
-          btn.onclick = () => {
-            currentModelPage = i;
-            renderModelTable();
-            renderModelPagination();
-          };
-          pg.appendChild(btn);
-        }
-        const next = document.createElement("button");
-        next.innerHTML = '<i class="fas fa-chevron-right"></i>';
-        next.className = `px-3 py-1 rounded border ${currentModelPage === total ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
-        next.onclick = () => {
-          if (currentModelPage < total) {
-            currentModelPage++;
-            renderModelTable();
-            renderModelPagination();
-          }
-        };
-        pg.appendChild(next);
+          },
+        );
       }
 
-      // ==================== TRAINING ====================
+      // ==================== TRAINING HISTORY ====================
       async function loadTrainingHistory() {
         try {
           const res = await fetch(`${API_BASE}/api/training/history`, {
             headers: getHeaders(),
           });
-          if (!res.ok) throw new Error("Gagal memuat riwayat");
+          if (!res.ok) throw new Error("Failed to load history");
           trainingHistory = await res.json();
+          // Also populate old model dropdowns in tuning section
+          populateOldModelSelects();
           renderTrainingTable();
           renderTrainingPagination();
         } catch (err) {
           console.error(err);
+        }
+      }
+
+      function populateOldModelSelects() {
+        const indoSelect = document.getElementById("oldModelSelect");
+        const nbSelect = document.getElementById("oldModelSelectNB");
+        if (indoSelect) {
+          indoSelect.innerHTML =
+            '<option value="">-- No previous model --</option>';
+          trainingHistory.forEach((m) => {
+            if (
+              m.algorithm &&
+              (m.algorithm.includes("IndoBERT") ||
+                m.algorithm === "IndoBERT-KNN")
+            ) {
+              const opt = document.createElement("option");
+              opt.value = m.id;
+              opt.textContent = `${m.dataset_filename || m.name} (Acc: ${m.metrics?.accuracy?.toFixed(3) || "N/A"})`;
+              indoSelect.appendChild(opt);
+            }
+          });
+        }
+        if (nbSelect) {
+          nbSelect.innerHTML =
+            '<option value="">-- No previous model --</option>';
+          trainingHistory.forEach((m) => {
+            if (m.algorithm && m.algorithm.includes("Lexicon")) {
+              const opt = document.createElement("option");
+              opt.value = m.id;
+              opt.textContent = `${m.dataset_filename || m.name} (Acc: ${m.metrics?.accuracy?.toFixed(3) || "N/A"})`;
+              nbSelect.appendChild(opt);
+            }
+          });
         }
       }
 
@@ -552,12 +1130,12 @@
               const hr = Math.floor(min / 60);
               dur =
                 hr > 0
-                  ? `${hr} jam ${min % 60} mnt`
+                  ? `${hr} hr ${min % 60} min`
                   : min > 0
-                    ? `${min} menit ${sec % 60} dtk`
-                    : `${sec} detik`;
+                    ? `${min} min ${sec % 60} sec`
+                    : `${sec} sec`;
               if (!item.completed_at && item.status !== "completed")
-                dur += " (berjalan)";
+                dur += " (running)";
             }
           }
           row.insertCell(4).innerHTML = dur;
@@ -568,7 +1146,7 @@
             c.classList.add("border", "border-gray-200", "px-4", "py-2");
         });
         document.querySelectorAll(".download-model").forEach((btn) => {
-          btn.addEventListener("click", (e) => {
+          btn.addEventListener("click", () => {
             const id = btn.dataset.id;
             const t = trainingHistory.find((x) => x.id == id);
             if (t && t.model_path)
@@ -581,55 +1159,26 @@
       }
 
       function renderTrainingPagination() {
-        const total = Math.ceil(trainingHistory.length / rowsPerTrainingPage);
-        const pg = document.getElementById("pagination");
-        pg.innerHTML = "";
-        if (total <= 1) return;
-        const prev = document.createElement("button");
-        prev.innerHTML = '<i class="fas fa-chevron-left"></i>';
-        prev.className = `px-3 py-1 rounded border ${currentTrainingPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
-        prev.onclick = () => {
-          if (currentTrainingPage > 1) {
-            currentTrainingPage--;
+        const totalPages = Math.ceil(
+          trainingHistory.length / rowsPerTrainingPage,
+        );
+        renderPaginationControls(
+          "trainingPagination",
+          currentTrainingPage,
+          totalPages,
+          (newPage) => {
+            currentTrainingPage = newPage;
             renderTrainingTable();
-            renderTrainingPagination();
-          }
-        };
-        pg.appendChild(prev);
-        for (let i = 1; i <= total; i++) {
-          const btn = document.createElement("button");
-          btn.innerText = i;
-          btn.className = `px-3 py-1 rounded border ${currentTrainingPage === i ? "bg-blue-500 text-white" : "bg-white hover:bg-blue-50"}`;
-          btn.onclick = () => {
-            currentTrainingPage = i;
-            renderTrainingTable();
-            renderTrainingPagination();
-          };
-          pg.appendChild(btn);
-        }
-        const next = document.createElement("button");
-        next.innerHTML = '<i class="fas fa-chevron-right"></i>';
-        next.className = `px-3 py-1 rounded border ${currentTrainingPage === total ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
-        next.onclick = () => {
-          if (currentTrainingPage < total) {
-            currentTrainingPage++;
-            renderTrainingTable();
-            renderTrainingPagination();
-          }
-        };
-        pg.appendChild(next);
+          },
+        );
       }
 
-      // ==================== MODAL (sederhana untuk demo) ====================
+      // ==================== MODAL HANDLERS (simplified) ====================
       function openEditModal(id) {
-        alert(
-          "Fungsi edit model belum diimplementasikan. Silakan gunakan kode dari pengaturan.html.",
-        );
+        alert("Edit model not implemented yet.");
       }
       function openAddModal() {
-        alert(
-          "Fungsi tambah model belum diimplementasikan. Silakan gunakan kode dari pengaturan.html.",
-        );
+        alert("Add model not implemented yet.");
       }
       document
         .getElementById("btnAddModel")
@@ -659,14 +1208,14 @@
               method: "POST",
               body: formData,
             });
-            if (!res.ok) throw new Error("Upload gagal");
+            if (!res.ok) throw new Error("Upload failed");
             const data = await res.json();
             uploadedFilePath = data.path;
             document.getElementById("uploadInfo").classList.remove("hidden");
             document.getElementById("uploadedFileName").innerText = file.name;
             document.getElementById("dropzoneArea").classList.add("hidden");
             document.getElementById("uploadMessage").innerHTML =
-              '<div class="text-green-600">Upload berhasil!</div>';
+              '<div class="text-green-600">Upload successful!</div>';
           } catch (err) {
             alert(err.message);
           }
@@ -683,17 +1232,17 @@
       const startTrainBtn = document.getElementById("startTrainBtn");
       startTrainBtn.addEventListener("click", async () => {
         if (!uploadedFilePath) {
-          alert("Upload file dataset terlebih dahulu!");
+          alert("Upload dataset file first!");
           return;
         }
         const configId = document.getElementById("configSelect").value;
         if (!configId) {
-          alert("Pilih konfigurasi model!");
+          alert("Select model configuration!");
           return;
         }
         startTrainBtn.disabled = true;
         document.getElementById("trainStatus").innerText =
-          "Memulai training...";
+          "Starting training...";
         document.getElementById("progressContainer").classList.remove("hidden");
         try {
           const res = await fetch(`${API_BASE}/api/training/start`, {
@@ -704,7 +1253,7 @@
               dataset_path: uploadedFilePath,
             }),
           });
-          if (!res.ok) throw new Error("Gagal memulai training");
+          if (!res.ok) throw new Error("Failed to start training");
           const training = await res.json();
           if (pollingInterval) clearInterval(pollingInterval);
           pollingInterval = setInterval(async () => {
@@ -714,10 +1263,10 @@
             const data = await statusRes.json();
             document.getElementById("trainStatus").innerText =
               data.status === "completed"
-                ? "Selesai"
+                ? "Completed"
                 : data.status === "failed"
-                  ? "Gagal"
-                  : "Sedang berjalan...";
+                  ? "Failed"
+                  : "Running...";
             document.getElementById("progressBar").style.width =
               `${data.progress}%`;
             document.getElementById("progressPercent").innerText =
@@ -734,7 +1283,36 @@
         }
       });
 
-      // ==================== SIDEBAR TOGGLE (hanya untuk Data Collection) ====================
+      // ==================== TUNING SECTION INTERACTIONS ====================
+      const tuningAlgo = document.getElementById("tuningAlgo");
+      const indoDiv = document.getElementById("indobertTuning");
+      const lexDiv = document.getElementById("lexiconTuning");
+      tuningAlgo.addEventListener("change", () => {
+        if (tuningAlgo.value === "indobert") {
+          indoDiv.classList.remove("hidden");
+          lexDiv.classList.add("hidden");
+        } else {
+          indoDiv.classList.add("hidden");
+          lexDiv.classList.remove("hidden");
+        }
+      });
+      // Initialize visibility
+      indoDiv.classList.remove("hidden");
+      lexDiv.classList.add("hidden");
+
+      // Find best ratio buttons (simulate)
+      document
+        .getElementById("findBestRatioBtn")
+        .addEventListener("click", () => {
+          alert("Simulating best ratio search... (demo)");
+        });
+      document
+        .getElementById("findBestRatioBtnNB")
+        .addEventListener("click", () => {
+          alert("Simulating best ratio search for Lexicon-NB... (demo)");
+        });
+
+      // Sidebar toggle
       function toggleDropdown(btn, menu, icon) {
         btn.addEventListener("click", () => {
           menu.classList.toggle("hidden");
@@ -746,9 +1324,28 @@
         document.getElementById("dataCollectionMenu"),
         document.getElementById("dataCollectionIcon"),
       );
-      // Tidak perlu toggle untuk Processing karena sudah menjadi link
 
-      // ==================== INISIALISASI ====================
+      // Initialize
+      document
+        .getElementById("applyFilterSplit")
+        .addEventListener("click", () => {
+          currentSplitPage = 1;
+          renderSplitTable();
+        });
+      document
+        .getElementById("btnAddSplit")
+        .addEventListener("click", openAddSplitModal);
+      document
+        .getElementById("closeSplitModal")
+        .addEventListener("click", closeSplitModal);
+      document
+        .getElementById("cancelSplitModal")
+        .addEventListener("click", closeSplitModal);
+      document
+        .getElementById("splitForm")
+        .addEventListener("submit", saveSplit);
+
+      renderSplitTable();
       loadModels();
       loadTrainingHistory();
     </script>
