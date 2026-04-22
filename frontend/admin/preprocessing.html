@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="id">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -27,7 +27,7 @@
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- Sidebar (disesuaikan: Processing menjadi link langsung) -->
+      <!-- Sidebar (English, Processing as direct link) -->
       <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
         <div class="p-4 border-b">
           <span
@@ -43,10 +43,10 @@
                 href="beranda-admin.html"
                 class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"
                 ><i class="fas fa-tachometer-alt w-5"></i
-                ><span>Beranda</span></a
+                ><span>Dashboard</span></a
               >
             </li>
-            <!-- Data Collection dropdown (tetap) -->
+            <!-- Data Collection dropdown -->
             <li>
               <button
                 id="dataCollectionBtn"
@@ -73,13 +73,13 @@
                   <a
                     href="kamus-idiom.html"
                     class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
-                    ><i class="fas fa-book w-5 mr-2"></i>Kamus Idiom</a
+                    ><i class="fas fa-book w-5 mr-2"></i>Idiom Dictionary</a
                   >
                 </li>
               </ul>
             </li>
             <li>
-              <!-- Pre-Processing aktif -->
+              <!-- Pre-Processing active -->
               <a
                 href="preprocessing.html"
                 class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"
@@ -87,7 +87,7 @@
               >
             </li>
             <li>
-              <!-- Processing sekarang menjadi link langsung -->
+              <!-- Processing as direct link -->
               <a
                 href="processing.html"
                 class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
@@ -107,7 +107,7 @@
               <a
                 href="evaluasi.html"
                 class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
-                ><i class="fas fa-chart-line w-5"></i><span>Evaluasi</span></a
+                ><i class="fas fa-chart-line w-5"></i><span>Evaluation</span></a
               >
             </li>
             <li class="pt-4 mt-4 border-t">
@@ -121,23 +121,23 @@
         </nav>
       </aside>
 
-      <!-- Main Content (tidak berubah) -->
+      <!-- Main Content -->
       <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
         <h1 class="text-3xl font-bold text-gray-800 mb-6">Pre-Processing</h1>
 
-        <!-- Bagian Proses Pembersihan -->
+        <!-- Cleaning Process Section -->
         <div class="bg-white p-6 rounded-xl shadow-md max-w-2xl mb-8">
-          <h2 class="font-semibold text-gray-700 mb-4">Proses Pembersihan</h2>
+          <h2 class="font-semibold text-gray-700 mb-4">Cleaning Process</h2>
 
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Pilih Data Mentah</label
+              >Select Raw Dataset</label
             >
             <select
               id="datasetSelect"
               class="w-full border border-gray-300 rounded-lg p-2"
             >
-              <option value="">-- Memuat dataset... --</option>
+              <option value="">-- Loading datasets... --</option>
             </select>
           </div>
 
@@ -146,13 +146,13 @@
             class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition flex items-center space-x-2"
           >
             <i class="fas fa-play"></i>
-            <span>Mulai Pembersihan</span>
+            <span>Start Cleaning</span>
           </button>
 
           <div class="mt-6 p-4 bg-gray-50 rounded-lg">
             <p class="text-sm text-gray-600">
               Status :
-              <span id="statusText" class="font-medium">Belum Mulai</span>
+              <span id="statusText" class="font-medium">Not Started</span>
             </p>
             <div id="progressContainer" class="mt-2 hidden">
               <div class="w-full bg-gray-200 rounded-full h-2">
@@ -173,31 +173,47 @@
               disabled
             >
               <i class="fas fa-download"></i>
-              <span>Unduh CSV</span>
+              <span>Download CSV</span>
             </button>
           </div>
         </div>
 
-        <!-- Bagian History Preprocessing -->
+        <!-- Preprocessing History Section -->
         <div class="bg-white p-6 rounded-xl shadow-md">
-          <!-- Header dengan Search dan Filter Tanggal -->
+          <!-- Header with Search and Date Filters -->
           <div class="flex flex-wrap justify-between items-center mb-4 gap-3">
-            <h2 class="font-semibold text-gray-700 text-lg">History Preprocessing</h2>
+            <h2 class="font-semibold text-gray-700 text-lg">
+              Preprocessing History
+            </h2>
             <div class="flex flex-wrap items-center gap-2">
-              <!-- Filter Tanggal -->
+              <!-- Date Filters -->
               <div class="flex items-center gap-1">
-                <span class="text-sm text-gray-600">Dari</span>
-                <input type="date" id="startDateFilter" class="border border-gray-300 rounded px-2 py-1 text-sm w-36 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+                <span class="text-sm text-gray-600">From</span>
+                <input
+                  type="date"
+                  id="startDateFilter"
+                  class="border border-gray-300 rounded px-2 py-1 text-sm w-36 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                />
               </div>
               <div class="flex items-center gap-1">
-                <span class="text-sm text-gray-600">Sampai</span>
-                <input type="date" id="endDateFilter" class="border border-gray-300 rounded px-2 py-1 text-sm w-36 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+                <span class="text-sm text-gray-600">To</span>
+                <input
+                  type="date"
+                  id="endDateFilter"
+                  class="border border-gray-300 rounded px-2 py-1 text-sm w-36 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                />
               </div>
               <!-- Search -->
               <div class="relative">
-                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                <input type="text" id="historySearchInput" placeholder="Cari nama..." 
-                       class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-56 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+                <i
+                  class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                ></i>
+                <input
+                  type="text"
+                  id="historySearchInput"
+                  placeholder="Search name..."
+                  class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-56 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                />
               </div>
             </div>
           </div>
@@ -207,25 +223,30 @@
               <thead class="bg-blue-500 text-white">
                 <tr>
                   <th class="px-4 py-2 border border-blue-400 w-16">No</th>
-                  <th class="px-4 py-2 border border-blue-400">Nama Preprocessing</th>
-                  <th class="px-4 py-2 border border-blue-400">Tanggal</th>
-                  <th class="px-4 py-2 border border-blue-400 w-24">Aksi</th>
+                  <th class="px-4 py-2 border border-blue-400">
+                    Preprocessing Name
+                  </th>
+                  <th class="px-4 py-2 border border-blue-400">Date</th>
+                  <th class="px-4 py-2 border border-blue-400 w-24">Actions</th>
                 </tr>
               </thead>
               <tbody id="historyTableBody"></tbody>
             </table>
           </div>
-          <!-- Pagination -->
-          <div id="historyPagination" class="flex justify-center mt-4 space-x-2"></div>
+          <!-- Pagination (English style: Previous, Page info, input+Go, Next) -->
+          <div
+            id="historyPagination"
+            class="flex justify-center mt-4 space-x-2"
+          ></div>
           <p class="text-xs text-gray-500 mt-2">
-            <i class="fas fa-info-circle"></i> Klik dua kali pada nama untuk mengedit.
+            <i class="fas fa-info-circle"></i> Double-click on the name to edit.
           </p>
         </div>
       </main>
     </div>
 
     <script>
-      (function() {
+      (function () {
         const API_BASE = "http://localhost:5000/api";
         let authToken = localStorage.getItem("access_token");
         let currentPreprocId = null;
@@ -238,7 +259,8 @@
         const progressPercent = document.getElementById("progressPercent");
         const downloadBtn = document.getElementById("downloadBtn");
         const historyTbody = document.getElementById("historyTableBody");
-        const historySearchInput = document.getElementById("historySearchInput");
+        const historySearchInput =
+          document.getElementById("historySearchInput");
         const startDateFilter = document.getElementById("startDateFilter");
         const endDateFilter = document.getElementById("endDateFilter");
         const historyPagination = document.getElementById("historyPagination");
@@ -269,23 +291,26 @@
           try {
             const response = await apiFetch("/datasets/");
             if (!response) return;
-            if (!response.ok) throw new Error("Gagal memuat dataset");
+            if (!response.ok) throw new Error("Failed to load datasets");
             const datasets = await response.json();
-            datasetSelect.innerHTML = '<option value="">-- Pilih dataset --</option>';
+            datasetSelect.innerHTML =
+              '<option value="">-- Select dataset --</option>';
             if (datasets.length === 0) {
-              datasetSelect.innerHTML += "<option disabled>Belum ada dataset. Upload dulu di halaman Dataset.</option>";
+              datasetSelect.innerHTML +=
+                "<option disabled>No datasets yet. Please upload first in Dataset page.</option>";
             } else {
               datasets.forEach((ds) => {
                 const option = document.createElement("option");
                 option.value = ds.id;
-                option.textContent = `${ds.filename} (${ds.rows} baris) - Upload: ${new Date(ds.uploaded_at).toLocaleDateString()}`;
+                option.textContent = `${ds.filename} (${ds.rows} rows) - Upload: ${new Date(ds.uploaded_at).toLocaleDateString()}`;
                 datasetSelect.appendChild(option);
               });
             }
           } catch (error) {
             console.error(error);
-            datasetSelect.innerHTML = '<option value="">Gagal memuat dataset</option>';
-            alert("Gagal memuat daftar dataset.");
+            datasetSelect.innerHTML =
+              '<option value="">Failed to load datasets</option>';
+            alert("Failed to load dataset list.");
           }
         }
 
@@ -293,34 +318,52 @@
           try {
             const response = await apiFetch("/preprocess/history");
             if (!response) return;
-            if (!response.ok) throw new Error("Gagal memuat history");
+            if (!response.ok) throw new Error("Failed to load history");
             allHistory = await response.json();
-            allHistory.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            allHistory.sort(
+              (a, b) => new Date(b.created_at) - new Date(a.created_at),
+            );
             filterHistory();
           } catch (error) {
             console.error(error);
             allHistory = [];
             filterHistory();
-            historyTbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-500">Gagal memuat history.</td></tr>`;
+            historyTbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-500">Failed to load history.  </td></tr>`;
           }
         }
 
         function filterHistory() {
           const query = historySearchInput.value.trim().toLowerCase();
-          const startDate = startDateFilter.value ? new Date(startDateFilter.value) : null;
-          const endDate = endDateFilter.value ? new Date(endDateFilter.value) : null;
+          const startDate = startDateFilter.value
+            ? new Date(startDateFilter.value)
+            : null;
+          const endDate = endDateFilter.value
+            ? new Date(endDateFilter.value)
+            : null;
           if (endDate) {
             endDate.setHours(23, 59, 59, 999);
           }
 
-          filteredHistory = allHistory.filter(item => {
-            const name = (item.name || `Preprocessing #${item.id}`).toLowerCase();
-            const dateStr = item.created_at ? new Date(item.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }).toLowerCase() : '';
-            const textMatch = !query || name.includes(query) || dateStr.includes(query);
+          filteredHistory = allHistory.filter((item) => {
+            const name = (
+              item.name || `Preprocessing #${item.id}`
+            ).toLowerCase();
+            const dateStr = item.created_at
+              ? new Date(item.created_at)
+                  .toLocaleString("en-US", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })
+                  .toLowerCase()
+              : "";
+            const textMatch =
+              !query || name.includes(query) || dateStr.includes(query);
 
             let dateMatch = true;
             if (startDate || endDate) {
-              const itemDate = item.created_at ? new Date(item.created_at) : null;
+              const itemDate = item.created_at
+                ? new Date(item.created_at)
+                : null;
               if (!itemDate) dateMatch = false;
               else {
                 if (startDate && itemDate < startDate) dateMatch = false;
@@ -341,7 +384,7 @@
           const pageData = filteredHistory.slice(start, end);
 
           if (pageData.length === 0) {
-            historyTbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500">Tidak ada data.</td></tr>`;
+            historyTbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500">No data available.</td></tr>`;
             return;
           }
 
@@ -356,53 +399,62 @@
             row.appendChild(cellNo);
 
             const cellName = document.createElement("td");
-            cellName.className = "border border-gray-200 px-4 py-2 editable-name";
+            cellName.className =
+              "border border-gray-200 px-4 py-2 editable-name";
             cellName.textContent = item.name || `Preprocessing #${item.id}`;
             cellName.dataset.id = item.id;
             cellName.dataset.originalName = cellName.textContent;
-            cellName.addEventListener("dblclick", () => enableInlineEdit(cellName, item.id));
+            cellName.addEventListener("dblclick", () =>
+              enableInlineEdit(cellName, item.id),
+            );
             row.appendChild(cellName);
 
             const cellDate = document.createElement("td");
             cellDate.className = "border border-gray-200 px-4 py-2";
             const date = item.created_at ? new Date(item.created_at) : null;
             cellDate.textContent = date
-              ? date.toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })
+              ? date.toLocaleString("en-US", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })
               : "-";
             row.appendChild(cellDate);
 
             const cellAction = document.createElement("td");
-            cellAction.className = "border border-gray-200 px-4 py-2 text-center";
+            cellAction.className =
+              "border border-gray-200 px-4 py-2 text-center";
             cellAction.innerHTML = `
-              <button class="text-blue-600 hover:text-blue-800 mr-2 download-history" data-id="${item.id}" title="Unduh CSV"><i class="fas fa-download"></i></button>
-              <button class="text-red-600 hover:text-red-800 delete-history" data-id="${item.id}" title="Hapus"><i class="fas fa-trash"></i></button>
+              <button class="text-blue-600 hover:text-blue-800 mr-2 download-history" data-id="${item.id}" title="Download CSV"><i class="fas fa-download"></i></button>
+              <button class="text-red-600 hover:text-red-800 delete-history" data-id="${item.id}" title="Delete"><i class="fas fa-trash"></i></button>
             `;
             row.appendChild(cellAction);
             historyTbody.appendChild(row);
           });
 
-          document.querySelectorAll(".download-history").forEach(btn => {
+          document.querySelectorAll(".download-history").forEach((btn) => {
             btn.addEventListener("click", (e) => {
               downloadHistoryCSV(btn.dataset.id);
             });
           });
 
-          document.querySelectorAll(".delete-history").forEach(btn => {
+          document.querySelectorAll(".delete-history").forEach((btn) => {
             btn.addEventListener("click", async (e) => {
               const id = btn.dataset.id;
-              if (!confirm("Hapus hasil preprocessing ini?")) return;
+              if (!confirm("Delete this preprocessing result?")) return;
               try {
-                const response = await apiFetch(`/preprocess/history/${id}`, { method: "DELETE" });
+                const response = await apiFetch(`/preprocess/history/${id}`, {
+                  method: "DELETE",
+                });
                 if (!response) return;
                 if (!response.ok) {
                   const err = await response.json();
-                  alert(err.error || "Gagal menghapus");
+                  alert(err.error || "Failed to delete");
                   return;
                 }
                 await loadHistory();
               } catch (error) {
                 console.error(error);
-                alert("Error saat menghapus.");
+                alert("Error deleting.");
               }
             });
           });
@@ -410,12 +462,16 @@
 
         function renderHistoryPagination() {
           const totalPages = Math.ceil(filteredHistory.length / rowsPerPage);
-          historyPagination.innerHTML = '';
+          historyPagination.innerHTML = "";
           if (totalPages <= 1) return;
 
-          const prevBtn = document.createElement('button');
-          prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-          prevBtn.className = `px-3 py-1 rounded border ${currentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
+          const container = document.createElement("div");
+          container.className = "flex items-center space-x-2";
+
+          // Previous button
+          const prevBtn = document.createElement("button");
+          prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
+          prevBtn.className = `px-3 py-1 rounded border ${currentPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
           prevBtn.disabled = currentPage === 1;
           prevBtn.onclick = () => {
             if (currentPage > 1) {
@@ -424,23 +480,43 @@
               renderHistoryPagination();
             }
           };
-          historyPagination.appendChild(prevBtn);
+          container.appendChild(prevBtn);
 
-          for (let i = 1; i <= totalPages; i++) {
-            const pageBtn = document.createElement('button');
-            pageBtn.innerText = i;
-            pageBtn.className = `px-3 py-1 rounded border ${currentPage === i ? 'bg-blue-500 text-white' : 'bg-white hover:bg-blue-50'}`;
-            pageBtn.onclick = () => {
-              currentPage = i;
-              renderHistoryTable();
-              renderHistoryPagination();
-            };
-            historyPagination.appendChild(pageBtn);
-          }
+          // Page info
+          const pageInfo = document.createElement("span");
+          pageInfo.className = "text-gray-700";
+          pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
+          container.appendChild(pageInfo);
 
-          const nextBtn = document.createElement('button');
-          nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-          nextBtn.className = `px-3 py-1 rounded border ${currentPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
+          // Page number input
+          const pageInput = document.createElement("input");
+          pageInput.type = "number";
+          pageInput.min = 1;
+          pageInput.max = totalPages;
+          pageInput.value = currentPage;
+          pageInput.className = "w-16 border rounded px-2 py-1 text-center";
+          container.appendChild(pageInput);
+
+          // Go button
+          const goBtn = document.createElement("button");
+          goBtn.innerText = "Go";
+          goBtn.className =
+            "px-3 py-1 rounded border bg-blue-500 text-white hover:bg-blue-600";
+          goBtn.onclick = () => {
+            let newPage = parseInt(pageInput.value);
+            if (isNaN(newPage)) newPage = 1;
+            if (newPage < 1) newPage = 1;
+            if (newPage > totalPages) newPage = totalPages;
+            currentPage = newPage;
+            renderHistoryTable();
+            renderHistoryPagination();
+          };
+          container.appendChild(goBtn);
+
+          // Next button
+          const nextBtn = document.createElement("button");
+          nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
+          nextBtn.className = `px-3 py-1 rounded border ${currentPage === totalPages ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
           nextBtn.disabled = currentPage === totalPages;
           nextBtn.onclick = () => {
             if (currentPage < totalPages) {
@@ -449,7 +525,9 @@
               renderHistoryPagination();
             }
           };
-          historyPagination.appendChild(nextBtn);
+          container.appendChild(nextBtn);
+
+          historyPagination.appendChild(container);
         }
 
         function enableInlineEdit(cell, id) {
@@ -480,17 +558,17 @@
               }
               if (!response.ok) {
                 const err = await response.json();
-                alert(err.error || "Gagal mengubah nama");
+                alert(err.error || "Failed to rename");
                 cell.textContent = originalName;
                 return;
               }
               cell.textContent = newName;
               cell.dataset.originalName = newName;
-              const item = allHistory.find(h => h.id == id);
+              const item = allHistory.find((h) => h.id == id);
               if (item) item.name = newName;
             } catch (error) {
               console.error(error);
-              alert("Error saat menyimpan nama");
+              alert("Error saving name");
               cell.textContent = originalName;
             }
           };
@@ -511,13 +589,14 @@
         async function startCleaning() {
           const datasetId = datasetSelect.value;
           if (!datasetId) {
-            alert("Pilih dataset terlebih dahulu!");
+            alert("Please select a dataset first!");
             return;
           }
 
           startBtn.disabled = true;
-          startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memulai...';
-          statusText.innerText = "Memulai preprocessing...";
+          startBtn.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> Starting...';
+          statusText.innerText = "Starting preprocessing...";
           progressContainer.classList.remove("hidden");
           progressBar.style.width = "0%";
           progressPercent.innerText = "0%";
@@ -533,10 +612,10 @@
             if (!response) return;
             const result = await response.json();
             if (!response.ok) {
-              statusText.innerText = `Gagal: ${result.error || result.message}`;
+              statusText.innerText = `Failed: ${result.error || result.message}`;
               alert(result.error || result.message);
               startBtn.disabled = false;
-              startBtn.innerHTML = '<i class="fas fa-play"></i> Mulai Pembersihan';
+              startBtn.innerHTML = '<i class="fas fa-play"></i> Start Cleaning';
               return;
             }
 
@@ -544,28 +623,30 @@
               currentPreprocId = result.preprocessed_id;
               pollPreprocessingStatus(currentPreprocId);
             } else {
-              statusText.innerText = `Selesai (${result.row_count || "?"} baris diproses)`;
+              statusText.innerText = `Completed (${result.row_count || "?"} rows processed)`;
               progressBar.style.width = "100%";
               progressPercent.innerText = "100%";
               downloadBtn.disabled = false;
               downloadBtn.classList.remove("opacity-50", "cursor-not-allowed");
               startBtn.disabled = false;
-              startBtn.innerHTML = '<i class="fas fa-play"></i> Mulai Pembersihan';
+              startBtn.innerHTML = '<i class="fas fa-play"></i> Start Cleaning';
               loadHistory();
             }
           } catch (error) {
             console.error(error);
-            statusText.innerText = "Terjadi kesalahan";
-            alert("Error saat memulai preprocessing.");
+            statusText.innerText = "An error occurred";
+            alert("Error starting preprocessing.");
             startBtn.disabled = false;
-            startBtn.innerHTML = '<i class="fas fa-play"></i> Mulai Pembersihan';
+            startBtn.innerHTML = '<i class="fas fa-play"></i> Start Cleaning';
           }
         }
 
         async function pollPreprocessingStatus(preprocId) {
           const pollInterval = setInterval(async () => {
             try {
-              const response = await apiFetch(`/preprocess/status/${preprocId}`);
+              const response = await apiFetch(
+                `/preprocess/status/${preprocId}`,
+              );
               if (!response) {
                 clearInterval(pollInterval);
                 return;
@@ -581,40 +662,45 @@
               }
 
               if (data.status === "completed") {
-                statusText.innerText = `Selesai (${data.row_count || "?"} baris diproses)`;
+                statusText.innerText = `Completed (${data.row_count || "?"} rows processed)`;
               } else if (data.status === "running") {
-                statusText.innerText = "Sedang memproses...";
+                statusText.innerText = "Processing...";
               } else {
-                statusText.innerText = data.status || "Status tidak diketahui";
+                statusText.innerText = data.status || "Status unknown";
               }
 
               if (data.status === "completed") {
                 clearInterval(pollInterval);
-                statusText.innerText = `Selesai (${data.row_count} baris diproses)`;
+                statusText.innerText = `Completed (${data.row_count} rows processed)`;
                 downloadBtn.disabled = false;
-                downloadBtn.classList.remove("opacity-50", "cursor-not-allowed");
+                downloadBtn.classList.remove(
+                  "opacity-50",
+                  "cursor-not-allowed",
+                );
                 startBtn.disabled = false;
-                startBtn.innerHTML = '<i class="fas fa-play"></i> Mulai Pembersihan';
+                startBtn.innerHTML =
+                  '<i class="fas fa-play"></i> Start Cleaning';
                 loadHistory();
               } else if (data.status === "failed") {
                 clearInterval(pollInterval);
-                statusText.innerText = "Preprocessing gagal";
+                statusText.innerText = "Preprocessing failed";
                 startBtn.disabled = false;
-                startBtn.innerHTML = '<i class="fas fa-play"></i> Mulai Pembersihan';
+                startBtn.innerHTML =
+                  '<i class="fas fa-play"></i> Start Cleaning';
               }
             } catch (error) {
               console.error(error);
               clearInterval(pollInterval);
               statusText.innerText = "Error polling status";
               startBtn.disabled = false;
-              startBtn.innerHTML = '<i class="fas fa-play"></i> Mulai Pembersihan';
+              startBtn.innerHTML = '<i class="fas fa-play"></i> Start Cleaning';
             }
           }, 1000);
         }
 
         async function downloadCSV() {
           if (!currentPreprocId) {
-            alert("Tidak ada hasil preprocessing.");
+            alert("No preprocessing result available.");
             return;
           }
           downloadHistoryCSV(currentPreprocId);
@@ -626,14 +712,14 @@
           debounceTimer = setTimeout(() => filterHistory(), 300);
         }
 
-        historySearchInput.addEventListener('input', debouncedFilter);
-        startDateFilter.addEventListener('change', debouncedFilter);
-        endDateFilter.addEventListener('change', debouncedFilter);
+        historySearchInput.addEventListener("input", debouncedFilter);
+        startDateFilter.addEventListener("change", debouncedFilter);
+        endDateFilter.addEventListener("change", debouncedFilter);
 
         startBtn.addEventListener("click", startCleaning);
         downloadBtn.addEventListener("click", downloadCSV);
 
-        // Sidebar dropdown (hanya untuk Data Collection, Processing sudah jadi link)
+        // Sidebar dropdown (only for Data Collection)
         function toggleDropdown(btn, menu, icon) {
           btn.addEventListener("click", () => {
             menu.classList.toggle("hidden");
@@ -641,10 +727,16 @@
           });
         }
         const dataCollectionBtn = document.getElementById("dataCollectionBtn");
-        const dataCollectionMenu = document.getElementById("dataCollectionMenu");
-        const dataCollectionIcon = document.getElementById("dataCollectionIcon");
-        toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
-        // Tidak perlu toggle untuk Processing karena sudah link
+        const dataCollectionMenu =
+          document.getElementById("dataCollectionMenu");
+        const dataCollectionIcon =
+          document.getElementById("dataCollectionIcon");
+        toggleDropdown(
+          dataCollectionBtn,
+          dataCollectionMenu,
+          dataCollectionIcon,
+        );
+        // No toggle needed for Processing (direct link)
 
         if (authToken) {
           loadDatasets();

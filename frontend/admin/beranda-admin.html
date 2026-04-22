@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="id">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Beranda Admin - IdiomSense</title>
+    <title>Admin Dashboard - IdiomSense</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
       rel="stylesheet"
@@ -13,7 +13,7 @@
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- Sidebar -->
+      <!-- Sidebar (English) -->
       <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
         <div class="p-4 border-b">
           <span
@@ -30,7 +30,7 @@
                 class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"
               >
                 <i class="fas fa-tachometer-alt w-5"></i>
-                <span>Beranda</span>
+                <span>Dashboard</span>
               </a>
             </li>
             <li>
@@ -59,7 +59,7 @@
                   <a
                     href="kamus-idiom.html"
                     class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
-                    ><i class="fas fa-book w-5 mr-2"></i>Kamus Idiom</a
+                    ><i class="fas fa-book w-5 mr-2"></i>Idiom Dictionary</a
                   >
                 </li>
               </ul>
@@ -74,7 +74,6 @@
               </a>
             </li>
             <li>
-              <!-- Processing sekarang menjadi link langsung, bukan dropdown -->
               <a
                 href="processing.html"
                 class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
@@ -96,7 +95,7 @@
               <a
                 href="evaluasi.html"
                 class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
-                ><i class="fas fa-chart-line w-5"></i><span>Evaluasi</span></a
+                ><i class="fas fa-chart-line w-5"></i><span>Evaluation</span></a
               >
             </li>
             <li class="pt-4 mt-4 border-t">
@@ -114,55 +113,218 @@
 
       <!-- Main Content -->
       <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
-        <h1 class="text-3xl font-bold text-gray-800 mb-4">Dashboard</h1>
+        <!-- Header with Quick Actions -->
+        <div class="flex justify-between items-center mb-2">
+          <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
+          <div class="space-x-2">
+            <a
+              href="preprocessing.html"
+              class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm transition shadow-sm"
+            >
+              <i class="fas fa-play mr-1"></i> Start Preprocessing
+            </a>
+            <a
+              href="processing.html"
+              class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm transition shadow-sm"
+            >
+              <i class="fas fa-brain mr-1"></i> Train New Model
+            </a>
+          </div>
+        </div>
 
-        <!-- 3 Card Statistik -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <!-- Quick Status Bar (ADDED) -->
+        <div
+          class="flex items-center text-sm text-gray-600 mb-4 bg-white/60 p-3 rounded-xl shadow-sm border border-gray-200"
+        >
+          <i class="fas fa-database text-blue-500 mr-2"></i>
+          <span class="font-medium">Active Dataset:</span>
+          <span class="ml-2">idiom_10k_v2.csv</span>
+          <span class="mx-3 text-gray-300">|</span>
+          <i class="fas fa-hashtag text-gray-500 mr-1"></i>
+          <span>5,421 sentences</span>
+          <span class="mx-3 text-gray-300">|</span>
+          <i class="far fa-clock text-gray-500 mr-1"></i>
+          <span>Last preprocessing: Apr 14, 2026, 09:30 WIB</span>
+          <span class="ml-auto">
+            <span
+              class="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full"
+            >
+              <i class="fas fa-check-circle mr-1"></i>IndoBERT ready
+            </span>
+            <span
+              class="bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded-full ml-2"
+            >
+              <i class="fas fa-sync-alt mr-1"></i>Lexicon needs reload
+            </span>
+          </span>
+        </div>
+
+        <!-- 4 Stat Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div
             class="bg-white p-4 rounded-xl shadow-md border-l-4 border-blue-500"
           >
-            <p class="text-sm text-gray-500 uppercase">Jumlah Data</p>
-            <p class="text-2xl font-bold text-gray-800">123</p>
+            <p class="text-sm text-gray-500 uppercase">Total Data</p>
+            <p class="text-2xl font-bold text-gray-800">5,421</p>
+            <p class="text-xs text-gray-400 mt-1">
+              <i class="far fa-calendar-alt mr-1"></i> Dataset: idiom_10k_v2
+            </p>
           </div>
           <div
             class="bg-white p-4 rounded-xl shadow-md border-l-4 border-green-500"
           >
-            <p class="text-sm text-gray-500 uppercase">Jumlah Idiom</p>
+            <p class="text-sm text-gray-500 uppercase">Idiom Count</p>
             <p class="text-2xl font-bold text-gray-800">200</p>
+            <p class="text-xs text-gray-400 mt-1">Active idiom dictionary</p>
           </div>
           <div
             class="bg-white p-4 rounded-xl shadow-md border-l-4 border-purple-500"
           >
-            <p class="text-sm text-gray-500 uppercase">Jumlah Training</p>
-            <p class="text-2xl font-bold text-gray-800">3</p>
+            <p class="text-sm text-gray-500 uppercase">Model Count</p>
+            <p class="text-2xl font-bold text-gray-800">5</p>
+            <p class="text-xs text-gray-400 mt-1">Saved in database</p>
+          </div>
+          <div
+            class="bg-white p-4 rounded-xl shadow-md border-l-4 border-indigo-500"
+          >
+            <p class="text-sm text-gray-500 uppercase">Best Accuracy</p>
+            <p class="text-2xl font-bold text-gray-800">94.2%</p>
+            <p class="text-xs text-gray-400 mt-1">
+              IndoBERT-KNN • Apr 12, 2026
+            </p>
           </div>
         </div>
 
-        <!-- Dua Grafik Berdampingan -->
+        <!-- Two Charts Side by Side -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <!-- Bar Chart: Distribusi Emosi -->
+          <!-- Bar Chart: Emotion Distribution -->
           <div class="bg-white p-4 rounded-xl shadow-md">
             <h2 class="font-semibold text-gray-700 mb-2">
-              Distribusi Emosi (Idiom)
+              Emotion Distribution (8 Classes)
             </h2>
             <div class="h-64">
               <canvas id="emotionChart"></canvas>
             </div>
           </div>
 
-          <!-- Pie Chart: Beridiom vs Non-Idiom -->
+          <!-- Pie Chart: Idiom vs Non-Idiom -->
           <div class="bg-white p-4 rounded-xl shadow-md">
-            <h2 class="font-semibold text-gray-700 mb-2">Distribusi Kalimat</h2>
+            <h2 class="font-semibold text-gray-700 mb-2">
+              Sentence Distribution (Idiom vs Non-Idiom)
+            </h2>
             <div class="h-64 flex items-center justify-center">
               <canvas id="idiomPieChart"></canvas>
             </div>
           </div>
         </div>
+
+        <!-- Model Readiness Status (ADDED) -->
+        <div class="mt-6 grid grid-cols-2 gap-4">
+          <div
+            class="bg-white p-3 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between"
+          >
+            <div class="flex items-center">
+              <div
+                class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3"
+              >
+                <i class="fas fa-robot text-blue-600"></i>
+              </div>
+              <div>
+                <p class="font-medium text-gray-800">IndoBERT‑KNN</p>
+                <p class="text-xs text-gray-500">Trained models: 3 versions</p>
+              </div>
+            </div>
+            <span
+              class="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full flex items-center"
+            >
+              <span class="w-2 h-2 bg-green-500 rounded-full mr-1"></span> Ready
+            </span>
+          </div>
+          <div
+            class="bg-white p-3 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between"
+          >
+            <div class="flex items-center">
+              <div
+                class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3"
+              >
+                <i class="fas fa-chart-bar text-purple-600"></i>
+              </div>
+              <div>
+                <p class="font-medium text-gray-800">Lexicon‑Naive Bayes</p>
+                <p class="text-xs text-gray-500">Trained models: 2 versions</p>
+              </div>
+            </div>
+            <span
+              class="bg-yellow-100 text-yellow-700 text-xs px-3 py-1 rounded-full flex items-center"
+            >
+              <span class="w-2 h-2 bg-yellow-500 rounded-full mr-1"></span>
+              Needs reload
+            </span>
+          </div>
+        </div>
+
+        <!-- Best Model Summary (with comparison columns) -->
+        <div class="mt-6 bg-white p-5 rounded-xl shadow-md">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-gray-700 text-lg">
+              <i class="fas fa-trophy text-yellow-500 mr-2"></i>
+              Current Best Model
+            </h3>
+            <span
+              class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-medium"
+              >IndoBERT-KNN</span
+            >
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div class="p-2">
+              <p class="text-xs text-gray-500 uppercase tracking-wider">
+                Accuracy
+              </p>
+              <p class="text-2xl font-bold text-green-600">94.2%</p>
+              <p class="text-xs text-gray-400 mt-1">Target >90% ✓</p>
+            </div>
+            <div class="p-2">
+              <p class="text-xs text-gray-500 uppercase tracking-wider">
+                Precision
+              </p>
+              <p class="text-2xl font-bold text-blue-600">93.8%</p>
+            </div>
+            <div class="p-2">
+              <p class="text-xs text-gray-500 uppercase tracking-wider">
+                Recall
+              </p>
+              <p class="text-2xl font-bold text-purple-600">92.5%</p>
+            </div>
+            <div class="p-2">
+              <p class="text-xs text-gray-500 uppercase tracking-wider">
+                F1-Score
+              </p>
+              <p class="text-2xl font-bold text-orange-600">93.1%</p>
+            </div>
+          </div>
+
+          <!-- Other Algorithm Comparison (ADDED) -->
+          <div
+            class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-end text-sm"
+          >
+            <span class="text-gray-500 mr-2">Best Lexicon‑NB:</span>
+            <span class="font-medium text-gray-700">Accuracy 88.5%</span>
+            <span class="mx-2 text-gray-300">|</span>
+            <span class="text-gray-500 mr-2">Precision 87.2%</span>
+            <span class="mx-2 text-gray-300">|</span>
+            <span class="text-gray-500 mr-2">Recall 86.9%</span>
+          </div>
+
+          <p class="text-xs text-gray-400 mt-4 text-right">
+            <i class="far fa-clock mr-1"></i> Last updated: Apr 15, 2026, 14:30
+            WIB
+          </p>
+        </div>
       </main>
     </div>
 
     <script>
-      // Dropdown toggle untuk Data Collection (Processing sudah tidak perlu)
+      // Dropdown toggle (unchanged)
       function toggleDropdown(btn, menu, icon) {
         btn.addEventListener("click", () => {
           menu.classList.toggle("hidden");
@@ -174,24 +336,25 @@
       const dataCollectionIcon = document.getElementById("dataCollectionIcon");
       toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
 
-      // Bar Chart: Distribusi Emosi
+      // Bar Chart (English labels)
       const ctxBar = document.getElementById("emotionChart").getContext("2d");
       new Chart(ctxBar, {
         type: "bar",
         data: {
           labels: [
-            "Senang",
-            "Percaya",
-            "Terkejut",
-            "Netral",
-            "Marah",
-            "Sedih",
-            "Takut",
+            "Happy",
+            "Trust",
+            "Surprise",
+            "Neutral",
+            "Anger",
+            "Sadness",
+            "Fear",
+            "No Idiom",
           ],
           datasets: [
             {
-              label: "Jumlah Kalimat",
-              data: [245, 180, 120, 600, 112, 150, 95],
+              label: "Sentence Count",
+              data: [245, 180, 120, 600, 112, 150, 95, 2211],
               backgroundColor: [
                 "#10b981",
                 "#3b82f6",
@@ -200,7 +363,9 @@
                 "#ef4444",
                 "#8b5cf6",
                 "#ec489a",
+                "#d1d5db",
               ],
+              borderRadius: 6,
             },
           ],
         },
@@ -218,21 +383,23 @@
               beginAtZero: true,
               title: {
                 display: true,
-                text: "Jumlah Kalimat",
+                text: "Sentence Count",
                 font: { size: 11 },
               },
             },
-            x: { ticks: { font: { size: 11 } } },
+            x: {
+              ticks: { font: { size: 10 }, maxRotation: 25 },
+            },
           },
         },
       });
 
-      // Pie Chart: Beridiom vs Non-Idiom
+      // Pie Chart (English labels)
       const ctxPie = document.getElementById("idiomPieChart").getContext("2d");
       new Chart(ctxPie, {
         type: "pie",
         data: {
-          labels: ["Beridiom", "Non-idiom"],
+          labels: ["Idiom", "Non-idiom"],
           datasets: [
             {
               data: [3210, 2211],
@@ -249,7 +416,10 @@
             tooltip: {
               callbacks: {
                 label: (ctx) =>
-                  `${ctx.label}: ${ctx.raw} kalimat (${((ctx.raw / (3210 + 2211)) * 100).toFixed(1)}%)`,
+                  `${ctx.label}: ${ctx.raw} sentences (${(
+                    (ctx.raw / (3210 + 2211)) *
+                    100
+                  ).toFixed(1)}%)`,
               },
             },
           },

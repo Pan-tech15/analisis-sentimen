@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="id">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -30,7 +30,7 @@
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- Sidebar (disesuaikan: Processing menjadi link langsung) -->
+      <!-- Sidebar (English) -->
       <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
         <div class="p-4 border-b">
           <span
@@ -46,7 +46,7 @@
                 href="beranda-admin.html"
                 class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"
                 ><i class="fas fa-tachometer-alt w-5"></i
-                ><span>Beranda</span></a
+                ><span>Dashboard</span></a
               >
             </li>
             <li>
@@ -75,7 +75,7 @@
                   <a
                     href="kamus-idiom.html"
                     class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
-                    ><i class="fas fa-book w-5 mr-2"></i>Kamus Idiom</a
+                    ><i class="fas fa-book w-5 mr-2"></i>Idiom Dictionary</a
                   >
                 </li>
               </ul>
@@ -88,7 +88,6 @@
               >
             </li>
             <li>
-              <!-- Processing sekarang menjadi link langsung -->
               <a
                 href="processing.html"
                 class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
@@ -108,7 +107,7 @@
               <a
                 href="evaluasi.html"
                 class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
-                ><i class="fas fa-chart-line w-5"></i><span>Evaluasi</span></a
+                ><i class="fas fa-chart-line w-5"></i><span>Evaluation</span></a
               >
             </li>
             <li class="pt-4 mt-4 border-t">
@@ -122,26 +121,24 @@
         </nav>
       </aside>
 
-      <!-- Main Content (tidak berubah) -->
+      <!-- Main Content -->
       <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
         <h1 class="text-3xl font-bold text-gray-800 mb-6">Dataset</h1>
 
-        <!-- Upload Dataset Mentah -->
+        <!-- Upload Raw Dataset -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-6">
-          <h2 class="font-semibold text-gray-700 mb-4">
-            Upload Dataset Mentah
-          </h2>
+          <h2 class="font-semibold text-gray-700 mb-4">Upload Raw Dataset</h2>
           <div
             class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 transition"
             id="uploadArea"
           >
             <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
             <p class="text-gray-600">
-              Drag atau
-              <span class="text-blue-600 font-medium">klik untuk memilih</span>
+              Drag or
+              <span class="text-blue-600 font-medium">click to select</span>
             </p>
             <p class="text-xs text-gray-400 mt-1">
-              Format CSV/Excel (id, kalimat, has_idiom, idiom_text, sentiment,
+              CSV/Excel format (id, kalimat, has_idiom, idiom_text, sentiment,
               emotion, idiom_meaning)
             </p>
             <input
@@ -159,65 +156,57 @@
           </button>
         </div>
 
-        <!-- Daftar Dataset dengan Pagination -->
+        <!-- Dataset List with Pagination -->
         <div class="bg-white p-6 rounded-xl shadow-md">
           <div class="flex justify-between items-center mb-4">
-            <h2 class="font-semibold text-gray-700">Daftar Dataset</h2>
+            <h2 class="font-semibold text-gray-700">Dataset List</h2>
             <button
               id="exportAllBtn"
               class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
             >
-              Ekspor Semua
+              Export All
             </button>
           </div>
           <div class="overflow-x-auto">
             <table class="min-w-full border border-gray-200">
               <thead class="bg-blue-500 text-white">
                 <tr>
-                  <th class="px-4 py-2 border border-blue-400">Nama File</th>
-                  <th class="px-4 py-2 border border-blue-400">Baris</th>
-                  <th class="px-4 py-2 border border-blue-400">
-                    Tanggal Upload
-                  </th>
-                  <th class="px-4 py-2 border border-blue-400">Aksi</th>
+                  <th class="px-4 py-2 border border-blue-400">File Name</th>
+                  <th class="px-4 py-2 border border-blue-400">Rows</th>
+                  <th class="px-4 py-2 border border-blue-400">Upload Date</th>
+                  <th class="px-4 py-2 border border-blue-400">Actions</th>
                 </tr>
               </thead>
               <tbody id="datasetTableBody" class="bg-white"></tbody>
             </table>
           </div>
-          <!-- Pagination untuk daftar dataset -->
-          <div
-            id="datasetPagination"
-            class="flex justify-center mt-4 space-x-2"
-          ></div>
+          <!-- Pagination (consistent with Idiom Dictionary) -->
+          <div id="datasetPagination" class="flex justify-center mt-4"></div>
         </div>
 
-        <!-- Container untuk Chart (Bar Chart Emosi + Bar Chart Idiom) -->
+        <!-- Chart Container (Emotion Bar Chart + Idiom Bar Chart) -->
         <div
           id="chartContainer"
           class="bg-white p-4 rounded-xl shadow-md mt-6 hidden"
         >
           <div class="flex justify-between items-center mb-2">
             <h2 class="font-semibold text-gray-700 text-lg">
-              Statistik Dataset
+              Dataset Statistics
             </h2>
             <button
               id="closeChartBtn"
               class="text-red-500 hover:text-red-700 text-sm"
             >
-              <i class="fas fa-times"></i> Tutup
+              <i class="fas fa-times"></i> Close
             </button>
           </div>
-          <!-- Nama file yang sedang di-view -->
           <div
             id="viewedFileName"
             class="text-sm text-gray-600 mb-3 italic"
           ></div>
-
-          <!-- Bar Chart 7 Emosi -->
           <div class="mb-6">
             <h3 class="font-medium text-gray-700 text-center mb-2">
-              Distribusi 7 Emosi
+              Emotion Distribution (7 Classes)
             </h3>
             <div class="chart-container">
               <canvas
@@ -228,11 +217,9 @@
               ></canvas>
             </div>
           </div>
-
-          <!-- Bar Chart Proporsi Idiom vs Non-Idiom (pisah container) -->
           <div>
             <h3 class="font-medium text-gray-700 text-center mb-2">
-              Jumlah Kalimat Beridiom vs Non‑Idiom
+              Sentence Count (Idiom vs Non‑Idiom)
             </h3>
             <div class="bar-chart-container">
               <canvas
@@ -248,13 +235,12 @@
     </div>
 
     <script>
-      // === Konfigurasi ===
+      // === Configuration ===
       const API_BASE = "http://localhost:5000/api";
       let authToken = localStorage.getItem("access_token");
       const rowsPerPage = 10;
       let currentEmotionChart = null;
       let currentIdiomChart = null;
-      let currentEditingId = null; // untuk rename
 
       async function apiFetch(endpoint, options = {}) {
         const headers = {
@@ -273,12 +259,12 @@
         return response;
       }
 
-      // === Daftar Dataset ===
+      // === Dataset List ===
       async function loadDatasets(page = 1) {
         try {
           const response = await apiFetch("/datasets/");
           if (!response) return;
-          if (!response.ok) throw new Error("Gagal mengambil data");
+          if (!response.ok) throw new Error("Failed to fetch datasets");
           const datasets = await response.json();
           window.allDatasets = datasets;
           window.currentDatasetPage = page;
@@ -286,11 +272,10 @@
           renderDatasetPagination();
         } catch (error) {
           console.error(error);
-          alert("Gagal memuat daftar dataset");
+          alert("Failed to load dataset list");
         }
       }
 
-      // Fungsi rename (update nama file)
       async function renameDataset(id, newName) {
         try {
           const response = await apiFetch(`/datasets/${id}`, {
@@ -300,7 +285,6 @@
           if (!response) return false;
           if (response.ok) {
             await loadDatasets(window.currentDatasetPage);
-            // Jika chart container sedang membuka dataset yang di-rename, update judulnya
             const viewedFileDiv = document.getElementById("viewedFileName");
             if (viewedFileDiv.innerText.includes("Dataset:")) {
               const dataset = window.allDatasets.find((d) => d.id === id);
@@ -311,22 +295,21 @@
             return true;
           } else {
             const err = await response.json();
-            alert(err.message || "Gagal mengubah nama");
+            alert(err.message || "Failed to rename");
             return false;
           }
         } catch (error) {
           console.error(error);
-          alert("Error saat mengubah nama");
+          alert("Error renaming dataset");
           return false;
         }
       }
 
-      // Membuat elemen nama yang dapat diedit via double-click
       function createEditableName(ds) {
         const span = document.createElement("span");
         span.textContent = ds.filename;
         span.className = "editable-name font-medium";
-        span.title = "Klik dua kali untuk mengubah nama";
+        span.title = "Double-click to rename";
         span.addEventListener("dblclick", (e) => {
           e.stopPropagation();
           const oldName = ds.filename;
@@ -342,11 +325,10 @@
             if (newName && newName !== oldName) {
               await renameDataset(ds.id, newName);
             } else if (!newName) {
-              alert("Nama tidak boleh kosong");
+              alert("Name cannot be empty");
               input.focus();
               return;
             }
-            // Ganti kembali dengan span (akan di-refresh oleh loadDatasets)
           };
           input.addEventListener("blur", saveRename);
           input.addEventListener("keypress", (e) => {
@@ -366,7 +348,6 @@
         tbody.innerHTML = "";
         pageData.forEach((ds) => {
           const row = tbody.insertRow();
-          // Kolom Nama File: menggunakan elemen span yang dapat diedit
           const nameCell = row.insertCell(0);
           nameCell.appendChild(createEditableName(ds));
           row.insertCell(1).innerHTML = ds.rows;
@@ -385,7 +366,6 @@
             cell.classList.add("border", "border-gray-200", "px-4", "py-2");
           }
         });
-        // View (mata)
         document.querySelectorAll('[data-action="view"]').forEach((icon) => {
           icon.addEventListener("click", async (e) => {
             const id = parseInt(icon.dataset.id);
@@ -393,28 +373,29 @@
             await showCharts(id, filename);
           });
         });
-        // Extract
         document.querySelectorAll('[data-action="extract"]').forEach((icon) => {
           icon.addEventListener("click", async (e) => {
             const id = parseInt(icon.dataset.id);
             if (
-              confirm("Ekstrak semua idiom dari dataset ini ke Kamus Idiom?")
+              confirm(
+                "Extract all idioms from this dataset to Idiom Dictionary?",
+              )
             ) {
               await extractIdiomsFromDataset(id);
             }
           });
         });
-        // Delete
         document.querySelectorAll('[data-action="delete"]').forEach((icon) => {
           icon.addEventListener("click", async (e) => {
             const id = parseInt(icon.dataset.id);
-            if (confirm("Yakin hapus dataset ini?")) {
+            if (confirm("Delete this dataset?")) {
               await deleteDataset(id);
             }
           });
         });
       }
 
+      // === Pagination (English style with Previous, Next, Go, Page info) ===
       function renderDatasetPagination() {
         const totalItems = window.allDatasets.length;
         const totalPages = Math.ceil(totalItems / rowsPerPage);
@@ -425,9 +406,11 @@
         const container = document.createElement("div");
         container.className = "flex items-center space-x-2";
 
+        // Previous button
         const prevBtn = document.createElement("button");
         prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
         prevBtn.className = `px-3 py-1 rounded border ${window.currentDatasetPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
+        prevBtn.disabled = window.currentDatasetPage === 1;
         prevBtn.onclick = () => {
           if (window.currentDatasetPage > 1) {
             window.currentDatasetPage--;
@@ -437,11 +420,13 @@
         };
         container.appendChild(prevBtn);
 
+        // Page info
         const pageInfo = document.createElement("span");
         pageInfo.className = "text-gray-700";
-        pageInfo.innerText = `Halaman ${window.currentDatasetPage} dari ${totalPages}`;
+        pageInfo.innerText = `Page ${window.currentDatasetPage} of ${totalPages}`;
         container.appendChild(pageInfo);
 
+        // Page number input
         const pageInput = document.createElement("input");
         pageInput.type = "number";
         pageInput.min = 1;
@@ -450,6 +435,7 @@
         pageInput.className = "w-16 border rounded px-2 py-1 text-center";
         container.appendChild(pageInput);
 
+        // Go button
         const goBtn = document.createElement("button");
         goBtn.innerText = "Go";
         goBtn.className =
@@ -465,9 +451,11 @@
         };
         container.appendChild(goBtn);
 
+        // Next button
         const nextBtn = document.createElement("button");
         nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
         nextBtn.className = `px-3 py-1 rounded border ${window.currentDatasetPage === totalPages ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
+        nextBtn.disabled = window.currentDatasetPage === totalPages;
         nextBtn.onclick = () => {
           if (window.currentDatasetPage < totalPages) {
             window.currentDatasetPage++;
@@ -480,42 +468,36 @@
         paginationDiv.appendChild(container);
       }
 
-      // === Tampilkan Bar Chart Emosi dan Bar Chart Idiom ===
+      // === Show Charts (Emotion Bar Chart + Idiom Bar Chart) ===
       async function showCharts(datasetId, filename) {
         try {
-          // Data dummy (ganti dengan panggilan API nyata)
           const emotionLabels = [
-            "Senang",
-            "Percaya",
-            "Terkejut",
-            "Netral",
-            "Takut",
-            "Sedih",
-            "Marah",
+            "Happy",
+            "Trust",
+            "Surprise",
+            "Neutral",
+            "Fear",
+            "Sad",
+            "Angry",
           ];
           const seed = datasetId;
           const emotionCounts = emotionLabels.map(
             (_, idx) =>
               Math.floor(Math.random() * 100) + ((seed * 7 + idx) % 80),
           );
-
-          // Data untuk idiom vs non-idiom
           const totalRows =
             window.allDatasets.find((d) => d.id === datasetId)?.rows || 100;
           const idiomCount = Math.floor(totalRows * (0.3 + (seed % 50) / 100));
           const nonIdiomCount = totalRows - idiomCount;
 
-          // Tampilkan container
           const container = document.getElementById("chartContainer");
           container.classList.remove("hidden");
           document.getElementById("viewedFileName").innerHTML =
             `<i class="fas fa-file-alt mr-1"></i> Dataset: <strong>${filename}</strong>`;
 
-          // Hancurkan chart lama
           if (currentEmotionChart) currentEmotionChart.destroy();
           if (currentIdiomChart) currentIdiomChart.destroy();
 
-          // Bar Chart 7 Emosi
           const ctxEmotion = document
             .getElementById("emotionBarChart")
             .getContext("2d");
@@ -525,7 +507,7 @@
               labels: emotionLabels,
               datasets: [
                 {
-                  label: "Jumlah Kalimat",
+                  label: "Sentence Count",
                   data: emotionCounts,
                   backgroundColor: [
                     "#10b981",
@@ -560,7 +542,7 @@
                   beginAtZero: true,
                   title: {
                     display: true,
-                    text: "Jumlah Kalimat",
+                    text: "Sentence Count",
                     font: { size: 13, weight: "bold" },
                   },
                   ticks: { font: { size: 12 } },
@@ -572,17 +554,16 @@
             },
           });
 
-          // Bar Chart Idiom vs Non-Idiom (2 bar)
           const ctxIdiom = document
             .getElementById("idiomBarChart")
             .getContext("2d");
           currentIdiomChart = new Chart(ctxIdiom, {
             type: "bar",
             data: {
-              labels: ["Beridiom", "Non‑idiom"],
+              labels: ["Idiom", "Non‑idiom"],
               datasets: [
                 {
-                  label: "Jumlah Kalimat",
+                  label: "Sentence Count",
                   data: [idiomCount, nonIdiomCount],
                   backgroundColor: ["#3b82f6", "#9ca3af"],
                   borderRadius: 6,
@@ -606,7 +587,7 @@
                   beginAtZero: true,
                   title: {
                     display: true,
-                    text: "Jumlah Kalimat",
+                    text: "Sentence Count",
                     font: { size: 13, weight: "bold" },
                   },
                   ticks: { font: { size: 12 } },
@@ -617,11 +598,11 @@
           });
         } catch (error) {
           console.error(error);
-          alert("Gagal memuat data statistik");
+          alert("Failed to load statistics");
         }
       }
 
-      // === Fungsi lain (delete, extract, upload) ===
+      // === Other functions (delete, extract, upload) ===
       async function deleteDataset(id) {
         try {
           const response = await apiFetch(`/datasets/${id}`, {
@@ -629,16 +610,16 @@
           });
           if (!response) return;
           if (response.ok) {
-            alert("Dataset dihapus");
+            alert("Dataset deleted");
             loadDatasets(window.currentDatasetPage);
             document.getElementById("chartContainer").classList.add("hidden");
           } else {
             const err = await response.json();
-            alert(err.message || "Gagal hapus");
+            alert(err.message || "Failed to delete");
           }
         } catch (error) {
           console.error(error);
-          alert("Error saat menghapus");
+          alert("Error deleting dataset");
         }
       }
 
@@ -653,11 +634,11 @@
           if (response.ok) {
             alert(result.message);
           } else {
-            alert(result.message || "Gagal mengekstrak idiom");
+            alert(result.message || "Failed to extract idioms");
           }
         } catch (error) {
           console.error(error);
-          alert("Error saat mengekstrak idiom");
+          alert("Error extracting idioms");
         }
       }
 
@@ -683,7 +664,7 @@
         .getElementById("uploadBtn")
         .addEventListener("click", async () => {
           if (fileInput.files.length === 0) {
-            alert("Pilih file CSV terlebih dahulu.");
+            alert("Please select a CSV file first.");
             return;
           }
           const file = fileInput.files[0];
@@ -702,20 +683,20 @@
             }
             const result = await response.json();
             if (response.ok) {
-              alert("Upload berhasil");
+              alert("Upload successful");
               fileInput.value = "";
               await loadDatasets(1);
             } else {
-              alert(result.message || "Upload gagal");
+              alert(result.message || "Upload failed");
             }
           } catch (error) {
             console.error(error);
-            alert("Error saat upload");
+            alert("Error during upload");
           }
         });
 
       document.getElementById("exportAllBtn").addEventListener("click", () => {
-        alert("Fitur ekspor akan segera tersedia.");
+        alert("Export feature will be available soon.");
       });
 
       document.getElementById("closeChartBtn").addEventListener("click", () => {
@@ -730,7 +711,6 @@
         }
       });
 
-      // Sidebar dropdown (hanya untuk Data Collection, Processing sudah jadi link)
       function toggleDropdown(btn, menu, icon) {
         btn.addEventListener("click", () => {
           menu.classList.toggle("hidden");
@@ -742,7 +722,6 @@
       const dataCollectionIcon = document.getElementById("dataCollectionIcon");
       toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
 
-      // Inisialisasi
       loadDatasets(1);
     </script>
   </body>
