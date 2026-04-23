@@ -35,6 +35,18 @@
         background: #c1c1c1;
         border-radius: 10px;
       }
+      .animate-pulse-slow {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
     </style>
   </head>
   <body class="bg-gray-100 font-sans antialiased">
@@ -194,53 +206,65 @@
           <div id="splitPagination" class="flex justify-center mt-4"></div>
         </div>
 
-        <!-- NEW SECTION: Model Parameter Tuning (IndoBERT / LexiconNB) -->
+        <!-- Model Parameter Tuning Section (IndoBERT / LexiconNB) -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-8">
           <h2 class="font-semibold text-gray-700 mb-4">
             Model Parameter Tuning
           </h2>
 
-          <!-- Algorithm selection -->
+          <!-- Select Dataset -->
           <div class="mb-6">
             <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Select Algorithm</label
+              >Select Dataset (Preprocessed Result)</label
             >
             <select
-              id="tuningAlgo"
-              class="w-full md:w-64 border rounded-lg p-2 focus:ring-2 focus:ring-blue-400"
+              id="datasetSelect"
+              class="w-full md:w-96 border rounded-lg p-2 focus:ring-2 focus:ring-blue-400"
             >
-              <option value="indobert">IndoBERT‑KNN+UMAP</option>
-              <option value="lexicon">Naive Bayes‑Lexicon</option>
+              <option value="">-- Choose dataset --</option>
+              <option value="dataset_preprocessed_1.csv">
+                Preprocessed Dataset A (March 2025)
+              </option>
+              <option value="dataset_preprocessed_2.csv">
+                Preprocessed Dataset B (April 2025)
+              </option>
+              <option value="dataset_preprocessed_3.csv">
+                Preprocessed Dataset C (Custom)
+              </option>
             </select>
+            <p class="text-xs text-gray-500 mt-1">
+              Select a preprocessed dataset from available files.
+            </p>
+          </div>
+
+          <!-- Algorithm selection & Old Model (side by side) -->
+          <div class="flex flex-wrap gap-4 mb-6">
+            <div class="flex-1 min-w-[200px]">
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Select Algorithm</label
+              >
+              <select
+                id="tuningAlgo"
+                class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-400"
+              >
+                <option value="indobert">IndoBERT‑KNN+UMAP</option>
+                <option value="lexicon">Naive Bayes‑Lexicon</option>
+              </select>
+            </div>
+            <div class="flex-1 min-w-[200px]">
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Select Old Model</label
+              >
+              <select id="oldModelSelect" class="w-full border rounded-lg p-2">
+                <option value="">-- No previous model --</option>
+              </select>
+            </div>
           </div>
 
           <!-- Dynamic content based on algorithm -->
           <div id="tuningContent">
             <!-- IndoBERT content (default) -->
             <div id="indobertTuning">
-              <!-- Select Old Model -->
-              <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-1"
-                  >Select Old Model</label
-                >
-                <select
-                  id="oldModelSelect"
-                  class="w-full border rounded-lg p-2"
-                >
-                  <option value="">-- No previous model --</option>
-                </select>
-              </div>
-
-              <!-- Find the Best Ratio button -->
-              <div class="mb-6">
-                <button
-                  id="findBestRatioBtn"
-                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-                >
-                  Find the Best Ratio
-                </button>
-              </div>
-
               <!-- Final Training Using the Best Ratio -->
               <div class="border-t pt-4 mt-2">
                 <h3 class="font-medium text-gray-800 mb-4">
@@ -356,30 +380,20 @@
                     />
                   </div>
                 </div>
+                <!-- Start Training button at bottom right -->
+                <div class="flex justify-end mt-6">
+                  <button
+                    id="startTrainingBtn"
+                    class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium shadow-md transition flex items-center space-x-2"
+                  >
+                    <i class="fas fa-play"></i><span>Start Training</span>
+                  </button>
+                </div>
               </div>
             </div>
 
-            <!-- Lexicon-NB content (simplified, hidden initially) -->
+            <!-- Lexicon-NB content (simplified) -->
             <div id="lexiconTuning" class="hidden">
-              <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-1"
-                  >Select Old Model</label
-                >
-                <select
-                  id="oldModelSelectNB"
-                  class="w-full border rounded-lg p-2"
-                >
-                  <option value="">-- No previous model --</option>
-                </select>
-              </div>
-              <div class="mb-6">
-                <button
-                  id="findBestRatioBtnNB"
-                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-                >
-                  Find the Best Ratio
-                </button>
-              </div>
               <div class="border-t pt-4">
                 <h3 class="font-medium text-gray-800 mb-4">
                   Final Training Using the Best Ratio
@@ -389,6 +403,7 @@
                     <label class="block text-sm text-gray-600">Alpha</label>
                     <input
                       type="text"
+                      id="lexiconAlpha"
                       value="1.0"
                       class="w-full border rounded p-2 mt-1"
                     />
@@ -397,7 +412,10 @@
                     <label class="block text-sm text-gray-600"
                       >Model Type</label
                     >
-                    <select class="w-full border rounded p-2 mt-1">
+                    <select
+                      id="lexiconModelType"
+                      class="w-full border rounded p-2 mt-1"
+                    >
                       <option>MultinomialNB</option>
                       <option>BernoulliNB</option>
                     </select>
@@ -406,136 +424,45 @@
                     <label class="block text-sm text-gray-600"
                       >Vectorizer</label
                     >
-                    <select class="w-full border rounded p-2 mt-1">
+                    <select
+                      id="lexiconVectorizer"
+                      class="w-full border rounded p-2 mt-1"
+                    >
                       <option>CountVectorizer</option>
                       <option>TfidfVectorizer</option>
                     </select>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Model Management Section -->
-        <div class="bg-white p-6 rounded-xl shadow-md mb-8">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="font-semibold text-gray-700">Model List</h2>
-            <button
-              id="btnAddModel"
-              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 shadow-md transition"
-            >
-              <i class="fas fa-plus"></i><span>Add New Model</span>
-            </button>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="min-w-full border border-gray-200">
-              <thead class="bg-blue-500 text-white">
-                <tr>
-                  <th class="px-4 py-2 border border-blue-400">Model Name</th>
-                  <th class="px-4 py-2 border border-blue-400">Algorithm</th>
-                  <th class="px-4 py-2 border border-blue-400">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="modelTableBody"></tbody>
-            </table>
-          </div>
-          <div id="modelPagination" class="flex justify-center mt-4"></div>
-        </div>
-
-        <!-- Training Section -->
-        <div class="bg-white p-6 rounded-xl shadow-md mb-8">
-          <h2 class="font-semibold text-gray-700 mb-4">Model Training</h2>
-          <!-- Upload Dataset -->
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Upload Dataset (Preprocessed Result)</label
-            >
-            <div
-              id="dropzoneArea"
-              class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 transition"
-            >
-              <i
-                class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"
-              ></i>
-              <p id="uploadMainText" class="text-gray-700 font-medium">
-                Drag & drop file here
-              </p>
-              <p class="text-sm text-gray-500 mt-1">
-                or <span class="text-blue-600">click to select</span>
-              </p>
-              <p class="text-xs text-gray-400 mt-2">
-                CSV / Excel format (preprocessed result)
-              </p>
-              <input
-                type="file"
-                id="datasetFile"
-                class="hidden"
-                accept=".csv,.xlsx"
-              />
-            </div>
-            <div
-              id="uploadInfo"
-              class="mt-3 flex items-center justify-between bg-gray-50 p-3 rounded-lg hidden"
-            >
-              <div class="flex items-center space-x-3">
-                <i class="fas fa-file-csv text-green-600 text-xl"></i>
-                <div>
-                  <p
-                    id="uploadedFileName"
-                    class="font-medium text-gray-800"
-                  ></p>
-                  <p class="text-xs text-gray-500">File ready for training</p>
+                <!-- Start Training button at bottom right -->
+                <div class="flex justify-end mt-6">
+                  <button
+                    id="startTrainingBtnNB"
+                    class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium shadow-md transition flex items-center space-x-2"
+                  >
+                    <i class="fas fa-play"></i><span>Start Training</span>
+                  </button>
                 </div>
               </div>
-              <button
-                id="changeFileBtn"
-                type="button"
-                class="text-sm text-blue-600 hover:text-blue-800 font-medium"
-              >
-                <i class="fas fa-exchange-alt mr-1"></i>Change File
-              </button>
             </div>
-            <div id="uploadMessage" class="mt-2 text-sm"></div>
           </div>
+        </div>
 
-          <!-- Select Model Configuration -->
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Select Model Configuration</label
+        <!-- Training Result Section (dynamically shown) -->
+        <div
+          id="trainingResultSection"
+          class="bg-white p-6 rounded-xl shadow-md mb-8 hidden"
+        >
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="font-semibold text-gray-700">Training Results</h2>
+            <button
+              id="closeResultBtn"
+              class="text-gray-400 hover:text-gray-600"
             >
-            <select
-              id="configSelect"
-              class="w-full border border-gray-300 rounded-lg p-2"
-            >
-              <option value="">-- Select configuration --</option>
-            </select>
+              <i class="fas fa-times"></i>
+            </button>
           </div>
-
-          <!-- Start Training Button -->
-          <button
-            id="startTrainBtn"
-            class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition flex items-center space-x-2"
-          >
-            <i class="fas fa-play"></i><span>Start Training</span>
-          </button>
-
-          <!-- Training Status -->
-          <div class="mt-4 p-3 bg-gray-50 rounded-lg">
-            <p class="text-sm text-gray-600">
-              Status :
-              <span id="trainStatus" class="font-medium">Not Started</span>
-            </p>
-            <div id="progressContainer" class="mt-2 hidden">
-              <div class="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  id="progressBar"
-                  class="bg-blue-600 h-2 rounded-full"
-                  style="width: 0%"
-                ></div>
-              </div>
-              <p id="progressPercent" class="text-xs text-gray-500 mt-1">0%</p>
-            </div>
+          <div id="resultContent">
+            <!-- Will be filled by JavaScript -->
           </div>
         </div>
 
@@ -648,97 +575,12 @@
       </div>
     </div>
 
-    <!-- Modal Add/Edit Model (simplified for demo) -->
-    <div
-      id="modelModal"
-      class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50 modal-backdrop"
-    >
-      <div
-        class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden relative transform transition-all modal-container"
-      >
-        <div
-          id="modalHeader"
-          class="sticky top-0 bg-blue-600 border-b px-6 py-4 flex justify-between items-center rounded-t-2xl text-white z-10"
-        >
-          <h2 id="modalTitle" class="text-xl font-bold">Add New Model</h2>
-          <button
-            id="closeModal"
-            class="text-white hover:text-gray-200 transition"
-          >
-            <i class="fas fa-times text-2xl"></i>
-          </button>
-        </div>
-        <div
-          class="overflow-y-auto custom-scroll"
-          style="max-height: calc(90vh - 80px)"
-        >
-          <div class="p-6">
-            <form id="modelForm">
-              <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700"
-                  >Model Name</label
-                >
-                <input
-                  type="text"
-                  id="modelName"
-                  required
-                  class="w-full border rounded-lg p-2 mt-1"
-                />
-                <p class="text-xs text-gray-500 mt-1">
-                  Unique name to identify this model.
-                </p>
-              </div>
-              <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700"
-                  >Algorithm</label
-                >
-                <select
-                  id="modelAlgo"
-                  class="w-full border rounded-lg p-2 mt-1"
-                >
-                  <option value="hybrid">IndoBERT‑KNN</option>
-                  <option value="nb-lexicon">Naive Bayes‑Lexicon</option>
-                </select>
-                <p class="text-xs text-gray-500 mt-1">
-                  Choose algorithm for this model.
-                </p>
-              </div>
-              <div id="dynamicParams"></div>
-              <div class="mt-6 flex justify-end space-x-3">
-                <button
-                  type="button"
-                  id="cancelModal"
-                  class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  id="submitBtn"
-                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
-                >
-                  Save Model
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <script>
       // ==================== CONFIGURATION ====================
       const API_BASE = "http://localhost:5000";
-      let models = [];
-      let editingId = null;
       let trainingHistory = [];
-      let currentModelPage = 1;
       let currentTrainingPage = 1;
-      const rowsPerModelPage = 10;
       const rowsPerTrainingPage = 5;
-      let pollingInterval = null;
-      let uploadedFilePath = null;
-      let isUploading = false;
 
       // ==================== SPLIT RATIO DATA (dummy) ====================
       let splitRatios = [
@@ -765,7 +607,6 @@
         const wrapper = document.createElement("div");
         wrapper.className = "flex items-center space-x-2";
 
-        // Previous button
         const prevBtn = document.createElement("button");
         prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
         prevBtn.className = `px-3 py-1 rounded border ${currentPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
@@ -775,13 +616,11 @@
         };
         wrapper.appendChild(prevBtn);
 
-        // Page info
         const pageInfo = document.createElement("span");
         pageInfo.className = "text-gray-700";
         pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
         wrapper.appendChild(pageInfo);
 
-        // Input number + Go button
         const pageInput = document.createElement("input");
         pageInput.type = "number";
         pageInput.min = 1;
@@ -803,7 +642,6 @@
         };
         wrapper.appendChild(goBtn);
 
-        // Next button
         const nextBtn = document.createElement("button");
         nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
         nextBtn.className = `px-3 py-1 rounded border ${currentPage === totalPages ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
@@ -950,7 +788,7 @@
         editingSplitId = null;
       }
 
-      // ==================== MODELS ====================
+      // ==================== TRAINING HISTORY ====================
       function getHeaders() {
         const token = localStorage.getItem("access_token");
         return {
@@ -959,96 +797,6 @@
         };
       }
 
-      async function loadModels() {
-        try {
-          const res = await fetch(`${API_BASE}/api/processing/configs`, {
-            headers: getHeaders(),
-          });
-          if (!res.ok) throw new Error("Failed to load configurations");
-          const data = await res.json();
-          models = data.map((item) => ({
-            id: item.id,
-            name: item.name,
-            algo: item.algorithm === "Lexicon-NB" ? "nb-lexicon" : "hybrid",
-            config: item.params,
-          }));
-          renderModelTable();
-          renderModelPagination();
-          const configSelect = document.getElementById("configSelect");
-          configSelect.innerHTML =
-            '<option value="">-- Select configuration --</option>';
-          data.forEach((cfg) => {
-            const opt = document.createElement("option");
-            opt.value = cfg.id;
-            opt.textContent = `${cfg.name} (${cfg.algorithm})`;
-            configSelect.appendChild(opt);
-          });
-        } catch (err) {
-          console.error(err);
-          alert("Failed to load model list.");
-        }
-      }
-
-      function renderModelTable() {
-        const start = (currentModelPage - 1) * rowsPerModelPage;
-        const end = start + rowsPerModelPage;
-        const pageData = models.slice(start, end);
-        const tbody = document.getElementById("modelTableBody");
-        tbody.innerHTML = "";
-        pageData.forEach((model) => {
-          const row = tbody.insertRow();
-          row.insertCell(0).innerHTML =
-            `<span class="font-medium">${model.name}</span>`;
-          let algoName =
-            model.algo === "hybrid" ? "IndoBERT‑KNN" : "Lexicon‑NB";
-          row.insertCell(1).innerHTML = algoName;
-          const actions = document.createElement("td");
-          actions.className = "px-4 py-2 border border-gray-200 text-center";
-          actions.innerHTML = `<i class="fas fa-edit text-blue-500 mr-3 cursor-pointer hover:text-blue-700" data-id="${model.id}"></i><i class="fas fa-trash text-red-500 cursor-pointer hover:text-red-700" data-id="${model.id}"></i>`;
-          row.appendChild(actions);
-          for (let cell of row.cells)
-            cell.classList.add("border", "border-gray-200", "px-4", "py-2");
-        });
-        document
-          .querySelectorAll(".fa-edit")
-          .forEach((icon) =>
-            icon.addEventListener("click", (e) =>
-              openEditModal(parseInt(icon.dataset.id)),
-            ),
-          );
-        document.querySelectorAll(".fa-trash").forEach((icon) =>
-          icon.addEventListener("click", async (e) => {
-            const id = parseInt(icon.dataset.id);
-            if (!confirm("Delete this model?")) return;
-            try {
-              const res = await fetch(
-                `${API_BASE}/api/processing/configs/${id}`,
-                { method: "DELETE", headers: getHeaders() },
-              );
-              if (!res.ok)
-                throw new Error((await res.json()).error || "Delete failed");
-              await loadModels();
-            } catch (err) {
-              alert(err.message);
-            }
-          }),
-        );
-      }
-
-      function renderModelPagination() {
-        const totalPages = Math.ceil(models.length / rowsPerModelPage);
-        renderPaginationControls(
-          "modelPagination",
-          currentModelPage,
-          totalPages,
-          (newPage) => {
-            currentModelPage = newPage;
-            renderModelTable();
-          },
-        );
-      }
-
-      // ==================== TRAINING HISTORY ====================
       async function loadTrainingHistory() {
         try {
           const res = await fetch(`${API_BASE}/api/training/history`, {
@@ -1056,46 +804,54 @@
           });
           if (!res.ok) throw new Error("Failed to load history");
           trainingHistory = await res.json();
-          // Also populate old model dropdowns in tuning section
-          populateOldModelSelects();
+          // Populate old model dropdown
+          populateOldModelSelect();
           renderTrainingTable();
           renderTrainingPagination();
         } catch (err) {
           console.error(err);
+          // If API fails, use dummy data for demo
+          trainingHistory = [
+            {
+              id: 1,
+              dataset_filename: "dataset_april.csv",
+              algorithm: "IndoBERT-KNN",
+              metrics: { accuracy: 0.876 },
+              created_at: new Date().toISOString(),
+              completed_at: new Date().toISOString(),
+              model_path: "model1.pkl",
+            },
+            {
+              id: 2,
+              dataset_filename: "dataset_april.csv",
+              algorithm: "Lexicon-NB",
+              metrics: { accuracy: 0.823 },
+              created_at: new Date().toISOString(),
+              completed_at: new Date().toISOString(),
+              model_path: "model2.pkl",
+            },
+          ];
+          populateOldModelSelect();
+          renderTrainingTable();
+          renderTrainingPagination();
         }
       }
 
-      function populateOldModelSelects() {
-        const indoSelect = document.getElementById("oldModelSelect");
-        const nbSelect = document.getElementById("oldModelSelectNB");
-        if (indoSelect) {
-          indoSelect.innerHTML =
-            '<option value="">-- No previous model --</option>';
-          trainingHistory.forEach((m) => {
-            if (
-              m.algorithm &&
-              (m.algorithm.includes("IndoBERT") ||
-                m.algorithm === "IndoBERT-KNN")
-            ) {
-              const opt = document.createElement("option");
-              opt.value = m.id;
-              opt.textContent = `${m.dataset_filename || m.name} (Acc: ${m.metrics?.accuracy?.toFixed(3) || "N/A"})`;
-              indoSelect.appendChild(opt);
-            }
-          });
-        }
-        if (nbSelect) {
-          nbSelect.innerHTML =
-            '<option value="">-- No previous model --</option>';
-          trainingHistory.forEach((m) => {
-            if (m.algorithm && m.algorithm.includes("Lexicon")) {
-              const opt = document.createElement("option");
-              opt.value = m.id;
-              opt.textContent = `${m.dataset_filename || m.name} (Acc: ${m.metrics?.accuracy?.toFixed(3) || "N/A"})`;
-              nbSelect.appendChild(opt);
-            }
-          });
-        }
+      function populateOldModelSelect() {
+        const select = document.getElementById("oldModelSelect");
+        if (!select) return;
+        select.innerHTML = '<option value="">-- No previous model --</option>';
+        trainingHistory.forEach((m) => {
+          if (
+            m.algorithm &&
+            (m.algorithm.includes("IndoBERT") || m.algorithm === "IndoBERT-KNN")
+          ) {
+            const opt = document.createElement("option");
+            opt.value = m.id;
+            opt.textContent = `${m.dataset_filename || m.name} (Acc: ${m.metrics?.accuracy?.toFixed(3) || "N/A"})`;
+            select.appendChild(opt);
+          }
+        });
       }
 
       function renderTrainingTable() {
@@ -1173,115 +929,159 @@
         );
       }
 
-      // ==================== MODAL HANDLERS (simplified) ====================
-      function openEditModal(id) {
-        alert("Edit model not implemented yet.");
-      }
-      function openAddModal() {
-        alert("Add model not implemented yet.");
-      }
-      document
-        .getElementById("btnAddModel")
-        .addEventListener("click", openAddModal);
-      document
-        .getElementById("closeModal")
-        .addEventListener("click", () =>
-          document.getElementById("modelModal").classList.add("hidden"),
-        );
-      document
-        .getElementById("cancelModal")
-        .addEventListener("click", () =>
-          document.getElementById("modelModal").classList.add("hidden"),
-        );
+      // ==================== TRAINING SIMULATION ====================
+      // Store the newly created training ID to be used for "View Details" button
+      let lastTrainingId = null;
 
-      // ==================== UPLOAD & TRAINING ====================
-      const dropzone = document.getElementById("dropzoneArea");
-      const fileInputDataset = document.getElementById("datasetFile");
-      dropzone.addEventListener("click", () => fileInputDataset.click());
-      fileInputDataset.addEventListener("change", async (e) => {
-        if (fileInputDataset.files.length) {
-          const file = fileInputDataset.files[0];
-          const formData = new FormData();
-          formData.append("file", file);
-          try {
-            const res = await fetch(`${API_BASE}/api/training/upload`, {
-              method: "POST",
-              body: formData,
-            });
-            if (!res.ok) throw new Error("Upload failed");
-            const data = await res.json();
-            uploadedFilePath = data.path;
-            document.getElementById("uploadInfo").classList.remove("hidden");
-            document.getElementById("uploadedFileName").innerText = file.name;
-            document.getElementById("dropzoneArea").classList.add("hidden");
-            document.getElementById("uploadMessage").innerHTML =
-              '<div class="text-green-600">Upload successful!</div>';
-          } catch (err) {
-            alert(err.message);
+      function showTrainingResult(algorithm, metrics, params, trainingId) {
+        const section = document.getElementById("trainingResultSection");
+        const content = document.getElementById("resultContent");
+        // Format metrics
+        let metricsHtml = `
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="bg-blue-50 p-4 rounded-lg text-center">
+              <p class="text-sm text-gray-600">Accuracy</p>
+              <p class="text-2xl font-bold text-blue-700">${(metrics.accuracy * 100).toFixed(2)}%</p>
+            </div>
+            <div class="bg-green-50 p-4 rounded-lg text-center">
+              <p class="text-sm text-gray-600">Precision</p>
+              <p class="text-2xl font-bold text-green-700">${(metrics.precision * 100).toFixed(2)}%</p>
+            </div>
+            <div class="bg-yellow-50 p-4 rounded-lg text-center">
+              <p class="text-sm text-gray-600">Recall</p>
+              <p class="text-2xl font-bold text-yellow-700">${(metrics.recall * 100).toFixed(2)}%</p>
+            </div>
+            <div class="bg-purple-50 p-4 rounded-lg text-center">
+              <p class="text-sm text-gray-600">F1-Score</p>
+              <p class="text-2xl font-bold text-purple-700">${(metrics.f1 * 100).toFixed(2)}%</p>
+            </div>
+          </div>
+          <div class="border-t pt-4 mb-4">
+            <h3 class="font-medium text-gray-800 mb-2">Training Details</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+              <div><span class="text-gray-600">Algorithm:</span> ${algorithm}</div>
+              <div><span class="text-gray-600">Dataset:</span> ${params.dataset || "N/A"}</div>
+              <div><span class="text-gray-600">Training Time:</span> ${params.duration || "N/A"}</div>
+              <div><span class="text-gray-600">Old Model:</span> ${params.oldModel || "None"}</div>
+            </div>
+          </div>
+          <div class="flex justify-end">
+            <a href="validasi.html?id=${trainingId}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
+              <i class="fas fa-arrow-right"></i><span>Lihat Selengkapnya</span>
+            </a>
+          </div>
+        `;
+        content.innerHTML = metricsHtml;
+        section.classList.remove("hidden");
+        // Scroll to result
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      function simulateTraining(algorithm, params) {
+        // Show loading indicator inside result section
+        const section = document.getElementById("trainingResultSection");
+        const content = document.getElementById("resultContent");
+        content.innerHTML = `
+          <div class="flex flex-col items-center justify-center py-8">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+            <p class="text-gray-600">Training in progress... Please wait.</p>
+            <p class="text-xs text-gray-400 mt-2">This may take a few moments.</p>
+          </div>
+        `;
+        section.classList.remove("hidden");
+
+        // Simulate training delay (2 seconds)
+        setTimeout(() => {
+          // Generate dummy metrics based on algorithm
+          let metrics;
+          if (algorithm === "indobert") {
+            metrics = {
+              accuracy: 0.874 + (Math.random() * 0.05 - 0.025),
+              precision: 0.862 + (Math.random() * 0.06 - 0.03),
+              recall: 0.851 + (Math.random() * 0.07 - 0.035),
+              f1: 0.856 + (Math.random() * 0.06 - 0.03),
+            };
+          } else {
+            metrics = {
+              accuracy: 0.823 + (Math.random() * 0.06 - 0.03),
+              precision: 0.815 + (Math.random() * 0.07 - 0.035),
+              recall: 0.809 + (Math.random() * 0.08 - 0.04),
+              f1: 0.812 + (Math.random() * 0.07 - 0.035),
+            };
           }
-        }
-      });
-      document.getElementById("changeFileBtn").addEventListener("click", () => {
-        uploadedFilePath = null;
-        document.getElementById("uploadInfo").classList.add("hidden");
-        document.getElementById("dropzoneArea").classList.remove("hidden");
-        fileInputDataset.value = "";
-        document.getElementById("uploadMessage").innerHTML = "";
-      });
+          // Normalize
+          Object.keys(metrics).forEach(
+            (k) => (metrics[k] = Math.min(0.98, Math.max(0.65, metrics[k]))),
+          );
+          const duration = (Math.random() * 45 + 15).toFixed(1) + " seconds";
 
-      const startTrainBtn = document.getElementById("startTrainBtn");
-      startTrainBtn.addEventListener("click", async () => {
-        if (!uploadedFilePath) {
-          alert("Upload dataset file first!");
+          // Create new training ID and add to history
+          const newId = Date.now();
+          lastTrainingId = newId;
+          const newHistory = {
+            id: newId,
+            dataset_filename: params.dataset,
+            algorithm: algorithm === "indobert" ? "IndoBERT-KNN" : "Lexicon-NB",
+            metrics: { accuracy: metrics.accuracy },
+            created_at: new Date().toISOString(),
+            completed_at: new Date().toISOString(),
+            model_path: null,
+          };
+          trainingHistory.unshift(newHistory);
+          renderTrainingTable();
+          renderTrainingPagination();
+          populateOldModelSelect();
+
+          // Show result with "Lihat Selengkapnya" button
+          showTrainingResult(
+            algorithm === "indobert"
+              ? "IndoBERT‑KNN+UMAP"
+              : "Naive Bayes‑Lexicon",
+            metrics,
+            { ...params, duration },
+            newId,
+          );
+        }, 2000);
+      }
+
+      // Training button handlers
+      function onStartTraining() {
+        const dataset = document.getElementById("datasetSelect").value;
+        if (!dataset) {
+          alert("Please select a dataset first.");
           return;
         }
-        const configId = document.getElementById("configSelect").value;
-        if (!configId) {
-          alert("Select model configuration!");
-          return;
+        const algorithm = document.getElementById("tuningAlgo").value;
+        const oldModelSelect = document.getElementById("oldModelSelect");
+        const oldModel = oldModelSelect.value
+          ? oldModelSelect.options[oldModelSelect.selectedIndex].text
+          : "None";
+
+        let params = { dataset, oldModel };
+        if (algorithm === "indobert") {
+          params = {
+            ...params,
+            learning_rate: document.getElementById("lr").value,
+            epochs: document.getElementById("epoch").value,
+            batch_size: document.getElementById("batchSize").value,
+            max_length: document.getElementById("maxLen").value,
+            optimizer: document.getElementById("optimizer").value,
+            weight_decay: document.getElementById("weightDecay").value,
+            scheduler: document.getElementById("scheduler").value,
+            dropout: document.getElementById("dropout").value,
+            early_stopping: document.getElementById("earlyStopping").value,
+            grad_accum: document.getElementById("gradAccum").value,
+          };
+        } else {
+          params = {
+            ...params,
+            alpha: document.getElementById("lexiconAlpha").value,
+            model_type: document.getElementById("lexiconModelType").value,
+            vectorizer: document.getElementById("lexiconVectorizer").value,
+          };
         }
-        startTrainBtn.disabled = true;
-        document.getElementById("trainStatus").innerText =
-          "Starting training...";
-        document.getElementById("progressContainer").classList.remove("hidden");
-        try {
-          const res = await fetch(`${API_BASE}/api/training/start`, {
-            method: "POST",
-            headers: getHeaders(),
-            body: JSON.stringify({
-              config_id: parseInt(configId),
-              dataset_path: uploadedFilePath,
-            }),
-          });
-          if (!res.ok) throw new Error("Failed to start training");
-          const training = await res.json();
-          if (pollingInterval) clearInterval(pollingInterval);
-          pollingInterval = setInterval(async () => {
-            const statusRes = await fetch(
-              `${API_BASE}/api/training/status/${training.id}`,
-            );
-            const data = await statusRes.json();
-            document.getElementById("trainStatus").innerText =
-              data.status === "completed"
-                ? "Completed"
-                : data.status === "failed"
-                  ? "Failed"
-                  : "Running...";
-            document.getElementById("progressBar").style.width =
-              `${data.progress}%`;
-            document.getElementById("progressPercent").innerText =
-              `${data.progress}%`;
-            if (data.status === "completed" || data.status === "failed") {
-              clearInterval(pollingInterval);
-              startTrainBtn.disabled = false;
-              await loadTrainingHistory();
-            }
-          }, 7000);
-        } catch (err) {
-          alert(err.message);
-          startTrainBtn.disabled = false;
-        }
-      });
+        simulateTraining(algorithm, params);
+      }
 
       // ==================== TUNING SECTION INTERACTIONS ====================
       const tuningAlgo = document.getElementById("tuningAlgo");
@@ -1300,16 +1100,21 @@
       indoDiv.classList.remove("hidden");
       lexDiv.classList.add("hidden");
 
-      // Find best ratio buttons (simulate)
+      // Attach training button events
       document
-        .getElementById("findBestRatioBtn")
-        .addEventListener("click", () => {
-          alert("Simulating best ratio search... (demo)");
-        });
+        .getElementById("startTrainingBtn")
+        .addEventListener("click", onStartTraining);
       document
-        .getElementById("findBestRatioBtnNB")
+        .getElementById("startTrainingBtnNB")
+        .addEventListener("click", onStartTraining);
+
+      // Close result section
+      document
+        .getElementById("closeResultBtn")
         .addEventListener("click", () => {
-          alert("Simulating best ratio search for Lexicon-NB... (demo)");
+          document
+            .getElementById("trainingResultSection")
+            .classList.add("hidden");
         });
 
       // Sidebar toggle
@@ -1346,7 +1151,6 @@
         .addEventListener("submit", saveSplit);
 
       renderSplitTable();
-      loadModels();
       loadTrainingHistory();
     </script>
   </body>
