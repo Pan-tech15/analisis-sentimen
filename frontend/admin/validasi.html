@@ -31,8 +31,8 @@
     </style>
   </head>
   <body class="bg-gray-100 font-sans antialiased">
-    <!-- SIDEBAR SAMA SEPERTI SEBELUMNYA, TIDAK DIUBAH -->
     <div class="flex h-screen overflow-hidden">
+      <!-- SIDEBAR (SAMA SEPERTI SEBELUMNYA) -->
       <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
         <div class="p-4 border-b">
           <span
@@ -172,9 +172,7 @@
           <div
             id="configContainer"
             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm"
-          >
-            <!-- Diisi oleh JavaScript -->
-          </div>
+          ></div>
         </div>
 
         <!-- Confusion Matrix -->
@@ -231,6 +229,38 @@
           </div>
         </div>
 
+        <!-- SECTION BARU: Tabel Evaluasi per Epoch / per Fold -->
+        <div
+          id="epochFoldSection"
+          class="bg-white p-6 rounded-xl shadow-md mb-6 hidden"
+        >
+          <h2
+            id="epochFoldTitle"
+            class="font-semibold text-gray-700 mb-4 flex items-center"
+          >
+            <i class="fas fa-chart-line mr-2 text-blue-600"></i>
+            Evaluasi per Epoch
+          </h2>
+          <div class="overflow-x-auto">
+            <table class="min-w-full border border-gray-200">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="px-4 py-2 border border-gray-300">Epoch / Fold</th>
+                  <th class="px-4 py-2 border border-gray-300">Accuracy (%)</th>
+                  <th class="px-4 py-2 border border-gray-300">
+                    Precision (%)
+                  </th>
+                  <th class="px-4 py-2 border border-gray-300">Recall (%)</th>
+                  <th class="px-4 py-2 border border-gray-300">F1-Score (%)</th>
+                  <th class="px-4 py-2 border border-gray-300">Loss</th>
+                  <th class="px-4 py-2 border border-gray-300">MCC</th>
+                </tr>
+              </thead>
+              <tbody id="epochFoldTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
         <!-- Tabel Metrik Evaluasi Klasifikasi -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-6">
           <h2 class="font-semibold text-gray-700 mb-4">
@@ -244,9 +274,7 @@
                   <th class="px-4 py-2 border border-gray-300">Nilai</th>
                 </tr>
               </thead>
-              <tbody id="metricsTableBody">
-                <!-- Diisi oleh JavaScript -->
-              </tbody>
+              <tbody id="metricsTableBody"></tbody>
             </table>
           </div>
         </div>
@@ -271,9 +299,7 @@
                   </th>
                 </tr>
               </thead>
-              <tbody id="stabilityTableBody">
-                <!-- Diisi jika data CV tersedia -->
-              </tbody>
+              <tbody id="stabilityTableBody"></tbody>
             </table>
           </div>
           <p class="text-xs text-gray-500 mt-3">
@@ -296,18 +322,15 @@
 
     <script>
       (function () {
-        // ---------- KONFIGURASI ----------
         const API_BASE = "http://localhost:5000";
         const urlParams = new URLSearchParams(window.location.search);
         const trainingId = urlParams.get("id");
 
-        // Variabel global untuk data
         let matrix = [];
         let labels = [];
         let metrics = null;
         let trainingData = null;
 
-        // Canvas elements
         let canvas, ctx, size, cellSize;
         const marginLeft = 80;
         const marginRight = 30;
@@ -315,7 +338,6 @@
         const marginBottom = 100;
         let tooltipDiv = null;
 
-        // ---------- FUNGSI UTILITY ----------
         function getColor(intensity) {
           const r = Math.min(255, Math.floor(255 * intensity * 1.5));
           const g = Math.min(255, Math.floor(255 * (1.5 - intensity * 1.2)));
@@ -323,7 +345,6 @@
           return `rgb(${r}, ${g}, ${b})`;
         }
 
-        // Fungsi untuk menghitung metrik tambahan dari confusion matrix
         function calculateMetricsFromCM(cm, labelsList) {
           const n = cm.length;
           let tp = 0,
@@ -357,13 +378,11 @@
             f1PerClass.push(f1);
           }
 
-          // Macro
           const macroPrecision =
             precisionPerClass.reduce((a, b) => a + b, 0) / n;
           const macroRecall = recallPerClass.reduce((a, b) => a + b, 0) / n;
           const macroF1 = f1PerClass.reduce((a, b) => a + b, 0) / n;
 
-          // Weighted (dari metrics backend sudah ada, tapi kita hitung ulang untuk verifikasi)
           let weightedPrec = 0,
             weightedRec = 0,
             weightedF1 = 0;
@@ -377,14 +396,12 @@
           weightedRec /= total;
           weightedF1 /= total;
 
-          // MCC (Matthews Correlation Coefficient) multiclass
-          // Rumus: (tp*total - sum_k(p_k * t_k)) / sqrt((total^2 - sum_k p_k^2)*(total^2 - sum_k t_k^2))
           let sum_pk_tk = 0,
             sum_pk2 = 0,
             sum_tk2 = 0;
           for (let k = 0; k < n; k++) {
-            const pk = cm[k].reduce((a, b) => a + b, 0); // actual class k
-            const tk = cm.reduce((acc, row) => acc + row[k], 0); // predicted class k
+            const pk = cm[k].reduce((a, b) => a + b, 0);
+            const tk = cm.reduce((acc, row) => acc + row[k], 0);
             sum_pk_tk += pk * tk;
             sum_pk2 += pk * pk;
             sum_tk2 += tk * tk;
@@ -418,7 +435,6 @@
             return;
           }
 
-          // Fungsi bantu untuk membuat item parameter
           function addItem(label, value, icon = "fa-cog") {
             const div = document.createElement("div");
             div.className =
@@ -433,7 +449,6 @@
             container.appendChild(div);
           }
 
-          // Fungsi untuk membuat header kategori
           function addCategoryHeader(title) {
             const header = document.createElement("div");
             header.className = "col-span-full mt-3 mb-1 first:mt-0";
@@ -441,7 +456,6 @@
             container.appendChild(header);
           }
 
-          // ========== CROSS VALIDATION ==========
           const split = params.split || {};
           addCategoryHeader("🔀 Cross Validation");
           addItem(
@@ -467,7 +481,6 @@
             addItem("Rasio Test", split.test || "-", "fa-chart-pie");
           }
 
-          // ========== PARAMETER UMUM ==========
           const general = params.general || {};
           addCategoryHeader("⚙️ Parameter Umum");
           addItem("Random State", general.randomState || "-", "fa-dice");
@@ -492,7 +505,6 @@
             "fa-microchip",
           );
 
-          // ========== IndoBERT ==========
           const bert = params.indobert || {};
           addCategoryHeader("🤖 IndoBERT");
           addItem("Model Name", bert.modelName || "-", "fa-robot");
@@ -504,7 +516,6 @@
           addItem("Pooling Strategy", bert.pooling || "-", "fa-water");
           addItem("Batch Size", bert.batchSize || "-", "fa-layer-group");
 
-          // ========== Fine-Tuning ==========
           const ft = params.finetune || {};
           addCategoryHeader("🎯 Fine-Tuning IndoBERT");
           if (ft.enabled) {
@@ -533,7 +544,6 @@
             addItem("Status", "Tidak Aktif", "fa-ban text-red-500");
           }
 
-          // ========== UMAP ==========
           const umap = params.umap || {};
           addCategoryHeader("📉 UMAP (Reduksi Dimensi)");
           if (umap.enabled) {
@@ -547,7 +557,6 @@
             addItem("Status", "Tidak Aktif", "fa-ban text-red-500");
           }
 
-          // ========== KNN ==========
           const knn = params.knn || {};
           addCategoryHeader("👥 KNN");
           addItem("K (n_neighbors)", knn.k || "-", "fa-neuter");
@@ -557,7 +566,6 @@
           addItem("leaf_size", knn.leafSize || "-", "fa-leaf");
           addItem("p (Minkowski)", knn.p || "-", "fa-chart-line");
 
-          // Confidence Adjustment
           const hybrid = params.hybrid || {};
           const hybridMethod = hybrid.method || "none";
           let hybridText = "Tidak Aktif";
@@ -567,7 +575,103 @@
           addItem("Confidence Adjustment", hybridText, "fa-sliders-h");
         }
 
-        // ---------- FETCH DATA DARI API (DIMODIFIKASI) ----------
+        // ========== TABEL EVALUASI PER EPOCH / FOLD ==========
+        function renderEpochFoldTable(data) {
+          const section = document.getElementById("epochFoldSection");
+          const titleEl = document.getElementById("epochFoldTitle");
+          const tbody = document.getElementById("epochFoldTableBody");
+          if (!section || !tbody) return;
+
+          // Cek apakah data epoch atau fold tersedia
+          let items = null;
+          let isEpoch = false;
+
+          if (
+            data.epoch_metrics &&
+            Array.isArray(data.epoch_metrics) &&
+            data.epoch_metrics.length > 0
+          ) {
+            items = data.epoch_metrics;
+            isEpoch = true;
+            titleEl.innerHTML =
+              '<i class="fas fa-chart-line mr-2 text-blue-600"></i> Evaluasi per Epoch';
+          } else if (
+            data.fold_metrics &&
+            Array.isArray(data.fold_metrics) &&
+            data.fold_metrics.length > 0
+          ) {
+            items = data.fold_metrics;
+            isEpoch = false;
+            titleEl.innerHTML =
+              '<i class="fas fa-chart-line mr-2 text-blue-600"></i> Evaluasi per Fold (Cross-Validation)';
+          } else {
+            section.classList.add("hidden");
+            return;
+          }
+
+          section.classList.remove("hidden");
+          tbody.innerHTML = "";
+
+          let totalAcc = 0,
+            totalPrec = 0,
+            totalRec = 0,
+            totalF1 = 0,
+            totalLoss = 0,
+            totalMcc = 0;
+          const n = items.length;
+
+          items.forEach((item, idx) => {
+            const row = tbody.insertRow();
+            const epochOrFold = isEpoch
+              ? `Epoch ${item.epoch || idx + 1}`
+              : `Fold ${item.fold || idx + 1}`;
+            const acc = (item.accuracy * 100).toFixed(2);
+            const prec = (item.precision * 100).toFixed(2);
+            const rec = (item.recall * 100).toFixed(2);
+            const f1 = (item.f1_score * 100).toFixed(2);
+            const loss = item.loss !== undefined ? item.loss.toFixed(4) : "-";
+            const mcc = item.mcc !== undefined ? item.mcc.toFixed(4) : "-";
+
+            totalAcc += parseFloat(acc);
+            totalPrec += parseFloat(prec);
+            totalRec += parseFloat(rec);
+            totalF1 += parseFloat(f1);
+            if (item.loss !== undefined) totalLoss += item.loss;
+            if (item.mcc !== undefined) totalMcc += item.mcc;
+
+            row.innerHTML = `
+              <td class="px-4 py-2 border border-gray-200 font-medium">${epochOrFold}</td>
+              <td class="px-4 py-2 border border-gray-200 text-center">${acc}%</td>
+              <td class="px-4 py-2 border border-gray-200 text-center">${prec}%</td>
+              <td class="px-4 py-2 border border-gray-200 text-center">${rec}%</td>
+              <td class="px-4 py-2 border border-gray-200 text-center">${f1}%</td>
+              <td class="px-4 py-2 border border-gray-200 text-center">${loss}</td>
+              <td class="px-4 py-2 border border-gray-200 text-center">${mcc}</td>
+            `;
+          });
+
+          // Baris rata-rata
+          const avgAcc = (totalAcc / n).toFixed(2);
+          const avgPrec = (totalPrec / n).toFixed(2);
+          const avgRec = (totalRec / n).toFixed(2);
+          const avgF1 = (totalF1 / n).toFixed(2);
+          const avgLoss = (totalLoss / n).toFixed(4);
+          const avgMcc = (totalMcc / n).toFixed(4);
+
+          const avgRow = tbody.insertRow();
+          avgRow.classList.add("bg-gray-100", "font-semibold");
+          avgRow.innerHTML = `
+            <td class="px-4 py-2 border border-gray-200 font-medium">Rata-rata</td>
+            <td class="px-4 py-2 border border-gray-200 text-center">${avgAcc}%</td>
+            <td class="px-4 py-2 border border-gray-200 text-center">${avgPrec}%</td>
+            <td class="px-4 py-2 border border-gray-200 text-center">${avgRec}%</td>
+            <td class="px-4 py-2 border border-gray-200 text-center">${avgF1}%</td>
+            <td class="px-4 py-2 border border-gray-200 text-center">${avgLoss}</td>
+            <td class="px-4 py-2 border border-gray-200 text-center">${avgMcc}</td>
+          `;
+        }
+
+        // ========== FETCH DATA DARI API ==========
         async function loadTrainingDetail() {
           if (!trainingId) {
             alert("ID training tidak ditemukan di URL");
@@ -579,15 +683,12 @@
             trainingData = await res.json();
             console.log("Training data:", trainingData);
 
-            // Isi info dataset & model
             document.getElementById("datasetName").textContent =
               trainingData.dataset_filename || "-";
             document.getElementById("modelName").textContent =
               trainingData.algorithm || "-";
 
-            // --- Ambil konfigurasi parameter ---
             let params = trainingData.params;
-            // Jika backend belum mengembalikan params, coba fetch dari config terpisah
             if (!params && trainingData.model_config_id) {
               try {
                 const configRes = await fetch(
@@ -598,25 +699,17 @@
                   params = configData.params;
                 }
               } catch (e) {
-                console.warn("Gagal fetch config terpisah:", e);
+                console.warn(e);
               }
             }
-            // Render konfigurasi
             renderConfigParams(params, trainingData.algorithm);
-            // --- Akhir penambahan ---
 
             metrics = trainingData.metrics || {};
 
-            // Ambil confusion matrix dan label kelas
-            if (metrics.confusion_matrix) {
-              matrix = metrics.confusion_matrix;
-            } else {
-              console.warn("Confusion matrix tidak ditemukan");
-              matrix = [];
-            }
-            if (metrics.class_labels) {
-              labels = metrics.class_labels;
-            } else {
+            if (metrics.confusion_matrix) matrix = metrics.confusion_matrix;
+            else matrix = [];
+            if (metrics.class_labels) labels = metrics.class_labels;
+            else
               labels = [
                 "Senang",
                 "Percaya",
@@ -626,16 +719,10 @@
                 "Sedih",
                 "Marah",
               ];
-              console.warn("Label kelas tidak ditemukan, menggunakan default");
-            }
 
-            // Gambar heatmap
             drawHeatmap();
-
-            // Isi tabel metrik evaluasi
             populateMetricsTable();
 
-            // Tampilkan bagian stabilitas jika ada cv_folds
             if (metrics.cv_folds) {
               document
                 .getElementById("stabilitySection")
@@ -647,8 +734,11 @@
                 .getElementById("stabilitySection")
                 .classList.add("hidden");
             }
+
+            // ========== TAMPILKAN TABEL EPOCH/FOLD ==========
+            renderEpochFoldTable(trainingData);
           } catch (error) {
-            console.error("Error:", error);
+            console.error(error);
             alert("Gagal memuat detail training: " + error.message);
           }
         }
@@ -657,13 +747,11 @@
           const tbody = document.getElementById("metricsTableBody");
           tbody.innerHTML = "";
 
-          // Data dasar dari backend
           const acc = metrics.accuracy?.toFixed(4) || "-";
           const prec = metrics.precision?.toFixed(4) || "-";
           const rec = metrics.recall?.toFixed(4) || "-";
           const f1 = metrics.f1_score?.toFixed(4) || "-";
 
-          // Hitung metrik tambahan dari confusion matrix jika ada
           let calc = null;
           if (matrix.length > 0 && labels.length > 0) {
             calc = calculateMetricsFromCM(matrix, labels);
@@ -684,9 +772,6 @@
               ["Matthews Correlation Coefficient (MCC)", calc.mcc.toFixed(4)],
             );
           }
-
-          // ROC-AUC tidak tersedia karena KNN tidak menghasilkan probabilitas kalibrasi, bisa diabaikan atau dihitung jika ada
-          // Tambahkan placeholder jika perlu
           rows.push(["ROC-AUC (Macro)", "- (tidak dihitung)"]);
 
           for (let [name, value] of rows) {
@@ -700,21 +785,16 @@
         }
 
         function populateStabilityTable() {
-          // Karena backend belum menyimpan mean/std per fold, kita gunakan nilai evaluasi akhir sebagai mean, std = '-'
-          // Untuk sementara tampilkan data dari metrics yang ada
           const tbody = document.getElementById("stabilityTableBody");
           tbody.innerHTML = "";
-
           const acc = metrics.accuracy?.toFixed(4) || "-";
           const prec = metrics.precision?.toFixed(4) || "-";
           const rec = metrics.recall?.toFixed(4) || "-";
           const f1 = metrics.f1_score?.toFixed(4) || "-";
-
           let calc = null;
           if (matrix.length > 0 && labels.length > 0) {
             calc = calculateMetricsFromCM(matrix, labels);
           }
-
           const rows = [
             ["Akurasi", acc, "-"],
             [
@@ -727,7 +807,6 @@
             ["MCC", calc ? calc.mcc.toFixed(4) : "-", "-"],
             ["ROC-AUC (Macro)", "-", "-"],
           ];
-
           for (let [name, mean, std] of rows) {
             const tr = document.createElement("tr");
             tr.innerHTML = `
@@ -739,7 +818,7 @@
           }
         }
 
-        // ---------- DRAW HEATMAP ----------
+        // DRAW HEATMAP (sama seperti sebelumnya)
         function drawHeatmap() {
           canvas = document.getElementById("confusionHeatmap");
           if (!canvas) return;
@@ -780,7 +859,6 @@
             }
           }
 
-          // Garis grid
           ctx.strokeStyle = "#ffffff";
           ctx.lineWidth = 1.5;
           for (let i = 0; i <= matrix.length; i++) {
@@ -800,7 +878,6 @@
             ctx.stroke();
           }
 
-          // Label sumbu Y (Aktual)
           ctx.fillStyle = "#1f2937";
           ctx.font = '13px "Segoe UI", system-ui';
           ctx.textAlign = "right";
@@ -813,7 +890,6 @@
             );
           }
 
-          // Label sumbu X (Prediksi) diputar
           ctx.save();
           ctx.font = '13px "Segoe UI", system-ui';
           ctx.textAlign = "left";
@@ -830,7 +906,6 @@
           }
           ctx.restore();
 
-          // Judul sumbu
           ctx.font = 'bold 14px "Segoe UI", system-ui';
           ctx.fillStyle = "#374151";
           ctx.textAlign = "center";
@@ -846,7 +921,6 @@
           ctx.restore();
         }
 
-        // ---------- TOOLTIP ----------
         function createTooltip() {
           if (!tooltipDiv) {
             tooltipDiv = document.createElement("div");
@@ -887,7 +961,6 @@
           if (tooltipDiv) tooltipDiv.style.display = "none";
         }
 
-        // ---------- INISIALISASI ----------
         window.onload = async () => {
           await loadTrainingDetail();
           createTooltip();
@@ -898,7 +971,6 @@
           }
         };
 
-        // ---------- SIDEBAR TOGGLE ----------
         function toggleDropdown(btn, menu, icon) {
           btn.addEventListener("click", () => {
             menu.classList.toggle("hidden");
