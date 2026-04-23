@@ -10,3 +10,9 @@ sekarang se nyala frontend
 1. arahkan terminal di frontend (atau ketik "cd frontend" di terminal, atau "cd .." kalau masih di folder backend, baru "cd frontend")
 2. ketik di terminal "python -m http.server 5500" for se menyala frontend
 3. frontend & backend done, sisa buka dpe web lewat http://localhost:5500/admin/login.html
+
+python -m venv venv
+venv\Scripts\activate
+python run.py
+
+password web IdiomSense = password_admin_anda
