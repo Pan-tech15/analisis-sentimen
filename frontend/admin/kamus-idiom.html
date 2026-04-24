@@ -16,7 +16,8 @@
         table-layout: fixed;
         width: 100%;
       }
-      .fixed-table th, .fixed-table td {
+      .fixed-table th,
+      .fixed-table td {
         /* word-break: break-word; /* mencegah overflow teks panjang */
       }
     </style>
@@ -131,7 +132,8 @@
               <span class="text-blue-600 font-medium">click to select</span>
             </p>
             <p class="text-xs text-gray-400 mt-1">
-              Upload CSV file with columns: idiom_text, idiom_meaning, (optional) emotion
+              Upload CSV file with columns: idiom_text, idiom_meaning,
+              (optional) emotion
             </p>
             <input type="file" id="fileInput" class="hidden" accept=".csv" />
           </div>
@@ -152,7 +154,9 @@
                   <tr>
                     <th class="px-4 py-2 border border-blue-400 w-16">No</th>
                     <th class="px-4 py-2 border border-blue-400 w-40">Idiom</th>
-                    <th class="px-4 py-2 border border-blue-400 w-64">Meaning</th>
+                    <th class="px-4 py-2 border border-blue-400 w-64">
+                      Meaning
+                    </th>
                     <th class="px-4 py-2 border border-blue-400 w-32">Emosi</th>
                   </tr>
                 </thead>
@@ -225,6 +229,12 @@
 
         <!-- Filter & Search -->
         <div class="bg-white p-6 rounded-xl shadow-md">
+          <!-- Daftar Idiom (judul tabel) -->
+          <div class="mb-3">
+            <h2 class="text-lg font-semibold text-gray-800">
+              <i class="fas fa-list-alt mr-2 text-blue-600"></i>Daftar Idiom
+            </h2>
+          </div>
           <div class="flex flex-wrap gap-4 mb-4">
             <div class="flex-1">
               <input
@@ -246,13 +256,6 @@
             >
               Apply Filter
             </button>
-          </div>
-
-          <!-- Daftar Idiom (judul tabel) -->
-          <div class="mb-3">
-            <h2 class="text-lg font-semibold text-gray-800">
-              <i class="fas fa-list-alt mr-2 text-blue-600"></i>Daftar Idiom
-            </h2>
           </div>
 
           <!-- Table dengan lebar kolom tetap (fixed) -->
@@ -302,7 +305,10 @@
         </div>
         <div class="mb-4">
           <label class="block text-sm font-medium text-gray-700">Emosi</label>
-          <select id="editEmotion" class="mt-1 block w-full border rounded-md p-2">
+          <select
+            id="editEmotion"
+            class="mt-1 block w-full border rounded-md p-2"
+          >
             <option value="">-- Pilih Emosi --</option>
             <option value="Senang">Senang</option>
             <option value="Sedih">Sedih</option>
@@ -664,7 +670,11 @@
             for (let row of data) {
               let idiom = row[idiomKey] ? row[idiomKey].trim() : "";
               let meaning = row[meaningKey] ? row[meaningKey].trim() : "";
-              let emotion = emotionKey ? (row[emotionKey] ? row[emotionKey].trim() : "") : "";
+              let emotion = emotionKey
+                ? row[emotionKey]
+                  ? row[emotionKey].trim()
+                  : ""
+                : "";
               if (idiom && meaning && idiom !== "nan" && meaning !== "nan") {
                 uploadedData.push({
                   idiom_text: idiom,

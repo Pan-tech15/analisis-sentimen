@@ -10,8 +10,11 @@ class Preprocessing(db.Model):
     row_count = db.Column(db.Integer, default=0)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Tambahan untuk progress tracking
-    status = db.Column(db.String(50), default='pending')  # pending, running, completed, failed
-    progress = db.Column(db.Integer, default=0)           # 0-100
+    # Tambahan untuk progress tracking (sudah ada)
+    status = db.Column(db.String(50), default='pending')
+    progress = db.Column(db.Integer, default=0)
+    
+    # BARU: Nama yang dapat diedit oleh user
+    name = db.Column(db.String(255), nullable=True)
 
     dataset = db.relationship('Dataset', backref='preprocessings')
