@@ -11,10 +11,8 @@ from app.utils.preprocessing_utils import preprocess_text
 
 preprocess_bp = Blueprint('preprocess', __name__, url_prefix='/api/preprocess')
 
-# Gunakan current_app.root_path untuk mendapatkan path absolut ke folder app, lalu naik ke backend
-# Ini lebih aman karena Flask sudah tahu di mana aplikasi berjalan.
 def get_preprocessed_folder():
-    backend_dir = os.path.dirname(current_app.root_path)  # dari /app ke /backend
+    backend_dir = os.path.dirname(current_app.root_path)
     folder = os.path.join(backend_dir, 'data', 'preprocessed')
     os.makedirs(folder, exist_ok=True)
     return folder
@@ -47,16 +45,21 @@ def start_preprocessing():
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         original_name = os.path.splitext(dataset.filename)[0]
         preprocessed_filename = f"preprocessed_{timestamp}_{original_name}.csv"
-
-        # Dapatkan folder yang benar
         preprocessed_folder = get_preprocessed_folder()
         preprocessed_path = os.path.join(preprocessed_folder, preprocessed_filename)
         df.to_csv(preprocessed_path, index=False)
 
+        # Hitung nomor urut preprocessing untuk dataset ini jako nama default
+        existing_count = Preprocessing.query.filter_by(dataset_id=dataset_id).count()
+        default_name = f"Preprocess #{existing_count + 1}"
+
         preprocessing = Preprocessing(
             dataset_id=dataset_id,
             preprocessed_filepath=preprocessed_path,
-            row_count=len(df)
+            row_count=len(df),
+            name=default_name,       # NAMA DEFAULT
+            status='completed',      # langsung completed karena proses sinkron
+            progress=100
         )
         db.session.add(preprocessing)
         db.session.commit()
@@ -65,7 +68,8 @@ def start_preprocessing():
             'message': 'Preprocessing berhasil',
             'preprocessed_id': preprocessing.id,
             'filepath': preprocessed_path,
-            'row_count': len(df)
+            'row_count': len(df),
+            'name': preprocessing.name
         }), 200
 
     except Exception as e:
@@ -80,8 +84,8 @@ def get_preprocess_status(preprocess_id):
 
     return jsonify({
         'id': preprocessing.id,
-        'status': 'completed',
-        'progress': 100,
+        'status': preprocessing.status,
+        'progress': preprocessing.progress,
         'row_count': preprocessing.row_count,
         'filepath': preprocessing.preprocessed_filepath
     }), 200
@@ -99,7 +103,7 @@ def download_preprocessed(preprocess_id):
 
     filepath = preprocessing.preprocessed_filepath
 
-    # Jika file tidak ditemukan, cari di folder preprocessed yang benar
+    # Pencarian file di beberapa lokasi alternatif
     if not os.path.exists(filepath):
         filename = os.path.basename(filepath)
         preprocessed_folder = get_preprocessed_folder()
@@ -107,7 +111,6 @@ def download_preprocessed(preprocess_id):
         if os.path.exists(corrected_path):
             filepath = corrected_path
         else:
-            # Coba beberapa lokasi alternatif
             alt_paths = [
                 os.path.join(os.getcwd(), 'data', 'preprocessed', filename),
                 os.path.join(os.path.dirname(current_app.root_path), 'data', 'preprocessed', filename)
@@ -136,8 +139,56 @@ def get_history():
             'id': p.id,
             'dataset_id': p.dataset_id,
             'dataset_name': p.dataset.filename if p.dataset else None,
+            'name': p.name or f"Preprocessing #{p.id}",  # selalu kirim name
             'preprocessed_filepath': p.preprocessed_filepath,
             'row_count': p.row_count,
-            'timestamp': p.timestamp.isoformat() if p.timestamp else None
+            'created_at': p.timestamp.isoformat() if p.timestamp else None,  # alias untuk frontend
+            'timestamp': p.timestamp.isoformat() if p.timestamp else None   # tetap ada untuk backward compatibility
         })
     return jsonify(results), 200
+
+
+# ------------------- ENDPOINT BARU: RENAME & DELETE ------------------
+@preprocess_bp.route('/history/<int:preprocess_id>', methods=['PUT'])
+def rename_preprocessing(preprocess_id):
+    """Mengganti nama preprocessing (frontend menggunakan PUT)"""
+    preprocessing = Preprocessing.query.get(preprocess_id)
+    if not preprocessing:
+        return jsonify({'error': 'Preprocessing not found'}), 404
+
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Data JSON tidak valid'}), 400
+
+    new_name = data.get('name', '').strip()
+    if not new_name:
+        return jsonify({'error': 'Name cannot be empty'}), 400
+
+    preprocessing.name = new_name
+    db.session.commit()
+    return jsonify({
+        'message': 'Name updated',
+        'name': new_name,
+        'id': preprocessing.id
+    }), 200
+
+
+@preprocess_bp.route('/history/<int:preprocess_id>', methods=['DELETE'])
+def delete_preprocessing(preprocess_id):
+    """Menghapus preprocessing (frontend menggunakan DELETE)"""
+    preprocessing = Preprocessing.query.get(preprocess_id)
+    if not preprocessing:
+        return jsonify({'error': 'Preprocessing not found'}), 404
+
+    # Hapus file fisik jika ada
+    filepath = preprocessing.preprocessed_filepath
+    if os.path.exists(filepath):
+        try:
+            os.remove(filepath)
+        except OSError as e:
+            # Log error, tapi tetap hapus record database
+            current_app.logger.warning(f"Could not delete file {filepath}: {e}")
+
+    db.session.delete(preprocessing)
+    db.session.commit()
+    return jsonify({'message': 'Preprocessing deleted', 'id': preprocess_id}), 200

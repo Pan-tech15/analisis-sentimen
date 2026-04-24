@@ -10,7 +10,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     />
     <style>
-      /* Custom searchable dropdown styles */
+      /* Custom searchable dropdown styles untuk model saja */
       .search-dropdown {
         position: relative;
       }
@@ -56,7 +56,7 @@
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- Sidebar -->
+      <!-- Sidebar (sama) -->
       <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
         <div class="p-4 border-b">
           <span
@@ -153,7 +153,7 @@
         <div class="bg-white p-6 rounded-xl shadow-md mb-6">
           <h2 class="font-semibold text-gray-700 mb-4">Test Configuration</h2>
 
-          <!-- Select Trained Model (with search) -->
+          <!-- Select Trained Model (search dropdown) -->
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-1"
               >Select Trained Model</label
@@ -170,21 +170,28 @@
             <input type="hidden" id="selectedModelId" value="" />
           </div>
 
-          <!-- Select Algorithm (with search) -->
+          <!-- Select Algorithm (BUTTON instead of dropdown) -->
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1"
+            <label class="block text-sm font-medium text-gray-700 mb-2"
               >Select Algorithm</label
             >
-            <div class="search-dropdown" id="algoDropdown">
-              <input
-                type="text"
-                id="algoSearchInput"
-                placeholder="Search algorithm..."
-                autocomplete="off"
-              />
-              <div id="algoDropdownList" class="dropdown-list"></div>
+            <div class="flex flex-wrap gap-3">
+              <button
+                id="btnIndoBERT"
+                data-algo="IndoBERT-KNN"
+                class="algo-btn px-5 py-2 rounded-lg font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-600 text-white shadow-md"
+              >
+                <i class="fas fa-microchip mr-2"></i>IndoBERT‑KNN
+              </button>
+              <button
+                id="btnLexicon"
+                data-algo="Lexicon-NB"
+                class="algo-btn px-5 py-2 rounded-lg font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-200 text-gray-700 hover:bg-gray-300"
+              >
+                <i class="fas fa-microchip mr-2"></i>Naive Bayes‑Lexicon
+              </button>
             </div>
-            <input type="hidden" id="selectedAlgorithm" value="" />
+            <input type="hidden" id="selectedAlgorithm" value="IndoBERT-KNN" />
           </div>
 
           <!-- Select Test Dataset -->
@@ -260,12 +267,8 @@
         let pollingInterval = null;
         let currentTestId = null;
 
-        // Data for searchable dropdowns
-        let modelsList = []; // { id, name, algorithm, displayText }
-        let algorithmsList = [
-          { value: "IndoBERT-KNN", label: "IndoBERT‑KNN" },
-          { value: "Lexicon-NB", label: "Naive Bayes‑Lexicon" },
-        ];
+        // Data for searchable model dropdown
+        let modelsList = [];
 
         // Helper: fetch with token
         async function apiFetch(endpoint, options = {}) {
@@ -285,7 +288,7 @@
           return response;
         }
 
-        // Helper: render pagination
+        // Pagination helper
         function renderPaginationControls(
           containerId,
           currentPage,
@@ -347,7 +350,7 @@
           container.appendChild(wrapper);
         }
 
-        // Load trained models from API (based on selected algorithm? Actually we load all, then filter by algorithm in UI)
+        // Load trained models from API (all, then filter by selected algorithm)
         async function loadTrainedModels() {
           try {
             const res = await apiFetch("/api/training/history");
@@ -359,8 +362,10 @@
               algorithm: item.algorithm,
               displayText: `${item.dataset_filename || item.name} (${item.algorithm}) - Acc: ${item.metrics?.accuracy ? item.metrics.accuracy.toFixed(3) : "N/A"} - ${new Date(item.created_at).toLocaleDateString()}`,
             }));
-            // Initialize model dropdown
-            populateModelDropdown("");
+            // Refresh model dropdown (filter by currently selected algorithm)
+            populateModelDropdown(
+              document.getElementById("modelSearchInput").value,
+            );
           } catch (err) {
             console.error(err);
             modelsList = [];
@@ -387,7 +392,7 @@
           if (filtered.length === 0) {
             const div = document.createElement("div");
             div.className = "dropdown-item text-gray-500";
-            div.innerText = "No models found";
+            div.innerText = "No models found for this algorithm";
             listDiv.appendChild(div);
           } else {
             filtered.forEach((model) => {
@@ -401,44 +406,6 @@
                   model.displayText;
                 document.getElementById("selectedModelId").value = model.id;
                 listDiv.classList.remove("show");
-              });
-              listDiv.appendChild(div);
-            });
-          }
-        }
-
-        // Populate algorithm dropdown
-        function populateAlgorithmDropdown(searchText = "") {
-          let filtered = algorithmsList;
-          if (searchText) {
-            const lower = searchText.toLowerCase();
-            filtered = filtered.filter(
-              (a) =>
-                a.label.toLowerCase().includes(lower) ||
-                a.value.toLowerCase().includes(lower),
-            );
-          }
-          const listDiv = document.getElementById("algoDropdownList");
-          listDiv.innerHTML = "";
-          if (filtered.length === 0) {
-            const div = document.createElement("div");
-            div.className = "dropdown-item text-gray-500";
-            div.innerText = "No algorithms found";
-            listDiv.appendChild(div);
-          } else {
-            filtered.forEach((algo) => {
-              const div = document.createElement("div");
-              div.className = "dropdown-item";
-              div.innerText = algo.label;
-              div.dataset.value = algo.value;
-              div.addEventListener("click", () => {
-                document.getElementById("algoSearchInput").value = algo.label;
-                document.getElementById("selectedAlgorithm").value = algo.value;
-                listDiv.classList.remove("show");
-                // Reload model dropdown based on new algorithm selection
-                populateModelDropdown(
-                  document.getElementById("modelSearchInput").value,
-                );
               });
               listDiv.appendChild(div);
             });
@@ -601,8 +568,51 @@
           }
         }
 
-        // Initialize searchable dropdowns
-        function initSearchableDropdowns() {
+        // ========== ALGORITHM BUTTON TOGGLE ==========
+        function initAlgorithmButtons() {
+          const btnIndo = document.getElementById("btnIndoBERT");
+          const btnLex = document.getElementById("btnLexicon");
+          const selectedAlgoInput =
+            document.getElementById("selectedAlgorithm");
+
+          function setActive(activeBtn) {
+            // Reset both buttons
+            btnIndo.classList.remove("bg-blue-600", "text-white", "shadow-md");
+            btnIndo.classList.add(
+              "bg-gray-200",
+              "text-gray-700",
+              "hover:bg-gray-300",
+            );
+            btnLex.classList.remove("bg-blue-600", "text-white", "shadow-md");
+            btnLex.classList.add(
+              "bg-gray-200",
+              "text-gray-700",
+              "hover:bg-gray-300",
+            );
+
+            activeBtn.classList.remove(
+              "bg-gray-200",
+              "text-gray-700",
+              "hover:bg-gray-300",
+            );
+            activeBtn.classList.add("bg-blue-600", "text-white", "shadow-md");
+
+            selectedAlgoInput.value = activeBtn.getAttribute("data-algo");
+            // Refresh model dropdown based on new algorithm
+            populateModelDropdown(
+              document.getElementById("modelSearchInput").value,
+            );
+            // Clear selected model input
+            document.getElementById("modelSearchInput").value = "";
+            document.getElementById("selectedModelId").value = "";
+          }
+
+          btnIndo.addEventListener("click", () => setActive(btnIndo));
+          btnLex.addEventListener("click", () => setActive(btnLex));
+        }
+
+        // Initialize searchable dropdown for model
+        function initModelDropdown() {
           const modelInput = document.getElementById("modelSearchInput");
           const modelList = document.getElementById("modelDropdownList");
           modelInput.addEventListener("focus", () => {
@@ -619,22 +629,6 @@
               !modelList.contains(e.target)
             ) {
               modelList.classList.remove("show");
-            }
-          });
-
-          const algoInput = document.getElementById("algoSearchInput");
-          const algoList = document.getElementById("algoDropdownList");
-          algoInput.addEventListener("focus", () => {
-            populateAlgorithmDropdown(algoInput.value);
-            algoList.classList.add("show");
-          });
-          algoInput.addEventListener("input", (e) => {
-            populateAlgorithmDropdown(e.target.value);
-            algoList.classList.add("show");
-          });
-          document.addEventListener("click", (e) => {
-            if (!algoInput.contains(e.target) && !algoList.contains(e.target)) {
-              algoList.classList.remove("show");
             }
           });
         }
@@ -662,9 +656,14 @@
           loadTrainedModels();
           loadDatasets();
           loadTestResults();
-          initSearchableDropdowns();
-          // Pre-populate algorithm dropdown with default selection (optional)
-          populateAlgorithmDropdown("");
+          initModelDropdown();
+          initAlgorithmButtons();
+          // Set default algorithm button active (IndoBERT)
+          const defaultBtn = document.getElementById("btnIndoBERT");
+          if (defaultBtn) {
+            defaultBtn.classList.remove("bg-gray-200", "text-gray-700");
+            defaultBtn.classList.add("bg-blue-600", "text-white", "shadow-md");
+          }
         } else {
           window.location.href = "login.html";
         }

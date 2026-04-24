@@ -493,7 +493,6 @@
             <!-- Akan diisi JS -->
           </div>
         </div>
-
       </main>
     </div>
 
@@ -838,7 +837,7 @@
           if (!res.ok) throw new Error("Failed to load history");
           trainingHistory = await res.json();
           // Untuk dummy, tambahkan field split_ratio jika tidak ada
-          trainingHistory.forEach(item => {
+          trainingHistory.forEach((item) => {
             if (!item.split_ratio) item.split_ratio = "80:20"; // default
           });
           populateModelSelect();
@@ -971,7 +970,8 @@
         const container = document.getElementById("bestModelContainer");
         if (!container) return;
         if (trainingHistory.length === 0) {
-          container.innerHTML = '<p class="text-gray-500">Belum ada data training.</p>';
+          container.innerHTML =
+            '<p class="text-gray-500">Belum ada data training.</p>';
           return;
         }
         // Cari akurasi tertinggi
@@ -981,14 +981,15 @@
           return currAcc > prevAcc ? curr : prev;
         }, trainingHistory[0]);
         if (!best.metrics?.accuracy) {
-          container.innerHTML = '<p class="text-gray-500">Tidak ada metrik akurasi.</p>';
+          container.innerHTML =
+            '<p class="text-gray-500">Tidak ada metrik akurasi.</p>';
           return;
         }
         const accPercent = (best.metrics.accuracy * 100).toFixed(2);
         // Ambil parameter dari store (jika ada) atau dari best object
-        const params = trainingParamsStore[best.id] || best.params || { };
+        const params = trainingParamsStore[best.id] || best.params || {};
         const hasParams = Object.keys(params).length > 0;
-        
+
         container.innerHTML = `
           <div class="border rounded-lg p-4 bg-gradient-to-r from-yellow-50 to-orange-50">
             <div class="flex flex-wrap justify-between items-start gap-4">
@@ -1017,14 +1018,16 @@
         const modal = document.getElementById("paramModal");
         const content = document.getElementById("paramModalContent");
         if (!modal || !content) return;
-        
+
         let paramsHtml = `<div class="space-y-2"><p class="font-semibold">Model: ${model.algorithm}</p>`;
         if (Object.keys(params).length === 0) {
-          paramsHtml += '<p class="text-gray-500">Parameter lengkap tidak tersedia untuk model ini.</p>';
+          paramsHtml +=
+            '<p class="text-gray-500">Parameter lengkap tidak tersedia untuk model ini.</p>';
         } else {
-          paramsHtml += '<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">';
+          paramsHtml +=
+            '<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">';
           for (let [key, val] of Object.entries(params)) {
-            if (typeof val === 'object') val = JSON.stringify(val);
+            if (typeof val === "object") val = JSON.stringify(val);
             paramsHtml += `
               <div class="bg-gray-50 p-2 rounded">
                 <span class="text-xs text-gray-500">${key}</span>
@@ -1032,9 +1035,9 @@
               </div>
             `;
           }
-          paramsHtml += '</div>';
+          paramsHtml += "</div>";
         }
-        paramsHtml += '</div>';
+        paramsHtml += "</div>";
         content.innerHTML = paramsHtml;
         modal.classList.remove("hidden");
       }
@@ -1122,11 +1125,13 @@
           lastTrainingId = newId;
           // Simpan parameter lengkap ke store
           trainingParamsStore[newId] = { ...params };
-          
-          const splitRatio = document.getElementById("filterTrain").value && document.getElementById("filterTest").value 
-            ? `${document.getElementById("filterTrain").value}:${document.getElementById("filterTest").value}`
-            : "80:20";
-          
+
+          const splitRatio =
+            document.getElementById("filterTrain").value &&
+            document.getElementById("filterTest").value
+              ? `${document.getElementById("filterTrain").value}:${document.getElementById("filterTest").value}`
+              : "80:20";
+
           const newHistory = {
             id: newId,
             dataset_filename: params.dataset,
@@ -1136,7 +1141,7 @@
             completed_at: new Date().toISOString(),
             model_path: null,
             split_ratio: splitRatio,
-            params: { ...params } // simpan juga parameter
+            params: { ...params }, // simpan juga parameter
           };
           trainingHistory.unshift(newHistory);
           renderTrainingTable();
@@ -1145,7 +1150,9 @@
           renderBestModel(); // update model terbaik
 
           showTrainingResult(
-            algorithm === "indobert" ? "IndoBERT‑KNN+UMAP" : "Naive Bayes‑Lexicon",
+            algorithm === "indobert"
+              ? "IndoBERT‑KNN+UMAP"
+              : "Naive Bayes‑Lexicon",
             metrics,
             { ...params, duration, modelName: params.modelName || "New Model" },
             newId,
@@ -1207,14 +1214,24 @@
       indoDiv.classList.remove("hidden");
       lexDiv.classList.add("hidden");
 
-      document.getElementById("startTrainingBtn").addEventListener("click", onStartTraining);
-      document.getElementById("startTrainingBtnNB").addEventListener("click", onStartTraining);
-      document.getElementById("closeResultBtn").addEventListener("click", () => {
-        document.getElementById("trainingResultSection").classList.add("hidden");
-      });
-      document.getElementById("closeParamModal").addEventListener("click", () => {
-        document.getElementById("paramModal").classList.add("hidden");
-      });
+      document
+        .getElementById("startTrainingBtn")
+        .addEventListener("click", onStartTraining);
+      document
+        .getElementById("startTrainingBtnNB")
+        .addEventListener("click", onStartTraining);
+      document
+        .getElementById("closeResultBtn")
+        .addEventListener("click", () => {
+          document
+            .getElementById("trainingResultSection")
+            .classList.add("hidden");
+        });
+      document
+        .getElementById("closeParamModal")
+        .addEventListener("click", () => {
+          document.getElementById("paramModal").classList.add("hidden");
+        });
       // Tutup modal jika klik di luar (optional)
       window.addEventListener("click", (e) => {
         const modal = document.getElementById("paramModal");
@@ -1235,14 +1252,24 @@
       );
 
       // Initialize
-      document.getElementById("applyFilterSplit").addEventListener("click", () => {
-        currentSplitPage = 1;
-        renderSplitTable();
-      });
-      document.getElementById("btnAddSplit").addEventListener("click", openAddSplitModal);
-      document.getElementById("closeSplitModal").addEventListener("click", closeSplitModal);
-      document.getElementById("cancelSplitModal").addEventListener("click", closeSplitModal);
-      document.getElementById("splitForm").addEventListener("submit", saveSplit);
+      document
+        .getElementById("applyFilterSplit")
+        .addEventListener("click", () => {
+          currentSplitPage = 1;
+          renderSplitTable();
+        });
+      document
+        .getElementById("btnAddSplit")
+        .addEventListener("click", openAddSplitModal);
+      document
+        .getElementById("closeSplitModal")
+        .addEventListener("click", closeSplitModal);
+      document
+        .getElementById("cancelSplitModal")
+        .addEventListener("click", closeSplitModal);
+      document
+        .getElementById("splitForm")
+        .addEventListener("submit", saveSplit);
 
       renderSplitTable();
       loadTrainingHistory();

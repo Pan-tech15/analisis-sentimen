@@ -32,7 +32,7 @@
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- SIDEBAR (SAMA SEPERTI SEBELUMNYA) -->
+      <!-- SIDEBAR (sama seperti sebelumnya) -->
       <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
         <div class="p-4 border-b">
           <span
@@ -256,31 +256,35 @@
           </div>
         </div>
 
-        <!-- Tabel Stabilitas Performa (jika CV) -->
+        <!-- Tabel Stabilitas Performa (selalu ditampilkan dengan data dummy untuk frontend) -->
         <div
           id="stabilitySection"
-          class="bg-white p-6 rounded-xl shadow-md mb-6 hidden"
+          class="bg-white p-6 rounded-xl shadow-md mb-6"
         >
           <h2 class="font-semibold text-gray-700 mb-4">
-            Stabilitas Performa (<span id="cvFolds">5</span>-Fold Cross
-            Validation)
+            Stabilitas Performa (5-Fold Cross Validation)
           </h2>
           <div class="overflow-x-auto">
             <table class="min-w-full border border-gray-200">
               <thead class="bg-gray-100">
                 <tr>
-                  <th class="px-4 py-2 border border-gray-300">Metrik</th>
-                  <th class="px-4 py-2 border border-gray-300">Mean</th>
-                  <th class="px-4 py-2 border border-gray-300">
-                    Standard Deviation
-                  </th>
+                  <th class="px-4 py-2 border border-gray-300">Epoch / Fold</th>
+                  <th class="px-4 py-2 border border-gray-300">Akurasi (%)</th>
+                  <th class="px-4 py-2 border border-gray-300">Presisi (%)</th>
+                  <th class="px-4 py-2 border border-gray-300">Recall (%)</th>
+                  <th class="px-4 py-2 border border-gray-300">F1-Score (%)</th>
+                  <th class="px-4 py-2 border border-gray-300">MCC</th>
+                  <th class="px-4 py-2 border border-gray-300">ROC-AUC (%)</th>
                 </tr>
               </thead>
-              <tbody id="stabilityTableBody"></tbody>
+              <tbody id="stabilityTableBody">
+                <!-- Data dummy akan diisi JavaScript -->
+              </tbody>
             </table>
           </div>
           <p class="text-xs text-gray-500 mt-3">
-            *Nilai mean dan standar deviasi dihitung dari cross-validation.
+            *Nilai mean dan standar deviasi dihitung dari cross-validation (data
+            simulasi).
           </p>
         </div>
 
@@ -559,7 +563,6 @@
           const tbody = document.getElementById("epochFoldTableBody");
           if (!section || !tbody) return;
 
-          // Cek apakah data epoch atau fold tersedia
           let items = null;
           let isEpoch = false;
 
@@ -627,7 +630,6 @@
             `;
           });
 
-          // Baris rata-rata
           const avgAcc = (totalAcc / n).toFixed(2);
           const avgPrec = (totalPrec / n).toFixed(2);
           const avgRec = (totalRec / n).toFixed(2);
@@ -645,6 +647,107 @@
             <td class="px-4 py-2 border border-gray-200 text-center">${avgF1}%</td>
             <td class="px-4 py-2 border border-gray-200 text-center">${avgLoss}</td>
             <td class="px-4 py-2 border border-gray-200 text-center">${avgMcc}</td>
+          `;
+        }
+
+        // ========== TABEL STABILITAS PERFORMA (DUMMY DATA) ==========
+        function renderStabilityTable() {
+          const tbody = document.getElementById("stabilityTableBody");
+          if (!tbody) return;
+          tbody.innerHTML = "";
+
+          // Dummy data untuk 5-fold cross validation
+          const foldsData = [
+            {
+              fold: 1,
+              acc: 82.3,
+              prec: 81.5,
+              rec: 80.9,
+              f1: 81.2,
+              mcc: 0.723,
+              roc_auc: 88.4,
+            },
+            {
+              fold: 2,
+              acc: 84.1,
+              prec: 83.2,
+              rec: 82.7,
+              f1: 83.0,
+              mcc: 0.745,
+              roc_auc: 89.2,
+            },
+            {
+              fold: 3,
+              acc: 83.5,
+              prec: 82.9,
+              rec: 82.1,
+              f1: 82.5,
+              mcc: 0.738,
+              roc_auc: 88.9,
+            },
+            {
+              fold: 4,
+              acc: 85.2,
+              prec: 84.5,
+              rec: 83.8,
+              f1: 84.1,
+              mcc: 0.761,
+              roc_auc: 90.1,
+            },
+            {
+              fold: 5,
+              acc: 83.9,
+              prec: 83.1,
+              rec: 82.4,
+              f1: 82.8,
+              mcc: 0.742,
+              roc_auc: 89.5,
+            },
+          ];
+
+          let sumAcc = 0,
+            sumPrec = 0,
+            sumRec = 0,
+            sumF1 = 0,
+            sumMcc = 0,
+            sumAuc = 0;
+          foldsData.forEach((f) => {
+            const row = tbody.insertRow();
+            row.innerHTML = `
+              <td class="px-4 py-2 border border-gray-200 font-medium">Fold ${f.fold}</td>
+              <td class="px-4 py-2 border border-gray-200 text-center">${f.acc}%</td>
+              <td class="px-4 py-2 border border-gray-200 text-center">${f.prec}%</td>
+              <td class="px-4 py-2 border border-gray-200 text-center">${f.rec}%</td>
+              <td class="px-4 py-2 border border-gray-200 text-center">${f.f1}%</td>
+              <td class="px-4 py-2 border border-gray-200 text-center">${f.mcc}</td>
+              <td class="px-4 py-2 border border-gray-200 text-center">${f.roc_auc}%</td>
+            `;
+            sumAcc += f.acc;
+            sumPrec += f.prec;
+            sumRec += f.rec;
+            sumF1 += f.f1;
+            sumMcc += f.mcc;
+            sumAuc += f.roc_auc;
+          });
+
+          const n = foldsData.length;
+          const avgAcc = (sumAcc / n).toFixed(2);
+          const avgPrec = (sumPrec / n).toFixed(2);
+          const avgRec = (sumRec / n).toFixed(2);
+          const avgF1 = (sumF1 / n).toFixed(2);
+          const avgMcc = (sumMcc / n).toFixed(4);
+          const avgAuc = (sumAuc / n).toFixed(2);
+
+          const avgRow = tbody.insertRow();
+          avgRow.classList.add("bg-gray-100", "font-semibold");
+          avgRow.innerHTML = `
+            <td class="px-4 py-2 border border-gray-200 font-medium">Rata-rata</td>
+            <td class="px-4 py-2 border border-gray-200 text-center">${avgAcc}%</td>
+            <td class="px-4 py-2 border border-gray-200 text-center">${avgPrec}%</td>
+            <td class="px-4 py-2 border border-gray-200 text-center">${avgRec}%</td>
+            <td class="px-4 py-2 border border-gray-200 text-center">${avgF1}%</td>
+            <td class="px-4 py-2 border border-gray-200 text-center">${avgMcc}</td>
+            <td class="px-4 py-2 border border-gray-200 text-center">${avgAuc}%</td>
           `;
         }
 
@@ -700,20 +803,11 @@
             drawHeatmap();
             populateMetricsTable();
 
-            if (metrics.cv_folds) {
-              document
-                .getElementById("stabilitySection")
-                .classList.remove("hidden");
-              document.getElementById("cvFolds").textContent = metrics.cv_folds;
-              populateStabilityTable();
-            } else {
-              document
-                .getElementById("stabilitySection")
-                .classList.add("hidden");
-            }
-
-            // ========== TAMPILKAN TABEL EPOCH/FOLD ==========
+            // Tampilkan tabel epoch/fold jika ada
             renderEpochFoldTable(trainingData);
+
+            // Tampilkan tabel stabilitas (selalu ditampilkan dengan dummy)
+            renderStabilityTable();
           } catch (error) {
             console.error(error);
             alert("Gagal memuat detail training: " + error.message);
@@ -761,41 +855,7 @@
           }
         }
 
-        function populateStabilityTable() {
-          const tbody = document.getElementById("stabilityTableBody");
-          tbody.innerHTML = "";
-          const acc = metrics.accuracy?.toFixed(4) || "-";
-          const prec = metrics.precision?.toFixed(4) || "-";
-          const rec = metrics.recall?.toFixed(4) || "-";
-          const f1 = metrics.f1_score?.toFixed(4) || "-";
-          let calc = null;
-          if (matrix.length > 0 && labels.length > 0) {
-            calc = calculateMetricsFromCM(matrix, labels);
-          }
-          const rows = [
-            ["Akurasi", acc, "-"],
-            [
-              "Presisi (Macro)",
-              calc ? calc.macro_precision.toFixed(4) : "-",
-              "-",
-            ],
-            ["Recall (Macro)", calc ? calc.macro_recall.toFixed(4) : "-", "-"],
-            ["F1-Score (Macro)", calc ? calc.macro_f1.toFixed(4) : "-", "-"],
-            ["MCC", calc ? calc.mcc.toFixed(4) : "-", "-"],
-            ["ROC-AUC (Macro)", "-", "-"],
-          ];
-          for (let [name, mean, std] of rows) {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-              <td class="px-4 py-2 border border-gray-200 font-medium">${name}</td>
-              <td class="px-4 py-2 border border-gray-200">${mean}</td>
-              <td class="px-4 py-2 border border-gray-200">${std}</td>
-            `;
-            tbody.appendChild(tr);
-          }
-        }
-
-        // DRAW HEATMAP (sama seperti sebelumnya)
+        // DRAW HEATMAP
         function drawHeatmap() {
           canvas = document.getElementById("confusionHeatmap");
           if (!canvas) return;
