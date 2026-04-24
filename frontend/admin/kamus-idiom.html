@@ -13,7 +13,7 @@
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- Sidebar (English, Processing as direct link) -->
+      <!-- Sidebar (sama seperti sebelumnya) -->
       <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
         <div class="p-4 border-b">
           <span
@@ -32,7 +32,6 @@
                 ><span>Dashboard</span></a
               >
             </li>
-            <!-- Data Collection dropdown -->
             <li>
               <button
                 id="dataCollectionBtn"
@@ -72,7 +71,6 @@
               >
             </li>
             <li>
-              <!-- Processing as direct link -->
               <a
                 href="processing.html"
                 class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
@@ -123,7 +121,7 @@
               <span class="text-blue-600 font-medium">click to select</span>
             </p>
             <p class="text-xs text-gray-400 mt-1">
-              Upload CSV file with columns: idiom_text, idiom_meaning
+              Upload CSV file with columns: idiom_text, idiom_meaning, (optional) emotion
             </p>
             <input type="file" id="fileInput" class="hidden" accept=".csv" />
           </div>
@@ -133,7 +131,6 @@
           >
             Upload
           </button>
-          <!-- CSV Preview (initially hidden) -->
           <div
             id="previewSection"
             class="bg-white p-6 rounded-xl shadow-md mt-6 hidden"
@@ -146,6 +143,7 @@
                     <th class="px-4 py-2 border border-blue-400">No</th>
                     <th class="px-4 py-2 border border-blue-400">Idiom</th>
                     <th class="px-4 py-2 border border-blue-400">Meaning</th>
+                    <th class="px-4 py-2 border border-blue-400">Emosi</th>
                   </tr>
                 </thead>
                 <tbody id="previewTableBody"></tbody>
@@ -162,10 +160,10 @@
           </div>
         </div>
 
-        <!-- Add Idiom Manually -->
+        <!-- Add Idiom Manually (with Emotion) -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-6">
           <h2 class="font-semibold text-gray-700 mb-4">Add Idiom</h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700"
                 >Idiom</label
@@ -188,6 +186,24 @@
                 placeholder="e.g., to leave, to go away"
               />
             </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700"
+                >Emosi</label
+              >
+              <select
+                id="newEmotion"
+                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+              >
+                <option value="">-- Pilih Emosi --</option>
+                <option value="Senang">Senang</option>
+                <option value="Sedih">Sedih</option>
+                <option value="Marah">Marah</option>
+                <option value="Takut">Takut</option>
+                <option value="Terkejut">Terkejut</option>
+                <option value="Netral">Netral</option>
+                <option value="Percaya">Percaya</option>
+              </select>
+            </div>
           </div>
           <button
             id="addIdiomBtn"
@@ -199,6 +215,12 @@
 
         <!-- Filter & Search -->
         <div class="bg-white p-6 rounded-xl shadow-md">
+          <!-- Daftar Idiom (judul tabel) -->
+          <div class="mb-3">
+            <h2 class="text-lg font-semibold text-gray-800">
+              <i class="fas fa-list-alt mr-2 text-blue-600"></i>Daftar Idiom
+            </h2>
+          </div>
           <div class="flex flex-wrap gap-4 mb-4">
             <div class="flex-1">
               <input
@@ -222,7 +244,7 @@
             </button>
           </div>
 
-          <!-- Table -->
+          <!-- Table with additional Emotion column -->
           <div class="overflow-x-auto">
             <table class="min-w-full border border-gray-200">
               <thead class="bg-blue-500 text-white">
@@ -230,12 +252,11 @@
                   <th class="px-4 py-2 border border-blue-400">No</th>
                   <th class="px-4 py-2 border border-blue-400">Idiom</th>
                   <th class="px-4 py-2 border border-blue-400">Meaning</th>
+                  <th class="px-4 py-2 border border-blue-400">Emosi</th>
                   <th class="px-4 py-2 border border-blue-400">Actions</th>
                 </tr>
               </thead>
-              <tbody id="idiomTableBody" class="bg-white">
-                <!-- Data filled by JavaScript -->
-              </tbody>
+              <tbody id="idiomTableBody" class="bg-white"></tbody>
             </table>
           </div>
 
@@ -245,7 +266,7 @@
       </main>
     </div>
 
-    <!-- Edit Idiom Modal (hidden) -->
+    <!-- Edit Idiom Modal (with Emotion) -->
     <div
       id="editModal"
       class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50"
@@ -267,6 +288,19 @@
             id="editMeaning"
             class="mt-1 block w-full border rounded-md p-2"
           />
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700">Emosi</label>
+          <select id="editEmotion" class="mt-1 block w-full border rounded-md p-2">
+            <option value="">-- Pilih Emosi --</option>
+            <option value="Senang">Senang</option>
+            <option value="Sedih">Sedih</option>
+            <option value="Marah">Marah</option>
+            <option value="Takut">Takut</option>
+            <option value="Terkejut">Terkejut</option>
+            <option value="Netral">Netral</option>
+            <option value="Percaya">Percaya</option>
+          </select>
         </div>
         <div class="flex justify-end space-x-2">
           <button
@@ -316,6 +350,7 @@
       // Load idioms from server
       async function loadIdioms() {
         try {
+          // Asumsikan backend mendukung parameter 'search' dan 'sort'
           const url = `/idioms?page=${currentPage}&per_page=${rowsPerPage}&search=${encodeURIComponent(currentSearch)}&sort=${currentSort}`;
           const response = await apiFetch(url);
           if (!response) return;
@@ -336,7 +371,7 @@
         tbody.innerHTML = "";
         if (!window.idiomsData || window.idiomsData.length === 0) {
           const row = tbody.insertRow();
-          row.insertCell(0).colSpan = 4;
+          row.insertCell(0).colSpan = 5;
           row.insertCell(0).innerHTML = "No data available";
           row.cells[0].classList.add("text-center", "py-4");
           return;
@@ -347,7 +382,8 @@
           row.insertCell(0).innerHTML = start + idx + 1;
           row.insertCell(1).innerHTML = item.idiom;
           row.insertCell(2).innerHTML = item.meaning;
-          const actionsCell = row.insertCell(3);
+          row.insertCell(3).innerHTML = item.emotion || "-";
+          const actionsCell = row.insertCell(4);
           actionsCell.innerHTML = `
             <i class="fas fa-edit text-blue-500 mr-3 cursor-pointer hover:text-blue-700" data-id="${item.id}"></i>
             <i class="fas fa-trash text-red-500 cursor-pointer hover:text-red-700" data-id="${item.id}"></i>
@@ -382,7 +418,6 @@
         const container = document.createElement("div");
         container.className = "flex items-center space-x-2";
 
-        // Previous
         const prevBtn = document.createElement("button");
         prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
         prevBtn.className = `px-3 py-1 rounded border ${currentPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
@@ -395,13 +430,11 @@
         };
         container.appendChild(prevBtn);
 
-        // Page info
         const pageInfo = document.createElement("span");
         pageInfo.className = "text-gray-700";
         pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
         container.appendChild(pageInfo);
 
-        // Page number input
         const pageInput = document.createElement("input");
         pageInput.type = "number";
         pageInput.min = 1;
@@ -410,7 +443,6 @@
         pageInput.className = "w-16 border rounded px-2 py-1 text-center";
         container.appendChild(pageInput);
 
-        // Go button
         const goBtn = document.createElement("button");
         goBtn.innerText = "Go";
         goBtn.className =
@@ -425,7 +457,6 @@
         };
         container.appendChild(goBtn);
 
-        // Next
         const nextBtn = document.createElement("button");
         nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
         nextBtn.className = `px-3 py-1 rounded border ${currentPage === totalPages ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
@@ -441,10 +472,11 @@
         paginationDiv.appendChild(container);
       }
 
-      // Add manual idiom
+      // Add manual idiom with emotion
       async function addIdiom() {
         const idiomText = document.getElementById("newIdiom").value.trim();
         const meaning = document.getElementById("newMeaning").value.trim();
+        const emotion = document.getElementById("newEmotion").value;
         if (!idiomText || !meaning) {
           alert("Idiom and meaning are required");
           return;
@@ -455,6 +487,7 @@
             body: JSON.stringify({
               idiom_text: idiomText,
               idiom_meaning: meaning,
+              emotion: emotion || null,
             }),
           });
           if (!response) return;
@@ -463,6 +496,7 @@
             alert("Idiom added successfully");
             document.getElementById("newIdiom").value = "";
             document.getElementById("newMeaning").value = "";
+            document.getElementById("newEmotion").value = "";
             currentPage = 1;
             loadIdioms();
           } else {
@@ -502,6 +536,7 @@
         editingId = item.id;
         document.getElementById("editIdiom").value = item.idiom;
         document.getElementById("editMeaning").value = item.meaning;
+        document.getElementById("editEmotion").value = item.emotion || "";
         document.getElementById("editModal").classList.remove("hidden");
       }
       function closeModal() {
@@ -511,6 +546,7 @@
       async function saveEdit() {
         const newIdiom = document.getElementById("editIdiom").value.trim();
         const newMeaning = document.getElementById("editMeaning").value.trim();
+        const newEmotion = document.getElementById("editEmotion").value;
         if (!newIdiom || !newMeaning) {
           alert("Idiom and meaning are required");
           return;
@@ -521,6 +557,7 @@
             body: JSON.stringify({
               idiom_text: newIdiom,
               idiom_meaning: newMeaning,
+              emotion: newEmotion || null,
             }),
           });
           if (!response) return;
@@ -593,6 +630,7 @@
             }
             let idiomKey = null;
             let meaningKey = null;
+            let emotionKey = null;
             const firstRow = data[0];
             for (let key in firstRow) {
               let lowerKey = key.toLowerCase();
@@ -600,6 +638,8 @@
                 idiomKey = key;
               if (lowerKey.includes("meaning") || lowerKey.includes("arti"))
                 meaningKey = key;
+              if (lowerKey.includes("emosi") || lowerKey.includes("emotion"))
+                emotionKey = key;
             }
             if (!idiomKey || !meaningKey) {
               alert(
@@ -611,10 +651,12 @@
             for (let row of data) {
               let idiom = row[idiomKey] ? row[idiomKey].trim() : "";
               let meaning = row[meaningKey] ? row[meaningKey].trim() : "";
+              let emotion = emotionKey ? (row[emotionKey] ? row[emotionKey].trim() : "") : "";
               if (idiom && meaning && idiom !== "nan" && meaning !== "nan") {
                 uploadedData.push({
                   idiom_text: idiom,
                   idiom_meaning: meaning,
+                  emotion: emotion || null,
                 });
               }
             }
@@ -630,12 +672,13 @@
               row.insertCell(0).innerHTML = idx + 1;
               row.insertCell(1).innerHTML = item.idiom_text;
               row.insertCell(2).innerHTML = item.idiom_meaning;
+              row.insertCell(3).innerHTML = item.emotion || "-";
               for (let cell of row.cells)
                 cell.classList.add("border", "border-gray-200", "px-4", "py-2");
             });
             if (uploadedData.length > 10) {
               const infoRow = previewBody.insertRow();
-              infoRow.insertCell(0).colSpan = 3;
+              infoRow.insertCell(0).colSpan = 4;
               infoRow.insertCell(0).innerHTML =
                 `... and ${uploadedData.length - 10} more entries`;
               infoRow.cells[0].classList.add(
@@ -689,7 +732,7 @@
         fileInput.click();
       });
 
-      // Sidebar dropdown (only for Data Collection)
+      // Sidebar dropdown
       function toggleDropdown(btn, menu, icon) {
         btn.addEventListener("click", () => {
           menu.classList.toggle("hidden");
@@ -700,7 +743,6 @@
       const dataCollectionMenu = document.getElementById("dataCollectionMenu");
       const dataCollectionIcon = document.getElementById("dataCollectionIcon");
       toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
-      // Processing is already a direct link, no toggle needed
 
       // Load initial data
       if (authToken) {
