@@ -256,7 +256,7 @@
                 >Select Model</label
               >
               <select id="oldModelSelect" class="w-full border rounded-lg p-2">
-                <option value="">-- No previous model --</option>
+                <option value="">-- New Model --</option>
               </select>
             </div>
           </div>
@@ -879,7 +879,7 @@
       function populateModelSelect() {
         const select = document.getElementById("oldModelSelect");
         if (!select) return;
-        select.innerHTML = '<option value="">-- No previous model --</option>';
+        select.innerHTML = '<option value="">-- New Model --</option>';
         // Tampilkan semua model (tidak filter algoritma agar lebih fleksibel)
         trainingHistory.forEach((m) => {
           const opt = document.createElement("option");
