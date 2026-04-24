@@ -5,3 +5,4 @@ from .preprocessing import Preprocessing
 from .model_config import ModelConfig
 from .training import Training
 from .testing import Testing
+from .split_ratio import SplitRatio

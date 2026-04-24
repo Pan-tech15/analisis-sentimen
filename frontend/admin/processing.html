@@ -51,7 +51,7 @@
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- Sidebar (English labels) -->
+      <!-- Sidebar -->
       <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
         <div class="p-4 border-b">
           <span
@@ -144,56 +144,53 @@
       <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
         <h1 class="text-3xl font-bold text-gray-800 mb-6">Processing</h1>
 
-        <!-- Split Data Ratio Section -->
+        <!-- Split Data Ratio Section (REVISED) -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-8">
           <div class="flex justify-between items-center mb-4">
             <h2 class="font-semibold text-gray-700">Split Data Ratio</h2>
+          </div>
+
+          <!-- Form Inline Add (baru) -->
+          <div
+            class="flex flex-wrap items-end gap-3 mb-4 p-3 bg-gray-50 rounded-lg"
+          >
+            <div>
+              <label class="block text-sm font-medium text-gray-700"
+                >Train (%)</label
+              >
+              <input
+                type="number"
+                id="addTrain"
+                min="0"
+                max="100"
+                class="w-24 border rounded p-2"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700"
+                >Test (%)</label
+              >
+              <input
+                type="number"
+                id="addTest"
+                min="0"
+                max="100"
+                class="w-24 border rounded p-2"
+              />
+            </div>
             <button
               id="btnAddSplit"
-              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 shadow-md transition"
+              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-1"
             >
-              <i class="fas fa-plus"></i><span>Add Split Ratio</span>
+              <i class="fas fa-plus"></i><span>Add</span>
             </button>
           </div>
 
-          <!-- Filters -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Filter Train %</label
-              >
-              <input
-                type="text"
-                id="filterTrain"
-                placeholder="e.g., 70, 80"
-                class="w-full border rounded-lg p-2"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Filter Test %</label
-              >
-              <input
-                type="text"
-                id="filterTest"
-                placeholder="e.g., 30, 20"
-                class="w-full border rounded-lg p-2"
-              />
-            </div>
-          </div>
-          <button
-            id="applyFilterSplit"
-            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mb-4"
-          >
-            Apply Filter
-          </button>
-
-          <!-- Split Ratio Table -->
+          <!-- Split Ratio Table (hanya Train, Test, Actions) -->
           <div class="overflow-x-auto">
             <table class="min-w-full border border-gray-200">
               <thead class="bg-blue-500 text-white">
                 <tr>
-                  <th class="px-4 py-2 border border-blue-400">Name</th>
                   <th class="px-4 py-2 border border-blue-400">Train (%)</th>
                   <th class="px-4 py-2 border border-blue-400">Test (%)</th>
                   <th class="px-4 py-2 border border-blue-400">Actions</th>
@@ -237,7 +234,7 @@
             </p>
           </div>
 
-          <!-- Algorithm selection & Select Model (side by side) - label diubah -->
+          <!-- Algorithm selection & Select Model (side by side) -->
           <div class="flex flex-wrap gap-4 mb-6">
             <div class="flex-1 min-w-[200px]">
               <label class="block text-sm font-medium text-gray-700 mb-1"
@@ -444,7 +441,7 @@
           </div>
         </div>
 
-        <!-- Training Result Section (dynamically shown) -->
+        <!-- Training Result Section -->
         <div
           id="trainingResultSection"
           class="bg-white p-6 rounded-xl shadow-md mb-8 hidden"
@@ -483,7 +480,7 @@
           <div id="trainingPagination" class="flex justify-center mt-4"></div>
         </div>
 
-        <!-- Catatan Model Training dengan Hasil Tertinggi -->
+        <!-- Model dengan Hasil Tertinggi -->
         <div class="bg-white p-6 rounded-xl shadow-md">
           <h2 class="font-semibold text-gray-700 mb-4 flex items-center">
             <i class="fas fa-trophy text-yellow-500 mr-2"></i>
@@ -496,7 +493,7 @@
       </main>
     </div>
 
-    <!-- Modal untuk melihat parameter model terbaik -->
+    <!-- Modal untuk lihat parameter model terbaik -->
     <div
       id="paramModal"
       class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50 modal-backdrop"
@@ -518,108 +515,16 @@
       </div>
     </div>
 
-    <!-- Modal Add/Edit Split Ratio -->
-    <div
-      id="splitModal"
-      class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50 modal-backdrop"
-    >
-      <div
-        class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative transform transition-all modal-container"
-      >
-        <div
-          id="splitModalHeader"
-          class="sticky top-0 bg-blue-600 border-b px-6 py-4 flex justify-between items-center rounded-t-2xl text-white z-10"
-        >
-          <h2 id="splitModalTitle" class="text-xl font-bold">
-            Add Split Ratio
-          </h2>
-          <button
-            id="closeSplitModal"
-            class="text-white hover:text-gray-200 transition"
-          >
-            <i class="fas fa-times text-2xl"></i>
-          </button>
-        </div>
-        <div class="p-6">
-          <form id="splitForm">
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700"
-                >Name</label
-              >
-              <input
-                type="text"
-                id="splitName"
-                required
-                class="w-full border rounded-lg p-2 mt-1"
-              />
-            </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700"
-                >Train (%)</label
-              >
-              <input
-                type="number"
-                id="splitTrain"
-                required
-                min="0"
-                max="100"
-                step="1"
-                class="w-full border rounded-lg p-2 mt-1"
-              />
-            </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700"
-                >Test (%)</label
-              >
-              <input
-                type="number"
-                id="splitTest"
-                required
-                min="0"
-                max="100"
-                step="1"
-                class="w-full border rounded-lg p-2 mt-1"
-              />
-              <p class="text-xs text-gray-500 mt-1">
-                Total Train + Test must be 100
-              </p>
-            </div>
-            <div class="mt-6 flex justify-end space-x-3">
-              <button
-                type="button"
-                id="cancelSplitModal"
-                class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg transition"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
-              >
-                Save
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
     <script>
       // ==================== CONFIGURATION ====================
       const API_BASE = "http://localhost:5000";
       let trainingHistory = [];
       let currentTrainingPage = 1;
       const rowsPerTrainingPage = 5;
-
-      // Untuk menyimpan parameter lengkap dari setiap training (simulasi)
       let trainingParamsStore = {};
 
-      // ==================== SPLIT RATIO DATA (dummy) ====================
-      let splitRatios = [
-        { id: 1, name: "80:20", train: 80, test: 20 },
-        { id: 2, name: "70:30", train: 70, test: 30 },
-        { id: 3, name: "90:10", train: 90, test: 10 },
-      ];
+      // ==================== SPLIT RATIO DATA (via API) ====================
+      let splitRatios = [];
       let currentSplitPage = 1;
       const rowsPerSplitPage = 5;
       let editingSplitId = null;
@@ -686,55 +591,90 @@
         container.appendChild(wrapper);
       }
 
-      // Split Ratio functions (sama seperti sebelumnya)
+      // ==================== LOAD SPLIT RATIOS ====================
+      function getHeaders() {
+        const token = localStorage.getItem("access_token");
+        return {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        };
+      }
+
+      async function loadSplitRatios() {
+        try {
+          const res = await fetch(`${API_BASE}/api/split-ratios`, {
+            headers: getHeaders(),
+          });
+          if (!res.ok) throw new Error("Gagal load split ratios");
+          splitRatios = await res.json();
+          renderSplitTable();
+          renderSplitPagination();
+        } catch (err) {
+          console.error(err);
+          splitRatios = [];
+          renderSplitTable();
+          renderSplitPagination();
+        }
+      }
+
+      // Render tabel dengan inline edit jika editingSplitId bukan null
       function renderSplitTable() {
-        const filterTrain = document.getElementById("filterTrain").value.trim();
-        const filterTest = document.getElementById("filterTest").value.trim();
-        let filtered = splitRatios;
-        if (filterTrain) {
-          const trainVal = parseInt(filterTrain);
-          if (!isNaN(trainVal))
-            filtered = filtered.filter((s) => s.train === trainVal);
-        }
-        if (filterTest) {
-          const testVal = parseInt(filterTest);
-          if (!isNaN(testVal))
-            filtered = filtered.filter((s) => s.test === testVal);
-        }
-        const start = (currentSplitPage - 1) * rowsPerSplitPage;
-        const end = start + rowsPerSplitPage;
-        const pageData = filtered.slice(start, end);
         const tbody = document.getElementById("splitTableBody");
         tbody.innerHTML = "";
+
+        const start = (currentSplitPage - 1) * rowsPerSplitPage;
+        const end = start + rowsPerSplitPage;
+        const pageData = splitRatios.slice(start, end);
+
         pageData.forEach((s) => {
           const row = tbody.insertRow();
-          row.insertCell(0).innerHTML =
-            `<span class="font-medium">${s.name}</span>`;
-          row.insertCell(1).innerHTML = s.train;
-          row.insertCell(2).innerHTML = s.test;
-          const actions = document.createElement("td");
-          actions.className = "px-4 py-2 border border-gray-200 text-center";
-          actions.innerHTML = `<i class="fas fa-edit text-blue-500 mr-3 cursor-pointer hover:text-blue-700" data-id="${s.id}"></i><i class="fas fa-trash text-red-500 cursor-pointer hover:text-red-700" data-id="${s.id}"></i>`;
-          row.appendChild(actions);
-          for (let cell of row.cells)
-            cell.classList.add("border", "border-gray-200", "px-4", "py-2");
+          row.setAttribute("data-id", s.id);
+
+          if (editingSplitId === s.id) {
+            // Mode edit inline
+            row.innerHTML = `
+              <td class="border border-gray-200 px-4 py-2">
+                <input type="number" id="editTrain-${s.id}" value="${s.train}" class="w-20 border rounded p-1" />
+              </td>
+              <td class="border border-gray-200 px-4 py-2">
+                <input type="number" id="editTest-${s.id}" value="${s.test}" class="w-20 border rounded p-1" />
+              </td>
+              <td class="border border-gray-200 px-4 py-2 text-center">
+                <button class="text-green-600 hover:text-green-800 mr-2" onclick="saveEditInline(${s.id})"><i class="fas fa-save"></i></button>
+                <button class="text-gray-500 hover:text-gray-700" onclick="cancelEditInline()"><i class="fas fa-times"></i></button>
+              </td>
+            `;
+          } else {
+            // Mode normal
+            row.insertCell(0).innerHTML = s.train;
+            row.insertCell(1).innerHTML = s.test;
+            const actions = document.createElement("td");
+            actions.className = "px-4 py-2 border border-gray-200 text-center";
+            actions.innerHTML = `
+              <i class="fas fa-edit text-blue-500 mr-3 cursor-pointer hover:text-blue-700" data-id="${s.id}"></i>
+              <i class="fas fa-trash text-red-500 cursor-pointer hover:text-red-700" data-id="${s.id}"></i>
+            `;
+            row.appendChild(actions);
+            for (let c of row.cells)
+              c.classList.add("border", "border-gray-200", "px-4", "py-2");
+          }
         });
+
+        // Event listeners untuk edit dan delete
         document
           .querySelectorAll("#splitTableBody .fa-edit")
           .forEach((icon) => {
-            icon.addEventListener("click", () =>
-              openEditSplitModal(parseInt(icon.dataset.id)),
-            );
+            icon.addEventListener("click", () => {
+              editingSplitId = parseInt(icon.dataset.id);
+              renderSplitTable();
+            });
           });
         document
           .querySelectorAll("#splitTableBody .fa-trash")
           .forEach((icon) => {
-            icon.addEventListener("click", () => {
-              const id = parseInt(icon.dataset.id);
+            icon.addEventListener("click", async () => {
               if (confirm("Delete this split ratio?")) {
-                splitRatios = splitRatios.filter((s) => s.id !== id);
-                renderSplitTable();
-                renderSplitPagination();
+                await deleteSplitRatio(parseInt(icon.dataset.id));
               }
             });
           });
@@ -742,18 +682,7 @@
       }
 
       function renderSplitPagination() {
-        const filterTrain = document.getElementById("filterTrain").value.trim();
-        const filterTest = document.getElementById("filterTest").value.trim();
-        let filtered = splitRatios;
-        if (filterTrain) {
-          const val = parseInt(filterTrain);
-          if (!isNaN(val)) filtered = filtered.filter((s) => s.train === val);
-        }
-        if (filterTest) {
-          const val = parseInt(filterTest);
-          if (!isNaN(val)) filtered = filtered.filter((s) => s.test === val);
-        }
-        const totalPages = Math.ceil(filtered.length / rowsPerSplitPage);
+        const totalPages = Math.ceil(splitRatios.length / rowsPerSplitPage);
         renderPaginationControls(
           "splitPagination",
           currentSplitPage,
@@ -765,70 +694,91 @@
         );
       }
 
-      function openAddSplitModal() {
-        editingSplitId = null;
-        document.getElementById("splitModalTitle").innerText =
-          "Add Split Ratio";
-        document.getElementById("splitName").value = "";
-        document.getElementById("splitTrain").value = "";
-        document.getElementById("splitTest").value = "";
-        document.getElementById("splitModal").classList.remove("hidden");
-      }
-
-      function openEditSplitModal(id) {
-        const split = splitRatios.find((s) => s.id === id);
-        if (!split) return;
-        editingSplitId = id;
-        document.getElementById("splitModalTitle").innerText =
-          "Edit Split Ratio";
-        document.getElementById("splitName").value = split.name;
-        document.getElementById("splitTrain").value = split.train;
-        document.getElementById("splitTest").value = split.test;
-        document.getElementById("splitModal").classList.remove("hidden");
-      }
-
-      function saveSplit(e) {
-        e.preventDefault();
-        const name = document.getElementById("splitName").value.trim();
-        const train = parseInt(document.getElementById("splitTrain").value);
-        const test = parseInt(document.getElementById("splitTest").value);
-        if (!name || isNaN(train) || isNaN(test)) {
-          alert("All fields must be filled correctly.");
+      // Fungsi Add via form inline
+      async function addSplitInline() {
+        const train = parseInt(document.getElementById("addTrain").value);
+        const test = parseInt(document.getElementById("addTest").value);
+        if (isNaN(train) || isNaN(test)) {
+          alert("Train dan Test harus diisi angka.");
           return;
         }
         if (train + test !== 100) {
-          alert("Train + Test must equal 100");
+          alert("Total harus 100");
           return;
         }
-        if (editingSplitId !== null) {
-          const index = splitRatios.findIndex((s) => s.id === editingSplitId);
-          if (index !== -1)
-            splitRatios[index] = { ...splitRatios[index], name, train, test };
-        } else {
-          const newId =
-            splitRatios.length > 0
-              ? Math.max(...splitRatios.map((s) => s.id)) + 1
-              : 1;
-          splitRatios.push({ id: newId, name, train, test });
+        try {
+          const res = await fetch(`${API_BASE}/api/split-ratios`, {
+            method: "POST",
+            headers: getHeaders(),
+            body: JSON.stringify({ train, test }),
+          });
+          if (!res.ok) {
+            const err = await res.json();
+            alert("Error: " + (err.error || "Gagal menambah"));
+            return;
+          }
+          document.getElementById("addTrain").value = "";
+          document.getElementById("addTest").value = "";
+          await loadSplitRatios();
+        } catch (err) {
+          console.error(err);
+          alert("Terjadi kesalahan jaringan");
         }
-        renderSplitTable();
-        closeSplitModal();
       }
 
-      function closeSplitModal() {
-        document.getElementById("splitModal").classList.add("hidden");
+      // Fungsi simpan edit inline
+      async function saveEditInline(id) {
+        const train = parseInt(
+          document.getElementById(`editTrain-${id}`).value,
+        );
+        const test = parseInt(document.getElementById(`editTest-${id}`).value);
+        if (isNaN(train) || isNaN(test) || train + test !== 100) {
+          alert("Train + Test harus 100");
+          return;
+        }
+        try {
+          const res = await fetch(`${API_BASE}/api/split-ratios/${id}`, {
+            method: "PUT",
+            headers: getHeaders(),
+            body: JSON.stringify({ train, test }),
+          });
+          if (!res.ok) {
+            const err = await res.json();
+            alert("Error: " + (err.error || "Update gagal"));
+            return;
+          }
+          editingSplitId = null;
+          await loadSplitRatios();
+        } catch (err) {
+          console.error(err);
+          alert("Terjadi kesalahan jaringan");
+        }
+      }
+
+      function cancelEditInline() {
         editingSplitId = null;
+        renderSplitTable();
+      }
+
+      async function deleteSplitRatio(id) {
+        try {
+          const res = await fetch(`${API_BASE}/api/split-ratios/${id}`, {
+            method: "DELETE",
+            headers: getHeaders(),
+          });
+          if (!res.ok) {
+            const err = await res.json();
+            alert("Error: " + (err.error || "Delete gagal"));
+            return;
+          }
+          await loadSplitRatios();
+        } catch (err) {
+          console.error(err);
+          alert("Terjadi kesalahan jaringan");
+        }
       }
 
       // ==================== TRAINING HISTORY ====================
-      function getHeaders() {
-        const token = localStorage.getItem("access_token");
-        return {
-          "Content-Type": "application/json",
-          Authorization: token ? `Bearer ${token}` : "",
-        };
-      }
-
       async function loadTrainingHistory() {
         try {
           const res = await fetch(`${API_BASE}/api/training/history`, {
@@ -836,17 +786,15 @@
           });
           if (!res.ok) throw new Error("Failed to load history");
           trainingHistory = await res.json();
-          // Untuk dummy, tambahkan field split_ratio jika tidak ada
           trainingHistory.forEach((item) => {
-            if (!item.split_ratio) item.split_ratio = "80:20"; // default
+            if (!item.split_ratio) item.split_ratio = "80:20";
           });
           populateModelSelect();
           renderTrainingTable();
           renderTrainingPagination();
-          renderBestModel(); // Tampilkan model terbaik
+          renderBestModel();
         } catch (err) {
           console.error(err);
-          // Dummy data
           trainingHistory = [
             {
               id: 1,
@@ -880,7 +828,6 @@
         const select = document.getElementById("oldModelSelect");
         if (!select) return;
         select.innerHTML = '<option value="">-- New Model --</option>';
-        // Tampilkan semua model (tidak filter algoritma agar lebih fleksibel)
         trainingHistory.forEach((m) => {
           const opt = document.createElement("option");
           opt.value = m.id;
@@ -974,7 +921,6 @@
             '<p class="text-gray-500">Belum ada data training.</p>';
           return;
         }
-        // Cari akurasi tertinggi
         let best = trainingHistory.reduce((prev, curr) => {
           const prevAcc = prev.metrics?.accuracy || 0;
           const currAcc = curr.metrics?.accuracy || 0;
@@ -986,10 +932,7 @@
           return;
         }
         const accPercent = (best.metrics.accuracy * 100).toFixed(2);
-        // Ambil parameter dari store (jika ada) atau dari best object
         const params = trainingParamsStore[best.id] || best.params || {};
-        const hasParams = Object.keys(params).length > 0;
-
         container.innerHTML = `
           <div class="border rounded-lg p-4 bg-gradient-to-r from-yellow-50 to-orange-50">
             <div class="flex flex-wrap justify-between items-start gap-4">
@@ -1006,19 +949,17 @@
             </div>
           </div>
         `;
-        const viewBtn = document.getElementById("viewBestParamsBtn");
-        if (viewBtn) {
-          viewBtn.addEventListener("click", () => {
+        document
+          .getElementById("viewBestParamsBtn")
+          ?.addEventListener("click", () => {
             showParamModal(best, params);
           });
-        }
       }
 
       function showParamModal(model, params) {
         const modal = document.getElementById("paramModal");
         const content = document.getElementById("paramModalContent");
         if (!modal || !content) return;
-
         let paramsHtml = `<div class="space-y-2"><p class="font-semibold">Model: ${model.algorithm}</p>`;
         if (Object.keys(params).length === 0) {
           paramsHtml +=
@@ -1123,15 +1064,9 @@
 
           const newId = Date.now();
           lastTrainingId = newId;
-          // Simpan parameter lengkap ke store
           trainingParamsStore[newId] = { ...params };
 
-          const splitRatio =
-            document.getElementById("filterTrain").value &&
-            document.getElementById("filterTest").value
-              ? `${document.getElementById("filterTrain").value}:${document.getElementById("filterTest").value}`
-              : "80:20";
-
+          const splitRatio = "80:20"; // default, Anda bisa modifikasi nanti
           const newHistory = {
             id: newId,
             dataset_filename: params.dataset,
@@ -1141,13 +1076,13 @@
             completed_at: new Date().toISOString(),
             model_path: null,
             split_ratio: splitRatio,
-            params: { ...params }, // simpan juga parameter
+            params: { ...params },
           };
           trainingHistory.unshift(newHistory);
           renderTrainingTable();
           renderTrainingPagination();
           populateModelSelect();
-          renderBestModel(); // update model terbaik
+          renderBestModel();
 
           showTrainingResult(
             algorithm === "indobert"
@@ -1232,7 +1167,6 @@
         .addEventListener("click", () => {
           document.getElementById("paramModal").classList.add("hidden");
         });
-      // Tutup modal jika klik di luar (optional)
       window.addEventListener("click", (e) => {
         const modal = document.getElementById("paramModal");
         if (e.target === modal) modal.classList.add("hidden");
@@ -1253,25 +1187,10 @@
 
       // Initialize
       document
-        .getElementById("applyFilterSplit")
-        .addEventListener("click", () => {
-          currentSplitPage = 1;
-          renderSplitTable();
-        });
-      document
         .getElementById("btnAddSplit")
-        .addEventListener("click", openAddSplitModal);
-      document
-        .getElementById("closeSplitModal")
-        .addEventListener("click", closeSplitModal);
-      document
-        .getElementById("cancelSplitModal")
-        .addEventListener("click", closeSplitModal);
-      document
-        .getElementById("splitForm")
-        .addEventListener("submit", saveSplit);
+        .addEventListener("click", addSplitInline);
 
-      renderSplitTable();
+      loadSplitRatios();
       loadTrainingHistory();
     </script>
   </body>
