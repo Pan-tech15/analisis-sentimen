@@ -112,6 +112,29 @@ def compute_pmi_scores(words, classes, class_word_counts, class_doc_counts, tota
             scores[i] += compute_pmi(w, c, class_word_counts, class_doc_counts, total_docs, vocab_size)
     return scores
 
+# ------------------ FUNGSI TIE-BREAKER ------------------
+def predict_with_tiebreaker(final_scores, classes, tiebreaker):
+    """
+    final_scores: array shape (n_samples, n_classes)
+    classes: list of class names (sesuai urutan LabelEncoder)
+    tiebreaker: dict {class_name: rank}, rank int (1 tertinggi)
+    return: array of predicted indices
+    """
+    n_samples = final_scores.shape[0]
+    y_pred = np.zeros(n_samples, dtype=int)
+    rank_array = np.array([tiebreaker.get(c, 99) for c in classes])
+    
+    for i in range(n_samples):
+        max_val = np.max(final_scores[i])
+        max_indices = np.where(final_scores[i] == max_val)[0]
+        if len(max_indices) == 1:
+            y_pred[i] = max_indices[0]
+        else:
+            # Pilih yang rank-nya terkecil (paling tinggi prioritas)
+            ranks_tied = rank_array[max_indices]
+            y_pred[i] = max_indices[np.argmin(ranks_tied)]
+    return y_pred
+
 # ------------------ MAIN TRAINING FUNCTION ------------------
 def train_lexicon_nb(app, training_id, config, dataset_path):
     with app.app_context():
@@ -173,6 +196,14 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
             feature_type = nb_params.get('feature', 'TfidfVectorizer')
             alpha = float(nb_params.get('alpha', 1.0))
             fit_prior = nb_params.get('fitPrior', 'True') == 'True'
+
+            # === BACA PARAMETER TIE-BREAKER (RANKING EMOSI) ===
+            tiebreaker = params.get('tiebreaker', None)
+            if tiebreaker is not None:
+                # Validasi: harus 7 emosi lengkap dan tidak ada duplikasi
+                if set(tiebreaker.keys()) != ALLOWED_EMOTIONS or len(set(tiebreaker.values())) != 7:
+                    raise ValueError("Ranking emosi tidak valid: harus mencakup 7 emosi (senang, sedih, marah, takut, terkejut, percaya, netral) dengan peringkat 1-7 yang unik.")
+                log(f"Tie-breaker ranking diterima: {tiebreaker}", training_id)
 
             update_progress(app, training_id, 10, "Membuat vectorizer...")
             if feature_type == 'CountVectorizer':
@@ -284,7 +315,13 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
             # Softmax normalisasi
             exp_scores = np.exp(final_scores - np.max(final_scores, axis=1, keepdims=True))
             final_scores = exp_scores / exp_scores.sum(axis=1, keepdims=True)
-            y_pred = np.argmax(final_scores, axis=1)
+            
+            # === PREDIKSI DENGAN ATAU TANPA TIE-BREAKER ===
+            if tiebreaker is not None:
+                log("Menggunakan tie-breaker ranking untuk prediksi.", training_id)
+                y_pred = predict_with_tiebreaker(final_scores, classes, tiebreaker)
+            else:
+                y_pred = np.argmax(final_scores, axis=1)
 
             # 12. Evaluasi
             update_progress(app, training_id, 80, "Menghitung metrik evaluasi...")
