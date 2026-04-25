@@ -9,6 +9,7 @@ class Preprocessing(db.Model):
     preprocessed_filepath = db.Column(db.String(500), nullable=False)
     row_count = db.Column(db.Integer, default=0)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    metrics = db.Column(db.JSON)
     
     # Tambahan untuk progress tracking (sudah ada)
     status = db.Column(db.String(50), default='pending')
