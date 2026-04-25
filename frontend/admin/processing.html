@@ -220,15 +220,6 @@
               class="w-full md:w-96 border rounded-lg p-2 focus:ring-2 focus:ring-blue-400"
             >
               <option value="">-- Choose dataset --</option>
-              <option value="dataset_preprocessed_1.csv">
-                Preprocessed Dataset A (March 2025)
-              </option>
-              <option value="dataset_preprocessed_2.csv">
-                Preprocessed Dataset B (April 2025)
-              </option>
-              <option value="dataset_preprocessed_3.csv">
-                Preprocessed Dataset C (Custom)
-              </option>
             </select>
             <p class="text-xs text-gray-500 mt-1">
               Select a preprocessed dataset from available files.
@@ -280,7 +271,7 @@
                 </h3>
 
                 <!-- A. Parameter Umum -->
-                <fieldset class="mb-6 border rounded-lg p-4">
+                <fieldset class="mb-6 border rounded-lg p-4 bg-blue-100">
                   <legend class="font-semibold text-gray-700 px-2">
                     A. Parameter Umum
                   </legend>
@@ -368,7 +359,7 @@
                 </fieldset>
 
                 <!-- B. IndoBERT -->
-                <fieldset class="mb-6 border rounded-lg p-4">
+                <fieldset class="mb-6 border rounded-lg p-4 bg-purple-100">
                   <legend class="font-semibold text-gray-700 px-2">
                     B. IndoBERT
                   </legend>
@@ -442,7 +433,7 @@
                 </fieldset>
 
                 <!-- C. Fine-Tuning (opsional) -->
-                <fieldset class="mb-6 border rounded-lg p-4">
+                <fieldset class="mb-6 border rounded-lg p-4 bg-green-100">
                   <legend
                     class="font-semibold text-gray-700 px-2 flex items-center"
                   >
@@ -583,7 +574,7 @@
                 </fieldset>
 
                 <!-- D. UMAP (opsional) -->
-                <fieldset class="mb-6 border rounded-lg p-4">
+                <fieldset class="mb-6 border rounded-lg p-4 bg-orange-100">
                   <legend
                     class="font-semibold text-gray-700 px-2 flex items-center"
                   >
@@ -667,7 +658,7 @@
                 </fieldset>
 
                 <!-- E. KNN -->
-                <fieldset class="mb-6 border rounded-lg p-4">
+                <fieldset class="mb-6 border rounded-lg p-4 bg-pink-100">
                   <legend class="font-semibold text-gray-700 px-2">
                     E. KNN
                   </legend>
@@ -776,81 +767,102 @@
               </div>
             </div>
 
-           <!-- Lexicon-NB content (DIPERBARUI dengan Emosi & Fusion) -->
-<div id="lexiconTuning" class="hidden">
-  <div class="border-t pt-4">
-    <h3 class="font-medium text-gray-800 mb-4">
-      Parameter Configuration - Lexicon+NB
-    </h3>
+            <!-- Lexicon-NB content (DIPERBARUI dengan Emosi & Fusion) -->
+            <div id="lexiconTuning" class="hidden">
+              <div class="border-t pt-4">
+                <h3 class="font-medium text-gray-800 mb-4">
+                  Parameter Configuration - Lexicon+NB
+                </h3>
 
-     <!-- Ranking Emosi -->
-    <div class="mb-6 p-4 bg-gray-50 rounded-lg">
-      <h4 class="text-sm font-medium text-gray-700 mb-3">Urutan Ranking Emosi (1–7)</h4>
-      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3" id="emotionRankingContainer"></div>
-    </div>
-    
-    <!-- Parameter Dasar -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm text-gray-600">Alpha</label>
-        <input
-          type="text"
-          id="lexiconAlpha"
-          value="1.0"
-          class="w-full border rounded p-2 mt-1"
-        />
-      </div>
-      <div>
-        <label class="block text-sm text-gray-600">Model Type</label>
-        <select
-          id="lexiconModelType"
-          class="w-full border rounded p-2 mt-1"
-        >
-          <option>MultinomialNB</option>
-          <option>BernoulliNB</option>
-        </select>
-      </div>
-      <div>
-        <label class="block text-sm text-gray-600">Vectorizer</label>
-        <select
-          id="lexiconVectorizer"
-          class="w-full border rounded p-2 mt-1"
-        >
-          <option>CountVectorizer</option>
-          <option>TfidfVectorizer</option>
-        </select>
-      </div>
-    </div>
+                <!-- Ranking Emosi -->
+                <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                  <h4 class="text-sm font-medium text-gray-700 mb-3">
+                    Urutan Ranking Emosi (1–7)
+                  </h4>
+                  <div
+                    class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3"
+                    id="emotionRankingContainer"
+                  ></div>
+                </div>
 
-    <!-- Hybrid Fusion -->
-    <div class="mt-4 p-4 bg-gray-50 rounded-lg">
-      <h4 class="text-sm font-medium text-gray-700 mb-3">Hybrid Fusion</h4>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm text-gray-600">Fusion Method</label>
-          <select id="fusionMethodSelect" class="w-full border rounded p-2 mt-1">
-            <option value="product">Product</option>
-            <option value="sum">Sum</option>
-            <option value="weighted">Weighted Average</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm text-gray-600">Formula</label>
-          <input type="text" id="fusionFormulaInput" readonly class="w-full border rounded p-2 mt-1 bg-gray-100 cursor-default">
-        </div>
-      </div>
-    </div>
+                <!-- Parameter Dasar -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm text-gray-600">Alpha</label>
+                    <input
+                      type="text"
+                      id="lexiconAlpha"
+                      value="1.0"
+                      class="w-full border rounded p-2 mt-1"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm text-gray-600"
+                      >Model Type</label
+                    >
+                    <select
+                      id="lexiconModelType"
+                      class="w-full border rounded p-2 mt-1"
+                    >
+                      <option>MultinomialNB</option>
+                      <option>BernoulliNB</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm text-gray-600"
+                      >Vectorizer</label
+                    >
+                    <select
+                      id="lexiconVectorizer"
+                      class="w-full border rounded p-2 mt-1"
+                    >
+                      <option>CountVectorizer</option>
+                      <option>TfidfVectorizer</option>
+                    </select>
+                  </div>
+                </div>
 
-    <div class="flex justify-end mt-6">
-      <button
-        id="startTrainingBtnNB"
-        class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium shadow-md transition flex items-center space-x-2"
-      >
-        <i class="fas fa-play"></i><span>Start Training</span>
-      </button>
-    </div>
-  </div>
-</div>
+                <!-- Hybrid Fusion -->
+                <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                  <h4 class="text-sm font-medium text-gray-700 mb-3">
+                    Hybrid Fusion
+                  </h4>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm text-gray-600"
+                        >Fusion Method</label
+                      >
+                      <select
+                        id="fusionMethodSelect"
+                        class="w-full border rounded p-2 mt-1"
+                      >
+                        <option value="product">Product</option>
+                        <option value="sum">Sum</option>
+                        <option value="weighted">Weighted Average</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600">Formula</label>
+                      <input
+                        type="text"
+                        id="fusionFormulaInput"
+                        readonly
+                        class="w-full border rounded p-2 mt-1 bg-gray-100 cursor-default"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex justify-end mt-6">
+                  <button
+                    id="startTrainingBtnNB"
+                    class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium shadow-md transition flex items-center space-x-2"
+                  >
+                    <i class="fas fa-play"></i><span>Start Training</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -937,46 +949,60 @@
       let trainingParamsStore = {};
 
       // ==================== EMOSI & FUSION ====================
-const emotionLabels = ["Senang", "Percaya", "Terkejut", "Netral", "Takut", "Sedih", "Marah"];
+      const emotionLabels = [
+        "Senang",
+        "Percaya",
+        "Terkejut",
+        "Netral",
+        "Takut",
+        "Sedih",
+        "Marah",
+      ];
 
-function createEmotionRankingDropdowns() {
-  const container = document.getElementById("emotionRankingContainer");
-  if (!container) return;
-  container.innerHTML = "";
-  emotionLabels.forEach((label) => {
-    const div = document.createElement("div");
-    div.className = "flex flex-col items-center";
-    const span = document.createElement("span");
-    span.className = "text-xs text-gray-600 mb-1";
-    span.textContent = label;
-    const select = document.createElement("select");
-    select.className = "emotion-rank border rounded p-1 text-sm w-full";
-    select.setAttribute("data-emotion", label.toLowerCase());
-    for (let i = 1; i <= 7; i++) {
-      const opt = document.createElement("option");
-      opt.value = i;
-      opt.textContent = i;
-      select.appendChild(opt);
-    }
-    div.appendChild(span);
-    div.appendChild(select);
-    container.appendChild(div);
-  });
-}
+      function createEmotionRankingDropdowns() {
+        const container = document.getElementById("emotionRankingContainer");
+        if (!container) return;
+        container.innerHTML = "";
+        emotionLabels.forEach((label) => {
+          const div = document.createElement("div");
+          div.className = "flex flex-col items-center";
+          const span = document.createElement("span");
+          span.className = "text-xs text-gray-600 mb-1";
+          span.textContent = label;
+          const select = document.createElement("select");
+          select.className = "emotion-rank border rounded p-1 text-sm w-full";
+          select.setAttribute("data-emotion", label.toLowerCase());
+          for (let i = 1; i <= 7; i++) {
+            const opt = document.createElement("option");
+            opt.value = i;
+            opt.textContent = i;
+            select.appendChild(opt);
+          }
+          div.appendChild(span);
+          div.appendChild(select);
+          container.appendChild(div);
+        });
+      }
 
-function updateFusionFormula() {
-  const methodSelect = document.getElementById("fusionMethodSelect");
-  const formulaInput = document.getElementById("fusionFormulaInput");
-  if (!methodSelect || !formulaInput) return;
-  const method = methodSelect.value;
-  let formula = "";
-  switch (method) {
-    case "product": formula = "P_final = P_NB × (1 + S_lexicon)"; break;
-    case "sum": formula = "P_final = P_NB + S_lexicon"; break;
-    case "weighted": formula = "P_final = α · P_NB + (1 − α) · S_lexicon"; break;
-  }
-  formulaInput.value = formula;
-}
+      function updateFusionFormula() {
+        const methodSelect = document.getElementById("fusionMethodSelect");
+        const formulaInput = document.getElementById("fusionFormulaInput");
+        if (!methodSelect || !formulaInput) return;
+        const method = methodSelect.value;
+        let formula = "";
+        switch (method) {
+          case "product":
+            formula = "P_final = P_NB × (1 + S_lexicon)";
+            break;
+          case "sum":
+            formula = "P_final = P_NB + S_lexicon";
+            break;
+          case "weighted":
+            formula = "P_final = α · P_NB + (1 − α) · S_lexicon";
+            break;
+        }
+        formulaInput.value = formula;
+      }
 
       // ==================== SPLIT RATIO DATA (via API) ====================
       let splitRatios = [];
@@ -1324,7 +1350,7 @@ function updateFusionFormula() {
           trainingHistory = await res.json();
         } catch (err) {
           console.error(err);
-          trainingHistory = [];
+          trainingHistory = []; // kosongkan saja
         }
         populateModelSelect();
         renderTrainingTable();
@@ -1491,6 +1517,106 @@ function updateFusionFormula() {
         modal.classList.remove("hidden");
       }
 
+      // ==================== PROGRESS POLLING ====================
+      let pollingInterval = null;
+
+      function startTrainingPolling(trainingId) {
+        // Hentikan polling sebelumnya jika ada
+        if (pollingInterval) {
+          clearInterval(pollingInterval);
+        }
+
+        const resultSection = document.getElementById("trainingResultSection");
+        const resultContent = document.getElementById("resultContent");
+
+        // Tampilkan kontainer progress
+        resultContent.innerHTML = `
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="font-semibold text-gray-700">Training Progress</h3>
+                <span id="pollingStatusLabel" class="text-sm text-gray-500">Memulai...</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-6">
+                <div id="progressBarFill" class="bg-blue-600 h-6 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <p id="progressMessage" class="text-sm text-gray-600">Menghubungkan ke server...</p>
+        </div>
+    `;
+        resultSection.classList.remove("hidden");
+
+        // Fungsi polling
+        const poll = async () => {
+          try {
+            const res = await fetch(
+              `${API_BASE}/api/training/status/${trainingId}`,
+              {
+                headers: getHeaders(),
+              },
+            );
+            if (!res.ok) throw new Error("Gagal mengambil status");
+            const data = await res.json();
+
+            const percent = data.progress || 0;
+            const status = data.status;
+            const message =
+              data.metrics?.progress_message || "Proses berjalan...";
+
+            document.getElementById("progressBarFill").style.width =
+              `${percent}%`;
+            document.getElementById("progressMessage").textContent = message;
+            document.getElementById("pollingStatusLabel").textContent =
+              `${percent}%`;
+
+            if (status === "completed") {
+              clearInterval(pollingInterval);
+              pollingInterval = null;
+              document
+                .getElementById("progressBarFill")
+                .classList.remove("bg-blue-600");
+              document
+                .getElementById("progressBarFill")
+                .classList.add("bg-green-600");
+              document.getElementById("pollingStatusLabel").textContent =
+                "Selesai!";
+              // Tambahkan tautan ke evaluasi
+              resultContent.innerHTML += `
+                    <div class="mt-4 text-center">
+                        <a href="validasi.html?id=${trainingId}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition inline-flex items-center space-x-2">
+                            <i class="fas fa-chart-bar"></i><span>Lihat Evaluasi</span>
+                        </a>
+                    </div>
+                `;
+              // Refresh history untuk mendapatkan data terbaru (setelah selesai)
+              loadTrainingHistory();
+            } else if (status === "failed") {
+              clearInterval(pollingInterval);
+              pollingInterval = null;
+              document
+                .getElementById("progressBarFill")
+                .classList.remove("bg-blue-600");
+              document
+                .getElementById("progressBarFill")
+                .classList.add("bg-red-600");
+              document.getElementById("pollingStatusLabel").textContent =
+                "Gagal!";
+              resultContent.innerHTML += `
+                    <div class="mt-4 text-center text-red-600">
+                        <p>Training gagal. Periksa log untuk detail.</p>
+                    </div>
+                `;
+              loadTrainingHistory();
+            }
+          } catch (err) {
+            console.error("Polling error:", err);
+            document.getElementById("progressMessage").textContent =
+              "Kesalahan jaringan saat polling...";
+          }
+        };
+
+        poll(); // langsung panggil sekali
+        pollingInterval = setInterval(poll, 2000); // setiap 2 detik
+      }
+
       // ==================== REAL TRAINING VIA API ====================
       async function onStartTraining() {
         const dataset = document.getElementById("datasetSelect").value;
@@ -1624,34 +1750,44 @@ function updateFusionFormula() {
           };
         } else {
           // Ambil ranking emosi
-const rankSelects = document.querySelectorAll("#emotionRankingContainer select.emotion-rank");
-const rankValues = Array.from(rankSelects).map(s => parseInt(s.value));
-const unique = new Set(rankValues);
-if (unique.size !== emotionLabels.length) {
-  alert("Setiap emosi harus memiliki ranking unik (1-7). Silakan atur kembali.");
-  return;
-}
-const emotionRankings = {};
-rankSelects.forEach(sel => {
-  const emotion = sel.getAttribute("data-emotion");
-  emotionRankings[emotion] = parseInt(sel.value);
-});
+          const rankSelects = document.querySelectorAll(
+            "#emotionRankingContainer select.emotion-rank",
+          );
+          const rankValues = Array.from(rankSelects).map((s) =>
+            parseInt(s.value),
+          );
+          const unique = new Set(rankValues);
+          if (unique.size !== emotionLabels.length) {
+            alert(
+              "Setiap emosi harus memiliki ranking unik (1-7). Silakan atur kembali.",
+            );
+            return;
+          }
+          const emotionRankings = {};
+          rankSelects.forEach((sel) => {
+            const emotion = sel.getAttribute("data-emotion");
+            emotionRankings[emotion] = parseInt(sel.value);
+          });
 
-// Ambil fusion
-const fusionMethod = document.getElementById("fusionMethodSelect").value;
-const fusionFormula = document.getElementById("fusionFormulaInput").value;
-  // Lexicon-NB
+          // Ambil fusion
+          const fusionMethod =
+            document.getElementById("fusionMethodSelect").value;
+          const fusionFormula =
+            document.getElementById("fusionFormulaInput").value;
+          // Lexicon-NB
           params = {
-  general: { randomState: 42 },
-  split: { type: "percentage", train: trainPct, test: testPct },
-  naivebayes: {
-    alpha: parseFloat(document.getElementById("lexiconAlpha").value) || 1.0,
-    model_type: document.getElementById("lexiconModelType").value,
-    vectorizer: document.getElementById("lexiconVectorizer").value,
-  },
-  emotion_rankings: emotionRankings,
-  fusion: { method: fusionMethod, formula: fusionFormula }
-};
+            general: { randomState: 42 },
+            split: { type: "percentage", train: trainPct, test: testPct },
+            naivebayes: {
+              alpha:
+                parseFloat(document.getElementById("lexiconAlpha").value) ||
+                1.0,
+              model_type: document.getElementById("lexiconModelType").value,
+              vectorizer: document.getElementById("lexiconVectorizer").value,
+            },
+            emotion_rankings: emotionRankings,
+            fusion: { method: fusionMethod, formula: fusionFormula },
+          };
         }
 
         // 1. Simpan ModelConfig
@@ -1682,7 +1818,7 @@ const fusionFormula = document.getElementById("fusionFormulaInput").value;
 
           // 2. Mulai training
           // dataset path harus menunjuk ke file yang sudah ada di server
-          const datasetPath = `${API_BASE}/uploads/${dataset}`; // sesuaikan
+          const datasetPath = dataset;
           const trainRes = await fetch(`${API_BASE}/api/training/start`, {
             method: "POST",
             headers: getHeaders(),
@@ -1697,28 +1833,38 @@ const fusionFormula = document.getElementById("fusionFormulaInput").value;
             return;
           }
           const trainData = await trainRes.json();
-          alert(`Training dimulai! ID: ${trainData.id}`);
 
-          // 3. Refresh history
-          await loadTrainingHistory();
-
-          // 4. Tampilkan info
-          const resultSection = document.getElementById(
-            "trainingResultSection",
-          );
-          const resultContent = document.getElementById("resultContent");
-          resultContent.innerHTML = `
-        <div class="text-center py-4">
-          <p>Training sedang berjalan...</p>
-          <a href="validasi.html?id=${trainData.id}" class="text-blue-600 hover:underline mt-2 block">
-            Lihat Progress & Evaluasi
-          </a>
-        </div>
-      `;
-          resultSection.classList.remove("hidden");
+          // 3. Mulai polling progress
+          startTrainingPolling(trainData.id);
         } catch (err) {
           console.error(err);
           alert("Terjadi kesalahan jaringan");
+        }
+      }
+
+      // ==================== LOAD DATASET PREPROCESSED ====================
+      async function loadDatasetOptions() {
+        const select = document.getElementById("datasetSelect");
+        try {
+          const res = await fetch(`${API_BASE}/api/preprocess/history`, {
+            headers: getHeaders(),
+          });
+          if (!res.ok) throw new Error("Gagal memuat dataset");
+          const history = await res.json();
+
+          // Kosongkan dulu, sisakan opsi default
+          select.innerHTML = '<option value="">-- Choose dataset --</option>';
+
+          history.forEach((item) => {
+            const opt = document.createElement("option");
+            // Gunakan preprocessed_filepath sebagai value
+            opt.value = item.preprocessed_filepath;
+            // Label dengan info tambahan
+            opt.textContent = `${item.name || "Preprocessed #" + item.id} (${item.row_count} rows)`;
+            select.appendChild(opt);
+          });
+        } catch (err) {
+          console.error("Gagal memuat daftar dataset:", err);
         }
       }
 
@@ -1732,6 +1878,10 @@ const fusionFormula = document.getElementById("fusionFormulaInput").value;
       document
         .getElementById("closeResultBtn")
         .addEventListener("click", () => {
+          if (pollingInterval) {
+            clearInterval(pollingInterval);
+            pollingInterval = null;
+          }
           document
             .getElementById("trainingResultSection")
             .classList.add("hidden");
@@ -1766,10 +1916,12 @@ const fusionFormula = document.getElementById("fusionFormulaInput").value;
 
       loadSplitRatios();
       loadTrainingHistory();
-      // Inisialisasi emosi & fusion
-createEmotionRankingDropdowns();
-updateFusionFormula();
-document.getElementById("fusionMethodSelect").addEventListener("change", updateFusionFormula);
+      loadDatasetOptions();
+      createEmotionRankingDropdowns();
+      updateFusionFormula();
+      document
+        .getElementById("fusionMethodSelect")
+        .addEventListener("change", updateFusionFormula);
     </script>
   </body>
 </html>
