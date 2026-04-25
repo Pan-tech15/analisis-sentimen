@@ -11,7 +11,7 @@ class Training(db.Model):
     progress = db.Column(db.Integer, default=0)
     metrics = db.Column(db.JSON)
     model_path = db.Column(db.String(255))
-    created_at = db.Column(db.DateTime, default=datetime.now)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     completed_at = db.Column(db.DateTime)
 
     # Gunakan back_populates
