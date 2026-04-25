@@ -204,6 +204,7 @@
         </div>
 
         <!-- Model Parameter Tuning Section (IndoBERT / LexiconNB) -->
+        <!-- Model Parameter Tuning Section -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-8">
           <h2 class="font-semibold text-gray-700 mb-4">
             Model Parameter Tuning
@@ -234,9 +235,20 @@
             </p>
           </div>
 
-          <!-- Algorithm selection & Select Model (side by side) -->
-          <div class="flex flex-wrap gap-4 mb-6">
-            <div class="flex-1 min-w-[200px]">
+          <!-- Select Ratio & Algorithm & Model -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Select Ratio</label
+              >
+              <select
+                id="ratioSelect"
+                class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-400"
+              >
+                <option value="">-- Choose split ratio --</option>
+              </select>
+            </div>
+            <div>
               <label class="block text-sm font-medium text-gray-700 mb-1"
                 >Select Algorithm</label
               >
@@ -248,7 +260,7 @@
                 <option value="lexicon">Naive Bayes‑Lexicon</option>
               </select>
             </div>
-            <div class="flex-1 min-w-[200px]">
+            <div>
               <label class="block text-sm font-medium text-gray-700 mb-1"
                 >Select Model</label
               >
@@ -258,124 +270,501 @@
             </div>
           </div>
 
-          <!-- Dynamic content based on algorithm -->
+          <!-- Dynamic Parameter Form -->
           <div id="tuningContent">
-            <!-- IndoBERT content (default) -->
+            <!-- IndoBERT form (default) -->
             <div id="indobertTuning">
               <div class="border-t pt-4 mt-2">
                 <h3 class="font-medium text-gray-800 mb-4">
-                  Final Training Using the Best Ratio
+                  Parameter Configuration
                 </h3>
-                <div
-                  class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-                >
-                  <div>
-                    <label class="block text-sm text-gray-600"
-                      >Learning Rate</label
-                    >
-                    <input
-                      type="text"
-                      id="lr"
-                      value="2e-5"
-                      class="w-full border rounded p-2 mt-1"
-                    />
+
+                <!-- A. Parameter Umum -->
+                <fieldset class="mb-6 border rounded-lg p-4">
+                  <legend class="font-semibold text-gray-700 px-2">
+                    A. Parameter Umum
+                  </legend>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm text-gray-600"
+                        >Strategi Validasi</label
+                      >
+                      <div class="mt-2 space-x-4">
+                        <label class="inline-flex items-center">
+                          <input
+                            type="radio"
+                            name="validationType"
+                            value="crossval"
+                            checked
+                          />
+                          Cross Validation
+                        </label>
+                        <label class="inline-flex items-center">
+                          <input
+                            type="radio"
+                            name="validationType"
+                            value="epoch"
+                          />
+                          Epoch-based
+                        </label>
+                      </div>
+                    </div>
+                    <div id="cvParams">
+                      <div class="grid grid-cols-2 gap-2">
+                        <div>
+                          <label class="block text-sm text-gray-600"
+                            >Jumlah Fold</label
+                          >
+                          <input
+                            type="number"
+                            id="cvFolds"
+                            value="5"
+                            min="2"
+                            max="10"
+                            class="w-full border rounded p-2 mt-1"
+                          />
+                        </div>
+                        <div class="flex items-center space-x-2 mt-6">
+                          <label class="inline-flex items-center">
+                            <input
+                              type="checkbox"
+                              id="stratifiedFolds"
+                              checked
+                            />
+                            Stratified Folds
+                          </label>
+                          <label class="inline-flex items-center">
+                            <input type="checkbox" id="parallelFolds" checked />
+                            Parallel Folds
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                    <div id="epochParams" class="hidden">
+                      <label class="block text-sm text-gray-600"
+                        >Early Stopping Patience</label
+                      >
+                      <input
+                        type="number"
+                        id="earlyStoppingPatience"
+                        value="2"
+                        min="1"
+                        max="10"
+                        class="w-full border rounded p-2 mt-1"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600"
+                        >Random State</label
+                      >
+                      <input
+                        type="number"
+                        id="randomState"
+                        value="42"
+                        class="w-full border rounded p-2 mt-1"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label class="block text-sm text-gray-600">Epoch</label>
-                    <input
-                      type="number"
-                      id="epoch"
-                      value="6"
-                      class="w-full border rounded p-2 mt-1"
-                    />
+                </fieldset>
+
+                <!-- B. IndoBERT -->
+                <fieldset class="mb-6 border rounded-lg p-4">
+                  <legend class="font-semibold text-gray-700 px-2">
+                    B. IndoBERT
+                  </legend>
+                  <div
+                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                  >
+                    <div>
+                      <label class="block text-sm text-gray-600"
+                        >Max Sequence Length</label
+                      >
+                      <select
+                        id="maxSeqLength"
+                        class="w-full border rounded p-2 mt-1"
+                      >
+                        <option value="64">64</option>
+                        <option value="128" selected>128</option>
+                        <option value="256">256</option>
+                        <option value="512">512</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600"
+                        >Pooling Strategy</label
+                      >
+                      <select
+                        id="pooling"
+                        class="w-full border rounded p-2 mt-1"
+                      >
+                        <option value="CLS">CLS</option>
+                        <option value="MEAN" selected>MEAN</option>
+                        <option value="MAX">MAX</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600"
+                        >Batch Size</label
+                      >
+                      <select
+                        id="batchSizeParam"
+                        class="w-full border rounded p-2 mt-1"
+                      >
+                        <option value="8">8</option>
+                        <option value="16" selected>16</option>
+                        <option value="32">32</option>
+                        <option value="64">64</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600">Padding</label>
+                      <select
+                        id="padding"
+                        class="w-full border rounded p-2 mt-1"
+                      >
+                        <option value="max_length">max_length</option>
+                        <option value="longest">longest</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600"
+                        >Truncation</label
+                      >
+                      <select
+                        id="truncation"
+                        class="w-full border rounded p-2 mt-1"
+                      >
+                        <option value="True">True</option>
+                        <option value="False">False</option>
+                      </select>
+                    </div>
                   </div>
-                  <div>
-                    <label class="block text-sm text-gray-600"
-                      >Batch Size</label
-                    >
-                    <input
-                      type="number"
-                      id="batchSize"
-                      value="16"
-                      class="w-full border rounded p-2 mt-1"
-                    />
+                </fieldset>
+
+                <!-- C. Fine-Tuning (opsional) -->
+                <fieldset class="mb-6 border rounded-lg p-4">
+                  <legend
+                    class="font-semibold text-gray-700 px-2 flex items-center"
+                  >
+                    C. Fine-Tuning IndoBERT
+                    <label class="inline-flex items-center ml-4">
+                      <input
+                        type="checkbox"
+                        id="enableFinetune"
+                        class="form-checkbox"
+                      />
+                      Enable
+                    </label>
+                  </legend>
+                  <div
+                    id="finetuneParams"
+                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2 hidden"
+                  >
+                    <div>
+                      <label class="block text-sm text-gray-600">Epoch</label>
+                      <input
+                        type="number"
+                        id="ftEpoch"
+                        value="3"
+                        min="1"
+                        max="50"
+                        class="w-full border rounded p-2 mt-1"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600"
+                        >Learning Rate</label
+                      >
+                      <select
+                        id="ftLearningRate"
+                        class="w-full border rounded p-2 mt-1"
+                      >
+                        <option value="5e-6">5e-6</option>
+                        <option value="1e-5">1e-5</option>
+                        <option value="2e-5" selected>2e-5</option>
+                        <option value="3e-5">3e-5</option>
+                        <option value="5e-5">5e-5</option>
+                        <option value="1e-4">1e-4</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600"
+                        >Optimizer</label
+                      >
+                      <select
+                        id="ftOptimizer"
+                        class="w-full border rounded p-2 mt-1"
+                      >
+                        <option value="AdamW" selected>AdamW</option>
+                        <option value="Adam">Adam</option>
+                        <option value="SGD">SGD</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600"
+                        >Weight Decay</label
+                      >
+                      <input
+                        type="number"
+                        id="ftWeightDecay"
+                        value="0.01"
+                        step="0.001"
+                        min="0"
+                        class="w-full border rounded p-2 mt-1"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600"
+                        >Warmup Ratio</label
+                      >
+                      <input
+                        type="number"
+                        id="ftWarmupRatio"
+                        value="0.1"
+                        step="0.01"
+                        min="0"
+                        max="1"
+                        class="w-full border rounded p-2 mt-1"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600"
+                        >Freeze Layers</label
+                      >
+                      <input
+                        type="number"
+                        id="ftFreezeLayers"
+                        value="9"
+                        min="0"
+                        max="12"
+                        class="w-full border rounded p-2 mt-1"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600"
+                        >Gradient Accumulation</label
+                      >
+                      <input
+                        type="number"
+                        id="ftGradAccum"
+                        value="1"
+                        min="1"
+                        class="w-full border rounded p-2 mt-1"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600"
+                        >Max Grad Norm</label
+                      >
+                      <input
+                        type="number"
+                        id="ftMaxGradNorm"
+                        value="1.0"
+                        step="0.1"
+                        min="0.1"
+                        class="w-full border rounded p-2 mt-1"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600"
+                        >Classifier Dropout</label
+                      >
+                      <input
+                        type="number"
+                        id="ftDropout"
+                        value="0.1"
+                        step="0.05"
+                        min="0"
+                        max="0.5"
+                        class="w-full border rounded p-2 mt-1"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label class="block text-sm text-gray-600"
-                      >Max Length</label
-                    >
-                    <input
-                      type="number"
-                      id="maxLen"
-                      value="128"
-                      class="w-full border rounded p-2 mt-1"
-                    />
+                </fieldset>
+
+                <!-- D. UMAP (opsional) -->
+                <fieldset class="mb-6 border rounded-lg p-4">
+                  <legend
+                    class="font-semibold text-gray-700 px-2 flex items-center"
+                  >
+                    D. UMAP
+                    <label class="inline-flex items-center ml-4">
+                      <input
+                        type="checkbox"
+                        id="enableUMAP"
+                        class="form-checkbox"
+                      />
+                      Enable
+                    </label>
+                  </legend>
+                  <div
+                    id="umapParams"
+                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2 hidden"
+                  >
+                    <div>
+                      <label class="block text-sm text-gray-600"
+                        >n_components</label
+                      >
+                      <input
+                        type="number"
+                        id="umapNComponents"
+                        value="5"
+                        min="2"
+                        max="100"
+                        class="w-full border rounded p-2 mt-1"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600"
+                        >n_neighbors</label
+                      >
+                      <input
+                        type="number"
+                        id="umapNNeighbors"
+                        value="30"
+                        min="2"
+                        max="200"
+                        class="w-full border rounded p-2 mt-1"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600"
+                        >min_dist</label
+                      >
+                      <input
+                        type="number"
+                        id="umapMinDist"
+                        value="0.1"
+                        step="0.01"
+                        min="0"
+                        max="1"
+                        class="w-full border rounded p-2 mt-1"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600">metric</label>
+                      <select
+                        id="umapMetric"
+                        class="w-full border rounded p-2 mt-1"
+                      >
+                        <option value="cosine" selected>cosine</option>
+                        <option value="euclidean">euclidean</option>
+                        <option value="manhattan">manhattan</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600"
+                        >random_state</label
+                      >
+                      <input
+                        type="number"
+                        id="umapRandomState"
+                        value="42"
+                        class="w-full border rounded p-2 mt-1"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label class="block text-sm text-gray-600">Optimizer</label>
-                    <select
-                      id="optimizer"
-                      class="w-full border rounded p-2 mt-1"
-                    >
-                      <option value="AdamW">AdamW</option>
-                      <option value="Adam">Adam</option>
-                      <option value="SGD">SGD</option>
-                    </select>
+                </fieldset>
+
+                <!-- E. KNN -->
+                <fieldset class="mb-6 border rounded-lg p-4">
+                  <legend class="font-semibold text-gray-700 px-2">
+                    E. KNN
+                  </legend>
+                  <div
+                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                  >
+                    <div>
+                      <label class="block text-sm text-gray-600"
+                        >k (n_neighbors)</label
+                      >
+                      <input
+                        type="number"
+                        id="knnK"
+                        value="7"
+                        min="1"
+                        max="50"
+                        class="w-full border rounded p-2 mt-1"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600"
+                        >Metrik Jarak</label
+                      >
+                      <select
+                        id="knnMetric"
+                        class="w-full border rounded p-2 mt-1"
+                      >
+                        <option value="cosine" selected>cosine</option>
+                        <option value="euclidean">euclidean</option>
+                        <option value="manhattan">manhattan</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600">Weights</label>
+                      <select
+                        id="knnWeights"
+                        class="w-full border rounded p-2 mt-1"
+                      >
+                        <option value="uniform">uniform</option>
+                        <option value="distance" selected>distance</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600"
+                        >Algorithm</label
+                      >
+                      <select
+                        id="knnAlgorithm"
+                        class="w-full border rounded p-2 mt-1"
+                      >
+                        <option value="auto" selected>auto</option>
+                        <option value="ball_tree">ball_tree</option>
+                        <option value="kd_tree">kd_tree</option>
+                        <option value="brute">brute</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600"
+                        >Leaf Size</label
+                      >
+                      <input
+                        type="number"
+                        id="knnLeafSize"
+                        value="30"
+                        min="1"
+                        class="w-full border rounded p-2 mt-1"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600"
+                        >p (Minkowski)</label
+                      >
+                      <input
+                        type="number"
+                        id="knnP"
+                        value="2"
+                        min="1"
+                        max="10"
+                        class="w-full border rounded p-2 mt-1"
+                      />
+                    </div>
+                    <div class="md:col-span-2">
+                      <label class="block text-sm text-gray-600"
+                        >Confidence Adjustment</label
+                      >
+                      <select
+                        id="hybridMethod"
+                        class="w-full border rounded p-2 mt-1"
+                      >
+                        <option value="none">KNN Murni</option>
+                        <option value="confidence">Confidence-based</option>
+                        <option value="weighted">Weighted Average</option>
+                      </select>
+                    </div>
                   </div>
-                  <div>
-                    <label class="block text-sm text-gray-600"
-                      >Weight Decay</label
-                    >
-                    <input
-                      type="text"
-                      id="weightDecay"
-                      value="0.01"
-                      class="w-full border rounded p-2 mt-1"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm text-gray-600">Scheduler</label>
-                    <select
-                      id="scheduler"
-                      class="w-full border rounded p-2 mt-1"
-                    >
-                      <option value="linear">Linear</option>
-                      <option value="cosine">Cosine</option>
-                      <option value="constant">Constant</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label class="block text-sm text-gray-600">Dropout</label>
-                    <input
-                      type="text"
-                      id="dropout"
-                      value="0.1"
-                      class="w-full border rounded p-2 mt-1"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm text-gray-600"
-                      >Early Stopping</label
-                    >
-                    <input
-                      type="number"
-                      id="earlyStopping"
-                      value="2"
-                      class="w-full border rounded p-2 mt-1"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm text-gray-600"
-                      >Gradient Accumulation</label
-                    >
-                    <input
-                      type="number"
-                      id="gradAccum"
-                      value="1"
-                      class="w-full border rounded p-2 mt-1"
-                    />
-                  </div>
-                </div>
+                </fieldset>
+
                 <div class="flex justify-end mt-6">
                   <button
                     id="startTrainingBtn"
@@ -387,11 +776,11 @@
               </div>
             </div>
 
-            <!-- Lexicon-NB content (simplified) -->
+            <!-- Lexicon-NB content (sementara dipertahankan, bisa dikembangkan nanti) -->
             <div id="lexiconTuning" class="hidden">
               <div class="border-t pt-4">
                 <h3 class="font-medium text-gray-800 mb-4">
-                  Final Training Using the Best Ratio
+                  Parameter Configuration - Lexicon+NB
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -633,17 +1022,17 @@
           if (editingSplitId === s.id) {
             // Mode edit inline
             row.innerHTML = `
-              <td class="border border-gray-200 px-4 py-2">
-                <input type="number" id="editTrain-${s.id}" value="${s.train}" class="w-20 border rounded p-1" />
-              </td>
-              <td class="border border-gray-200 px-4 py-2">
-                <input type="number" id="editTest-${s.id}" value="${s.test}" class="w-20 border rounded p-1" />
-              </td>
-              <td class="border border-gray-200 px-4 py-2 text-center">
-                <button class="text-green-600 hover:text-green-800 mr-2" onclick="saveEditInline(${s.id})"><i class="fas fa-save"></i></button>
-                <button class="text-gray-500 hover:text-gray-700" onclick="cancelEditInline()"><i class="fas fa-times"></i></button>
-              </td>
-            `;
+          <td class="border border-gray-200 px-4 py-2">
+            <input type="number" id="editTrain-${s.id}" value="${s.train}" class="w-20 border rounded p-1" />
+          </td>
+          <td class="border border-gray-200 px-4 py-2">
+            <input type="number" id="editTest-${s.id}" value="${s.test}" class="w-20 border rounded p-1" />
+          </td>
+          <td class="border border-gray-200 px-4 py-2 text-center">
+            <button class="text-green-600 hover:text-green-800 mr-2" onclick="saveEditInline(${s.id})"><i class="fas fa-save"></i></button>
+            <button class="text-gray-500 hover:text-gray-700" onclick="cancelEditInline()"><i class="fas fa-times"></i></button>
+          </td>
+        `;
           } else {
             // Mode normal
             row.insertCell(0).innerHTML = s.train;
@@ -651,9 +1040,9 @@
             const actions = document.createElement("td");
             actions.className = "px-4 py-2 border border-gray-200 text-center";
             actions.innerHTML = `
-              <i class="fas fa-edit text-blue-500 mr-3 cursor-pointer hover:text-blue-700" data-id="${s.id}"></i>
-              <i class="fas fa-trash text-red-500 cursor-pointer hover:text-red-700" data-id="${s.id}"></i>
-            `;
+          <i class="fas fa-edit text-blue-500 mr-3 cursor-pointer hover:text-blue-700" data-id="${s.id}"></i>
+          <i class="fas fa-trash text-red-500 cursor-pointer hover:text-red-700" data-id="${s.id}"></i>
+        `;
             row.appendChild(actions);
             for (let c of row.cells)
               c.classList.add("border", "border-gray-200", "px-4", "py-2");
@@ -778,6 +1167,87 @@
         }
       }
 
+      // ==================== DYNAMIC FORM ====================
+      // Load split ratios ke dropdown
+      async function loadRatioDropdown() {
+        const select = document.getElementById("ratioSelect");
+        try {
+          const res = await fetch(`${API_BASE}/api/split-ratios`, {
+            headers: getHeaders(),
+          });
+          if (!res.ok) return;
+          const ratios = await res.json();
+          select.innerHTML =
+            '<option value="">-- Choose split ratio --</option>';
+          ratios.forEach((r) => {
+            const opt = document.createElement("option");
+            opt.value = `${r.train}-${r.test}`;
+            opt.textContent = `${r.train}:${r.test}`;
+            opt.dataset.train = r.train;
+            opt.dataset.test = r.test;
+            select.appendChild(opt);
+          });
+        } catch (err) {
+          console.error("Gagal load split ratios:", err);
+        }
+      }
+
+      // Toggle CV/Epoch fields
+      document
+        .querySelectorAll('input[name="validationType"]')
+        .forEach((radio) => {
+          radio.addEventListener("change", function () {
+            const cv = document.getElementById("cvParams");
+            const ep = document.getElementById("epochParams");
+            if (this.value === "crossval") {
+              cv.classList.remove("hidden");
+              ep.classList.add("hidden");
+            } else {
+              cv.classList.add("hidden");
+              ep.classList.remove("hidden");
+            }
+          });
+        });
+
+      // Toggle Fine-Tuning
+      document
+        .getElementById("enableFinetune")
+        .addEventListener("change", function () {
+          const div = document.getElementById("finetuneParams");
+          if (this.checked) div.classList.remove("hidden");
+          else div.classList.add("hidden");
+        });
+
+      // Toggle UMAP
+      document
+        .getElementById("enableUMAP")
+        .addEventListener("change", function () {
+          const div = document.getElementById("umapParams");
+          if (this.checked) div.classList.remove("hidden");
+          else div.classList.add("hidden");
+        });
+
+      // Toggle Algo content
+      document
+        .getElementById("tuningAlgo")
+        .addEventListener("change", function () {
+          const indo = document.getElementById("indobertTuning");
+          const lex = document.getElementById("lexiconTuning");
+          if (this.value === "indobert") {
+            indo.classList.remove("hidden");
+            lex.classList.add("hidden");
+          } else {
+            indo.classList.add("hidden");
+            lex.classList.remove("hidden");
+          }
+        });
+      // Inisialisasi tampilan awal
+      document.getElementById("indobertTuning").classList.remove("hidden");
+      document.getElementById("lexiconTuning").classList.add("hidden");
+
+      // Panggil load ratio saat halaman load
+      loadRatioDropdown();
+
       // ==================== TRAINING HISTORY ====================
       async function loadTrainingHistory() {
         try {
@@ -786,42 +1256,14 @@
           });
           if (!res.ok) throw new Error("Failed to load history");
           trainingHistory = await res.json();
-          trainingHistory.forEach((item) => {
-            if (!item.split_ratio) item.split_ratio = "80:20";
-          });
-          populateModelSelect();
-          renderTrainingTable();
-          renderTrainingPagination();
-          renderBestModel();
         } catch (err) {
           console.error(err);
-          trainingHistory = [
-            {
-              id: 1,
-              dataset_filename: "dataset_april.csv",
-              algorithm: "IndoBERT-KNN",
-              metrics: { accuracy: 0.876 },
-              created_at: new Date().toISOString(),
-              completed_at: new Date().toISOString(),
-              model_path: "model1.pkl",
-              split_ratio: "80:20",
-            },
-            {
-              id: 2,
-              dataset_filename: "dataset_april.csv",
-              algorithm: "Lexicon-NB",
-              metrics: { accuracy: 0.823 },
-              created_at: new Date().toISOString(),
-              completed_at: new Date().toISOString(),
-              model_path: "model2.pkl",
-              split_ratio: "70:30",
-            },
-          ];
-          populateModelSelect();
-          renderTrainingTable();
-          renderTrainingPagination();
-          renderBestModel();
+          trainingHistory = [];
         }
+        populateModelSelect();
+        renderTrainingTable();
+        renderTrainingPagination();
+        renderBestModel();
       }
 
       function populateModelSelect() {
@@ -934,21 +1376,21 @@
         const accPercent = (best.metrics.accuracy * 100).toFixed(2);
         const params = trainingParamsStore[best.id] || best.params || {};
         container.innerHTML = `
-          <div class="border rounded-lg p-4 bg-gradient-to-r from-yellow-50 to-orange-50">
-            <div class="flex flex-wrap justify-between items-start gap-4">
-              <div>
-                <p class="text-sm text-gray-500">Model Terbaik</p>
-                <p class="font-bold text-lg text-gray-800">${best.algorithm || "-"}</p>
-                <p class="text-sm text-gray-600">Dataset: ${best.dataset_filename || "-"}</p>
-                <p class="text-sm text-gray-600">Rasio: ${best.split_ratio || "-"}</p>
-                <p class="text-xl font-bold text-green-700 mt-1">Akurasi: ${accPercent}%</p>
-              </div>
-              <button id="viewBestParamsBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
-                <i class="fas fa-cog"></i><span>Lihat Parameter</span>
-              </button>
-            </div>
+      <div class="border rounded-lg p-4 bg-gradient-to-r from-yellow-50 to-orange-50">
+        <div class="flex flex-wrap justify-between items-start gap-4">
+          <div>
+            <p class="text-sm text-gray-500">Model Terbaik</p>
+            <p class="font-bold text-lg text-gray-800">${best.algorithm || "-"}</p>
+            <p class="text-sm text-gray-600">Dataset: ${best.dataset_filename || "-"}</p>
+            <p class="text-sm text-gray-600">Rasio: ${best.split_ratio || "-"}</p>
+            <p class="text-xl font-bold text-green-700 mt-1">Akurasi: ${accPercent}%</p>
           </div>
-        `;
+          <button id="viewBestParamsBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
+            <i class="fas fa-cog"></i><span>Lihat Parameter</span>
+          </button>
+        </div>
+      </div>
+    `;
         document
           .getElementById("viewBestParamsBtn")
           ?.addEventListener("click", () => {
@@ -970,11 +1412,11 @@
           for (let [key, val] of Object.entries(params)) {
             if (typeof val === "object") val = JSON.stringify(val);
             paramsHtml += `
-              <div class="bg-gray-50 p-2 rounded">
-                <span class="text-xs text-gray-500">${key}</span>
-                <p class="font-mono text-sm break-all">${val}</p>
-              </div>
-            `;
+          <div class="bg-gray-50 p-2 rounded">
+            <span class="text-xs text-gray-500">${key}</span>
+            <p class="font-mono text-sm break-all">${val}</p>
+          </div>
+        `;
           }
           paramsHtml += "</div>";
         }
@@ -983,172 +1425,222 @@
         modal.classList.remove("hidden");
       }
 
-      // ==================== TRAINING SIMULATION ====================
-      let lastTrainingId = null;
-
-      function showTrainingResult(algorithm, metrics, params, trainingId) {
-        const section = document.getElementById("trainingResultSection");
-        const content = document.getElementById("resultContent");
-        let metricsHtml = `
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div class="bg-blue-50 p-4 rounded-lg text-center">
-              <p class="text-sm text-gray-600">Accuracy</p>
-              <p class="text-2xl font-bold text-blue-700">${(metrics.accuracy * 100).toFixed(2)}%</p>
-            </div>
-            <div class="bg-green-50 p-4 rounded-lg text-center">
-              <p class="text-sm text-gray-600">Precision</p>
-              <p class="text-2xl font-bold text-green-700">${(metrics.precision * 100).toFixed(2)}%</p>
-            </div>
-            <div class="bg-yellow-50 p-4 rounded-lg text-center">
-              <p class="text-sm text-gray-600">Recall</p>
-              <p class="text-2xl font-bold text-yellow-700">${(metrics.recall * 100).toFixed(2)}%</p>
-            </div>
-            <div class="bg-purple-50 p-4 rounded-lg text-center">
-              <p class="text-sm text-gray-600">F1-Score</p>
-              <p class="text-2xl font-bold text-purple-700">${(metrics.f1 * 100).toFixed(2)}%</p>
-            </div>
-          </div>
-          <div class="border-t pt-4 mb-4">
-            <h3 class="font-medium text-gray-800 mb-2">Training Details</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-              <div><span class="text-gray-600">Algorithm:</span> ${algorithm}</div>
-              <div><span class="text-gray-600">Dataset:</span> ${params.dataset || "N/A"}</div>
-              <div><span class="text-gray-600">Training Time:</span> ${params.duration || "N/A"}</div>
-              <div><span class="text-gray-600">Model Name:</span> ${params.modelName || "None"}</div>
-            </div>
-          </div>
-          <div class="flex justify-end">
-            <a href="validasi.html?id=${trainingId}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
-              <i class="fas fa-arrow-right"></i><span>Lihat Selengkapnya</span>
-            </a>
-          </div>
-        `;
-        content.innerHTML = metricsHtml;
-        section.classList.remove("hidden");
-        section.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-
-      function simulateTraining(algorithm, params) {
-        const section = document.getElementById("trainingResultSection");
-        const content = document.getElementById("resultContent");
-        content.innerHTML = `
-          <div class="flex flex-col items-center justify-center py-8">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-            <p class="text-gray-600">Training in progress... Please wait.</p>
-            <p class="text-xs text-gray-400 mt-2">This may take a few moments.</p>
-          </div>
-        `;
-        section.classList.remove("hidden");
-
-        setTimeout(() => {
-          let metrics;
-          if (algorithm === "indobert") {
-            metrics = {
-              accuracy: 0.874 + (Math.random() * 0.05 - 0.025),
-              precision: 0.862 + (Math.random() * 0.06 - 0.03),
-              recall: 0.851 + (Math.random() * 0.07 - 0.035),
-              f1: 0.856 + (Math.random() * 0.06 - 0.03),
-            };
-          } else {
-            metrics = {
-              accuracy: 0.823 + (Math.random() * 0.06 - 0.03),
-              precision: 0.815 + (Math.random() * 0.07 - 0.035),
-              recall: 0.809 + (Math.random() * 0.08 - 0.04),
-              f1: 0.812 + (Math.random() * 0.07 - 0.035),
-            };
-          }
-          Object.keys(metrics).forEach(
-            (k) => (metrics[k] = Math.min(0.98, Math.max(0.65, metrics[k]))),
-          );
-          const duration = (Math.random() * 45 + 15).toFixed(1) + " seconds";
-
-          const newId = Date.now();
-          lastTrainingId = newId;
-          trainingParamsStore[newId] = { ...params };
-
-          const splitRatio = "80:20"; // default, Anda bisa modifikasi nanti
-          const newHistory = {
-            id: newId,
-            dataset_filename: params.dataset,
-            algorithm: algorithm === "indobert" ? "IndoBERT-KNN" : "Lexicon-NB",
-            metrics: { accuracy: metrics.accuracy },
-            created_at: new Date().toISOString(),
-            completed_at: new Date().toISOString(),
-            model_path: null,
-            split_ratio: splitRatio,
-            params: { ...params },
-          };
-          trainingHistory.unshift(newHistory);
-          renderTrainingTable();
-          renderTrainingPagination();
-          populateModelSelect();
-          renderBestModel();
-
-          showTrainingResult(
-            algorithm === "indobert"
-              ? "IndoBERT‑KNN+UMAP"
-              : "Naive Bayes‑Lexicon",
-            metrics,
-            { ...params, duration, modelName: params.modelName || "New Model" },
-            newId,
-          );
-        }, 2000);
-      }
-
-      function onStartTraining() {
+      // ==================== REAL TRAINING VIA API ====================
+      async function onStartTraining() {
         const dataset = document.getElementById("datasetSelect").value;
         if (!dataset) {
           alert("Please select a dataset first.");
           return;
         }
         const algorithm = document.getElementById("tuningAlgo").value;
-        const modelSelect = document.getElementById("oldModelSelect");
-        const modelName = modelSelect.value
-          ? modelSelect.options[modelSelect.selectedIndex].text
-          : "None";
+        const ratioSelect = document.getElementById("ratioSelect");
+        const ratioValue = ratioSelect.value;
+        if (!ratioValue) {
+          alert("Please select a split ratio.");
+          return;
+        }
+        const [trainPct, testPct] = ratioValue.split("-").map(Number);
 
-        let params = { dataset, modelName };
+        let params = {};
+
         if (algorithm === "indobert") {
+          const validationType = document.querySelector(
+            'input[name="validationType"]:checked',
+          ).value;
+          const stratified =
+            validationType === "crossval"
+              ? document.getElementById("stratifiedFolds").checked
+              : false;
+
+          const general = {
+            randomState: parseInt(document.getElementById("randomState").value),
+            shuffle: true,
+            stratified: stratified,
+          };
+
+          const splitConfig = {
+            type: validationType,
+            train: trainPct,
+            test: testPct,
+          };
+          if (validationType === "crossval") {
+            splitConfig.crossval = {
+              folds: parseInt(document.getElementById("cvFolds").value),
+            };
+          }
+
+          const indobert = {
+            modelName: "indobenchmark/indobert-base-p2",
+            maxSeqLength: parseInt(
+              document.getElementById("maxSeqLength").value,
+            ),
+            pooling: document.getElementById("pooling").value,
+            batchSize: parseInt(
+              document.getElementById("batchSizeParam").value,
+            ),
+            padding: document.getElementById("padding").value,
+            truncation: document.getElementById("truncation").value === "True",
+          };
+
+          const finetuneEnabled =
+            document.getElementById("enableFinetune").checked;
+          let finetune;
+          if (finetuneEnabled) {
+            finetune = {
+              enabled: true,
+              epochs: parseInt(document.getElementById("ftEpoch").value),
+              learningRate: document.getElementById("ftLearningRate").value,
+              optimizer: document.getElementById("ftOptimizer").value,
+              weightDecay: parseFloat(
+                document.getElementById("ftWeightDecay").value,
+              ),
+              warmupRatio: parseFloat(
+                document.getElementById("ftWarmupRatio").value,
+              ),
+              freezeLayers: parseInt(
+                document.getElementById("ftFreezeLayers").value,
+              ),
+              gradientAccumulation: parseInt(
+                document.getElementById("ftGradAccum").value,
+              ),
+              maxGradNorm: parseFloat(
+                document.getElementById("ftMaxGradNorm").value,
+              ),
+              dropout: parseFloat(document.getElementById("ftDropout").value),
+            };
+          } else {
+            finetune = { enabled: false };
+          }
+
+          const umapEnabled = document.getElementById("enableUMAP").checked;
+          let umap;
+          if (umapEnabled) {
+            umap = {
+              enabled: true,
+              nComponents: parseInt(
+                document.getElementById("umapNComponents").value,
+              ),
+              nNeighbors: parseInt(
+                document.getElementById("umapNNeighbors").value,
+              ),
+              minDist: parseFloat(document.getElementById("umapMinDist").value),
+              metric: document.getElementById("umapMetric").value,
+              randomState: parseInt(
+                document.getElementById("umapRandomState").value,
+              ),
+            };
+          } else {
+            umap = { enabled: false };
+          }
+
+          const knn = {
+            k: parseInt(document.getElementById("knnK").value),
+            metric: document.getElementById("knnMetric").value,
+            weights: document.getElementById("knnWeights").value,
+            algorithm: document.getElementById("knnAlgorithm").value,
+            leafSize: parseInt(document.getElementById("knnLeafSize").value),
+            p: parseInt(document.getElementById("knnP").value),
+          };
+
+          const hybrid = {
+            method: document.getElementById("hybridMethod").value,
+            alpha: 0.7,
+          };
+
           params = {
-            ...params,
-            learning_rate: document.getElementById("lr").value,
-            epochs: document.getElementById("epoch").value,
-            batch_size: document.getElementById("batchSize").value,
-            max_length: document.getElementById("maxLen").value,
-            optimizer: document.getElementById("optimizer").value,
-            weight_decay: document.getElementById("weightDecay").value,
-            scheduler: document.getElementById("scheduler").value,
-            dropout: document.getElementById("dropout").value,
-            early_stopping: document.getElementById("earlyStopping").value,
-            grad_accum: document.getElementById("gradAccum").value,
+            general,
+            split: splitConfig,
+            indobert,
+            finetune,
+            umap,
+            knn,
+            hybrid,
           };
         } else {
+          // Lexicon-NB
           params = {
-            ...params,
-            alpha: document.getElementById("lexiconAlpha").value,
-            model_type: document.getElementById("lexiconModelType").value,
-            vectorizer: document.getElementById("lexiconVectorizer").value,
+            general: { randomState: 42 },
+            split: { type: "percentage", train: trainPct, test: testPct },
+            naivebayes: {
+              alpha:
+                parseFloat(document.getElementById("lexiconAlpha").value) ||
+                1.0,
+              model_type: document.getElementById("lexiconModelType").value,
+              vectorizer: document.getElementById("lexiconVectorizer").value,
+            },
+            fusion: { method: "none" },
           };
         }
-        simulateTraining(algorithm, params);
+
+        // 1. Simpan ModelConfig
+        const modelName = document.getElementById("oldModelSelect").value
+          ? document.getElementById("oldModelSelect").options[
+              document.getElementById("oldModelSelect").selectedIndex
+            ].text
+          : "Model-" + Date.now();
+
+        try {
+          const configRes = await fetch(`${API_BASE}/api/processing/configs`, {
+            method: "POST",
+            headers: getHeaders(),
+            body: JSON.stringify({
+              name: modelName,
+              algorithm:
+                algorithm === "indobert" ? "IndoBERT-KNN" : "Lexicon-NB",
+              params: params,
+            }),
+          });
+          if (!configRes.ok) {
+            const err = await configRes.json();
+            alert("Gagal menyimpan konfigurasi: " + (err.error || "Unknown"));
+            return;
+          }
+          const configData = await configRes.json();
+          const configId = configData.id;
+
+          // 2. Mulai training
+          // dataset path harus menunjuk ke file yang sudah ada di server
+          const datasetPath = `${API_BASE}/uploads/${dataset}`; // sesuaikan
+          const trainRes = await fetch(`${API_BASE}/api/training/start`, {
+            method: "POST",
+            headers: getHeaders(),
+            body: JSON.stringify({
+              config_id: configId,
+              dataset_path: datasetPath,
+            }),
+          });
+          if (!trainRes.ok) {
+            const err = await trainRes.json();
+            alert("Gagal memulai training: " + (err.error || "Unknown"));
+            return;
+          }
+          const trainData = await trainRes.json();
+          alert(`Training dimulai! ID: ${trainData.id}`);
+
+          // 3. Refresh history
+          await loadTrainingHistory();
+
+          // 4. Tampilkan info
+          const resultSection = document.getElementById(
+            "trainingResultSection",
+          );
+          const resultContent = document.getElementById("resultContent");
+          resultContent.innerHTML = `
+        <div class="text-center py-4">
+          <p>Training sedang berjalan...</p>
+          <a href="validasi.html?id=${trainData.id}" class="text-blue-600 hover:underline mt-2 block">
+            Lihat Progress & Evaluasi
+          </a>
+        </div>
+      `;
+          resultSection.classList.remove("hidden");
+        } catch (err) {
+          console.error(err);
+          alert("Terjadi kesalahan jaringan");
+        }
       }
 
-      // ==================== TUNING SECTION INTERACTIONS ====================
-      const tuningAlgo = document.getElementById("tuningAlgo");
-      const indoDiv = document.getElementById("indobertTuning");
-      const lexDiv = document.getElementById("lexiconTuning");
-      tuningAlgo.addEventListener("change", () => {
-        if (tuningAlgo.value === "indobert") {
-          indoDiv.classList.remove("hidden");
-          lexDiv.classList.add("hidden");
-        } else {
-          indoDiv.classList.add("hidden");
-          lexDiv.classList.remove("hidden");
-        }
-      });
-      indoDiv.classList.remove("hidden");
-      lexDiv.classList.add("hidden");
-
+      // ==================== EVENT LISTENERS ====================
       document
         .getElementById("startTrainingBtn")
         .addEventListener("click", onStartTraining);
