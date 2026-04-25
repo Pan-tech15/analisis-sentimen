@@ -458,21 +458,6 @@
             addItem("Rasio Test", split.test || "-", "fa-chart-pie");
           }
 
-          // === PARAMETER UMUM ===
-          const general = params.general || {};
-          addCategoryHeader("⚙️ Parameter Umum");
-          addItem("Random State", general.randomState || "-", "fa-dice");
-          addItem(
-            "Shuffle Before Split",
-            general.shuffle ? "Ya" : "Tidak",
-            "fa-random",
-          );
-          addItem(
-            "Stratified Folds",
-            general.stratified ? "Ya" : "Tidak",
-            "fa-layer-group",
-          );
-
           // ========== CEK APAKAH INI LEXICON-NB ==========
           if (params.naivebayes) {
             // --- Naive Bayes ---
@@ -492,11 +477,14 @@
             addItem("Fusion Method", fusion.method || "-", "fa-code-merge");
             addItem("Formula", fusion.formula || "-", "fa-superscript");
 
-            // --- Emotion Rankings ---
+            // --- Emotion Rankings (SORTED by rank 1-7) ---
             const rankings = params.emotion_rankings;
             if (rankings && Object.keys(rankings).length > 0) {
               addCategoryHeader("😊 Urutan Ranking Emosi (1–7)");
-              for (const [emotion, rank] of Object.entries(rankings)) {
+              const sorted = Object.entries(rankings).sort(
+                (a, b) => a[1] - b[1],
+              );
+              for (const [emotion, rank] of sorted) {
                 addItem(
                   emotion.charAt(0).toUpperCase() + emotion.slice(1),
                   rank,
@@ -507,6 +495,21 @@
           }
           // ========== JIKA BUKAN LEXICON, MAKA INDOBERT ==========
           else {
+            // === PARAMETER UMUM (HANYA UNTUK INDOBERT) ===
+            const general = params.general || {};
+            addCategoryHeader("⚙️ Parameter Umum");
+            addItem("Random State", general.randomState || "-", "fa-dice");
+            addItem(
+              "Shuffle Before Split",
+              general.shuffle ? "Ya" : "Tidak",
+              "fa-random",
+            );
+            addItem(
+              "Stratified Folds",
+              general.stratified ? "Ya" : "Tidak",
+              "fa-layer-group",
+            );
+
             // --- IndoBERT ---
             const bert = params.indobert || {};
             addCategoryHeader("🤖 IndoBERT");
@@ -531,11 +534,7 @@
                 "fa-tachometer-alt",
               );
               addItem("Optimizer", ft.optimizer || "-", "fa-cogs");
-              addItem(
-                "Weight Decay",
-                ft.weightDecay || "-",
-                "fa-weight-scale",
-              );
+              addItem("Weight Decay", ft.weightDecay || "-", "fa-weight-scale");
               addItem(
                 "Warmup Ratio",
                 ft.warmupRatio || "-",
@@ -547,11 +546,7 @@
                 ft.gradientAccumulation || "-",
                 "fa-layer-group",
               );
-              addItem(
-                "Max Grad Norm",
-                ft.maxGradNorm || "-",
-                "fa-chart-line",
-              );
+              addItem("Max Grad Norm", ft.maxGradNorm || "-", "fa-chart-line");
             } else {
               addItem("Status", "Tidak Aktif", "fa-ban text-red-500");
             }
@@ -561,11 +556,7 @@
             addCategoryHeader("📉 UMAP (Reduksi Dimensi)");
             if (umap.enabled) {
               addItem("Status", "Aktif", "fa-check-circle text-green-600");
-              addItem(
-                "n_components",
-                umap.nComponents || "-",
-                "fa-arrows-alt",
-              );
+              addItem("n_components", umap.nComponents || "-", "fa-arrows-alt");
               addItem("n_neighbors", umap.nNeighbors || "-", "fa-users");
               addItem("min_dist", umap.minDist || "-", "fa-arrows-alt-h");
               addItem("metric", umap.metric || "-", "fa-ruler");
@@ -588,8 +579,7 @@
             const hybrid = params.hybrid || {};
             const hybridMethod = hybrid.method || "none";
             let hybridText = "Tidak Aktif";
-            if (hybridMethod === "confidence")
-              hybridText = "Confidence‑Based";
+            if (hybridMethod === "confidence") hybridText = "Confidence‑Based";
             else if (hybridMethod === "weighted")
               hybridText = `Weighted Average (α=${hybrid.alpha || "0.7"})`;
             addItem("Confidence Adjustment", hybridText, "fa-sliders-h");
@@ -649,8 +639,7 @@
             const prec = (item.precision * 100).toFixed(2);
             const rec = (item.recall * 100).toFixed(2);
             const f1 = (item.f1_score * 100).toFixed(2);
-            const loss =
-              item.loss !== undefined ? item.loss.toFixed(4) : "-";
+            const loss = item.loss !== undefined ? item.loss.toFixed(4) : "-";
             const mcc = item.mcc !== undefined ? item.mcc.toFixed(4) : "-";
 
             totalAcc += parseFloat(acc);
@@ -691,59 +680,27 @@
           `;
         }
 
-        // ========== TABEL STABILITAS PERFORMA (DUMMY DATA) ==========
+        // ========== TABEL STABILITAS PERFORMA (DATA ASLI DARI BACKEND) ==========
         function renderStabilityTable() {
+          const section = document.getElementById("stabilitySection");
           const tbody = document.getElementById("stabilityTableBody");
-          if (!tbody) return;
-          tbody.innerHTML = "";
+          if (!section || !tbody) return;
 
-          const foldsData = [
-            {
-              fold: 1,
-              acc: 82.3,
-              prec: 81.5,
-              rec: 80.9,
-              f1: 81.2,
-              mcc: 0.723,
-              roc_auc: 88.4,
-            },
-            {
-              fold: 2,
-              acc: 84.1,
-              prec: 83.2,
-              rec: 82.7,
-              f1: 83.0,
-              mcc: 0.745,
-              roc_auc: 89.2,
-            },
-            {
-              fold: 3,
-              acc: 83.5,
-              prec: 82.9,
-              rec: 82.1,
-              f1: 82.5,
-              mcc: 0.738,
-              roc_auc: 88.9,
-            },
-            {
-              fold: 4,
-              acc: 85.2,
-              prec: 84.5,
-              rec: 83.8,
-              f1: 84.1,
-              mcc: 0.761,
-              roc_auc: 90.1,
-            },
-            {
-              fold: 5,
-              acc: 83.9,
-              prec: 83.1,
-              rec: 82.4,
-              f1: 82.8,
-              mcc: 0.742,
-              roc_auc: 89.5,
-            },
-          ];
+          // Ambil data fold_metrics dari hasil training
+          const metricsData = trainingData?.metrics || {};
+          const foldMetrics = metricsData.fold_metrics;
+          if (
+            !foldMetrics ||
+            !Array.isArray(foldMetrics) ||
+            foldMetrics.length === 0
+          ) {
+            // Jika tidak ada data fold (misal percentage split), sembunyikan tabel
+            section.style.display = "none";
+            return;
+          }
+
+          section.style.display = "block";
+          tbody.innerHTML = "";
 
           let sumAcc = 0,
             sumPrec = 0,
@@ -751,26 +708,40 @@
             sumF1 = 0,
             sumMcc = 0,
             sumAuc = 0;
-          foldsData.forEach((f) => {
+          const n = foldMetrics.length;
+
+          foldMetrics.forEach((f) => {
             const row = tbody.insertRow();
+            const acc =
+              f.accuracy !== undefined ? (f.accuracy * 100).toFixed(2) : "-";
+            const prec =
+              f.precision !== undefined ? (f.precision * 100).toFixed(2) : "-";
+            const rec =
+              f.recall !== undefined ? (f.recall * 100).toFixed(2) : "-";
+            const f1 =
+              f.f1_score !== undefined ? (f.f1_score * 100).toFixed(2) : "-";
+            const mcc = f.mcc !== undefined ? f.mcc.toFixed(4) : "-";
+            const roc_auc =
+              f.roc_auc !== undefined ? (f.roc_auc * 100).toFixed(2) : "-";
+
+            sumAcc += f.accuracy * 100;
+            sumPrec += f.precision * 100;
+            sumRec += f.recall * 100;
+            sumF1 += f.f1_score * 100;
+            if (f.mcc !== undefined) sumMcc += f.mcc;
+            if (f.roc_auc !== undefined) sumAuc += f.roc_auc;
+
             row.innerHTML = `
-              <td class="px-4 py-2 border border-gray-200 font-medium">Fold ${f.fold}</td>
-              <td class="px-4 py-2 border border-gray-200 text-center">${f.acc}%</td>
-              <td class="px-4 py-2 border border-gray-200 text-center">${f.prec}%</td>
-              <td class="px-4 py-2 border border-gray-200 text-center">${f.rec}%</td>
-              <td class="px-4 py-2 border border-gray-200 text-center">${f.f1}%</td>
-              <td class="px-4 py-2 border border-gray-200 text-center">${f.mcc}</td>
-              <td class="px-4 py-2 border border-gray-200 text-center">${f.roc_auc}%</td>
-            `;
-            sumAcc += f.acc;
-            sumPrec += f.prec;
-            sumRec += f.rec;
-            sumF1 += f.f1;
-            sumMcc += f.mcc;
-            sumAuc += f.roc_auc;
+          <td class="px-4 py-2 border border-gray-200 font-medium">Fold ${f.fold || ""}</td>
+          <td class="px-4 py-2 border border-gray-200 text-center">${acc}%</td>
+          <td class="px-4 py-2 border border-gray-200 text-center">${prec}%</td>
+          <td class="px-4 py-2 border border-gray-200 text-center">${rec}%</td>
+          <td class="px-4 py-2 border border-gray-200 text-center">${f1}%</td>
+          <td class="px-4 py-2 border border-gray-200 text-center">${mcc}</td>
+          <td class="px-4 py-2 border border-gray-200 text-center">${roc_auc}%</td>
+        `;
           });
 
-          const n = foldsData.length;
           const avgAcc = (sumAcc / n).toFixed(2);
           const avgPrec = (sumPrec / n).toFixed(2);
           const avgRec = (sumRec / n).toFixed(2);
@@ -781,14 +752,14 @@
           const avgRow = tbody.insertRow();
           avgRow.classList.add("bg-gray-100", "font-semibold");
           avgRow.innerHTML = `
-            <td class="px-4 py-2 border border-gray-200 font-medium">Rata-rata</td>
-            <td class="px-4 py-2 border border-gray-200 text-center">${avgAcc}%</td>
-            <td class="px-4 py-2 border border-gray-200 text-center">${avgPrec}%</td>
-            <td class="px-4 py-2 border border-gray-200 text-center">${avgRec}%</td>
-            <td class="px-4 py-2 border border-gray-200 text-center">${avgF1}%</td>
-            <td class="px-4 py-2 border border-gray-200 text-center">${avgMcc}</td>
-            <td class="px-4 py-2 border border-gray-200 text-center">${avgAuc}%</td>
-          `;
+        <td class="px-4 py-2 border border-gray-200 font-medium">Rata‑rata</td>
+        <td class="px-4 py-2 border border-gray-200 text-center">${avgAcc}%</td>
+        <td class="px-4 py-2 border border-gray-200 text-center">${avgPrec}%</td>
+        <td class="px-4 py-2 border border-gray-200 text-center">${avgRec}%</td>
+        <td class="px-4 py-2 border border-gray-200 text-center">${avgF1}%</td>
+        <td class="px-4 py-2 border border-gray-200 text-center">${avgMcc}</td>
+        <td class="px-4 py-2 border border-gray-200 text-center">${avgAuc}%</td>
+    `;
         }
 
         // ========== FETCH DATA DARI API ==========
@@ -876,10 +847,7 @@
               ["Presisi (Macro)", calc.macro_precision.toFixed(4)],
               ["Recall (Macro)", calc.macro_recall.toFixed(4)],
               ["F1-Score (Macro)", calc.macro_f1.toFixed(4)],
-              [
-                "Matthews Correlation Coefficient (MCC)",
-                calc.mcc.toFixed(4),
-              ],
+              ["Matthews Correlation Coefficient (MCC)", calc.mcc.toFixed(4)],
             );
           }
           rows.push(["ROC-AUC (Macro)", "- (tidak dihitung)"]);

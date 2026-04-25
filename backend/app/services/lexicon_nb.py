@@ -54,10 +54,6 @@ def preprocess_text(text):
 
 # ------------------ BANGUN DICTIONARY LEXICON DARI DATA LATIH ------------------
 def build_dictionary_lexicon(texts, labels, classes):
-    """
-    Membangun dictionary lexicon: kata -> dict(emosi -> 1/0)
-    Jika kata pernah muncul di dokumen kelas tersebut, skor = 1, else 0.
-    """
     lexicon = {c: {} for c in classes}
     for text, label in zip(texts, labels):
         words = set(text.split())
@@ -68,11 +64,10 @@ def build_dictionary_lexicon(texts, labels, classes):
                 if w not in lexicon[c]:
                     lexicon[c][w] = 0
                 if c == label:
-                    lexicon[c][w] = 1  # set ke 1 jika pernah muncul di kelas ini
+                    lexicon[c][w] = 1
     return lexicon
 
 def compute_dictionary_score(words, lexicon, classes):
-    """Hitung skor dictionary untuk satu kalimat (jumlah kata yang ada di lexicon kelas)."""
     scores = np.zeros(len(classes))
     for w in words:
         for i, c in enumerate(classes):
@@ -93,19 +88,15 @@ def compute_class_word_freq(texts, labels):
     return class_word_counts, class_doc_counts
 
 def compute_pmi(word, emotion, class_word_counts, class_doc_counts, total_docs, vocab_size):
-    joint = class_word_counts.get(emotion, {}).get(word, 0) + 1  # Laplace smoothing
+    joint = class_word_counts.get(emotion, {}).get(word, 0) + 1
     p_joint = joint / (total_docs + vocab_size)
-
     word_total = sum([class_word_counts[c].get(word, 0) for c in class_word_counts]) + 1
     p_word = word_total / (total_docs + vocab_size)
-
     p_emotion = (class_doc_counts.get(emotion, 0) + 1) / (total_docs + len(class_doc_counts))
-
     pmi = np.log(p_joint / (p_word * p_emotion))
     return max(0.0, pmi)
 
 def compute_pmi_scores(words, classes, class_word_counts, class_doc_counts, total_docs, vocab_size):
-    """Hitung skor PMI untuk satu kalimat (jumlah PMI setiap kata)."""
     scores = np.zeros(len(classes))
     for w in words:
         for i, c in enumerate(classes):
@@ -114,23 +105,15 @@ def compute_pmi_scores(words, classes, class_word_counts, class_doc_counts, tota
 
 # ------------------ FUNGSI TIE-BREAKER ------------------
 def predict_with_tiebreaker(final_scores, classes, tiebreaker):
-    """
-    final_scores: array shape (n_samples, n_classes)
-    classes: list of class names (sesuai urutan LabelEncoder)
-    tiebreaker: dict {class_name: rank}, rank int (1 tertinggi)
-    return: array of predicted indices
-    """
     n_samples = final_scores.shape[0]
     y_pred = np.zeros(n_samples, dtype=int)
     rank_array = np.array([tiebreaker.get(c, 99) for c in classes])
-    
     for i in range(n_samples):
         max_val = np.max(final_scores[i])
         max_indices = np.where(final_scores[i] == max_val)[0]
         if len(max_indices) == 1:
             y_pred[i] = max_indices[0]
         else:
-            # Pilih yang rank-nya terkecil (paling tinggi prioritas)
             ranks_tied = rank_array[max_indices]
             y_pred[i] = max_indices[np.argmin(ranks_tied)]
     return y_pred
@@ -155,7 +138,6 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
             if 'kalimat' not in df.columns or 'emotion' not in df.columns:
                 raise ValueError("Dataset harus memiliki kolom 'kalimat' dan 'emotion'")
 
-            # Bersihkan label (hanya 7 emosi valid)
             def clean_label(val):
                 s = str(val).strip().lower()
                 return s if s in ALLOWED_EMOTIONS else None
@@ -184,9 +166,10 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
             shuffle = general.get('shuffle', 'yes') == 'yes'
             stratified = general.get('stratified', 'yes') == 'yes'
 
+            # Baca split type: 'percentage' atau 'crossval'
+            split_type = split_cfg.get('type', 'percentage')
             test_ratio = float(split_cfg.get('test', 20)) / 100
 
-            # Baca jumlah fold (dukung struktur dari frontend: split.crossval.folds)
             if 'crossval' in split_cfg and isinstance(split_cfg['crossval'], dict):
                 n_folds = int(split_cfg['crossval'].get('folds', 10))
             else:
@@ -197,10 +180,8 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
             alpha = float(nb_params.get('alpha', 1.0))
             fit_prior = nb_params.get('fitPrior', 'True') == 'True'
 
-            # === BACA PARAMETER TIE-BREAKER (RANKING EMOSI) ===
             tiebreaker = params.get('tiebreaker', None)
             if tiebreaker is not None:
-                # Validasi: harus 7 emosi lengkap dan tidak ada duplikasi
                 if set(tiebreaker.keys()) != ALLOWED_EMOTIONS or len(set(tiebreaker.values())) != 7:
                     raise ValueError("Ranking emosi tidak valid: harus mencakup 7 emosi (senang, sedih, marah, takut, terkejut, percaya, netral) dengan peringkat 1-7 yang unik.")
                 log(f"Tie-breaker ranking diterima: {tiebreaker}", training_id)
@@ -215,7 +196,6 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
             X_text = vectorizer.fit_transform(texts)
             log(f"Shape fitur: {X_text.shape}", training_id)
 
-            # 4. Label encoding
             le = LabelEncoder()
             y = le.fit_transform(labels)
             classes = le.classes_.tolist()
@@ -223,11 +203,11 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
 
             update_progress(app, training_id, 25, "Membangun dictionary lexicon & PMI...")
 
-            # 5. Bangun dictionary lexicon dari data latih
+            # 5. Bangun dictionary lexicon global
             dict_lexicon = build_dictionary_lexicon(texts, labels, classes)
             log(f"Dictionary lexicon dibangun untuk {len(classes)} kelas", training_id)
 
-            # 6. Hitung frekuensi untuk PMI
+            # 6. Frekuensi global untuk PMI
             class_word_counts, class_doc_counts = compute_class_word_freq(texts, labels)
             total_docs = len(texts)
             vocab = set()
@@ -235,20 +215,16 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                 vocab.update(t.split())
             vocab_size = len(vocab)
 
-            # 7. Hitung lexicon scores (Dictionary + PMI) per sampel
+            # 7. Hitung lexicon scores (Dictionary + PMI) per sampel (global)
             lexicon_scores = []
             log("Menghitung skor lexicon (Dictionary + PMI)...", training_id)
             start = time.time()
             for i, text in enumerate(texts):
                 words = text.split()
-                # Skor dictionary
                 dict_scores = compute_dictionary_score(words, dict_lexicon, classes)
-                # Skor PMI
                 pmi_scores = compute_pmi_scores(words, classes, class_word_counts, class_doc_counts, total_docs, vocab_size)
-                # Gabungan
                 combined = dict_scores + pmi_scores
                 lexicon_scores.append(combined)
-
                 if (i+1) % 500 == 0 or i+1 == total_samples:
                     progress = 25 + int(((i+1)/total_samples)*15)
                     msg = f"Lexicon scoring: {i+1}/{total_samples}"
@@ -258,90 +234,169 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
             lexicon_scores = np.array(lexicon_scores)
             log(f"Lexicon scores shape: {lexicon_scores.shape}", training_id)
 
-            # 8. Inisialisasi model Naive Bayes
-            if model_type == 'BernoulliNB':
-                model = BernoulliNB(alpha=alpha, fit_prior=fit_prior)
+            # ------------------------------------------------------------
+            # PERCABANGAN: PERCENTAGE SPLIT vs CROSS-VALIDATION
+            # ------------------------------------------------------------
+            if split_type == 'crossval':
+                # ===== TRUE K-FOLD CROSS VALIDATION =====
+                log(f"Memulai {n_folds}-fold cross validation sejati", training_id)
+                skf = StratifiedKFold(n_splits=n_folds, shuffle=shuffle, random_state=random_state)
+                fold_metrics = []
+
+                # Inisialisasi model untuk tiap fold (akan dibuat ulang setiap iterasi)
+                for fold_idx, (train_idx, test_idx) in enumerate(skf.split(X_text, y)):
+                    X_tr = X_text[train_idx]
+                    X_te = X_text[test_idx]
+                    y_tr = y[train_idx]
+                    y_te = y[test_idx]
+                    lex_tr = lexicon_scores[train_idx]
+                    lex_te = lexicon_scores[test_idx]
+
+                    # Model baru per fold
+                    if model_type == 'BernoulliNB':
+                        fold_model = BernoulliNB(alpha=alpha, fit_prior=fit_prior)
+                    else:
+                        fold_model = MultinomialNB(alpha=alpha, fit_prior=fit_prior)
+                    fold_model.fit(X_tr, y_tr)
+                    proba = fold_model.predict_proba(X_te)
+
+                    # Fusion
+                    method = fusion_params.get('method', 'product')
+                    if method == 'sum':
+                        final_scores = proba + lex_te
+                    elif method == 'weighted':
+                        w = float(fusion_params.get('weight', 0.5))
+                        final_scores = w * proba + (1 - w) * lex_te
+                    else:  # product
+                        lex_te_norm = (lex_te - lex_te.min(axis=1, keepdims=True)) / (
+                            lex_te.max(axis=1, keepdims=True) - lex_te.min(axis=1, keepdims=True) + 1e-8)
+                        final_scores = proba * (1 + lex_te_norm)
+
+                    # Softmax normalisasi
+                    exp_scores = np.exp(final_scores - np.max(final_scores, axis=1, keepdims=True))
+                    final_scores = exp_scores / exp_scores.sum(axis=1, keepdims=True)
+
+                    # Prediksi dengan/tanpa tiebreaker
+                    if tiebreaker is not None:
+                        y_pred = predict_with_tiebreaker(final_scores, classes, tiebreaker)
+                    else:
+                        y_pred = np.argmax(final_scores, axis=1)
+
+                    # Hitung metrik fold
+                    acc = accuracy_score(y_te, y_pred)
+                    prec_w = precision_score(y_te, y_pred, average='weighted', zero_division=0)
+                    rec_w = recall_score(y_te, y_pred, average='weighted', zero_division=0)
+                    f1_w = f1_score(y_te, y_pred, average='weighted')
+                    fold_metrics.append({
+                        'fold': fold_idx + 1,
+                        'accuracy': round(acc, 4),
+                        'precision': round(prec_w, 4),
+                        'recall': round(rec_w, 4),
+                        'f1_score': round(f1_w, 4),
+                        'mcc': None  # opsional
+                    })
+                    update_progress(app, training_id,
+                                    45 + int((fold_idx+1)/n_folds * 30),
+                                    f"Fold {fold_idx+1}/{n_folds} selesai (Akurasi: {acc:.4f})")
+
+                # Latih model final dengan seluruh data untuk disimpan
+                if model_type == 'BernoulliNB':
+                    final_model = BernoulliNB(alpha=alpha, fit_prior=fit_prior)
+                else:
+                    final_model = MultinomialNB(alpha=alpha, fit_prior=fit_prior)
+                final_model.fit(X_text, y)
+                model = final_model
+
+                # Evaluasi agregat dari fold (rata‑rata)
+                avg_acc = np.mean([f['accuracy'] for f in fold_metrics])
+                avg_prec = np.mean([f['precision'] for f in fold_metrics])
+                avg_rec = np.mean([f['recall'] for f in fold_metrics])
+                avg_f1 = np.mean([f['f1_score'] for f in fold_metrics])
+
+                metrics = {
+                    'accuracy': round(avg_acc, 4),
+                    'f1_score': round(avg_f1, 4),
+                    'precision': round(avg_prec, 4),
+                    'recall': round(avg_rec, 4),
+                    'confusion_matrix': [],          # kosong, frontend akan mengabaikan heatmap
+                    'class_labels': classes,
+                    'fold_metrics': fold_metrics
+                }
+
             else:
-                model = MultinomialNB(alpha=alpha, fit_prior=fit_prior)
+                # ===== ORIGINAL PERCENTAGE SPLIT (TIDAK BERUBAH) =====
+                log(f"Menggunakan percentage split berbasis fold: test_ratio={test_ratio}, n_folds={n_folds}", training_id)
+                n_test_folds = int(round(test_ratio * n_folds))
+                if n_test_folds < 1:
+                    n_test_folds = 1
+                if n_test_folds >= n_folds:
+                    n_test_folds = n_folds - 1
 
-            update_progress(app, training_id, 45, "Memulai pelatihan model...")
+                log(f"StratifiedKFold (n_splits={n_folds}) dengan {n_test_folds} fold untuk testing", training_id)
+                skf = StratifiedKFold(n_splits=n_folds, shuffle=shuffle, random_state=random_state)
+                test_indices_per_fold = [test_idx for _, test_idx in skf.split(X_text, y)]
+                test_idx = np.concatenate(test_indices_per_fold[:n_test_folds])
+                train_idx = np.setdiff1d(np.arange(len(y)), test_idx)
 
-            # 9. Split data (METODE BARU: percentage split via StratifiedKFold)
-            log(f"Menggunakan percentage split berbasis fold: test_ratio={test_ratio}, n_folds={n_folds}", training_id)
+                X_train = X_text[train_idx]
+                X_test = X_text[test_idx]
+                y_train = y[train_idx]
+                y_test = y[test_idx]
+                lex_train = lexicon_scores[train_idx]
+                lex_test = lexicon_scores[test_idx]
 
-            n_test_folds = int(round(test_ratio * n_folds))
-            if n_test_folds < 1:
-                n_test_folds = 1
-            if n_test_folds >= n_folds:
-                n_test_folds = n_folds - 1
+                log(f"Data split: train={X_train.shape[0]}, test={X_test.shape[0]}", training_id)
 
-            log(f"StratifiedKFold (n_splits={n_folds}) dengan {n_test_folds} fold untuk testing", training_id)
+                if model_type == 'BernoulliNB':
+                    model = BernoulliNB(alpha=alpha, fit_prior=fit_prior)
+                else:
+                    model = MultinomialNB(alpha=alpha, fit_prior=fit_prior)
 
-            skf = StratifiedKFold(n_splits=n_folds, shuffle=shuffle, random_state=random_state)
-            test_indices_per_fold = [test_idx for _, test_idx in skf.split(X_text, y)]
+                model.fit(X_train, y_train)
+                proba = model.predict_proba(X_test)
+                log("Model NB selesai dilatih", training_id)
 
-            # Gabungkan test index dari n_test_folds pertama
-            test_idx = np.concatenate(test_indices_per_fold[:n_test_folds])
-            train_idx = np.setdiff1d(np.arange(len(y)), test_idx)
+                update_progress(app, training_id, 65, "Melakukan fusi dengan lexicon...")
 
-            X_train = X_text[train_idx]
-            X_test = X_text[test_idx]
-            y_train = y[train_idx]
-            y_test = y[test_idx]
-            lex_train = lexicon_scores[train_idx]
-            lex_test = lexicon_scores[test_idx]
+                # Fusion
+                method = fusion_params.get('method', 'product')
+                if method == 'sum':
+                    final_scores = proba + lex_test
+                elif method == 'weighted':
+                    w = float(fusion_params.get('weight', 0.5))
+                    final_scores = w * proba + (1 - w) * lex_test
+                else:  # product
+                    lex_test_norm = (lex_test - lex_test.min(axis=1, keepdims=True)) / (
+                        lex_test.max(axis=1, keepdims=True) - lex_test.min(axis=1, keepdims=True) + 1e-8)
+                    final_scores = proba * (1 + lex_test_norm)
 
-            log(f"Data split: train={X_train.shape[0]}, test={X_test.shape[0]}", training_id)
+                exp_scores = np.exp(final_scores - np.max(final_scores, axis=1, keepdims=True))
+                final_scores = exp_scores / exp_scores.sum(axis=1, keepdims=True)
 
-            # 10. Training NB
-            model.fit(X_train, y_train)
-            proba = model.predict_proba(X_test)
-            log("Model NB selesai dilatih", training_id)
+                if tiebreaker is not None:
+                    log("Menggunakan tie-breaker ranking untuk prediksi.", training_id)
+                    y_pred = predict_with_tiebreaker(final_scores, classes, tiebreaker)
+                else:
+                    y_pred = np.argmax(final_scores, axis=1)
 
-            update_progress(app, training_id, 65, "Melakukan fusi dengan lexicon...")
+                update_progress(app, training_id, 80, "Menghitung metrik evaluasi...")
+                acc = accuracy_score(y_test, y_pred)
+                f1 = f1_score(y_test, y_pred, average='weighted')
+                precision = precision_score(y_test, y_pred, average='weighted', zero_division=0)
+                recall = recall_score(y_test, y_pred, average='weighted', zero_division=0)
+                cm = confusion_matrix(y_test, y_pred).tolist()
 
-            # 11. Fusion
-            method = fusion_params.get('method', 'product')
-            if method == 'sum':
-                final_scores = proba + lex_test
-            elif method == 'weighted':
-                w = float(fusion_params.get('weight', 0.5))
-                final_scores = w * proba + (1 - w) * lex_test
-            else:  # product
-                # Normalisasi lexicon_test ke rentang positif
-                lex_test_norm = (lex_test - lex_test.min(axis=1, keepdims=True)) / (lex_test.max(axis=1, keepdims=True) - lex_test.min(axis=1, keepdims=True) + 1e-8)
-                final_scores = proba * (1 + lex_test_norm)
+                metrics = {
+                    'accuracy': round(acc, 4),
+                    'f1_score': round(f1, 4),
+                    'precision': round(precision, 4),
+                    'recall': round(recall, 4),
+                    'confusion_matrix': cm,
+                    'class_labels': classes
+                }
+                log(f"Evaluasi selesai. Akurasi: {metrics['accuracy']}, F1: {metrics['f1_score']}", training_id)
 
-            # Softmax normalisasi
-            exp_scores = np.exp(final_scores - np.max(final_scores, axis=1, keepdims=True))
-            final_scores = exp_scores / exp_scores.sum(axis=1, keepdims=True)
-            
-            # === PREDIKSI DENGAN ATAU TANPA TIE-BREAKER ===
-            if tiebreaker is not None:
-                log("Menggunakan tie-breaker ranking untuk prediksi.", training_id)
-                y_pred = predict_with_tiebreaker(final_scores, classes, tiebreaker)
-            else:
-                y_pred = np.argmax(final_scores, axis=1)
-
-            # 12. Evaluasi
-            update_progress(app, training_id, 80, "Menghitung metrik evaluasi...")
-            acc = accuracy_score(y_test, y_pred)
-            f1 = f1_score(y_test, y_pred, average='weighted')
-            precision = precision_score(y_test, y_pred, average='weighted', zero_division=0)
-            recall = recall_score(y_test, y_pred, average='weighted', zero_division=0)
-            cm = confusion_matrix(y_test, y_pred).tolist()
-
-            metrics = {
-                'accuracy': round(acc, 4),
-                'f1_score': round(f1, 4),
-                'precision': round(precision, 4),
-                'recall': round(recall, 4),
-                'confusion_matrix': cm,
-                'class_labels': classes
-            }
-            log(f"Evaluasi selesai. Akurasi: {metrics['accuracy']}, F1: {metrics['f1_score']}", training_id)
-
-            # 13. Simpan model
+            # 13. Simpan model (berlaku untuk kedua mode)
             model_filename = f"lexicon_nb_{training_id}.pkl"
             model_path = os.path.join(MODEL_FOLDER, model_filename)
             artifacts = {
