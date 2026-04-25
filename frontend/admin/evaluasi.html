@@ -6,22 +6,27 @@
     <title>Evaluasi Model - IdiomSense Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .table-section {
-            margin-bottom: 2rem;
+        .table-section { margin-bottom: 2rem; }
+        .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin: 2rem auto 0;
+            background: #fff;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-        .table-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
+        canvas { display: block; width: 100% !important; height: auto !important; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans antialiased">
 
 <div class="flex h-screen overflow-hidden">
-    <!-- Sidebar (disesuaikan: Processing menjadi link langsung) -->
+    <!-- Sidebar -->
     <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
         <div class="p-4 border-b">
             <span class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IdiomSense</span>
@@ -41,13 +46,7 @@
                     </ul>
                 </li>
                 <li><a href="preprocessing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-filter w-5"></i><span>Pre-Processing</span></a></li>
-                <li>
-                    <!-- Processing sekarang menjadi link langsung -->
-                    <a href="processing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700">
-                        <i class="fas fa-brain w-5"></i>
-                        <span>Processing</span>
-                    </a>
-                </li>
+                <li><a href="processing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-brain w-5"></i><span>Processing</span></a></li>
                 <li><a href="testing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-vial w-5"></i><span>Testing</span></a></li>
                 <li><a href="evaluasi.html" class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-chart-simple w-5"></i><span>Evaluasi</span></a></li>
                 <li class="pt-4 mt-4 border-t"><a href="login.html" class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a></li>
@@ -55,11 +54,9 @@
         </nav>
     </aside>
 
-    <!-- Main Content (tidak berubah) -->
     <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
         <h1 class="text-3xl font-bold text-gray-800 mb-6">Evaluasi Model</h1>
 
-        <!-- Dropdown Pilih Algoritma -->
         <div class="bg-white p-4 rounded-xl shadow-md mb-6">
             <label for="algoSelect" class="block text-sm font-medium text-gray-700 mb-2">Pilih Algoritma</label>
             <select id="algoSelect" class="w-full md:w-64 border rounded-lg p-2 focus:ring-2 focus:ring-blue-400">
@@ -68,14 +65,13 @@
             </select>
         </div>
 
-        <!-- Tabel Daftar Hasil Data Latih -->
+        <!-- Tabel Training -->
         <div class="table-section bg-white p-6 rounded-xl shadow-md">
             <div class="table-header">
                 <h2 class="font-semibold text-gray-700 text-lg">Evaluasi Training</h2>
                 <div class="relative">
                     <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                    <input type="text" id="trainingSearch" placeholder="Cari..." 
-                           class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-64 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+                    <input type="text" id="trainingSearch" placeholder="Cari..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-64 focus:ring-2 focus:ring-blue-400 focus:outline-none">
                 </div>
             </div>
             <div class="overflow-x-auto">
@@ -85,8 +81,10 @@
                             <th class="px-4 py-2 border border-blue-400">Nama</th>
                             <th class="px-4 py-2 border border-blue-400">Model</th>
                             <th class="px-4 py-2 border border-blue-400">Akurasi</th>
+                            <th class="px-4 py-2 border border-blue-400">Presisi</th>
+                            <th class="px-4 py-2 border border-blue-400">Recall</th>
+                            <th class="px-4 py-2 border border-blue-400">F1-Score</th>
                             <th class="px-4 py-2 border border-blue-400">Tanggal</th>
-                            <th class="px-4 py-2 border border-blue-400">Durasi</th>
                             <th class="px-4 py-2 border border-blue-400">Aksi</th>
                         </tr>
                     </thead>
@@ -96,14 +94,13 @@
             <div id="trainingPagination" class="flex justify-center mt-4 space-x-2"></div>
         </div>
 
-        <!-- Tabel Evaluasi Testing -->
+        <!-- Tabel Testing -->
         <div class="table-section bg-white p-6 rounded-xl shadow-md">
             <div class="table-header">
                 <h2 class="font-semibold text-gray-700 text-lg">Evaluasi Testing</h2>
                 <div class="relative">
                     <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                    <input type="text" id="testingSearch" placeholder="Cari..." 
-                           class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-64 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+                    <input type="text" id="testingSearch" placeholder="Cari..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-64 focus:ring-2 focus:ring-blue-400 focus:outline-none">
                 </div>
             </div>
             <div class="overflow-x-auto">
@@ -126,20 +123,16 @@
             <div id="testingPagination" class="flex justify-center mt-4 space-x-2"></div>
         </div>
 
-        <!-- Tabel Evaluasi Comparison -->
+        <!-- Tabel Comparison + Grafik -->
         <div class="table-section bg-white p-6 rounded-xl shadow-md">
             <div class="table-header">
                 <h2 class="font-semibold text-gray-700 text-lg">Evaluasi Comparison</h2>
-                <div class="relative">
-                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                    <input type="text" id="comparisonSearch" placeholder="Cari..." 
-                           class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-64 focus:ring-2 focus:ring-blue-400 focus:outline-none">
-                </div>
             </div>
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto mb-6">
                 <table class="min-w-full border border-gray-200">
                     <thead class="bg-purple-500 text-white">
                         <tr>
+                            <th class="px-4 py-2 border border-purple-400">Sumber</th>
                             <th class="px-4 py-2 border border-purple-400">Nama</th>
                             <th class="px-4 py-2 border border-purple-400">Model</th>
                             <th class="px-4 py-2 border border-purple-400">Akurasi</th>
@@ -153,70 +146,56 @@
                     <tbody id="comparisonTableBody"></tbody>
                 </table>
             </div>
-            <div id="comparisonPagination" class="flex justify-center mt-4 space-x-2"></div>
+
+            <div class="chart-wrapper">
+                <canvas id="comparisonChart"></canvas>
+            </div>
         </div>
     </main>
 </div>
 
 <script>
     (function() {
-        const API_BASE = "http://localhost:5000";
+        // ==================== DATA DUMMY ====================
+        const dummyTraining = [
+            { id:1, dataset_filename:"dataset_april.csv", algorithm:"IndoBERT‑KNN+UMAP", created_at:"2026-04-20T09:15:00", completed_at:"2026-04-20T09:25:00", status:"completed", metrics:{accuracy:0.852, precision:0.84, recall:0.82, f1_score:0.83}, model_path:"models/model_a.pkl" },
+            { id:2, dataset_filename:"dataset_april.csv", algorithm:"IndoBERT‑KNN+UMAP", created_at:"2026-04-21T14:30:00", completed_at:"2026-04-21T14:45:00", status:"completed", metrics:{accuracy:0.891, precision:0.88, recall:0.87, f1_score:0.875}, model_path:"models/model_b.pkl" },
+            { id:3, dataset_filename:"dataset_maret.csv", algorithm:"IndoBERT‑KNN+UMAP", created_at:"2026-04-22T08:00:00", completed_at:"2026-04-22T08:12:00", status:"completed", metrics:{accuracy:0.823, precision:0.81, recall:0.80, f1_score:0.805}, model_path:null },
+            { id:4, dataset_filename:"dataset_april.csv", algorithm:"IndoBERT‑KNN+UMAP", created_at:"2026-04-23T11:20:00", completed_at:null, status:"running", metrics:{accuracy:0.76, precision:0.74, recall:0.73, f1_score:0.735}, model_path:null }
+        ];
 
-        // State untuk masing-masing tabel
+        const dummyTesting = [
+            { id:10, dataset_filename:"uji_alpha.csv", algorithm:"IndoBERT‑KNN+UMAP", created_at:"2026-04-21T16:00:00", completed_at:"2026-04-21T16:05:00", status:"completed", metrics:{accuracy:0.812, precision:0.80, recall:0.79, f1_score:0.795}, model_path:"models/model_test1.pkl" },
+            { id:11, dataset_filename:"uji_beta.csv", algorithm:"IndoBERT‑KNN+UMAP", created_at:"2026-04-22T09:30:00", completed_at:"2026-04-22T09:35:00", status:"completed", metrics:{accuracy:0.875, precision:0.87, recall:0.86, f1_score:0.865}, model_path:"models/model_test2.pkl" },
+            { id:12, dataset_filename:"uji_gamma.csv", algorithm:"IndoBERT‑KNN+UMAP", created_at:"2026-04-23T15:00:00", completed_at:"2026-04-23T15:04:00", status:"completed", metrics:{accuracy:0.798, precision:0.82, recall:0.77, f1_score:0.794}, model_path:null }
+        ];
+
+        // State tabel
         const tables = {
             training: {
-                data: [],
+                data: [...dummyTraining],
                 filtered: [],
                 currentPage: 1,
                 rowsPerPage: 5,
                 tbody: document.getElementById('trainingTableBody'),
                 pagination: document.getElementById('trainingPagination'),
-                searchInput: document.getElementById('trainingSearch'),
-                endpoint: '/api/evaluation/training'
+                searchInput: document.getElementById('trainingSearch')
             },
             testing: {
-                data: [],
+                data: [...dummyTesting],
                 filtered: [],
                 currentPage: 1,
                 rowsPerPage: 5,
                 tbody: document.getElementById('testingTableBody'),
                 pagination: document.getElementById('testingPagination'),
-                searchInput: document.getElementById('testingSearch'),
-                endpoint: '/api/evaluation/testing'
-            },
-            comparison: {
-                data: [],
-                filtered: [],
-                currentPage: 1,
-                rowsPerPage: 5,
-                tbody: document.getElementById('comparisonTableBody'),
-                pagination: document.getElementById('comparisonPagination'),
-                searchInput: document.getElementById('comparisonSearch'),
-                endpoint: '/api/evaluation/comparison'
+                searchInput: document.getElementById('testingSearch')
             }
         };
 
         const algoSelect = document.getElementById('algoSelect');
+        let chartInstance = null;
 
-        async function loadTableData(tableKey) {
-            const table = tables[tableKey];
-            const algo = algoSelect.value;
-            try {
-                const url = `${API_BASE}${table.endpoint}?algorithm=${encodeURIComponent(algo)}`;
-                const res = await fetch(url);
-                if (!res.ok) throw new Error(`Gagal memuat data ${tableKey}`);
-                const data = await res.json();
-                table.data = Array.isArray(data) ? data : [];
-                table.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                filterTableData(tableKey);
-            } catch (err) {
-                console.error(err);
-                table.data = [];
-                filterTableData(tableKey);
-                table.tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-red-500">Gagal memuat data: ${err.message}</td></tr>`;
-            }
-        }
-
+        // ============ FUNGSI UMUM ============
         function filterTableData(tableKey) {
             const table = tables[tableKey];
             const query = table.searchInput.value.trim().toLowerCase();
@@ -224,30 +203,11 @@
                 table.filtered = [...table.data];
             } else {
                 table.filtered = table.data.filter(item => {
-                    const nama = (item.dataset_filename || item.name || '').toLowerCase();
+                    const nama = (item.dataset_filename || '').toLowerCase();
                     const model = (item.algorithm || '').toLowerCase();
-                    const akurasi = item.metrics?.accuracy != null ? item.metrics.accuracy.toFixed(3) : '-';
+                    const akurasi = item.metrics?.accuracy != null ? (item.metrics.accuracy * 100).toFixed(2) : '-';
                     const tanggal = item.created_at ? new Date(item.created_at).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }).toLowerCase() : '-';
-                    const presisi = item.metrics?.precision != null ? item.metrics.precision.toFixed(3) : '';
-                    const recall = item.metrics?.recall != null ? item.metrics.recall.toFixed(3) : '';
-                    const f1 = item.metrics?.f1_score != null ? item.metrics.f1_score.toFixed(3) : '';
-                    let durasiStr = '-';
-                    if (item.created_at) {
-                        const start = new Date(item.created_at);
-                        const end = item.completed_at ? new Date(item.completed_at) : new Date();
-                        const diff = end - start;
-                        if (diff >= 0) {
-                            const sec = Math.floor(diff / 1000);
-                            const min = Math.floor(sec / 60);
-                            const hr = Math.floor(min / 60);
-                            durasiStr = hr > 0 ? `${hr} jam ${min % 60} mnt` : min > 0 ? `${min} menit ${sec % 60} dtk` : `${sec} detik`;
-                            if (!item.completed_at && item.status !== 'completed') durasiStr += ' (berjalan)';
-                        }
-                    }
-                    durasiStr = durasiStr.toLowerCase();
-                    return nama.includes(query) || model.includes(query) || akurasi.includes(query) || 
-                           tanggal.includes(query) || durasiStr.includes(query) || 
-                           presisi.includes(query) || recall.includes(query) || f1.includes(query);
+                    return nama.includes(query) || model.includes(query) || akurasi.includes(query) || tanggal.includes(query);
                 });
             }
             table.currentPage = 1;
@@ -263,68 +223,28 @@
             
             table.tbody.innerHTML = '';
             if (pageData.length === 0) {
-                const colSpan = tableKey === 'training' ? 6 : 8;
-                table.tbody.innerHTML = `<tr><td colspan="${colSpan}" class="text-center py-4 text-gray-500">Tidak ada data.</td></tr>`;
+                table.tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-gray-500">Tidak ada data.</td></tr>`;
                 return;
             }
 
             pageData.forEach(item => {
                 const row = table.tbody.insertRow();
-                
-                row.insertCell(0).innerHTML = item.dataset_filename || item.name || '-';
+                row.insertCell(0).innerHTML = item.dataset_filename || '-';
                 row.insertCell(1).innerHTML = item.algorithm || '-';
-                
-                if (tableKey === 'training') {
-                    const acc = item.metrics?.accuracy != null ? item.metrics.accuracy.toFixed(3) : '-';
-                    row.insertCell(2).innerHTML = acc;
-                    const d = item.created_at ? new Date(item.created_at) : null;
-                    row.insertCell(3).innerHTML = d ? d.toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '-';
-                    let dur = '-';
-                    if (item.created_at) {
-                        const start = new Date(item.created_at);
-                        const end = item.completed_at ? new Date(item.completed_at) : new Date();
-                        const diff = end - start;
-                        if (diff >= 0) {
-                            const sec = Math.floor(diff / 1000);
-                            const min = Math.floor(sec / 60);
-                            const hr = Math.floor(min / 60);
-                            dur = hr > 0 ? `${hr} jam ${min % 60} mnt` : min > 0 ? `${min} menit ${sec % 60} dtk` : `${sec} detik`;
-                            if (!item.completed_at && item.status !== 'completed') dur += ' (berjalan)';
-                        }
-                    }
-                    row.insertCell(4).innerHTML = dur;
-                    const actCell = row.insertCell(5);
-                    actCell.className = 'px-4 py-2 border border-gray-200 text-center';
-                    actCell.innerHTML = `<a href="validasi.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2" title="Lihat detail"><i class="fas fa-eye"></i></a><button class="text-green-600 hover:text-green-800 download-model" data-id="${item.id}" ${!item.model_path ? 'disabled' : ''} title="Download model"><i class="fas fa-download"></i></button>`;
-                } else {
-                    const acc = item.metrics?.accuracy != null ? item.metrics.accuracy.toFixed(3) : '-';
-                    const prec = item.metrics?.precision != null ? item.metrics.precision.toFixed(3) : '-';
-                    const rec = item.metrics?.recall != null ? item.metrics.recall.toFixed(3) : '-';
-                    const f1 = item.metrics?.f1_score != null ? item.metrics.f1_score.toFixed(3) : '-';
-                    row.insertCell(2).innerHTML = acc;
-                    row.insertCell(3).innerHTML = prec;
-                    row.insertCell(4).innerHTML = rec;
-                    row.insertCell(5).innerHTML = f1;
-                    const d = item.created_at ? new Date(item.created_at) : null;
-                    row.insertCell(6).innerHTML = d ? d.toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '-';
-                    const actCell = row.insertCell(7);
-                    actCell.className = 'px-4 py-2 border border-gray-200 text-center';
-                    actCell.innerHTML = `<a href="validasi.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2" title="Lihat detail"><i class="fas fa-eye"></i></a><button class="text-green-600 hover:text-green-800 download-model" data-id="${item.id}" ${!item.model_path ? 'disabled' : ''} title="Download model"><i class="fas fa-download"></i></button>`;
-                }
-
-                for (let cell of row.cells) {
-                    cell.classList.add('border', 'border-gray-200', 'px-4', 'py-2');
-                }
-            });
-
-            table.tbody.querySelectorAll('.download-model').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const id = btn.dataset.id;
-                    const item = table.data.find(t => t.id == id);
-                    if (item && item.model_path) {
-                        window.open(`${API_BASE}/data/models/${item.model_path.split('/').pop()}`, '_blank');
-                    }
-                });
+                const acc = item.metrics?.accuracy != null ? (item.metrics.accuracy * 100).toFixed(2) + '%' : '-';
+                const prec = item.metrics?.precision != null ? (item.metrics.precision * 100).toFixed(2) + '%' : '-';
+                const rec = item.metrics?.recall != null ? (item.metrics.recall * 100).toFixed(2) + '%' : '-';
+                const f1 = item.metrics?.f1_score != null ? (item.metrics.f1_score * 100).toFixed(2) + '%' : '-';
+                row.insertCell(2).innerHTML = acc;
+                row.insertCell(3).innerHTML = prec;
+                row.insertCell(4).innerHTML = rec;
+                row.insertCell(5).innerHTML = f1;
+                const d = item.created_at ? new Date(item.created_at) : null;
+                row.insertCell(6).innerHTML = d ? d.toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+                const actCell = row.insertCell(7);
+                actCell.className = 'px-4 py-2 border border-gray-200 text-center';
+                actCell.innerHTML = `<a href="validasi.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2" title="Lihat detail"><i class="fas fa-eye"></i></a><button class="text-green-600 hover:text-green-800 download-model" data-id="${item.id}" ${!item.model_path ? 'disabled' : ''} title="Download model"><i class="fas fa-download"></i></button>`;
+                for (let cell of row.cells) cell.classList.add('border', 'border-gray-200', 'px-4', 'py-2');
             });
         }
 
@@ -357,6 +277,113 @@
             table.pagination.appendChild(nextBtn);
         }
 
+        // ============ COMPARISON & CHART ============
+        function updateComparisonAndChart() {
+            // Ambil model terbaik dari training dan testing
+            const bestTraining = tables.training.data
+                .filter(item => item.metrics?.accuracy != null)
+                .sort((a, b) => b.metrics.accuracy - a.metrics.accuracy)[0];
+            const bestTesting = tables.testing.data
+                .filter(item => item.metrics?.accuracy != null)
+                .sort((a, b) => b.metrics.accuracy - a.metrics.accuracy)[0];
+
+            // Render tabel comparison
+            const tbody = document.getElementById('comparisonTableBody');
+            tbody.innerHTML = '';
+
+            if (!bestTraining && !bestTesting) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-gray-500">Belum ada data untuk dibandingkan.</td></tr>';
+            }
+
+            function createRow(source, item) {
+                if (!item) return;
+                const row = tbody.insertRow();
+                const sourceCell = row.insertCell(0);
+                sourceCell.innerHTML = `<span class="inline-block px-2 py-1 text-xs font-semibold rounded-full ${source === 'Training' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}">${source}</span>`;
+                row.insertCell(1).innerHTML = item.dataset_filename || '-';
+                row.insertCell(2).innerHTML = item.algorithm || '-';
+                const acc = item.metrics?.accuracy != null ? (item.metrics.accuracy * 100).toFixed(2) + '%' : '-';
+                const prec = item.metrics?.precision != null ? (item.metrics.precision * 100).toFixed(2) + '%' : '-';
+                const rec = item.metrics?.recall != null ? (item.metrics.recall * 100).toFixed(2) + '%' : '-';
+                const f1 = item.metrics?.f1_score != null ? (item.metrics.f1_score * 100).toFixed(2) + '%' : '-';
+                row.insertCell(3).innerHTML = acc;
+                row.insertCell(4).innerHTML = prec;
+                row.insertCell(5).innerHTML = rec;
+                row.insertCell(6).innerHTML = f1;
+                const d = item.created_at ? new Date(item.created_at) : null;
+                row.insertCell(7).innerHTML = d ? d.toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+                const actCell = row.insertCell(8);
+                actCell.className = 'px-4 py-2 border border-gray-200 text-center';
+                actCell.innerHTML = `<a href="validasi.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2" title="Lihat detail"><i class="fas fa-eye"></i></a>`;
+                for (let cell of row.cells) cell.classList.add('border', 'border-gray-200', 'px-4', 'py-2');
+            }
+
+            if (bestTraining) createRow('Training', bestTraining);
+            if (bestTesting) createRow('Testing', bestTesting);
+
+            // Render chart
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+
+            const labels = ['Akurasi', 'Presisi', 'Recall', 'F1-Score'];
+            const trainValues = bestTraining ? [
+                bestTraining.metrics.accuracy || 0,
+                bestTraining.metrics.precision || 0,
+                bestTraining.metrics.recall || 0,
+                bestTraining.metrics.f1_score || 0
+            ] : [];
+            const testValues = bestTesting ? [
+                bestTesting.metrics.accuracy || 0,
+                bestTesting.metrics.precision || 0,
+                bestTesting.metrics.recall || 0,
+                bestTesting.metrics.f1_score || 0
+            ] : [];
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Training Terbaik',
+                            data: trainValues,
+                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                            borderColor: '#2563eb',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Testing Terbaik',
+                            data: testValues,
+                            backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                            borderColor: '#059669',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${(ctx.raw * 100).toFixed(1)}%` } }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1,
+                            ticks: { callback: val => Math.round(val * 100) + '%' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ============ INISIALISASI ============
+        function initAll() {
+            filterTableData('training');
+            filterTableData('testing');
+            updateComparisonAndChart();
+        }
+
         function debounce(func, delay) {
             let timer;
             return function(...args) {
@@ -365,25 +392,15 @@
             };
         }
 
-        function initTables() {
-            loadTableData('training');
-            loadTableData('testing');
-            loadTableData('comparison');
-
-            const debouncedFilterTraining = debounce(() => filterTableData('training'), 300);
-            const debouncedFilterTesting = debounce(() => filterTableData('testing'), 300);
-            const debouncedFilterComparison = debounce(() => filterTableData('comparison'), 300);
-
-            tables.training.searchInput.addEventListener('input', debouncedFilterTraining);
-            tables.testing.searchInput.addEventListener('input', debouncedFilterTesting);
-            tables.comparison.searchInput.addEventListener('input', debouncedFilterComparison);
-        }
+        // Event search
+        tables.training.searchInput.addEventListener('input', debounce(() => { filterTableData('training'); updateComparisonAndChart(); }, 300));
+        tables.testing.searchInput.addEventListener('input', debounce(() => { filterTableData('testing'); updateComparisonAndChart(); }, 300));
 
         algoSelect.addEventListener('change', () => {
-            initTables();
+            initAll();
         });
 
-        // Sidebar toggle (hanya untuk Data Collection)
+        // Sidebar toggle
         function toggleDropdown(btn, menu, icon) {
             btn.addEventListener('click', () => {
                 menu.classList.toggle('hidden');
@@ -394,9 +411,9 @@
         const dataCollectionMenu = document.getElementById('dataCollectionMenu');
         const dataCollectionIcon = document.getElementById('dataCollectionIcon');
         toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
-        // Processing sudah menjadi link, tidak perlu toggle
 
-        initTables();
+        // Jalankan
+        initAll();
     })();
 </script>
 </body>
