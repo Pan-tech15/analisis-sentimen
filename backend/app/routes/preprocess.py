@@ -4,6 +4,8 @@ from datetime import datetime
 from flask import Blueprint, request, jsonify, current_app, send_file
 from flask_cors import cross_origin
 from werkzeug.utils import secure_filename
+import threading
+from datetime import datetime
 from app import db
 from app.models.dataset import Dataset
 from app.models.preprocessing import Preprocessing
@@ -16,6 +18,9 @@ def get_preprocessed_folder():
     folder = os.path.join(backend_dir, 'data', 'preprocessed')
     os.makedirs(folder, exist_ok=True)
     return folder
+
+import threading
+from datetime import datetime
 
 @preprocess_bp.route('/start', methods=['POST'])
 def start_preprocessing():
@@ -35,45 +40,98 @@ def start_preprocessing():
     if not os.path.exists(raw_path):
         return jsonify({'error': 'File dataset tidak ditemukan di server'}), 404
 
-    try:
-        df = pd.read_csv(raw_path)
-        if 'kalimat' not in df.columns:
-            return jsonify({'error': "Kolom 'kalimat' tidak ditemukan"}), 400
+    # Buat record preprocessing dengan status pending
+    existing_count = Preprocessing.query.filter_by(dataset_id=dataset_id).count()
+    default_name = f"Preprocess #{existing_count + 1}"
 
-        df['cleaned_kalimat'] = df['kalimat'].apply(lambda x: preprocess_text(x))
+    preprocessing = Preprocessing(
+        dataset_id=dataset_id,
+        preprocessed_filepath="",  # nanti diisi setelah selesai
+        row_count=0,
+        name=default_name,
+        status='pending',
+        progress=0
+    )
+    db.session.add(preprocessing)
+    db.session.commit()
 
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        original_name = os.path.splitext(dataset.filename)[0]
-        preprocessed_filename = f"preprocessed_{timestamp}_{original_name}.csv"
-        preprocessed_folder = get_preprocessed_folder()
-        preprocessed_path = os.path.join(preprocessed_folder, preprocessed_filename)
-        df.to_csv(preprocessed_path, index=False)
+    # Jalankan proses preprocessing di background thread
+    app = current_app._get_current_object()
+    thread = threading.Thread(
+        target=run_preprocessing_thread,
+        args=(app, preprocessing.id, raw_path, dataset.filename)
+    )
+    thread.start()
 
-        # Hitung nomor urut preprocessing untuk dataset ini jako nama default
-        existing_count = Preprocessing.query.filter_by(dataset_id=dataset_id).count()
-        default_name = f"Preprocess #{existing_count + 1}"
+    return jsonify({
+        'message': 'Preprocessing dimulai',
+        'preprocessed_id': preprocessing.id,
+        'name': preprocessing.name
+    }), 200
 
-        preprocessing = Preprocessing(
-            dataset_id=dataset_id,
-            preprocessed_filepath=preprocessed_path,
-            row_count=len(df),
-            name=default_name,       # NAMA DEFAULT
-            status='completed',      # langsung completed karena proses sinkron
-            progress=100
-        )
-        db.session.add(preprocessing)
-        db.session.commit()
+def run_preprocessing_thread(app, preproc_id, raw_path, original_filename):
+    with app.app_context():
+        preprocessing = Preprocessing.query.get(preproc_id)
+        if not preprocessing:
+            return
 
-        return jsonify({
-            'message': 'Preprocessing berhasil',
-            'preprocessed_id': preprocessing.id,
-            'filepath': preprocessed_path,
-            'row_count': len(df),
-            'name': preprocessing.name
-        }), 200
+        try:
+            # Update status awal
+            preprocessing.status = 'running'
+            preprocessing.progress = 10
+            preprocessing.metrics = {'progress_message': 'Membaca file...'}
+            db.session.commit()
 
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+            df = pd.read_csv(raw_path)
+            if 'kalimat' not in df.columns:
+                raise ValueError("Kolom 'kalimat' tidak ditemukan")
+
+            total_rows = len(df)
+            preprocessing.progress = 30
+            preprocessing.metrics = {'progress_message': 'Membersihkan teks...'}
+            db.session.commit()
+
+            # Proses per batch agar progress bisa diupdate (simulasi progres)
+            cleaned = []
+            for i, text in enumerate(df['kalimat']):
+                cleaned.append(preprocess_text(str(text)))
+                # Update progress setiap 10% atau setiap 500 baris
+                if i % max(1, total_rows // 10) == 0:
+                    progress = 30 + int((i / total_rows) * 60)  # 30-90%
+                    preprocessing.progress = progress
+                    preprocessing.row_count = i + 1
+                    preprocessing.metrics = {
+                        'progress_message': f'Memproses baris {i+1}/{total_rows}'
+                    }
+                    db.session.commit()
+
+            df['cleaned_kalimat'] = cleaned
+
+            # Simpan file
+            preprocessing.progress = 95
+            preprocessing.metrics = {'progress_message': 'Menyimpan file...'}
+            db.session.commit()
+
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            original_name = os.path.splitext(original_filename)[0]
+            preprocessed_filename = f"preprocessed_{timestamp}_{original_name}.csv"
+            preprocessed_folder = get_preprocessed_folder()
+            preprocessed_path = os.path.join(preprocessed_folder, preprocessed_filename)
+            df.to_csv(preprocessed_path, index=False)
+
+            preprocessing.preprocessed_filepath = preprocessed_path
+            preprocessing.row_count = total_rows
+            preprocessing.status = 'completed'
+            preprocessing.progress = 100
+            preprocessing.metrics = {'progress_message': 'Selesai'}
+            db.session.commit()
+
+        except Exception as e:
+            preprocessing.status = 'failed'
+            preprocessing.progress = 0
+            preprocessing.metrics = {'error': str(e), 'progress_message': f'Gagal: {str(e)}'}
+            db.session.commit()
+            raise e
 
 
 @preprocess_bp.route('/status/<int:preprocess_id>', methods=['GET'])
@@ -147,8 +205,6 @@ def get_history():
         })
     return jsonify(results), 200
 
-
-# ------------------- ENDPOINT BARU: RENAME & DELETE ------------------
 @preprocess_bp.route('/history/<int:preprocess_id>', methods=['PUT'])
 def rename_preprocessing(preprocess_id):
     """Mengganti nama preprocessing (frontend menggunakan PUT)"""

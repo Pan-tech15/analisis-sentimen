@@ -11,7 +11,10 @@
     />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
-      .fixed-table { table-layout: fixed; width: 100%; }
+      .fixed-table {
+        table-layout: fixed;
+        width: 100%;
+      }
     </style>
   </head>
   <body class="bg-gray-100 font-sans antialiased">
@@ -19,27 +22,88 @@
       <!-- Sidebar (tidak diubah) -->
       <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
         <div class="p-4 border-b">
-          <span class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IdiomSense</span>
+          <span
+            class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
+            >IdiomSense</span
+          >
           <p class="text-sm text-gray-500">Admin Panel</p>
         </div>
         <nav class="p-4">
           <ul class="space-y-1">
-            <li><a href="beranda-admin.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"><i class="fas fa-tachometer-alt w-5"></i><span>Dashboard</span></a></li>
             <li>
-              <button id="dataCollectionBtn" class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700">
-                <div class="flex items-center space-x-2"><i class="fas fa-database w-5"></i><span>Data Collection</span></div>
-                <i id="dataCollectionIcon" class="fas fa-chevron-down text-sm transition-transform"></i>
+              <a
+                href="beranda-admin.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"
+                ><i class="fas fa-tachometer-alt w-5"></i
+                ><span>Dashboard</span></a
+              >
+            </li>
+            <li>
+              <button
+                id="dataCollectionBtn"
+                class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+              >
+                <div class="flex items-center space-x-2">
+                  <i class="fas fa-database w-5"></i
+                  ><span>Data Collection</span>
+                </div>
+                <i
+                  id="dataCollectionIcon"
+                  class="fas fa-chevron-down text-sm transition-transform"
+                ></i>
               </button>
               <ul id="dataCollectionMenu" class="ml-6 mt-1 space-y-1 hidden">
-                <li><a href="dataset.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-table w-5 mr-2"></i>Dataset</a></li>
-                <li><a href="kamus-idiom.html" class="block p-2 rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-book w-5 mr-2"></i>Idiom Dictionary</a></li>
+                <li>
+                  <a
+                    href="dataset.html"
+                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                    ><i class="fas fa-table w-5 mr-2"></i>Dataset</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="kamus-idiom.html"
+                    class="block p-2 rounded-lg bg-blue-50 text-blue-600"
+                    ><i class="fas fa-book w-5 mr-2"></i>Idiom Dictionary</a
+                  >
+                </li>
               </ul>
             </li>
-            <li><a href="preprocessing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-filter w-5"></i><span>Pre-Processing</span></a></li>
-            <li><a href="processing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-brain w-5"></i><span>Processing</span></a></li>
-            <li><a href="testing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-vial w-5"></i><span>Testing</span></a></li>
-            <li><a href="evaluasi.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-chart-line w-5"></i><span>Evaluation</span></a></li>
-            <li class="pt-4 mt-4 border-t"><a href="login.html" class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a></li>
+            <li>
+              <a
+                href="preprocessing.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                ><i class="fas fa-filter w-5"></i><span>Pre-Processing</span></a
+              >
+            </li>
+            <li>
+              <a
+                href="processing.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                ><i class="fas fa-brain w-5"></i><span>Processing</span></a
+              >
+            </li>
+            <li>
+              <a
+                href="testing.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                ><i class="fas fa-vial w-5"></i><span>Testing</span></a
+              >
+            </li>
+            <li>
+              <a
+                href="evaluasi.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                ><i class="fas fa-chart-line w-5"></i><span>Evaluation</span></a
+              >
+            </li>
+            <li class="pt-4 mt-4 border-t">
+              <a
+                href="login.html"
+                class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"
+                ><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a
+              >
+            </li>
           </ul>
         </nav>
       </aside>
@@ -51,14 +115,31 @@
         <!-- Upload CSV (tidak diubah) -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-6">
           <h2 class="font-semibold text-gray-700 mb-4">Upload Idiom Data</h2>
-          <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 transition" id="uploadArea">
+          <div
+            class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 transition"
+            id="uploadArea"
+          >
             <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
-            <p class="text-gray-600">Drag or <span class="text-blue-600 font-medium">click to select</span></p>
-            <p class="text-xs text-gray-400 mt-1">Upload CSV file with columns: idiom_text, idiom_meaning, (optional) emotion</p>
+            <p class="text-gray-600">
+              Drag or
+              <span class="text-blue-600 font-medium">click to select</span>
+            </p>
+            <p class="text-xs text-gray-400 mt-1">
+              Upload CSV file with columns: idiom_text, idiom_meaning,
+              (optional) emotion
+            </p>
             <input type="file" id="fileInput" class="hidden" accept=".csv" />
           </div>
-          <button id="uploadBtn" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">Upload</button>
-          <div id="previewSection" class="bg-white p-6 rounded-xl shadow-md mt-6 hidden">
+          <button
+            id="uploadBtn"
+            class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+          >
+            Upload
+          </button>
+          <div
+            id="previewSection"
+            class="bg-white p-6 rounded-xl shadow-md mt-6 hidden"
+          >
             <h2 class="font-semibold text-gray-700 mb-4">CSV Data Preview</h2>
             <div class="overflow-x-auto">
               <table class="min-w-full border border-gray-200 table-fixed">
@@ -66,7 +147,9 @@
                   <tr>
                     <th class="px-4 py-2 border border-blue-400 w-16">No</th>
                     <th class="px-4 py-2 border border-blue-400 w-40">Idiom</th>
-                    <th class="px-4 py-2 border border-blue-400 w-64">Meaning</th>
+                    <th class="px-4 py-2 border border-blue-400 w-64">
+                      Meaning
+                    </th>
                     <th class="px-4 py-2 border border-blue-400 w-32">Emosi</th>
                   </tr>
                 </thead>
@@ -74,7 +157,12 @@
               </table>
             </div>
             <div class="mt-4 flex justify-end">
-              <button id="extractBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Extract to Dictionary</button>
+              <button
+                id="extractBtn"
+                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+              >
+                Extract to Dictionary
+              </button>
             </div>
           </div>
         </div>
@@ -83,11 +171,50 @@
         <div class="bg-white p-6 rounded-xl shadow-md mb-6">
           <h2 class="font-semibold text-gray-700 mb-4">Add Idiom</h2>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div><label class="block text-sm font-medium text-gray-700">Idiom</label><input type="text" id="newIdiom" class="mt-1 block w-full border rounded-md p-2" placeholder="e.g., angkat kaki"></div>
-            <div><label class="block text-sm font-medium text-gray-700">Meaning</label><input type="text" id="newMeaning" class="mt-1 block w-full border rounded-md p-2" placeholder="e.g., to leave"></div>
-            <div><label class="block text-sm font-medium text-gray-700">Emosi</label><select id="newEmotion" class="mt-1 block w-full border rounded-md p-2"><option value="">-- Pilih Emosi --</option><option value="Senang">Senang</option><option value="Sedih">Sedih</option><option value="Marah">Marah</option><option value="Takut">Takut</option><option value="Terkejut">Terkejut</option><option value="Netral">Netral</option><option value="Percaya">Percaya</option></select></div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700"
+                >Idiom</label
+              ><input
+                type="text"
+                id="newIdiom"
+                class="mt-1 block w-full border rounded-md p-2"
+                placeholder="e.g., angkat kaki"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700"
+                >Meaning</label
+              ><input
+                type="text"
+                id="newMeaning"
+                class="mt-1 block w-full border rounded-md p-2"
+                placeholder="e.g., to leave"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700"
+                >Emosi</label
+              ><select
+                id="newEmotion"
+                class="mt-1 block w-full border rounded-md p-2"
+              >
+                <option value="">-- Pilih Emosi --</option>
+                <option value="Senang">Senang</option>
+                <option value="Sedih">Sedih</option>
+                <option value="Marah">Marah</option>
+                <option value="Takut">Takut</option>
+                <option value="Terkejut">Terkejut</option>
+                <option value="Netral">Netral</option>
+                <option value="Percaya">Percaya</option>
+              </select>
+            </div>
           </div>
-          <button id="addIdiomBtn" class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Save</button>
+          <button
+            id="addIdiomBtn"
+            class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+          >
+            Save
+          </button>
         </div>
 
         <!-- Filter, Search, dan Tabel -->
@@ -97,14 +224,35 @@
             <h2 class="text-lg font-semibold text-gray-800">
               <i class="fas fa-list-alt mr-2 text-blue-600"></i>Daftar Idiom
             </h2>
-            <span id="totalIdiomsBadge" class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">Total: 0</span>
           </div>
 
+          <span
+            id="totalIdiomsBadge"
+            class="bg-blue-100 text-blue-800 text-xl font-medium px-3 py-1 rounded-full"
+            >Total: 0</span
+          >
           <!-- Search & Sort -->
           <div class="flex flex-wrap gap-4 mb-4">
-            <div class="flex-1"><input type="text" id="searchInput" placeholder="Search idiom..." class="w-full border rounded-lg p-2"></div>
-            <div><select id="sortSelect" class="border rounded-lg p-2"><option value="asc">Sort A-Z</option><option value="desc">Sort Z-A</option></select></div>
-            <button id="applyFilterBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">Apply Filter</button>
+            <div class="flex-1">
+              <input
+                type="text"
+                id="searchInput"
+                placeholder="Search idiom..."
+                class="w-full border rounded-lg p-2"
+              />
+            </div>
+            <div>
+              <select id="sortSelect" class="border rounded-lg p-2">
+                <option value="asc">Sort A-Z</option>
+                <option value="desc">Sort Z-A</option>
+              </select>
+            </div>
+            <button
+              id="applyFilterBtn"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+            >
+              Apply Filter
+            </button>
           </div>
 
           <!-- Tabel -->
@@ -130,13 +278,57 @@
     </div>
 
     <!-- Edit Idiom Modal (tidak diubah) -->
-    <div id="editModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div
+      id="editModal"
+      class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50"
+    >
       <div class="bg-white rounded-lg shadow-xl w-96 p-6">
         <h3 class="text-lg font-semibold mb-4">Edit Idiom</h3>
-        <div class="mb-4"><label class="block text-sm font-medium text-gray-700">Idiom</label><input type="text" id="editIdiom" class="mt-1 block w-full border rounded-md p-2"></div>
-        <div class="mb-4"><label class="block text-sm font-medium text-gray-700">Meaning</label><input type="text" id="editMeaning" class="mt-1 block w-full border rounded-md p-2"></div>
-        <div class="mb-4"><label class="block text-sm font-medium text-gray-700">Emosi</label><select id="editEmotion" class="mt-1 block w-full border rounded-md p-2"><option value="">-- Pilih Emosi --</option><option value="Senang">Senang</option><option value="Sedih">Sedih</option><option value="Marah">Marah</option><option value="Takut">Takut</option><option value="Terkejut">Terkejut</option><option value="Netral">Netral</option><option value="Percaya">Percaya</option></select></div>
-        <div class="flex justify-end space-x-2"><button id="closeModalBtn" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button><button id="saveEditBtn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button></div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700">Idiom</label
+          ><input
+            type="text"
+            id="editIdiom"
+            class="mt-1 block w-full border rounded-md p-2"
+          />
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700">Meaning</label
+          ><input
+            type="text"
+            id="editMeaning"
+            class="mt-1 block w-full border rounded-md p-2"
+          />
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700">Emosi</label
+          ><select
+            id="editEmotion"
+            class="mt-1 block w-full border rounded-md p-2"
+          >
+            <option value="">-- Pilih Emosi --</option>
+            <option value="Senang">Senang</option>
+            <option value="Sedih">Sedih</option>
+            <option value="Marah">Marah</option>
+            <option value="Takut">Takut</option>
+            <option value="Terkejut">Terkejut</option>
+            <option value="Netral">Netral</option>
+            <option value="Percaya">Percaya</option>
+          </select>
+        </div>
+        <div class="flex justify-end space-x-2">
+          <button
+            id="closeModalBtn"
+            class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+          >
+            Cancel</button
+          ><button
+            id="saveEditBtn"
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Save
+          </button>
+        </div>
       </div>
     </div>
 
@@ -151,9 +343,19 @@
       let totalIdioms = 0; // untuk menyimpan total seluruh data
 
       async function apiFetch(endpoint, options = {}) {
-        const headers = { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` };
-        const response = await fetch(`${API_BASE}${endpoint}`, { ...options, headers: { ...headers, ...options.headers } });
-        if (response.status === 401) { localStorage.clear(); window.location.href = "login.html"; return null; }
+        const headers = {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        };
+        const response = await fetch(`${API_BASE}${endpoint}`, {
+          ...options,
+          headers: { ...headers, ...options.headers },
+        });
+        if (response.status === 401) {
+          localStorage.clear();
+          window.location.href = "login.html";
+          return null;
+        }
         return response;
       }
 
@@ -167,8 +369,10 @@
           window.idiomsData = result.data;
           totalPages = result.total_pages;
           // Ambil total dari response, fallback ke hitungan dari data jika tidak ada
-          totalIdioms = result.total || result.total_items || window.idiomsData.length;
-          document.getElementById('totalIdiomsBadge').textContent = `Total: ${totalIdioms}`;
+          totalIdioms =
+            result.total || result.total_items || window.idiomsData.length;
+          document.getElementById("totalIdiomsBadge").textContent =
+            `Total: ${totalIdioms}`;
           renderTable();
           renderPagination();
         } catch (error) {
@@ -181,7 +385,8 @@
         const tbody = document.getElementById("idiomTableBody");
         tbody.innerHTML = "";
         if (!window.idiomsData || window.idiomsData.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">No data available</td></tr>';
+          tbody.innerHTML =
+            '<tr><td colspan="5" class="text-center py-4">No data available</td></tr>';
           return;
         }
         const start = (currentPage - 1) * rowsPerPage;
@@ -193,16 +398,28 @@
           row.insertCell(3).innerHTML = item.emotion || "-";
           const actionsCell = row.insertCell(4);
           actionsCell.innerHTML = `<i class="fas fa-edit text-blue-500 mr-3 cursor-pointer hover:text-blue-700" data-id="${item.id}"></i><i class="fas fa-trash text-red-500 cursor-pointer hover:text-red-700" data-id="${item.id}"></i>`;
-          for (let cell of row.cells) cell.classList.add("border", "border-gray-200", "px-4", "py-2", "break-words");
+          for (let cell of row.cells)
+            cell.classList.add(
+              "border",
+              "border-gray-200",
+              "px-4",
+              "py-2",
+              "break-words",
+            );
         });
-        document.querySelectorAll(".fa-edit").forEach(icon => icon.addEventListener("click", (e) => {
-          const id = parseInt(icon.dataset.id);
-          const item = window.idiomsData.find(i => i.id === id);
-          if (item) openEditModal(item);
-        }));
-        document.querySelectorAll(".fa-trash").forEach(icon => icon.addEventListener("click", async (e) => {
-          if (confirm("Delete this idiom?")) await deleteIdiom(parseInt(icon.dataset.id));
-        }));
+        document.querySelectorAll(".fa-edit").forEach((icon) =>
+          icon.addEventListener("click", (e) => {
+            const id = parseInt(icon.dataset.id);
+            const item = window.idiomsData.find((i) => i.id === id);
+            if (item) openEditModal(item);
+          }),
+        );
+        document.querySelectorAll(".fa-trash").forEach((icon) =>
+          icon.addEventListener("click", async (e) => {
+            if (confirm("Delete this idiom?"))
+              await deleteIdiom(parseInt(icon.dataset.id));
+          }),
+        );
       }
 
       function renderPagination() {
@@ -215,7 +432,12 @@
         prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
         prevBtn.className = `px-3 py-1 rounded border ${currentPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
         prevBtn.disabled = currentPage === 1;
-        prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; loadIdioms(); } };
+        prevBtn.onclick = () => {
+          if (currentPage > 1) {
+            currentPage--;
+            loadIdioms();
+          }
+        };
         container.appendChild(prevBtn);
 
         const pageInfo = document.createElement("span");
@@ -224,14 +446,17 @@
         container.appendChild(pageInfo);
 
         const pageInput = document.createElement("input");
-        pageInput.type = "number"; pageInput.min = 1; pageInput.max = totalPages;
+        pageInput.type = "number";
+        pageInput.min = 1;
+        pageInput.max = totalPages;
         pageInput.value = currentPage;
         pageInput.className = "w-16 border rounded px-2 py-1 text-center";
         container.appendChild(pageInput);
 
         const goBtn = document.createElement("button");
         goBtn.innerText = "Go";
-        goBtn.className = "px-3 py-1 rounded border bg-blue-500 text-white hover:bg-blue-600";
+        goBtn.className =
+          "px-3 py-1 rounded border bg-blue-500 text-white hover:bg-blue-600";
         goBtn.onclick = () => {
           let newPage = parseInt(pageInput.value);
           if (isNaN(newPage)) newPage = 1;
@@ -246,7 +471,12 @@
         nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
         nextBtn.className = `px-3 py-1 rounded border ${currentPage === totalPages ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
         nextBtn.disabled = currentPage === totalPages;
-        nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; loadIdioms(); } };
+        nextBtn.onclick = () => {
+          if (currentPage < totalPages) {
+            currentPage++;
+            loadIdioms();
+          }
+        };
         container.appendChild(nextBtn);
         paginationDiv.appendChild(container);
       }
@@ -256,9 +486,19 @@
         const idiomText = document.getElementById("newIdiom").value.trim();
         const meaning = document.getElementById("newMeaning").value.trim();
         const emotion = document.getElementById("newEmotion").value;
-        if (!idiomText || !meaning) { alert("Idiom and meaning are required"); return; }
+        if (!idiomText || !meaning) {
+          alert("Idiom and meaning are required");
+          return;
+        }
         try {
-          const response = await apiFetch("/idioms/", { method: "POST", body: JSON.stringify({ idiom_text: idiomText, idiom_meaning: meaning, emotion: emotion || null }) });
+          const response = await apiFetch("/idioms/", {
+            method: "POST",
+            body: JSON.stringify({
+              idiom_text: idiomText,
+              idiom_meaning: meaning,
+              emotion: emotion || null,
+            }),
+          });
           if (!response) return;
           const result = await response.json();
           if (response.ok) {
@@ -269,16 +509,31 @@
             currentPage = 1;
             loadIdioms();
           } else alert(result.message || "Failed to add idiom");
-        } catch (error) { console.error(error); alert("Error adding idiom"); }
+        } catch (error) {
+          console.error(error);
+          alert("Error adding idiom");
+        }
       }
 
       async function deleteIdiom(id) {
         try {
-          const response = await apiFetch(`/idioms/${id}`, { method: "DELETE" });
+          const response = await apiFetch(`/idioms/${id}`, {
+            method: "DELETE",
+          });
           if (!response) return;
-          if (response.ok) { alert("Idiom deleted"); if (window.idiomsData.length === 1 && currentPage > 1) currentPage--; loadIdioms(); }
-          else { const err = await response.json(); alert(err.message || "Failed to delete"); }
-        } catch (error) { console.error(error); alert("Error deleting idiom"); }
+          if (response.ok) {
+            alert("Idiom deleted");
+            if (window.idiomsData.length === 1 && currentPage > 1)
+              currentPage--;
+            loadIdioms();
+          } else {
+            const err = await response.json();
+            alert(err.message || "Failed to delete");
+          }
+        } catch (error) {
+          console.error(error);
+          alert("Error deleting idiom");
+        }
       }
 
       let editingId = null;
@@ -289,19 +544,38 @@
         document.getElementById("editEmotion").value = item.emotion || "";
         document.getElementById("editModal").classList.remove("hidden");
       }
-      function closeModal() { document.getElementById("editModal").classList.add("hidden"); editingId = null; }
+      function closeModal() {
+        document.getElementById("editModal").classList.add("hidden");
+        editingId = null;
+      }
       async function saveEdit() {
         const newIdiom = document.getElementById("editIdiom").value.trim();
         const newMeaning = document.getElementById("editMeaning").value.trim();
         const newEmotion = document.getElementById("editEmotion").value;
-        if (!newIdiom || !newMeaning) { alert("Idiom and meaning are required"); return; }
+        if (!newIdiom || !newMeaning) {
+          alert("Idiom and meaning are required");
+          return;
+        }
         try {
-          const response = await apiFetch(`/idioms/${editingId}`, { method: "PUT", body: JSON.stringify({ idiom_text: newIdiom, idiom_meaning: newMeaning, emotion: newEmotion || null }) });
+          const response = await apiFetch(`/idioms/${editingId}`, {
+            method: "PUT",
+            body: JSON.stringify({
+              idiom_text: newIdiom,
+              idiom_meaning: newMeaning,
+              emotion: newEmotion || null,
+            }),
+          });
           if (!response) return;
           const result = await response.json();
-          if (response.ok) { alert("Idiom updated successfully"); closeModal(); loadIdioms(); }
-          else alert(result.message || "Failed to update");
-        } catch (error) { console.error(error); alert("Error updating idiom"); }
+          if (response.ok) {
+            alert("Idiom updated successfully");
+            closeModal();
+            loadIdioms();
+          } else alert(result.message || "Failed to update");
+        } catch (error) {
+          console.error(error);
+          alert("Error updating idiom");
+        }
       }
 
       function applyFilterAndSort() {
@@ -311,50 +585,90 @@
         loadIdioms();
       }
 
-      document.getElementById("applyFilterBtn").addEventListener("click", applyFilterAndSort);
-      document.getElementById("addIdiomBtn").addEventListener("click", addIdiom);
-      document.getElementById("closeModalBtn").addEventListener("click", closeModal);
-      document.getElementById("saveEditBtn").addEventListener("click", saveEdit);
+      document
+        .getElementById("applyFilterBtn")
+        .addEventListener("click", applyFilterAndSort);
+      document
+        .getElementById("addIdiomBtn")
+        .addEventListener("click", addIdiom);
+      document
+        .getElementById("closeModalBtn")
+        .addEventListener("click", closeModal);
+      document
+        .getElementById("saveEditBtn")
+        .addEventListener("click", saveEdit);
 
       // Upload area (tidak diubah)
       const uploadArea = document.getElementById("uploadArea");
       const fileInput = document.getElementById("fileInput");
       uploadArea.addEventListener("click", () => fileInput.click());
-      uploadArea.addEventListener("dragover", (e) => { e.preventDefault(); uploadArea.classList.add("border-blue-500", "bg-blue-50"); });
-      uploadArea.addEventListener("dragleave", () => { uploadArea.classList.remove("border-blue-500", "bg-blue-50"); });
-      uploadArea.addEventListener("drop", (e) => { e.preventDefault(); uploadArea.classList.remove("border-blue-500", "bg-blue-50"); const files = e.dataTransfer.files; if (files.length) fileInput.files = files; });
+      uploadArea.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        uploadArea.classList.add("border-blue-500", "bg-blue-50");
+      });
+      uploadArea.addEventListener("dragleave", () => {
+        uploadArea.classList.remove("border-blue-500", "bg-blue-50");
+      });
+      uploadArea.addEventListener("drop", (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove("border-blue-500", "bg-blue-50");
+        const files = e.dataTransfer.files;
+        if (files.length) fileInput.files = files;
+      });
       let uploadedData = [];
 
       fileInput.addEventListener("change", function (e) {
         if (fileInput.files.length === 0) return;
         const file = fileInput.files[0];
         Papa.parse(file, {
-          header: true, skipEmptyLines: true,
+          header: true,
+          skipEmptyLines: true,
           complete: function (results) {
             const data = results.data;
-            if (data.length === 0) { alert("File is empty"); return; }
-            let idiomKey = null, meaningKey = null, emotionKey = null;
+            if (data.length === 0) {
+              alert("File is empty");
+              return;
+            }
+            let idiomKey = null,
+              meaningKey = null,
+              emotionKey = null;
             const firstRow = data[0];
             for (let key in firstRow) {
               let lowerKey = key.toLowerCase();
-              if (lowerKey.includes("idiom") && !lowerKey.includes("meaning")) idiomKey = key;
-              if (lowerKey.includes("meaning") || lowerKey.includes("arti")) meaningKey = key;
-              if (lowerKey.includes("emosi") || lowerKey.includes("emotion")) emotionKey = key;
+              if (lowerKey.includes("idiom") && !lowerKey.includes("meaning"))
+                idiomKey = key;
+              if (lowerKey.includes("meaning") || lowerKey.includes("arti"))
+                meaningKey = key;
+              if (lowerKey.includes("emosi") || lowerKey.includes("emotion"))
+                emotionKey = key;
             }
             if (!idiomKey || !meaningKey) {
-              alert('No columns named "idiom_text" or "idiom_meaning" found. Use columns like "idiom", "idiom_text", "meaning", "arti".');
+              alert(
+                'No columns named "idiom_text" or "idiom_meaning" found. Use columns like "idiom", "idiom_text", "meaning", "arti".',
+              );
               return;
             }
             uploadedData = [];
             for (let row of data) {
               let idiom = row[idiomKey] ? row[idiomKey].trim() : "";
               let meaning = row[meaningKey] ? row[meaningKey].trim() : "";
-              let emotion = emotionKey ? (row[emotionKey] ? row[emotionKey].trim() : "") : "";
+              let emotion = emotionKey
+                ? row[emotionKey]
+                  ? row[emotionKey].trim()
+                  : ""
+                : "";
               if (idiom && meaning && idiom !== "nan" && meaning !== "nan") {
-                uploadedData.push({ idiom_text: idiom, idiom_meaning: meaning, emotion: emotion || null });
+                uploadedData.push({
+                  idiom_text: idiom,
+                  idiom_meaning: meaning,
+                  emotion: emotion || null,
+                });
               }
             }
-            if (uploadedData.length === 0) { alert("No valid data found"); return; }
+            if (uploadedData.length === 0) {
+              alert("No valid data found");
+              return;
+            }
             const previewBody = document.getElementById("previewTableBody");
             previewBody.innerHTML = "";
             const previewRows = uploadedData.slice(0, 10);
@@ -364,48 +678,79 @@
               row.insertCell(1).innerHTML = item.idiom_text;
               row.insertCell(2).innerHTML = item.idiom_meaning;
               row.insertCell(3).innerHTML = item.emotion || "-";
-              for (let cell of row.cells) cell.classList.add("border", "border-gray-200", "px-4", "py-2");
+              for (let cell of row.cells)
+                cell.classList.add("border", "border-gray-200", "px-4", "py-2");
             });
             if (uploadedData.length > 10) {
               const infoRow = previewBody.insertRow();
               infoRow.insertCell(0).colSpan = 4;
-              infoRow.insertCell(0).innerHTML = `... and ${uploadedData.length - 10} more entries`;
-              infoRow.cells[0].classList.add("text-center", "text-gray-500", "py-2");
+              infoRow.insertCell(0).innerHTML =
+                `... and ${uploadedData.length - 10} more entries`;
+              infoRow.cells[0].classList.add(
+                "text-center",
+                "text-gray-500",
+                "py-2",
+              );
             }
-            document.getElementById("previewSection").classList.remove("hidden");
+            document
+              .getElementById("previewSection")
+              .classList.remove("hidden");
           },
-          error: function (err) { console.error(err); alert("Failed to read CSV file"); }
+          error: function (err) {
+            console.error(err);
+            alert("Failed to read CSV file");
+          },
         });
       });
 
-      document.getElementById("extractBtn").addEventListener("click", async () => {
-        if (uploadedData.length === 0) { alert("No data to extract"); return; }
-        try {
-          const response = await apiFetch("/idioms/batch", { method: "POST", body: JSON.stringify({ idioms: uploadedData }) });
-          if (!response) return;
-          const result = await response.json();
-          if (response.ok) {
-            alert(result.message);
-            uploadedData = [];
-            document.getElementById("previewSection").classList.add("hidden");
-            fileInput.value = "";
-            currentPage = 1;
-            loadIdioms();
-          } else alert(result.message || "Failed to extract idioms");
-        } catch (error) { console.error(error); alert("Error extracting idioms"); }
-      });
+      document
+        .getElementById("extractBtn")
+        .addEventListener("click", async () => {
+          if (uploadedData.length === 0) {
+            alert("No data to extract");
+            return;
+          }
+          try {
+            const response = await apiFetch("/idioms/batch", {
+              method: "POST",
+              body: JSON.stringify({ idioms: uploadedData }),
+            });
+            if (!response) return;
+            const result = await response.json();
+            if (response.ok) {
+              alert(result.message);
+              uploadedData = [];
+              document.getElementById("previewSection").classList.add("hidden");
+              fileInput.value = "";
+              currentPage = 1;
+              loadIdioms();
+            } else alert(result.message || "Failed to extract idioms");
+          } catch (error) {
+            console.error(error);
+            alert("Error extracting idioms");
+          }
+        });
 
-      document.getElementById("uploadBtn").addEventListener("click", () => fileInput.click());
+      document
+        .getElementById("uploadBtn")
+        .addEventListener("click", () => fileInput.click());
 
       function toggleDropdown(btn, menu, icon) {
-        btn.addEventListener("click", () => { menu.classList.toggle("hidden"); icon.classList.toggle("rotate-180"); });
+        btn.addEventListener("click", () => {
+          menu.classList.toggle("hidden");
+          icon.classList.toggle("rotate-180");
+        });
       }
       const dataCollectionBtn = document.getElementById("dataCollectionBtn");
       const dataCollectionMenu = document.getElementById("dataCollectionMenu");
       const dataCollectionIcon = document.getElementById("dataCollectionIcon");
       toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
 
-      if (authToken) { loadIdioms(); } else { window.location.href = "login.html"; }
+      if (authToken) {
+        loadIdioms();
+      } else {
+        window.location.href = "login.html";
+      }
     </script>
   </body>
 </html>
