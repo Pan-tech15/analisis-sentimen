@@ -296,7 +296,7 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                 for i in range(0, total_samples, batch_size):
                     batch_texts = texts[i:i+batch_size]
                     encoded = tokenizer(batch_texts, padding=True, truncation=True,
-                                        max_length=max_seq_length, return_tensors='pt').to(device)
+                    max_length=max_seq_length, return_tensors='pt').to(device)
                     if do_finetune:
                         outputs = ft_model.bert(**encoded)
                     else:
