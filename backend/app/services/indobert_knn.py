@@ -115,28 +115,55 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             if 'kalimat' not in df.columns or 'emotion' not in df.columns:
                 raise ValueError("Dataset harus memiliki kolom 'kalimat' dan 'emotion'")
 
-            df['emotion_clean'] = df['emotion'].apply(clean_and_map_emotion)
-            before = len(df)
-            df = df.dropna(subset=['emotion_clean']).reset_index(drop=True)
-            after = len(df)
-            if before != after:
-                log(f"Dibuang {before - after} baris karena label emosi tidak valid / nan.", training_id)
+            # Kolom has_idiom opsional – jika tidak ada, tetap bisa berjalan hanya dengan emosi
+            has_idiom_col = 'has_idiom' in df.columns
 
-            if len(df) == 0:
-                raise ValueError("Tidak ada data valid setelah membersihkan label emosi.")
+            def determine_label(row):
+                # Jika kolom has_idiom tersedia, gunakan itu
+                if has_idiom_col:
+                    is_idiom = row['has_idiom']
+                    if isinstance(is_idiom, str):
+                        is_idiom = is_idiom.strip().lower() in ('ya', 'yes', 'true', '1')
+                    else:
+                        is_idiom = bool(is_idiom)
+                    if not is_idiom:
+                        return 'non_idiom'
+                # Jika ada idiom (atau tidak ada kolom has_idiom), gunakan emosi
+                emo = row['emotion']
+                if pd.isna(emo):
+                    # Jika tidak ada has_idiom dan emosi NaN, tetap beri label 'non_idiom'
+                    return 'non_idiom'
+                emo_clean = clean_and_map_emotion(emo)
+                if emo_clean is None:
+                    # Emosi tidak dikenal, anggap non_idiom
+                    return 'non_idiom'
+                return emo_clean
+
+            df['label'] = df.apply(determine_label, axis=1)
+
+            # Hapus data dengan label yang tidak diinginkan (seharusnya tidak ada)
+            before = len(df)
+            df = df[df['label'] != 'invalid']  # jika kita definisikan invalid, tapi tidak ada
+            after = len(df)
+
+            # Hitung distribusi
+            label_counts = df['label'].value_counts()
+            log(f"Distribusi label: {dict(label_counts)}", training_id)
 
             texts = df['kalimat'].astype(str).tolist()
-            labels = df['emotion_clean'].tolist()
+            labels = df['label'].tolist()
             total_samples = len(texts)
             log(f"Jumlah sampel setelah validasi: {total_samples}", training_id)
             log(f"Label unik: {set(labels)}", training_id)
+
+            if len(df) == 0:
+                raise ValueError("Tidak ada data valid setelah membersihkan label emosi.")
 
             le = LabelEncoder()
             y_encoded = le.fit_transform(labels)
             num_classes = len(le.classes_)
             log(f"Label encoded: {le.classes_}", training_id)
 
-            # ========== 2. Baca parameter dari config ==========
             params = config.params
 
             # --- Parameter umum ---
@@ -149,8 +176,46 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             shuffle = to_bool(general.get('shuffle', 'yes'))
             stratified = to_bool(general.get('stratified', 'yes'))
 
+                        # ========== 2. Split Awal (Training vs Hold‑out) ==========
             split_config = params.get('split', {})
+            train_pct = split_config.get('train', 80)
+            test_pct = split_config.get('test', 20)
+
+            X_all = texts
+            y_all = y_encoded
+
+            X_train_texts, X_holdout_texts, y_train, y_holdout = train_test_split(
+                X_all, y_all,
+                test_size=test_pct/100.0,
+                random_state=random_state,
+                stratify=y_all
+            )
+
+            log(f"Split data: Training={len(X_train_texts)} sampel, Hold‑out={len(X_holdout_texts)} sampel", training_id)
+
+            # Simpan hold‑out set untuk testing nanti
+            holdout_df = pd.DataFrame({
+                'kalimat': X_holdout_texts,
+                'label': le.inverse_transform(y_holdout)
+            })
+            holdout_folder = 'data/testing'
+            os.makedirs(holdout_folder, exist_ok=True)
+            holdout_filename = f"holdout_{training_id}.csv"
+            holdout_path = os.path.join(holdout_folder, holdout_filename)
+            holdout_df.to_csv(holdout_path, index=False)
+            log(f"Hold‑out set disimpan di {holdout_path}", training_id)
+
+            # Mulai sekarang hanya gunakan data training
+            texts = X_train_texts
+            y_encoded = y_train
+            total_samples = len(texts)
+
+
+            # (split_config sudah dibaca di atas, jadi tidak perlu dibaca ulang)
             split_type = split_config.get('type', 'crossval')
+            # Jika epoch‑based, perlakukan sebagai percentage split
+            if split_type == 'epoch':
+                split_type = 'percentage'
             cv_folds = int(split_config.get('crossval', {}).get('folds', 5))
             if split_type == 'crossval' and cv_folds > total_samples:
                 cv_folds = total_samples
@@ -537,6 +602,7 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             training.progress = 100
             training.model_path = model_path
             training.metrics = metrics
+            training.metrics['holdout_path'] = holdout_path
             training.metrics['progress_message'] = f"Selesai. Akurasi: {metrics['accuracy']}"
             training.completed_at = datetime.utcnow()
             db.session.commit()

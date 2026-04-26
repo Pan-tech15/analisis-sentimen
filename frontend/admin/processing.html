@@ -1332,6 +1332,12 @@
             indo.classList.add("hidden");
             lex.classList.remove("hidden");
           }
+          // Filter model dropdown
+          populateModelSelect(this.value);
+          // Filter best model
+          renderBestModel(
+            this.value === "indobert" ? "IndoBERT-KNN" : "Lexicon-NB",
+          );
         });
       // Inisialisasi tampilan awal
       document.getElementById("indobertTuning").classList.remove("hidden");
@@ -1358,14 +1364,23 @@
         renderBestModel();
       }
 
-      function populateModelSelect() {
+      function populateModelSelect(algorithm) {
         const select = document.getElementById("oldModelSelect");
         if (!select) return;
         select.innerHTML = '<option value="">-- New Model --</option>';
+
+        // jika tidak diberikan, ambil dari dropdown
+        if (!algorithm) {
+          algorithm = document.getElementById("tuningAlgo").value;
+        }
+        const algoName =
+          algorithm === "indobert" ? "IndoBERT-KNN" : "Lexicon-NB";
+
         trainingHistory.forEach((m) => {
+          if (m.algorithm !== algoName) return; // filter
           const opt = document.createElement("option");
           opt.value = m.id;
-          opt.textContent = `${m.dataset_filename || m.name} (${m.algorithm}) - Acc: ${m.metrics?.accuracy?.toFixed(3) || "N/A"}`;
+          opt.textContent = `${m.config_name || m.dataset_filename} (${m.algorithm}) - Acc: ${m.metrics?.accuracy?.toFixed(3) || "N/A"}`;
           select.appendChild(opt);
         });
       }
@@ -1447,19 +1462,26 @@
       }
 
       // ==================== MODEL TERBAIK ====================
-      function renderBestModel() {
+      function renderBestModel(algorithm) {
         const container = document.getElementById("bestModelContainer");
         if (!container) return;
-        if (trainingHistory.length === 0) {
-          container.innerHTML =
-            '<p class="text-gray-500">Belum ada data training.</p>';
+        if (!algorithm) {
+          const algoSelect = document.getElementById("tuningAlgo").value;
+          algorithm = algoSelect === "indobert" ? "IndoBERT-KNN" : "Lexicon-NB";
+        }
+        const filtered = trainingHistory.filter(
+          (m) => m.algorithm === algorithm,
+        );
+        if (filtered.length === 0) {
+          container.innerHTML = `<p class="text-gray-500">Belum ada data training untuk ${algorithm}.</p>`;
           return;
         }
-        let best = trainingHistory.reduce((prev, curr) => {
+        let best = filtered.reduce((prev, curr) => {
           const prevAcc = prev.metrics?.accuracy || 0;
           const currAcc = curr.metrics?.accuracy || 0;
           return currAcc > prevAcc ? curr : prev;
-        }, trainingHistory[0]);
+        }, filtered[0]);
+
         if (!best.metrics?.accuracy) {
           container.innerHTML =
             '<p class="text-gray-500">Tidak ada metrik akurasi.</p>';
@@ -1467,33 +1489,31 @@
         }
         const accPercent = (best.metrics.accuracy * 100).toFixed(2);
         const params = trainingParamsStore[best.id] || best.params || {};
+
+        // ✅ Isi HTML terlebih dahulu
         container.innerHTML = `
-      <div class="border rounded-lg p-4 bg-gradient-to-r from-yellow-50 to-orange-50">
-        <div class="flex flex-wrap justify-between items-start gap-4">
-          <div>
-            <p class="text-sm text-gray-500">Model Terbaik</p>
-            <p class="font-bold text-lg text-gray-800">${best.algorithm || "-"}</p>
-            <p class="text-sm text-gray-600">Dataset: ${best.dataset_filename || "-"}</p>
-            <p class="text-sm text-gray-600">Rasio: ${best.split_ratio || "-"}</p>
-            <p class="text-xl font-bold text-green-700 mt-1">Akurasi: ${accPercent}%</p>
-          </div>
-          <button id="viewBestParamsBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
-            <i class="fas fa-cog"></i><span>Lihat Parameter</span>
-          </button>
+        <div class="border rounded-lg p-4 bg-gradient-to-r from-yellow-50 to-orange-50">
+            <div class="flex flex-wrap justify-between items-start gap-4">
+                <div>
+                    <p class="text-sm text-gray-500">Model Terbaik (${algorithm})</p>
+                    <p class="font-bold text-lg text-gray-800">${best.config_name || best.dataset_filename || "-"}</p>
+                    <p class="text-sm text-gray-600">Dataset: ${best.dataset_filename || "-"}</p>
+                    <p class="text-sm text-gray-600">Rasio: ${best.split_ratio || "-"}</p>
+                    <p class="text-xl font-bold text-green-700 mt-1">Akurasi: ${accPercent}%</p>
+                </div>
+                <a href="validasi.html?id=${best.id}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition inline-flex items-center space-x-2">
+                    <i class="fas fa-chart-bar"></i><span>Lihat Evaluasi</span>
+                </a>
+            </div>
         </div>
-      </div>
     `;
-        document
-          .getElementById("viewBestParamsBtn")
-          ?.addEventListener("click", () => {
-            showParamModal(best, params);
-          });
       }
 
       function showParamModal(model, params) {
         const modal = document.getElementById("paramModal");
         const content = document.getElementById("paramModalContent");
         if (!modal || !content) return;
+
         let paramsHtml = `<div class="space-y-2"><p class="font-semibold">Model: ${model.algorithm}</p>`;
         if (Object.keys(params).length === 0) {
           paramsHtml +=
@@ -1504,17 +1524,22 @@
           for (let [key, val] of Object.entries(params)) {
             if (typeof val === "object") val = JSON.stringify(val);
             paramsHtml += `
-          <div class="bg-gray-50 p-2 rounded">
-            <span class="text-xs text-gray-500">${key}</span>
-            <p class="font-mono text-sm break-all">${val}</p>
-          </div>
-        `;
+                <div class="bg-gray-50 p-2 rounded">
+                    <span class="text-xs text-gray-500">${key}</span>
+                    <p class="font-mono text-sm break-all">${val}</p>
+                </div>
+            `;
           }
           paramsHtml += "</div>";
         }
         paramsHtml += "</div>";
         content.innerHTML = paramsHtml;
+
+        // Tampilkan modal
         modal.classList.remove("hidden");
+        // Tambahkan kelas "show" ke container animasi
+        const container = modal.querySelector(".modal-container");
+        if (container) container.classList.add("show");
       }
 
       // ==================== PROGRESS POLLING ====================
@@ -1578,15 +1603,49 @@
                 .classList.add("bg-green-600");
               document.getElementById("pollingStatusLabel").textContent =
                 "Selesai!";
-              // Tambahkan tautan ke evaluasi
-              resultContent.innerHTML += `
-                    <div class="mt-4 text-center">
-                        <a href="validasi.html?id=${trainingId}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition inline-flex items-center space-x-2">
-                            <i class="fas fa-chart-bar"></i><span>Lihat Evaluasi</span>
-                        </a>
+
+              // Fetch detail training untuk metrik
+              try {
+                const detailRes = await fetch(
+                  `${API_BASE}/api/training/${trainingId}`,
+                  {
+                    headers: getHeaders(),
+                  },
+                );
+                if (detailRes.ok) {
+                  const detail = await detailRes.json();
+                  const m = detail.metrics || {};
+                  const metrikHtml = `
+                <div class="mt-4 grid grid-cols-2 gap-3">
+                    <div class="bg-blue-50 p-3 rounded text-center">
+                        <p class="text-sm text-gray-600">Accuracy</p>
+                        <p class="text-xl font-bold text-blue-700">${m.accuracy ? (m.accuracy * 100).toFixed(2) + "%" : "-"}</p>
                     </div>
-                `;
-              // Refresh history untuk mendapatkan data terbaru (setelah selesai)
+                    <div class="bg-green-50 p-3 rounded text-center">
+                        <p class="text-sm text-gray-600">F1 Score</p>
+                        <p class="text-xl font-bold text-green-700">${m.f1_score ? (m.f1_score * 100).toFixed(2) + "%" : "-"}</p>
+                    </div>
+                    <div class="bg-yellow-50 p-3 rounded text-center">
+                        <p class="text-sm text-gray-600">Precision</p>
+                        <p class="text-xl font-bold text-yellow-700">${m.precision ? (m.precision * 100).toFixed(2) + "%" : "-"}</p>
+                    </div>
+                    <div class="bg-purple-50 p-3 rounded text-center">
+                        <p class="text-sm text-gray-600">Recall</p>
+                        <p class="text-xl font-bold text-purple-700">${m.recall ? (m.recall * 100).toFixed(2) + "%" : "-"}</p>
+                    </div>
+                </div>
+            `;
+                  resultContent.innerHTML += metrikHtml;
+                }
+              } catch (e) {}
+
+              resultContent.innerHTML += `
+        <div class="mt-4 text-center">
+            <a href="validasi.html?id=${trainingId}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition inline-flex items-center space-x-2">
+                <i class="fas fa-chart-bar"></i><span>Lihat Evaluasi Lengkap</span>
+            </a>
+        </div>
+    `;
               loadTrainingHistory();
             } else if (status === "failed") {
               clearInterval(pollingInterval);
@@ -1651,10 +1710,15 @@
           };
 
           const splitConfig = {
-            type: validationType,
+            type: validationType === "crossval" ? "crossval" : "percentage",
             train: trainPct,
             test: testPct,
           };
+          if (validationType === "crossval") {
+            splitConfig.crossval = {
+              folds: parseInt(document.getElementById("cvFolds").value),
+            };
+          }
           if (validationType === "crossval") {
             splitConfig.crossval = {
               folds: parseInt(document.getElementById("cvFolds").value),
@@ -1889,11 +1953,23 @@
       document
         .getElementById("closeParamModal")
         .addEventListener("click", () => {
-          document.getElementById("paramModal").classList.add("hidden");
+          const modal = document.getElementById("paramModal");
+          const container = modal.querySelector(".modal-container");
+          if (container) container.classList.remove("show");
+          setTimeout(() => {
+            modal.classList.add("hidden");
+          }, 200); // sedikit delay agar animasi sempat berjalan
         });
+
       window.addEventListener("click", (e) => {
         const modal = document.getElementById("paramModal");
-        if (e.target === modal) modal.classList.add("hidden");
+        if (e.target === modal) {
+          const container = modal.querySelector(".modal-container");
+          if (container) container.classList.remove("show");
+          setTimeout(() => {
+            modal.classList.add("hidden");
+          }, 200);
+        }
       });
 
       // Sidebar toggle
