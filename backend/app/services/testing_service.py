@@ -5,6 +5,7 @@ import joblib
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix
 from app.models.training import Training
 from app.models.testing import Testing
+from app.models.idiom import Idiom
 from app import db
 
 # ------------------ PREPROCESSING SAMA SEPERTI TRAINING ------------------
@@ -248,3 +249,68 @@ def run_testing(app, test_id):
             test.progress = 0
             db.session.commit()
             raise e
+        
+# ------------------ DETEKSI IDIOM & PREDIKSI UNTUK INPUT TEXT INDOBERT-KNN------------------
+def check_idiom_in_text(text):
+    """Cari idiom dalam teks mentah (case‑insensitive) dan kembalikan (idiom_text, meaning) atau None."""
+    # Ambil semua idiom dari database
+    idioms = Idiom.query.all()
+    text_lower = text.lower()
+    for idiom in idioms:
+        if idiom.idiom_text.lower() in text_lower:
+            return idiom.idiom_text, idiom.idiom_meaning
+    return None
+
+def predict_single_text_with_idiom(training, text):
+    """
+    Untuk IndoBERT‑KNN: cek idiom → jika ada lanjut prediksi emosi; jika tidak, kembalikan pesan.
+    Mengembalikan dictionary.
+    """
+    idiom_result = check_idiom_in_text(text)
+    if not idiom_result:
+        return {
+            'has_idiom': False,
+            'message': 'Tidak terdeteksi idiom'
+        }
+    idiom_text, idiom_meaning = idiom_result
+
+    # Lakukan prediksi emosi dengan teks yang SUDAH DIBERSIHKAN
+    from app.utils.preprocessing_utils import preprocess_text   # pakai fungsi yang sama dengan training
+    cleaned = preprocess_text(text)
+    # Panggil fungsi prediksi IndoBERT yang sudah ada
+    artifacts = joblib.load(training.model_path)
+    emotion = predict_indobert([cleaned], artifacts)[0]   # ambil prediksi pertama
+
+    return {
+        'has_idiom': True,
+        'idiom_text': idiom_text,
+        'idiom_meaning': idiom_meaning,
+        'emotion': emotion
+    }
+
+# ------------------ DETEKSI IDIOM & PREDIKSI UNTUK INPUT TEXT LEXICON-NB ------------------
+def predict_single_text_with_idiom_lexicon(training, text):
+    """
+    Untuk Lexicon‑NB: cek idiom → jika ada lanjut prediksi emosi; jika tidak, kembalikan pesan.
+    Mengembalikan dictionary.
+    """
+    idiom_result = check_idiom_in_text(text)
+    if not idiom_result:
+        return {
+            'has_idiom': False,
+            'message': 'Tidak terdeteksi idiom'
+        }
+    idiom_text, idiom_meaning = idiom_result
+
+    # Lakukan prediksi emosi dengan teks yang SUDAH DIBERSIHKAN
+    cleaned = preprocess_text(text)   # pakai fungsi preprocess_text yang sudah ada di file ini
+    # Panggil fungsi prediksi Lexicon yang sudah ada
+    artifacts = joblib.load(training.model_path)
+    emotion = predict_lexicon([cleaned], artifacts)[0]   # ambil prediksi pertama
+
+    return {
+        'has_idiom': True,
+        'idiom_text': idiom_text,
+        'idiom_meaning': idiom_meaning,
+        'emotion': emotion
+    }
