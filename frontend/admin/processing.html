@@ -10,6 +10,49 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     />
     <style>
+      .info-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px; /* dari 18px */
+        height: 18px; /* dari 18px */
+        font-size: 18px; /* dari 14px */
+        font-weight: bold; /* baru */
+        color: #3b82f6;
+        cursor: pointer;
+        margin-left: 4px;
+        border-radius: 50%;
+        transition: 0.2s;
+        position: relative;
+      }
+      .info-icon:hover {
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+      .info-tooltip {
+        position: absolute;
+        z-index: 1000;
+        background: #1f2937;
+        color: #f9fafb;
+        padding: 0.8rem 1.2rem; /* dari 0.6rem 1rem */
+        border-radius: 0.5rem;
+        font-size: 1rem; /* dari 0.75rem */
+        line-height: 1.5;
+        max-width: 360px; /* dari 280px */
+        word-wrap: break-word;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        pointer-events: none;
+        opacity: 0;
+        transform: translateY(-4px);
+        transition:
+          opacity 0.2s,
+          transform 0.2s;
+      }
+      .info-tooltip.show {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
       .modal-backdrop {
         transition: opacity 0.3s ease;
       }
@@ -271,108 +314,179 @@
                 </h3>
 
                 <!-- A. Parameter Umum -->
-                <fieldset class="mb-6 border rounded-lg p-4 bg-blue-100">
-                  <legend class="font-semibold text-gray-700 px-2">
+                <fieldset
+                  class="mb-6 border border-gray-300 rounded-xl p-5 bg-blue-50 shadow-sm"
+                >
+                  <legend
+                    class="font-semibold text-gray-800 px-3 py-1 bg-blue-100 rounded-full text-sm"
+                  >
                     A. Parameter Umum
                   </legend>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
-                      <label class="block text-sm text-gray-600"
-                        >Strategi Validasi</label
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-2"
                       >
-                      <div class="mt-2 space-x-4">
-                        <label class="inline-flex items-center">
+                        Strategi Validasi
+                        <span
+                          class="info-icon"
+                          data-tooltip="• Cross Validation membagi data training menjadi beberapa lipatan untuk mengevaluasi stabilitas model dengan membagi 1 fold testing dan sisanya fold training. 
+                          • Epoch‑based untuk melatih data berulang kali sebanyak n-epoch."
+                          >ⓘ</span
+                        >
+                      </label>
+                      <div class="flex gap-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
                           <input
                             type="radio"
                             name="validationType"
                             value="crossval"
-                            checked
+                            class="form-radio h-4 w-4 text-blue-600"
                           />
-                          Cross Validation
+                          <span class="text-sm text-gray-700"
+                            >Cross Validation</span
+                          >
                         </label>
-                        <label class="inline-flex items-center">
+                        <label class="flex items-center gap-2 cursor-pointer">
                           <input
                             type="radio"
                             name="validationType"
                             value="epoch"
+                            checked
+                            class="form-radio h-4 w-4 text-blue-600"
                           />
-                          Epoch-based
+                          <span class="text-sm text-gray-700">Epoch‑based</span>
                         </label>
                       </div>
                     </div>
-                    <div id="cvParams">
-                      <div class="grid grid-cols-2 gap-2">
+
+                    <div id="cvParams" class="hidden">
+                      <div class="grid grid-cols-2 gap-4">
                         <div>
-                          <label class="block text-sm text-gray-600"
-                            >Jumlah Fold</label
+                          <label
+                            class="block text-sm font-medium text-gray-700 mb-1"
                           >
+                            Jumlah Fold
+                            <span
+                              class="info-icon"
+                              data-tooltip="Banyaknya lipatan (k) pada K‑Fold Cross Validation. Semakin besar, evaluasi semakin akurat tetapi waktu komputasi meningkat."
+                              >ⓘ</span
+                            >
+                          </label>
                           <input
                             type="number"
                             id="cvFolds"
                             value="5"
                             min="2"
                             max="10"
-                            class="w-full border rounded p-2 mt-1"
+                            class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-300"
                           />
                         </div>
-                        <div class="flex items-center space-x-2 mt-6">
-                          <label class="inline-flex items-center">
+                        <div class="flex flex-col gap-2 justify-end">
+                          <label class="flex items-center gap-2 cursor-pointer">
                             <input
                               type="checkbox"
                               id="stratifiedFolds"
                               checked
+                              class="form-checkbox h-4 w-4 text-blue-600"
                             />
-                            Stratified Folds
+                            <span class="text-sm text-gray-700">
+                              Stratified Folds
+                              <span
+                                class="info-icon"
+                                data-tooltip="Menjaga proporsi setiap kelas tetap sama di setiap fold. Direkomendasikan jika distribusi label tidak seimbang."
+                                >ⓘ</span
+                              >
+                            </span>
                           </label>
-                          <label class="inline-flex items-center">
-                            <input type="checkbox" id="parallelFolds" checked />
-                            Parallel Folds
+                          <label class="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              id="parallelFolds"
+                              checked
+                              class="form-checkbox h-4 w-4 text-blue-600"
+                            />
+                            <span class="text-sm text-gray-700">
+                              Parallel Folds
+                              <span
+                                class="info-icon"
+                                data-tooltip="Memproses setiap fold secara paralel untuk mempercepat waktu evaluasi."
+                                >ⓘ</span
+                              >
+                            </span>
                           </label>
                         </div>
                       </div>
                     </div>
-                    <div id="epochParams" class="hidden">
-                      <label class="block text-sm text-gray-600"
-                        >Early Stopping Patience</label
+
+                    <div id="epochParams">
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
                       >
+                        Early Stopping Patience
+                        <span
+                          class="info-icon"
+                          data-tooltip="Jumlah epoch berturut‑turut tanpa peningkatan performa yang ditoleransi sebelum pelatihan dihentikan lebih awal."
+                          >ⓘ</span
+                        >
+                      </label>
                       <input
                         type="number"
                         id="earlyStoppingPatience"
                         value="2"
                         min="1"
                         max="10"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-300"
                       />
                     </div>
+
                     <div>
-                      <label class="block text-sm text-gray-600"
-                        >Random State</label
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
                       >
+                        Random State
+                        <span
+                          class="info-icon"
+                          data-tooltip="Bilangan bulat yang digunakan sebagai seed untuk proses acak. Membuat hasil eksperimen dapat direproduksi."
+                          >ⓘ</span
+                        >
+                      </label>
                       <input
                         type="number"
                         id="randomState"
                         value="42"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-300"
                       />
                     </div>
                   </div>
                 </fieldset>
 
                 <!-- B. IndoBERT -->
-                <fieldset class="mb-6 border rounded-lg p-4 bg-purple-100">
-                  <legend class="font-semibold text-gray-700 px-2">
+                <fieldset
+                  class="mb-6 border border-gray-300 rounded-xl p-5 bg-purple-50 shadow-sm"
+                >
+                  <legend
+                    class="font-semibold text-gray-800 px-3 py-1 bg-purple-100 rounded-full text-sm"
+                  >
                     B. IndoBERT
                   </legend>
                   <div
-                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
                   >
                     <div>
-                      <label class="block text-sm text-gray-600"
-                        >Max Sequence Length</label
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
                       >
+                        Max Sequence Length
+                        <span
+                          class="info-icon"
+                          data-tooltip="Panjang maksimum token yang akan diproses oleh model. Teks yang lebih panjang akan dipotong, yang lebih pendek akan diisi padding."
+                          >ⓘ</span
+                        >
+                      </label>
                       <select
                         id="maxSeqLength"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
                       >
                         <option value="64">64</option>
                         <option value="128" selected>128</option>
@@ -381,12 +495,19 @@
                       </select>
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600"
-                        >Pooling Strategy</label
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
                       >
+                        Pooling Strategy
+                        <span
+                          class="info-icon"
+                          data-tooltip="Metode penggabungan vektor representasi token menjadi satu vektor kalimat. CLS mengambil token pertama, MEAN merata‑rata seluruh token, MAX mengambil nilai maksimum tiap dimensi."
+                          >ⓘ</span
+                        >
+                      </label>
                       <select
                         id="pooling"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
                       >
                         <option value="CLS">CLS</option>
                         <option value="MEAN" selected>MEAN</option>
@@ -394,12 +515,19 @@
                       </select>
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600"
-                        >Batch Size</label
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
                       >
+                        Batch Size
+                        <span
+                          class="info-icon"
+                          data-tooltip="Jumlah sampel yang diproses sekaligus dalam satu langkah. Ukuran kecil lebih stabil namun lambat, ukuran besar lebih cepat tetapi membutuhkan memori lebih."
+                          >ⓘ</span
+                        >
+                      </label>
                       <select
                         id="batchSizeParam"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
                       >
                         <option value="8">8</option>
                         <option value="16" selected>16</option>
@@ -408,22 +536,38 @@
                       </select>
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600">Padding</label>
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        Padding
+                        <span
+                          class="info-icon"
+                          data-tooltip="Strategi penyeragaman panjang input. 'max_length' akan mengisi semua batch hingga panjang maksimum yang diatur, 'longest' menyesuaikan dengan teks terpanjang dalam batch."
+                          >ⓘ</span
+                        >
+                      </label>
                       <select
                         id="padding"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
                       >
                         <option value="max_length">max_length</option>
                         <option value="longest">longest</option>
                       </select>
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600"
-                        >Truncation</label
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
                       >
+                        Truncation
+                        <span
+                          class="info-icon"
+                          data-tooltip="Jika True, teks yang lebih panjang dari Max Sequence Length akan dipotong. Jika False, teks panjang akan menimbulkan error."
+                          >ⓘ</span
+                        >
+                      </label>
                       <select
                         id="truncation"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
                       >
                         <option value="True">True</option>
                         <option value="False">False</option>
@@ -432,59 +576,91 @@
                   </div>
                 </fieldset>
 
-                <!-- C. Fine-Tuning (opsional) -->
-                <fieldset class="mb-6 border rounded-lg p-4 bg-green-100">
+                <!-- C. Fine‑Tuning (opsional) -->
+                <fieldset
+                  class="mb-6 border border-gray-300 rounded-xl p-5 bg-green-50 shadow-sm"
+                >
                   <legend
-                    class="font-semibold text-gray-700 px-2 flex items-center"
+                    class="font-semibold text-gray-800 px-3 py-1 bg-green-100 rounded-full text-sm flex items-center gap-2"
                   >
-                    C. Fine-Tuning IndoBERT
-                    <label class="inline-flex items-center ml-4">
+                    C. Fine‑Tuning IndoBERT
+                    <label class="inline-flex items-center ml-2 cursor-pointer">
                       <input
                         type="checkbox"
                         id="enableFinetune"
-                        class="form-checkbox"
+                        class="form-checkbox h-4 w-4 text-green-600"
                       />
-                      Enable
+                      <span class="ml-2 text-xs font-normal text-gray-600">
+                        Enable
+                        <span
+                          class="info-icon"
+                          data-tooltip="Mengaktifkan pelatihan tambahan pada model IndoBERT dengan data Anda. Membutuhkan lebih banyak waktu tetapi dapat meningkatkan akurasi."
+                          >ⓘ</span
+                        >
+                      </span>
                     </label>
                   </legend>
                   <div
                     id="finetuneParams"
-                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2 hidden"
+                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2 hidden"
                   >
                     <div>
-                      <label class="block text-sm text-gray-600">Epoch</label>
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        Epoch
+                        <span
+                          class="info-icon"
+                          data-tooltip="Jumlah iterasi penuh terhadap seluruh data training. Semakin banyak epoch, model belajar lebih detail tetapi berisiko overfitting."
+                          >ⓘ</span
+                        >
+                      </label>
                       <input
                         type="number"
                         id="ftEpoch"
                         value="3"
                         min="1"
                         max="50"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-300"
                       />
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600"
-                        >Learning Rate</label
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
                       >
+                        Learning Rate
+                        <span
+                          class="info-icon"
+                          data-tooltip="Kecepatan model memperbarui bobot. Nilai kecil membuat pelatihan lebih stabil namun lambat, nilai besar bisa mempercepat tetapi berpotensi tidak konvergen."
+                          >ⓘ</span
+                        >
+                      </label>
                       <select
                         id="ftLearningRate"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-300"
                       >
-                        <option value="5e-6">5e-6</option>
-                        <option value="1e-5">1e-5</option>
-                        <option value="2e-5" selected>2e-5</option>
-                        <option value="3e-5">3e-5</option>
-                        <option value="5e-5">5e-5</option>
-                        <option value="1e-4">1e-4</option>
+                        <option value="5e-6">5e‑6</option>
+                        <option value="1e-5">1e‑5</option>
+                        <option value="2e-5" selected>2e‑5</option>
+                        <option value="3e-5">3e‑5</option>
+                        <option value="5e-5">5e‑5</option>
+                        <option value="1e-4">1e‑4</option>
                       </select>
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600"
-                        >Optimizer</label
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
                       >
+                        Optimizer
+                        <span
+                          class="info-icon"
+                          data-tooltip="Algoritma optimasi untuk memperbarui bobot. AdamW adalah varian Adam dengan weight decay terpisah, umum digunakan untuk fine‑tuning transformer."
+                          >ⓘ</span
+                        >
+                      </label>
                       <select
                         id="ftOptimizer"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-300"
                       >
                         <option value="AdamW" selected>AdamW</option>
                         <option value="Adam">Adam</option>
@@ -492,22 +668,36 @@
                       </select>
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600"
-                        >Weight Decay</label
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
                       >
+                        Weight Decay
+                        <span
+                          class="info-icon"
+                          data-tooltip="Faktor regularisasi untuk mengurangi besaran bobot. Membantu mencegah overfitting."
+                          >ⓘ</span
+                        >
+                      </label>
                       <input
                         type="number"
                         id="ftWeightDecay"
                         value="0.01"
                         step="0.001"
                         min="0"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-300"
                       />
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600"
-                        >Warmup Ratio</label
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
                       >
+                        Warmup Ratio
+                        <span
+                          class="info-icon"
+                          data-tooltip="Proporsi langkah pemanasan di mana learning rate dinaikkan secara bertahap dari nol hingga nilai yang ditentukan."
+                          >ⓘ</span
+                        >
+                      </label>
                       <input
                         type="number"
                         id="ftWarmupRatio"
@@ -515,51 +705,79 @@
                         step="0.01"
                         min="0"
                         max="1"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-300"
                       />
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600"
-                        >Freeze Layers</label
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
                       >
+                        Freeze Layers
+                        <span
+                          class="info-icon"
+                          data-tooltip="Jumlah layer awal IndoBERT yang dibekukan (tidak dilatih). Membekukan layer awal menjaga representasi bahasa umum, sedangkan layer atas disesuaikan dengan data spesifik."
+                          >ⓘ</span
+                        >
+                      </label>
                       <input
                         type="number"
                         id="ftFreezeLayers"
                         value="9"
                         min="0"
                         max="12"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-300"
                       />
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600"
-                        >Gradient Accumulation</label
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
                       >
+                        Gradient Accumulation
+                        <span
+                          class="info-icon"
+                          data-tooltip="Jumlah batch yang diakumulasi sebelum memperbarui bobot. Simulasi batch size lebih besar tanpa menambah memori GPU."
+                          >ⓘ</span
+                        >
+                      </label>
                       <input
                         type="number"
                         id="ftGradAccum"
                         value="1"
                         min="1"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-300"
                       />
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600"
-                        >Max Grad Norm</label
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
                       >
+                        Max Grad Norm
+                        <span
+                          class="info-icon"
+                          data-tooltip="Batas maksimum gradien untuk clipping. Mencegah gradien meledak (exploding gradient) yang dapat merusak pelatihan."
+                          >ⓘ</span
+                        >
+                      </label>
                       <input
                         type="number"
                         id="ftMaxGradNorm"
                         value="1.0"
                         step="0.1"
                         min="0.1"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-300"
                       />
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600"
-                        >Classifier Dropout</label
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
                       >
+                        Classifier Dropout
+                        <span
+                          class="info-icon"
+                          data-tooltip="Tingkat dropout yang diterapkan pada lapisan klasifikasi akhir. Membantu mencegah overfitting dengan mematikan sebagian neuron secara acak."
+                          >ⓘ</span
+                        >
+                      </label>
                       <input
                         type="number"
                         id="ftDropout"
@@ -567,61 +785,91 @@
                         step="0.05"
                         min="0"
                         max="0.5"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-300"
                       />
                     </div>
                   </div>
                 </fieldset>
 
                 <!-- D. UMAP (opsional) -->
-                <fieldset class="mb-6 border rounded-lg p-4 bg-orange-100">
+                <fieldset
+                  class="mb-6 border border-gray-300 rounded-xl p-5 bg-orange-50 shadow-sm"
+                >
                   <legend
-                    class="font-semibold text-gray-700 px-2 flex items-center"
+                    class="font-semibold text-gray-800 px-3 py-1 bg-orange-100 rounded-full text-sm flex items-center gap-2"
                   >
                     D. UMAP
-                    <label class="inline-flex items-center ml-4">
+                    <label class="inline-flex items-center ml-2 cursor-pointer">
                       <input
                         type="checkbox"
                         id="enableUMAP"
-                        class="form-checkbox"
+                        class="form-checkbox h-4 w-4 text-orange-600"
                       />
-                      Enable
+                      <span class="ml-2 text-xs font-normal text-gray-600">
+                        Enable
+                        <span
+                          class="info-icon"
+                          data-tooltip="Mengurangi dimensi fitur sebelum klasifikasi KNN. Dapat mempercepat dan mengurangi noise, namun berpotensi menghilangkan informasi."
+                          >ⓘ</span
+                        >
+                      </span>
                     </label>
                   </legend>
                   <div
                     id="umapParams"
-                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2 hidden"
+                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2 hidden"
                   >
                     <div>
-                      <label class="block text-sm text-gray-600"
-                        >n_components</label
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
                       >
+                        n_components
+                        <span
+                          class="info-icon"
+                          data-tooltip="Jumlah dimensi hasil reduksi UMAP. Semakin kecil semakin ringkas, tetapi terlalu kecil dapat kehilangan informasi penting."
+                          >ⓘ</span
+                        >
+                      </label>
                       <input
                         type="number"
                         id="umapNComponents"
                         value="5"
                         min="2"
                         max="100"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-orange-300"
                       />
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600"
-                        >n_neighbors</label
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
                       >
+                        n_neighbors
+                        <span
+                          class="info-icon"
+                          data-tooltip="Ukuran lingkungan lokal untuk UMAP. Nilai kecil fokus pada struktur halus, nilai besar melihat struktur global."
+                          >ⓘ</span
+                        >
+                      </label>
                       <input
                         type="number"
                         id="umapNNeighbors"
                         value="30"
                         min="2"
                         max="200"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-orange-300"
                       />
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600"
-                        >min_dist</label
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
                       >
+                        min_dist
+                        <span
+                          class="info-icon"
+                          data-tooltip="Jarak minimum antar titik dalam ruang hasil UMAP. Mengontrol seberapa rapat titik‑titik dikelompokkan."
+                          >ⓘ</span
+                        >
+                      </label>
                       <input
                         type="number"
                         id="umapMinDist"
@@ -629,14 +877,23 @@
                         step="0.01"
                         min="0"
                         max="1"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-orange-300"
                       />
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600">metric</label>
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        metric
+                        <span
+                          class="info-icon"
+                          data-tooltip="Metode pengukuran jarak antar titik data. Cosine cocok untuk data teks karena mengukur kesamaan arah, bukan besaran."
+                          >ⓘ</span
+                        >
+                      </label>
                       <select
                         id="umapMetric"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-orange-300"
                       >
                         <option value="cosine" selected>cosine</option>
                         <option value="euclidean">euclidean</option>
@@ -644,47 +901,72 @@
                       </select>
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600"
-                        >random_state</label
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
                       >
+                        random_state
+                        <span
+                          class="info-icon"
+                          data-tooltip="Seed untuk inisialisasi acak UMAP. Menjamin hasil reduksi yang sama setiap kali dijalankan."
+                          >ⓘ</span
+                        >
+                      </label>
                       <input
                         type="number"
                         id="umapRandomState"
                         value="42"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-orange-300"
                       />
                     </div>
                   </div>
                 </fieldset>
 
                 <!-- E. KNN -->
-                <fieldset class="mb-6 border rounded-lg p-4 bg-pink-100">
-                  <legend class="font-semibold text-gray-700 px-2">
+                <fieldset
+                  class="mb-6 border border-gray-300 rounded-xl p-5 bg-pink-50 shadow-sm"
+                >
+                  <legend
+                    class="font-semibold text-gray-800 px-3 py-1 bg-pink-100 rounded-full text-sm"
+                  >
                     E. KNN
                   </legend>
                   <div
-                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
                   >
                     <div>
-                      <label class="block text-sm text-gray-600"
-                        >k (n_neighbors)</label
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
                       >
+                        k (n_neighbors)
+                        <span
+                          class="info-icon"
+                          data-tooltip="Jumlah tetangga terdekat yang digunakan untuk voting. Semakin kecil k, model lebih sensitif; semakin besar k, keputusan lebih stabil tapi bisa kehilangan detail."
+                          >ⓘ</span
+                        >
+                      </label>
                       <input
                         type="number"
                         id="knnK"
                         value="7"
                         min="1"
                         max="50"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-300"
                       />
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600"
-                        >Metrik Jarak</label
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
                       >
+                        Metrik Jarak
+                        <span
+                          class="info-icon"
+                          data-tooltip="Cara mengukur kemiripan antar vektor. Cosine umum untuk teks, Euclidean sensitif terhadap magnitudo, Manhattan menghitung jarak absolut."
+                          >ⓘ</span
+                        >
+                      </label>
                       <select
                         id="knnMetric"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-300"
                       >
                         <option value="cosine" selected>cosine</option>
                         <option value="euclidean">euclidean</option>
@@ -692,22 +974,38 @@
                       </select>
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600">Weights</label>
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        Weights
+                        <span
+                          class="info-icon"
+                          data-tooltip="'uniform' memberi bobot sama pada semua tetangga; 'distance' membobot berdasarkan kebalikan jarak, sehingga tetangga lebih dekat lebih berpengaruh."
+                          >ⓘ</span
+                        >
+                      </label>
                       <select
                         id="knnWeights"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-300"
                       >
                         <option value="uniform">uniform</option>
                         <option value="distance" selected>distance</option>
                       </select>
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600"
-                        >Algorithm</label
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
                       >
+                        Algorithm
+                        <span
+                          class="info-icon"
+                          data-tooltip="Algoritma pencarian tetangga terdekat. 'auto' memilih otomatis berdasarkan data. 'brute' cocok untuk dimensi rendah."
+                          >ⓘ</span
+                        >
+                      </label>
                       <select
                         id="knnAlgorithm"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-300"
                       >
                         <option value="auto" selected>auto</option>
                         <option value="ball_tree">ball_tree</option>
@@ -716,40 +1014,61 @@
                       </select>
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600"
-                        >Leaf Size</label
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
                       >
+                        Leaf Size
+                        <span
+                          class="info-icon"
+                          data-tooltip="Ukuran daun untuk tree-based algorithm (ball_tree/kd_tree). Mempengaruhi kecepatan konstruksi dan pencarian."
+                          >ⓘ</span
+                        >
+                      </label>
                       <input
                         type="number"
                         id="knnLeafSize"
                         value="30"
                         min="1"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-300"
                       />
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600"
-                        >p (Minkowski)</label
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
                       >
+                        p (Minkowski)
+                        <span
+                          class="info-icon"
+                          data-tooltip="Parameter untuk metrik Minkowski. p=2 adalah Euclidean, p=1 adalah Manhattan. Hanya relevan jika metrik 'minkowski' dipilih."
+                          >ⓘ</span
+                        >
+                      </label>
                       <input
                         type="number"
                         id="knnP"
                         value="2"
                         min="1"
                         max="10"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-300"
                       />
                     </div>
-                    <div class="md:col-span-2">
-                      <label class="block text-sm text-gray-600"
-                        >Confidence Adjustment</label
+                    <div class="sm:col-span-2 lg:col-span-3">
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
                       >
+                        Confidence Adjustment
+                        <span
+                          class="info-icon"
+                          data-tooltip="Metode penyesuaian probabilitas KNN berdasarkan keyakinan. KNN Murni tidak mengubah; Confidence‑based mengalikan dengan skor keyakinan; Weighted Average menggabungkan probabilitas dengan bobot skor."
+                          >ⓘ</span
+                        >
+                      </label>
                       <select
                         id="hybridMethod"
-                        class="w-full border rounded p-2 mt-1"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-300"
                       >
                         <option value="none">KNN Murni</option>
-                        <option value="confidence">Confidence-based</option>
+                        <option value="confidence">Confidence‑based</option>
                         <option value="weighted">Weighted Average</option>
                       </select>
                     </div>
@@ -1072,6 +1391,77 @@
         container.appendChild(wrapper);
       }
 
+      // ==================== INFO TOOLTIP ====================
+      (function () {
+        let currentTooltip = null;
+
+        function hideTooltip() {
+          if (currentTooltip) {
+            currentTooltip.classList.remove("show");
+            setTimeout(() => {
+              if (
+                currentTooltip &&
+                !currentTooltip.classList.contains("show")
+              ) {
+                currentTooltip.remove();
+                currentTooltip = null;
+              }
+            }, 200);
+          }
+        }
+
+        function showTooltip(icon, text) {
+          hideTooltip();
+          const tooltip = document.createElement("div");
+          tooltip.className = "info-tooltip";
+          tooltip.textContent = text;
+          document.body.appendChild(tooltip);
+
+          const rect = icon.getBoundingClientRect();
+          const scrollLeft =
+            window.pageXOffset || document.documentElement.scrollLeft;
+          const scrollTop =
+            window.pageYOffset || document.documentElement.scrollTop;
+
+          let left =
+            rect.left + scrollLeft + rect.width / 2 - tooltip.offsetWidth / 2;
+          let top = rect.bottom + scrollTop + 6;
+
+          // jangan keluar layar
+          if (left < 10) left = 10;
+          if (left + tooltip.offsetWidth > window.innerWidth - 10)
+            left = window.innerWidth - tooltip.offsetWidth - 10;
+          if (
+            top + tooltip.offsetHeight >
+            window.innerHeight + scrollTop - 10
+          ) {
+            top = rect.top + scrollTop - tooltip.offsetHeight - 6;
+          }
+
+          tooltip.style.left = left + "px";
+          tooltip.style.top = top + "px";
+          tooltip.classList.add("show");
+          currentTooltip = tooltip;
+
+          // Sembunyikan setelah 20 detik
+          setTimeout(hideTooltip, 20000);
+        }
+
+        document.addEventListener("click", function (e) {
+          const icon = e.target.closest(".info-icon");
+          if (icon) {
+            e.preventDefault(); // cegah aksi default (centang checkbox)
+            e.stopPropagation(); // hentikan propagasi ke parent
+            const text = icon.getAttribute("data-tooltip");
+            if (text) showTooltip(icon, text);
+          } else {
+            hideTooltip();
+          }
+        });
+
+        window.addEventListener("scroll", hideTooltip, true);
+      })();
+
       // ==================== LOAD SPLIT RATIOS ====================
       function getHeaders() {
         const token = localStorage.getItem("access_token");
@@ -1125,6 +1515,17 @@
             <button class="text-gray-500 hover:text-gray-700" onclick="cancelEditInline()"><i class="fas fa-times"></i></button>
           </td>
         `;
+
+            // Auto-fill Test saat Train di-edit (inline)
+            const trainEdit = document.getElementById(`editTrain-${s.id}`);
+            const testEdit = document.getElementById(`editTest-${s.id}`);
+            if (trainEdit && testEdit) {
+              trainEdit.addEventListener("input", () => {
+                const val = parseInt(trainEdit.value);
+                testEdit.value =
+                  !isNaN(val) && val >= 0 && val <= 100 ? 100 - val : "";
+              });
+            }
           } else {
             // Mode normal
             row.insertCell(0).innerHTML = s.train;
@@ -1990,6 +2391,18 @@
         .getElementById("btnAddSplit")
         .addEventListener("click", addSplitInline);
 
+      // Auto-fill Test saat Train diisi (form add)
+      document
+        .getElementById("addTrain")
+        .addEventListener("input", function () {
+          const train = parseInt(this.value);
+          const testInput = document.getElementById("addTest");
+          if (!isNaN(train) && train >= 0 && train <= 100) {
+            testInput.value = 100 - train;
+          } else {
+            testInput.value = "";
+          }
+        });
       loadSplitRatios();
       loadTrainingHistory();
       loadDatasetOptions();
