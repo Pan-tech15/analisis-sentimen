@@ -138,22 +138,48 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
             if 'kalimat' not in df.columns or 'emotion' not in df.columns:
                 raise ValueError("Dataset harus memiliki kolom 'kalimat' dan 'emotion'")
 
-            def clean_label(val):
-                s = str(val).strip().lower()
+            # ========== DUKUNGAN KELAS non_idiom ==========
+            has_idiom_col = 'has_idiom' in df.columns
+
+            def clean_and_map_emotion(raw_value):
+                """Bersihkan dan petakan label ke 7 emosi standar. None jika tidak valid."""
+                if pd.isna(raw_value):
+                    return None
+                s = str(raw_value).strip().lower()
                 return s if s in ALLOWED_EMOTIONS else None
 
-            df['emotion_clean'] = df['emotion'].apply(clean_label)
-            df = df.dropna(subset=['emotion_clean']).reset_index(drop=True)
+            def determine_label(row):
+                # Jika kolom has_idiom tersedia, gunakan itu
+                if has_idiom_col:
+                    is_idiom = row['has_idiom']
+                    if isinstance(is_idiom, str):
+                        is_idiom = is_idiom.strip().lower() in ('ya', 'yes', 'true', '1')
+                    else:
+                        is_idiom = bool(is_idiom)
+                    if not is_idiom:
+                        return 'non_idiom'
+                # Jika ada idiom (atau tidak ada kolom has_idiom), gunakan emosi
+                emo = row['emotion']
+                if pd.isna(emo):
+                    return 'non_idiom'
+                emo_clean = clean_and_map_emotion(emo)
+                if emo_clean is None:
+                    return 'non_idiom'
+                return emo_clean
+
+            df['label'] = df.apply(determine_label, axis=1)
+
+            # Hapus data yang tidak memiliki label (seharusnya tidak ada karena penanganan di atas)
+            before = len(df)
+            df = df[df['label'].notna()].reset_index(drop=True)
+            log(f"Data setelah pembersihan label: {len(df)} baris (dari {before})", training_id)
 
             if len(df) == 0:
-                raise ValueError("Dataset kosong setelah membersihkan label tidak valid.")
+                raise ValueError("Dataset kosong setelah membersihkan label.")
 
-            update_progress(app, training_id, 5, "Memulai preprocessing teks...")
-            texts = [preprocess_text(t) for t in df['kalimat']]
-            labels = df['emotion_clean'].tolist()
-            total_samples = len(texts)
-            log(f"Jumlah sampel setelah validasi: {total_samples}", training_id)
-            log(f"Label unik: {set(labels)}", training_id)
+            # Distribusi label
+            label_counts = df['label'].value_counts().to_dict()
+            log(f"Distribusi label: {label_counts}", training_id)
 
             # 2. Parameter dari config
             params = config.params
@@ -182,9 +208,41 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
 
             tiebreaker = params.get('tiebreaker', None)
             if tiebreaker is not None:
+                # Tie‑breaker hanya untuk 7 emosi; non_idiom tidak diikutsertakan
                 if set(tiebreaker.keys()) != ALLOWED_EMOTIONS or len(set(tiebreaker.values())) != 7:
                     raise ValueError("Ranking emosi tidak valid: harus mencakup 7 emosi (senang, sedih, marah, takut, terkejut, percaya, netral) dengan peringkat 1-7 yang unik.")
                 log(f"Tie-breaker ranking diterima: {tiebreaker}", training_id)
+
+            # ========== SIMPAN HOLD-OUT SET (DATA UJI) ==========
+            original_texts = df['kalimat'].tolist()
+            original_labels = df['label'].tolist()   # sekarang termasuk 'non_idiom'
+
+            # Split data menjadi training (80%) dan hold-out (20%) dengan stratifikasi penuh
+            train_texts, holdout_texts, train_labels, holdout_labels = train_test_split(
+                original_texts, original_labels,
+                test_size=test_ratio,
+                random_state=random_state,
+                stratify=original_labels
+            )
+
+            # Simpan hold-out set ke file CSV
+            holdout_df = pd.DataFrame({
+                'kalimat': holdout_texts,
+                'label': holdout_labels
+            })
+            holdout_folder = 'data/testing'
+            os.makedirs(holdout_folder, exist_ok=True)
+            holdout_filename = f"holdout_lexicon_{training_id}.csv"
+            holdout_path = os.path.join(holdout_folder, holdout_filename)
+            holdout_df.to_csv(holdout_path, index=False)
+            log(f"Hold-out set disimpan di {holdout_path}", training_id)
+
+            # Mulai dari sini, GUNAKAN HANYA DATA TRAINING
+            texts = [preprocess_text(t) for t in train_texts]
+            labels = train_labels
+            total_samples = len(texts)
+            log(f"Jumlah sampel training: {total_samples}", training_id)
+            log(f"Label unik: {set(labels)}", training_id)
 
             update_progress(app, training_id, 10, "Membuat vectorizer...")
             if feature_type == 'CountVectorizer':
@@ -203,11 +261,11 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
 
             update_progress(app, training_id, 25, "Membangun dictionary lexicon & PMI...")
 
-            # 5. Bangun dictionary lexicon global
+            # 5. Bangun dictionary lexicon global (hanya dari data training)
             dict_lexicon = build_dictionary_lexicon(texts, labels, classes)
             log(f"Dictionary lexicon dibangun untuk {len(classes)} kelas", training_id)
 
-            # 6. Frekuensi global untuk PMI
+            # 6. Frekuensi global untuk PMI (hanya dari data training)
             class_word_counts, class_doc_counts = compute_class_word_freq(texts, labels)
             total_docs = len(texts)
             vocab = set()
@@ -215,7 +273,7 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                 vocab.update(t.split())
             vocab_size = len(vocab)
 
-            # 7. Hitung lexicon scores (Dictionary + PMI) per sampel (global)
+            # 7. Hitung lexicon scores (Dictionary + PMI) per sampel training
             lexicon_scores = []
             log("Menghitung skor lexicon (Dictionary + PMI)...", training_id)
             start = time.time()
@@ -243,7 +301,6 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                 skf = StratifiedKFold(n_splits=n_folds, shuffle=shuffle, random_state=random_state)
                 fold_metrics = []
 
-                # Inisialisasi model untuk tiap fold (akan dibuat ulang setiap iterasi)
                 for fold_idx, (train_idx, test_idx) in enumerate(skf.split(X_text, y)):
                     X_tr = X_text[train_idx]
                     X_te = X_text[test_idx]
@@ -252,7 +309,6 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                     lex_tr = lexicon_scores[train_idx]
                     lex_te = lexicon_scores[test_idx]
 
-                    # Model baru per fold
                     if model_type == 'BernoulliNB':
                         fold_model = BernoulliNB(alpha=alpha, fit_prior=fit_prior)
                     else:
@@ -272,17 +328,14 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                             lex_te.max(axis=1, keepdims=True) - lex_te.min(axis=1, keepdims=True) + 1e-8)
                         final_scores = proba * (1 + lex_te_norm)
 
-                    # Softmax normalisasi
                     exp_scores = np.exp(final_scores - np.max(final_scores, axis=1, keepdims=True))
                     final_scores = exp_scores / exp_scores.sum(axis=1, keepdims=True)
 
-                    # Prediksi dengan/tanpa tiebreaker
                     if tiebreaker is not None:
                         y_pred = predict_with_tiebreaker(final_scores, classes, tiebreaker)
                     else:
                         y_pred = np.argmax(final_scores, axis=1)
 
-                    # Hitung metrik fold
                     acc = accuracy_score(y_te, y_pred)
                     prec_w = precision_score(y_te, y_pred, average='weighted', zero_division=0)
                     rec_w = recall_score(y_te, y_pred, average='weighted', zero_division=0)
@@ -293,13 +346,12 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                         'precision': round(prec_w, 4),
                         'recall': round(rec_w, 4),
                         'f1_score': round(f1_w, 4),
-                        'mcc': None  # opsional
+                        'mcc': None
                     })
                     update_progress(app, training_id,
                                     45 + int((fold_idx+1)/n_folds * 30),
                                     f"Fold {fold_idx+1}/{n_folds} selesai (Akurasi: {acc:.4f})")
 
-                # Latih model final dengan seluruh data untuk disimpan
                 if model_type == 'BernoulliNB':
                     final_model = BernoulliNB(alpha=alpha, fit_prior=fit_prior)
                 else:
@@ -307,7 +359,6 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                 final_model.fit(X_text, y)
                 model = final_model
 
-                # Evaluasi agregat dari fold (rata‑rata)
                 avg_acc = np.mean([f['accuracy'] for f in fold_metrics])
                 avg_prec = np.mean([f['precision'] for f in fold_metrics])
                 avg_rec = np.mean([f['recall'] for f in fold_metrics])
@@ -318,13 +369,14 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                     'f1_score': round(avg_f1, 4),
                     'precision': round(avg_prec, 4),
                     'recall': round(avg_rec, 4),
-                    'confusion_matrix': [],          # kosong, frontend akan mengabaikan heatmap
+                    'confusion_matrix': [],
                     'class_labels': classes,
-                    'fold_metrics': fold_metrics
+                    'fold_metrics': fold_metrics,
+                    'holdout_path': holdout_path
                 }
 
             else:
-                # ===== ORIGINAL PERCENTAGE SPLIT (TIDAK BERUBAH) =====
+                # ===== PERCENTAGE SPLIT (TETAP SEPERTI SEBELUMNYA) =====
                 log(f"Menggunakan percentage split berbasis fold: test_ratio={test_ratio}, n_folds={n_folds}", training_id)
                 n_test_folds = int(round(test_ratio * n_folds))
                 if n_test_folds < 1:
@@ -358,7 +410,6 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
 
                 update_progress(app, training_id, 65, "Melakukan fusi dengan lexicon...")
 
-                # Fusion
                 method = fusion_params.get('method', 'product')
                 if method == 'sum':
                     final_scores = proba + lex_test
@@ -392,7 +443,8 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                     'precision': round(precision, 4),
                     'recall': round(recall, 4),
                     'confusion_matrix': cm,
-                    'class_labels': classes
+                    'class_labels': classes,
+                    'holdout_path': holdout_path
                 }
                 log(f"Evaluasi selesai. Akurasi: {metrics['accuracy']}, F1: {metrics['f1_score']}", training_id)
 
@@ -403,7 +455,10 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                 'model': model,
                 'vectorizer': vectorizer,
                 'label_encoder': le,
-                'dict_lexicon': dict_lexicon,
+                'dict_lexicon': dict_lexicon,           # ← tambahkan
+                'class_word_counts': class_word_counts, # ← tambahkan
+                'class_doc_counts': class_doc_counts,   # ← tambahkan
+                'vocab_size': vocab_size,               # ← tambahkan
                 'classes': classes,
                 'config': params
             }
