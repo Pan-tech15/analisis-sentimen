@@ -54,6 +54,9 @@ def create_app():
     from app.routes.split_ratio import split_ratio_bp
     app.register_blueprint(split_ratio_bp)
 
+    from app.routes.testing import testing_bp        # <-- tambahan
+    app.register_blueprint(testing_bp)                # <-- tambahan
+
     @app.route('/')
     def index():
         return {'message': 'Backend is running'}

@@ -40,7 +40,7 @@ def start_testing():
 def predict_text():
     data = request.get_json()
     model_id = data.get('model_id')
-    text = data.get('text') or data.get('idiom_text')  # dukung kedua key
+    text = data.get('text') or data.get('idiom_text')
     if not model_id or not text:
         return jsonify({'error': 'model_id dan text diperlukan'}), 400
 
@@ -49,8 +49,18 @@ def predict_text():
         return jsonify({'error': 'Model tidak ditemukan'}), 404
 
     try:
-        emotion = predict_single_text(training, text)
-        return jsonify({'emotion': emotion}), 200
+        if training.config.algorithm == 'IndoBERT-KNN':
+            from app.services.testing_service import predict_single_text_with_idiom
+            result = predict_single_text_with_idiom(training, text)
+            return jsonify(result), 200
+        elif training.config.algorithm == 'Lexicon-NB':
+            from app.services.testing_service import predict_single_text_with_idiom_lexicon
+            result = predict_single_text_with_idiom_lexicon(training, text)
+            return jsonify(result), 200
+        else:
+            # fallback (tidak seharusnya terjadi)
+            emotion = predict_single_text(training, text)
+            return jsonify({'emotion': emotion}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

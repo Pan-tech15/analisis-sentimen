@@ -10,45 +10,139 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     />
     <style>
-      .search-dropdown { position: relative; }
-      .search-dropdown input { width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.5rem; outline: none; }
-      .search-dropdown input:focus { box-shadow: 0 0 0 2px #3b82f6; }
-      .dropdown-list {
-        position: absolute; top: 100%; left: 0; right: 0;
-        background: white; border: 1px solid #d1d5db; border-radius: 0.5rem;
-        max-height: 200px; overflow-y: auto; z-index: 10; display: none;
+      .search-dropdown {
+        position: relative;
       }
-      .dropdown-list.show { display: block; }
-      .dropdown-item { padding: 0.5rem; cursor: pointer; border-bottom: 1px solid #f3f4f6; }
-      .dropdown-item:hover { background-color: #eff6ff; }
+      .search-dropdown input {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        outline: none;
+      }
+      .search-dropdown input:focus {
+        box-shadow: 0 0 0 2px #3b82f6;
+      }
+      .dropdown-list {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        max-height: 220px;
+        overflow-y: auto;
+        z-index: 10;
+        display: none;
+      }
+      .dropdown-list.show {
+        display: block;
+      }
+      .dropdown-item {
+        padding: 0.6rem 0.75rem;
+        cursor: pointer;
+        border-bottom: 1px solid #f3f4f6;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .dropdown-item:hover {
+        background-color: #eff6ff;
+      }
+      .best-badge {
+        color: #f59e0b;
+        margin-left: 0.5rem;
+      }
     </style>
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- Sidebar (tidak diubah) -->
+      <!-- Sidebar (sama seperti sebelumnya) -->
       <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
         <div class="p-4 border-b">
-          <span class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">IdiomSense</span>
+          <span
+            class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
+            >IdiomSense</span
+          >
           <p class="text-sm text-gray-500">Admin Panel</p>
         </div>
         <nav class="p-4">
           <ul class="space-y-1">
-            <li><a href="beranda-admin.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"><i class="fas fa-tachometer-alt w-5"></i><span>Dashboard</span></a></li>
             <li>
-              <button id="dataCollectionBtn" class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700">
-                <div class="flex items-center space-x-2"><i class="fas fa-database w-5"></i><span>Data Collection</span></div>
-                <i id="dataCollectionIcon" class="fas fa-chevron-down text-sm transition-transform"></i>
+              <a
+                href="beranda-admin.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"
+                ><i class="fas fa-tachometer-alt w-5"></i
+                ><span>Dashboard</span></a
+              >
+            </li>
+            <li>
+              <button
+                id="dataCollectionBtn"
+                class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+              >
+                <div class="flex items-center space-x-2">
+                  <i class="fas fa-database w-5"></i
+                  ><span>Data Collection</span>
+                </div>
+                <i
+                  id="dataCollectionIcon"
+                  class="fas fa-chevron-down text-sm transition-transform"
+                ></i>
               </button>
               <ul id="dataCollectionMenu" class="ml-6 mt-1 space-y-1 hidden">
-                <li><a href="dataset.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-table w-5 mr-2"></i>Dataset</a></li>
-                <li><a href="kamus-idiom.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-book w-5 mr-2"></i>Idiom Dictionary</a></li>
+                <li>
+                  <a
+                    href="dataset.html"
+                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                    ><i class="fas fa-table w-5 mr-2"></i>Dataset</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="kamus-idiom.html"
+                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                    ><i class="fas fa-book w-5 mr-2"></i>Idiom Dictionary</a
+                  >
+                </li>
               </ul>
             </li>
-            <li><a href="preprocessing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-filter w-5"></i><span>Pre-Processing</span></a></li>
-            <li><a href="processing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-brain w-5"></i><span>Processing</span></a></li>
-            <li><a href="testing.html" class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-vial w-5"></i><span>Testing</span></a></li>
-            <li><a href="evaluasi.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-chart-line w-5"></i><span>Evaluation</span></a></li>
-            <li class="pt-4 mt-4 border-t"><a href="login.html" class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a></li>
+            <li>
+              <a
+                href="preprocessing.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                ><i class="fas fa-filter w-5"></i><span>Pre-Processing</span></a
+              >
+            </li>
+            <li>
+              <a
+                href="processing.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                ><i class="fas fa-brain w-5"></i><span>Processing</span></a
+              >
+            </li>
+            <li>
+              <a
+                href="testing.html"
+                class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"
+                ><i class="fas fa-vial w-5"></i><span>Testing</span></a
+              >
+            </li>
+            <li>
+              <a
+                href="evaluasi.html"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                ><i class="fas fa-chart-line w-5"></i><span>Evaluation</span></a
+              >
+            </li>
+            <li class="pt-4 mt-4 border-t">
+              <a
+                href="login.html"
+                class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"
+                ><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a
+              >
+            </li>
           </ul>
         </nav>
       </aside>
@@ -61,9 +155,16 @@
 
           <!-- Select Trained Model -->
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Select Trained Model</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Select Trained Model</label
+            >
             <div class="search-dropdown" id="modelDropdown">
-              <input type="text" id="modelSearchInput" placeholder="Search model..." autocomplete="off" />
+              <input
+                type="text"
+                id="modelSearchInput"
+                placeholder="Search model..."
+                autocomplete="off"
+              />
               <div id="modelDropdownList" class="dropdown-list"></div>
             </div>
             <input type="hidden" id="selectedModelId" value="" />
@@ -71,73 +172,139 @@
 
           <!-- Select Algorithm (tombol) -->
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Select Algorithm</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Select Algorithm</label
+            >
             <div class="flex flex-wrap gap-3">
-              <button id="btnIndoBERT" data-algo="IndoBERT-KNN" class="algo-btn px-5 py-2 rounded-lg font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-600 text-white shadow-md"><i class="fas fa-microchip mr-2"></i>IndoBERT‑KNN</button>
-              <button id="btnLexicon" data-algo="Lexicon-NB" class="algo-btn px-5 py-2 rounded-lg font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-200 text-gray-700 hover:bg-gray-300"><i class="fas fa-microchip mr-2"></i>Naive Bayes‑Lexicon</button>
+              <button
+                id="btnIndoBERT"
+                data-algo="IndoBERT-KNN"
+                class="algo-btn px-5 py-2 rounded-lg font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-600 text-white shadow-md"
+              >
+                <i class="fas fa-microchip mr-2"></i>IndoBERT‑KNN
+              </button>
+              <button
+                id="btnLexicon"
+                data-algo="Lexicon-NB"
+                class="algo-btn px-5 py-2 rounded-lg font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-200 text-gray-700 hover:bg-gray-300"
+              >
+                <i class="fas fa-microchip mr-2"></i>Naive Bayes‑Lexicon
+              </button>
             </div>
             <input type="hidden" id="selectedAlgorithm" value="IndoBERT-KNN" />
           </div>
 
           <!-- SUMBER DATA (Checkbox) -->
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Sumber Data</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Sumber Data</label
+            >
             <div class="flex gap-6">
               <label class="inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="chkUploadDataset" class="form-checkbox h-5 w-5 text-blue-600" checked />
-                <span class="ml-2 text-gray-700">Unggah Data Set</span>
+                <input
+                  type="checkbox"
+                  id="chkUploadDataset"
+                  class="form-checkbox h-5 w-5 text-blue-600"
+                  checked
+                />
+                <span class="ml-2 text-gray-700">Gunakan Data Set</span>
               </label>
               <label class="inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="chkInputText" class="form-checkbox h-5 w-5 text-blue-600" />
+                <input
+                  type="checkbox"
+                  id="chkInputText"
+                  class="form-checkbox h-5 w-5 text-blue-600"
+                />
                 <span class="ml-2 text-gray-700">Input Text</span>
               </label>
             </div>
           </div>
 
-          <!-- Bagian Upload Dataset -->
+          <!-- Bagian Upload Dataset (tanpa dropdown) -->
           <div id="uploadDatasetSection" class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Select Test Dataset</label>
-            <select id="datasetSelect" class="w-full border border-gray-300 rounded-lg p-2 bg-gray-100 cursor-not-allowed" disabled>
-              <option value="">-- Dataset akan ditentukan otomatis --</option>
-            </select>
-            <p class="text-xs text-gray-500 mt-1">Dataset otomatis mengikuti model yang dipilih.</p>
+            <p class="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
+              <i class="fas fa-info-circle mr-1 text-blue-500"></i>
+              Dataset uji akan otomatis diambil dari hold‑out set model yang
+              dipilih (sesuai rasio pembagian data training).
+            </p>
           </div>
 
           <!-- Bagian Input Text -->
-          <!-- Bagian Input Text -->
-<div id="inputTextSection" class="hidden mb-4">
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">Idiom</label>
-      <textarea id="inputIdiom" rows="3" maxlength="20"
-        class="w-full border border-gray-300 rounded-lg p-2"
-        placeholder="Masukkan idiom..."></textarea>
-      <p class="text-xs text-gray-500 mt-1">Maks kata 20</p>
-    </div>
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">Arti Idiom</label>
-      <input type="text" id="inputArti"
-        class="w-full border border-gray-300 rounded-lg p-2 bg-gray-100 cursor-not-allowed"
-        readonly placeholder="Arti idiom..." />
-    </div>
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">Emosi Terdeteksi</label>
-      <input type="text" id="inputEmosi"
-        class="w-full border border-gray-300 rounded-lg p-2 bg-gray-100 cursor-not-allowed"
-        readonly placeholder="Hasil prediksi..." />
-    </div>
-  </div>
-</div>
+          <div id="inputTextSection" class="hidden mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Kalimat</label
+                >
+                <textarea
+                  id="inputText"
+                  rows="3"
+                  maxlength="200"
+                  class="w-full border border-gray-300 rounded-lg p-2"
+                  placeholder="Masukkan kalimat..."
+                ></textarea>
+                <p class="text-xs text-gray-500 mt-1">Maks 200 karakter</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Emosi Terdeteksi</label
+                >
+                <input
+                  type="text"
+                  id="inputEmosi"
+                  class="w-full border border-gray-300 rounded-lg p-2 bg-gray-100 cursor-not-allowed"
+                  readonly
+                  placeholder="Hasil prediksi..."
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Idiom Terdeteksi</label
+                >
+                <input
+                  type="text"
+                  id="inputIdiom"
+                  class="w-full border border-gray-300 rounded-lg p-2 bg-gray-100 cursor-not-allowed"
+                  readonly
+                  placeholder="..."
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Arti Idiom</label
+                >
+                <input
+                  type="text"
+                  id="inputMeaning"
+                  class="w-full border border-gray-300 rounded-lg p-2 bg-gray-100 cursor-not-allowed"
+                  readonly
+                  placeholder="..."
+                />
+              </div>
+            </div>
+          </div>
 
-          <button id="startTestBtn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition flex items-center space-x-2">
+          <button
+            id="startTestBtn"
+            class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition flex items-center space-x-2"
+          >
             <i class="fas fa-play"></i><span>Start Testing</span>
           </button>
 
           <!-- Status -->
           <div class="mt-4 p-3 bg-gray-50 rounded-lg">
-            <p class="text-sm text-gray-600">Status : <span id="testStatus" class="font-medium">Not Started</span></p>
+            <p class="text-sm text-gray-600">
+              Status :
+              <span id="testStatus" class="font-medium">Not Started</span>
+            </p>
             <div id="progressContainer" class="mt-2 hidden">
-              <div class="w-full bg-gray-200 rounded-full h-2"><div id="progressBar" class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div></div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  id="progressBar"
+                  class="bg-blue-600 h-2 rounded-full"
+                  style="width: 0%"
+                ></div>
+              </div>
               <p id="progressPercent" class="text-xs text-gray-500 mt-1">0%</p>
             </div>
           </div>
@@ -150,7 +317,9 @@
             <table class="min-w-full border border-gray-200">
               <thead class="bg-blue-500 text-white">
                 <tr>
-                  <th class="px-4 py-2 border border-blue-400">Dataset/Input</th>
+                  <th class="px-4 py-2 border border-blue-400">
+                    Dataset/Input
+                  </th>
                   <th class="px-4 py-2 border border-blue-400">Model</th>
                   <th class="px-4 py-2 border border-blue-400">Accuracy</th>
                   <th class="px-4 py-2 border border-blue-400">F1-Score</th>
@@ -176,16 +345,30 @@
         let pollingInterval = null;
         let currentTestId = null;
         let modelsList = [];
-        let datasetsList = []; // simpan dataset untuk pencocokan
 
         async function apiFetch(endpoint, options = {}) {
-          const headers = { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` };
-          const response = await fetch(`${API_BASE}${endpoint}`, { ...options, headers: { ...headers, ...options.headers } });
-          if (response.status === 401) { localStorage.clear(); window.location.href = "login.html"; return null; }
+          const headers = {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          };
+          const response = await fetch(`${API_BASE}${endpoint}`, {
+            ...options,
+            headers: { ...headers, ...options.headers },
+          });
+          if (response.status === 401) {
+            localStorage.clear();
+            window.location.href = "login.html";
+            return null;
+          }
           return response;
         }
 
-        function renderPaginationControls(containerId, currentPage, totalPages, onPageChange) {
+        function renderPaginationControls(
+          containerId,
+          currentPage,
+          totalPages,
+          onPageChange,
+        ) {
           const container = document.getElementById(containerId);
           if (!container) return;
           container.innerHTML = "";
@@ -196,20 +379,25 @@
           prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
           prevBtn.className = `px-3 py-1 rounded border ${currentPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
           prevBtn.disabled = currentPage === 1;
-          prevBtn.onclick = () => { if (currentPage > 1) onPageChange(currentPage - 1); };
+          prevBtn.onclick = () => {
+            if (currentPage > 1) onPageChange(currentPage - 1);
+          };
           wrapper.appendChild(prevBtn);
           const pageInfo = document.createElement("span");
           pageInfo.className = "text-gray-700";
           pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
           wrapper.appendChild(pageInfo);
           const pageInput = document.createElement("input");
-          pageInput.type = "number"; pageInput.min = 1; pageInput.max = totalPages;
+          pageInput.type = "number";
+          pageInput.min = 1;
+          pageInput.max = totalPages;
           pageInput.value = currentPage;
           pageInput.className = "w-16 border rounded px-2 py-1 text-center";
           wrapper.appendChild(pageInput);
           const goBtn = document.createElement("button");
           goBtn.innerText = "Go";
-          goBtn.className = "px-3 py-1 rounded border bg-blue-500 text-white hover:bg-blue-600";
+          goBtn.className =
+            "px-3 py-1 rounded border bg-blue-500 text-white hover:bg-blue-600";
           goBtn.onclick = () => {
             let newPage = parseInt(pageInput.value);
             if (isNaN(newPage)) newPage = 1;
@@ -222,7 +410,9 @@
           nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
           nextBtn.className = `px-3 py-1 rounded border ${currentPage === totalPages ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
           nextBtn.disabled = currentPage === totalPages;
-          nextBtn.onclick = () => { if (currentPage < totalPages) onPageChange(currentPage + 1); };
+          nextBtn.onclick = () => {
+            if (currentPage < totalPages) onPageChange(currentPage + 1);
+          };
           wrapper.appendChild(nextBtn);
           container.appendChild(wrapper);
         }
@@ -232,15 +422,26 @@
             const res = await apiFetch("/api/training/history");
             if (!res) return;
             const history = await res.json();
-            modelsList = history.map(item => ({
-              id: item.id,
-              name: item.dataset_filename || item.name,
-              algorithm: item.algorithm,
-              dataset_filename: item.dataset_filename,
-              dataset_id: item.dataset_id, // jika ada
-              displayText: `${item.dataset_filename || item.name} (${item.algorithm}) - Acc: ${item.metrics?.accuracy ? item.metrics.accuracy.toFixed(3) : "N/A"} - ${new Date(item.created_at).toLocaleDateString()}`,
-            }));
-            populateModelDropdown(document.getElementById("modelSearchInput").value);
+            modelsList = history
+              .filter((item) => item.status === "completed") // hanya model yang selesai training
+              .map((item) => ({
+                id: item.id,
+                name:
+                  item.dataset_filename ||
+                  item.config_name ||
+                  `Training #${item.id}`,
+                algorithm: item.algorithm,
+                accuracy: item.metrics?.accuracy || 0,
+                displayText: `${item.dataset_filename || item.config_name || `Training #${item.id}`} (${item.algorithm}) - Acc: ${item.metrics?.accuracy ? item.metrics.accuracy.toFixed(3) : "N/A"}`,
+                created_at: item.created_at,
+              }));
+            // Urutkan berdasarkan akurasi tertinggi
+            modelsList.sort((a, b) => b.accuracy - a.accuracy);
+            // Pilih model terbaik otomatis untuk algoritma yang sedang dipilih
+            autoSelectBestModel();
+            populateModelDropdown(
+              document.getElementById("modelSearchInput").value,
+            );
           } catch (err) {
             console.error(err);
             modelsList = [];
@@ -248,12 +449,32 @@
           }
         }
 
+        function autoSelectBestModel() {
+          const selectedAlgo =
+            document.getElementById("selectedAlgorithm").value;
+          const algoModels = modelsList.filter(
+            (m) => m.algorithm === selectedAlgo,
+          );
+          if (algoModels.length > 0) {
+            const best = algoModels[0]; // sudah terurut akurasi tertinggi
+            document.getElementById("modelSearchInput").value =
+              best.displayText;
+            document.getElementById("selectedModelId").value = best.id;
+          } else {
+            document.getElementById("modelSearchInput").value = "";
+            document.getElementById("selectedModelId").value = "";
+          }
+        }
+
         function populateModelDropdown(searchText = "") {
-          const selectedAlgo = document.getElementById("selectedAlgorithm").value;
-          let filtered = modelsList.filter(m => m.algorithm === selectedAlgo);
+          const selectedAlgo =
+            document.getElementById("selectedAlgorithm").value;
+          let filtered = modelsList.filter((m) => m.algorithm === selectedAlgo);
           if (searchText) {
             const lower = searchText.toLowerCase();
-            filtered = filtered.filter(m => m.displayText.toLowerCase().includes(lower));
+            filtered = filtered.filter((m) =>
+              m.displayText.toLowerCase().includes(lower),
+            );
           }
           const listDiv = document.getElementById("modelDropdownList");
           listDiv.innerHTML = "";
@@ -263,71 +484,22 @@
             div.innerText = "No models found for this algorithm";
             listDiv.appendChild(div);
           } else {
-            filtered.forEach(model => {
+            // Cari indeks model terbaik (pertama) untuk ditandai
+            const bestId = filtered[0].id;
+            filtered.forEach((model) => {
               const div = document.createElement("div");
               div.className = "dropdown-item";
-              div.innerText = model.displayText;
+              div.innerHTML = `${model.displayText} ${model.id === bestId ? '<i class="fas fa-star best-badge"></i>' : ""}`;
               div.dataset.id = model.id;
-              div.dataset.name = model.displayText;
-              div.datasetFilename = model.dataset_filename || "";
-              div.datasetId = model.dataset_id || "";
+              div.dataset.display = model.displayText;
               div.addEventListener("click", () => {
-                document.getElementById("modelSearchInput").value = model.displayText;
+                document.getElementById("modelSearchInput").value =
+                  model.displayText;
                 document.getElementById("selectedModelId").value = model.id;
                 listDiv.classList.remove("show");
-                // Otomatis set dataset jika mode unggah dataset
-                if (document.getElementById("chkUploadDataset").checked) {
-                  autoSelectDataset(model.dataset_filename, model.dataset_id);
-                }
               });
               listDiv.appendChild(div);
             });
-          }
-        }
-
-        function autoSelectDataset(filename, datasetId) {
-          const select = document.getElementById("datasetSelect");
-          if (!filename && !datasetId) {
-            select.value = "";
-            return;
-          }
-          // Cari di datasetsList (yang sudah diload)
-          for (let i = 0; i < datasetsList.length; i++) {
-            const ds = datasetsList[i];
-            if ((datasetId && ds.id == datasetId) || (filename && ds.filename === filename)) {
-              select.value = ds.id;
-              return;
-            }
-          }
-          // Jika tidak ditemukan, bisa tambahkan opsi baru atau biarkan kosong
-          // Untuk sementara, kita tambahkan option baru jika tidak ada
-          if (filename) {
-            const exists = Array.from(select.options).some(opt => opt.textContent.includes(filename));
-            if (!exists) {
-              const opt = document.createElement("option");
-              opt.value = filename; // pakai filename sebagai value sementara
-              opt.textContent = `${filename} (from model)`;
-              select.appendChild(opt);
-              select.value = filename;
-            }
-          }
-        }
-
-        async function loadDatasets() {
-          try {
-            const res = await apiFetch("/datasets/");
-            if (!res) return;
-            datasetsList = await res.json();
-            const select = document.getElementById("datasetSelect");
-            select.innerHTML = '<option value="">-- Dataset akan ditentukan otomatis --</option>';
-            datasetsList.forEach(ds => {
-              const opt = document.createElement("option");
-              opt.value = ds.id;
-              opt.textContent = `${ds.filename} (${ds.rows} rows) - Uploaded: ${new Date(ds.uploaded_at).toLocaleDateString()}`;
-              select.appendChild(opt);
-            });
-          } catch (err) {
-            console.error(err);
           }
         }
 
@@ -336,7 +508,10 @@
             const res = await apiFetch("/api/testing/history");
             if (!res) return;
             testResults = await res.json();
-            testResults.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            // Sort by tested_at descending
+            testResults.sort(
+              (a, b) => new Date(b.tested_at) - new Date(a.tested_at),
+            );
             renderTestTable();
             renderTestPagination();
           } catch (err) {
@@ -357,56 +532,85 @@
             tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-500">No test results yet.</td></tr>`;
             return;
           }
-          pageData.forEach(item => {
+          pageData.forEach((item) => {
             const row = tbody.insertRow();
-            row.insertCell(0).innerHTML = item.dataset_filename || item.input_text || "-";
+            // Dataset/Input
+            const datasetInfo =
+              item.dataset_filename || item.training_id
+                ? `Hold‑out set (Training #${item.training_id})`
+                : "-";
+            row.insertCell(0).innerHTML = datasetInfo;
+            // Model
             row.insertCell(1).innerHTML = item.algorithm || "-";
-            row.insertCell(2).innerHTML = item.metrics?.accuracy ? item.metrics.accuracy.toFixed(3) : "-";
-            row.insertCell(3).innerHTML = item.metrics?.f1_score ? item.metrics.f1_score.toFixed(3) : "-";
-            const d = item.created_at ? new Date(item.created_at) : null;
-            row.insertCell(4).innerHTML = d ? d.toLocaleString() : "-";
+            // Accuracy
+            row.insertCell(2).innerHTML =
+              item.accuracy != null ? item.accuracy.toFixed(3) : "-";
+            // F1-Score
+            row.insertCell(3).innerHTML =
+              item.f1_score != null ? item.f1_score.toFixed(3) : "-";
+            // Date (DD/MM/YY, HH.MM)
+            const d = item.tested_at ? new Date(item.tested_at) : null;
+            if (d) {
+              const dd = String(d.getDate()).padStart(2, "0");
+              const mm = String(d.getMonth() + 1).padStart(2, "0");
+              const yy = String(d.getFullYear()).slice(-2);
+              const hh = String(d.getHours()).padStart(2, "0");
+              const min = String(d.getMinutes()).padStart(2, "0");
+              row.insertCell(4).innerHTML = `${dd}/${mm}/${yy}, ${hh}.${min}`;
+            } else {
+              row.insertCell(4).innerHTML = "-";
+            }
+            // Actions
             const act = row.insertCell(5);
             act.className = "px-4 py-2 border border-gray-200 text-center";
             act.innerHTML = `<a href="detail-testing.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2"><i class="fas fa-eye"></i></a>`;
-            for (let cell of row.cells) cell.classList.add("border", "border-gray-200", "px-4", "py-2");
+            for (let cell of row.cells)
+              cell.classList.add("border", "border-gray-200", "px-4", "py-2");
           });
         }
 
         function renderTestPagination() {
           const totalPages = Math.ceil(testResults.length / rowsPerPage);
-          renderPaginationControls("testPagination", currentPage, totalPages, (newPage) => {
-            currentPage = newPage;
-            renderTestTable();
-          });
+          renderPaginationControls(
+            "testPagination",
+            currentPage,
+            totalPages,
+            (newPage) => {
+              currentPage = newPage;
+              renderTestTable();
+            },
+          );
         }
 
         async function startTesting() {
           const modelId = document.getElementById("selectedModelId").value;
           const algorithm = document.getElementById("selectedAlgorithm").value;
-          if (!modelId) { alert("Please select a trained model."); return; }
-          if (!algorithm) { alert("Please select an algorithm."); return; }
+          if (!modelId) {
+            alert("Please select a trained model.");
+            return;
+          }
 
           const isUpload = document.getElementById("chkUploadDataset").checked;
           const isInputText = document.getElementById("chkInputText").checked;
 
           const startBtn = document.getElementById("startTestBtn");
           const testStatus = document.getElementById("testStatus");
-          const progressContainer = document.getElementById("progressContainer");
+          const progressContainer =
+            document.getElementById("progressContainer");
           const progressBar = document.getElementById("progressBar");
           const progressPercent = document.getElementById("progressPercent");
 
-          let requestBody = { model_id: parseInt(modelId), algorithm };
+          let requestBody = { model_id: parseInt(modelId) };
 
           if (isUpload) {
-            const datasetId = document.getElementById("datasetSelect").value;
-            if (!datasetId) { alert("Dataset otomatis belum terisi. Pilih model terlebih dahulu."); return; }
-            requestBody.dataset_id = parseInt(datasetId);
+            // Tidak perlu dataset_id, backend akan otomatis gunakan hold‑out set
           } else if (isInputText) {
-            const idiom = document.getElementById("inputIdiom").value.trim();
-            const arti = document.getElementById("inputArti").value.trim();
-            if (!idiom) { alert("Masukkan teks idiom."); return; }
-            requestBody.idiom_text = idiom;
-            requestBody.arti = arti; // opsional
+            const kalimat = document.getElementById("inputText").value.trim();
+            if (!kalimat) {
+              alert("Masukkan teks kalimat.");
+              return;
+            }
+            requestBody.text = kalimat;
           } else {
             alert("Pilih sumber data.");
             return;
@@ -419,35 +623,50 @@
           progressPercent.innerText = "0%";
 
           try {
-            // Gunakan endpoint berbeda untuk input text
-            const endpoint = isInputText ? "/api/testing/predict" : "/api/testing/start";
+            const endpoint = isInputText
+              ? "/api/testing/predict"
+              : "/api/testing/start";
             const res = await apiFetch(endpoint, {
               method: "POST",
               body: JSON.stringify(requestBody),
             });
             if (!res) return;
             const result = await res.json();
-            if (!res.ok) throw new Error(result.error || "Failed to start testing");
+            if (!res.ok)
+              throw new Error(result.error || "Failed to start testing");
 
             if (isInputText) {
-              // Jika input text, hasil prediksi langsung ditampilkan
-              document.getElementById("inputEmosi").value = result.emotion || result.predicted_emotion || "Tidak terdeteksi";
+              if (result.has_idiom) {
+                document.getElementById("inputIdiom").value = result.idiom_text;
+                document.getElementById("inputMeaning").value =
+                  result.idiom_meaning;
+                document.getElementById("inputEmosi").value = result.emotion;
+              } else {
+                document.getElementById("inputIdiom").value = "";
+                document.getElementById("inputMeaning").value = "";
+                document.getElementById("inputEmosi").value =
+                  result.message || "Tidak terdeteksi";
+              }
               testStatus.innerText = "Completed";
               progressBar.style.width = "100%";
               progressPercent.innerText = "100%";
               startBtn.disabled = false;
-              // Tambahkan ke test results secara lokal atau refresh
-              await loadTestResults();
             } else {
-              // Mode dataset: polling
               const testId = result.test_id;
               currentTestId = testId;
               if (pollingInterval) clearInterval(pollingInterval);
               pollingInterval = setInterval(async () => {
-                const statusRes = await apiFetch(`/api/testing/status/${testId}`);
+                const statusRes = await apiFetch(
+                  `/api/testing/status/${testId}`,
+                );
                 if (!statusRes) return;
                 const data = await statusRes.json();
-                testStatus.innerText = data.status === "completed" ? "Completed" : data.status === "failed" ? "Failed" : "Running...";
+                testStatus.innerText =
+                  data.status === "completed"
+                    ? "Completed"
+                    : data.status === "failed"
+                      ? "Failed"
+                      : "Running...";
                 progressBar.style.width = `${data.progress}%`;
                 progressPercent.innerText = `${data.progress}%`;
                 if (data.status === "completed" || data.status === "failed") {
@@ -470,19 +689,15 @@
           const chkInput = document.getElementById("chkInputText");
           const uploadSection = document.getElementById("uploadDatasetSection");
           const inputSection = document.getElementById("inputTextSection");
-          const datasetSelect = document.getElementById("datasetSelect");
 
           function updateUI() {
             if (chkUpload.checked && !chkInput.checked) {
               uploadSection.classList.remove("hidden");
               inputSection.classList.add("hidden");
-              datasetSelect.disabled = true;
-              datasetSelect.classList.add("bg-gray-100", "cursor-not-allowed");
             } else if (chkInput.checked && !chkUpload.checked) {
               uploadSection.classList.add("hidden");
               inputSection.classList.remove("hidden");
             } else if (!chkUpload.checked && !chkInput.checked) {
-              // Jika tidak ada yang dipilih, default ke upload
               chkUpload.checked = true;
               updateUI();
             }
@@ -503,22 +718,36 @@
         function initAlgorithmButtons() {
           const btnIndo = document.getElementById("btnIndoBERT");
           const btnLex = document.getElementById("btnLexicon");
-          const selectedAlgoInput = document.getElementById("selectedAlgorithm");
+          const selectedAlgoInput =
+            document.getElementById("selectedAlgorithm");
 
           function setActive(activeBtn) {
             btnIndo.classList.remove("bg-blue-600", "text-white", "shadow-md");
-            btnIndo.classList.add("bg-gray-200", "text-gray-700", "hover:bg-gray-300");
+            btnIndo.classList.add(
+              "bg-gray-200",
+              "text-gray-700",
+              "hover:bg-gray-300",
+            );
             btnLex.classList.remove("bg-blue-600", "text-white", "shadow-md");
-            btnLex.classList.add("bg-gray-200", "text-gray-700", "hover:bg-gray-300");
+            btnLex.classList.add(
+              "bg-gray-200",
+              "text-gray-700",
+              "hover:bg-gray-300",
+            );
 
-            activeBtn.classList.remove("bg-gray-200", "text-gray-700", "hover:bg-gray-300");
+            activeBtn.classList.remove(
+              "bg-gray-200",
+              "text-gray-700",
+              "hover:bg-gray-300",
+            );
             activeBtn.classList.add("bg-blue-600", "text-white", "shadow-md");
 
             selectedAlgoInput.value = activeBtn.getAttribute("data-algo");
-            populateModelDropdown(document.getElementById("modelSearchInput").value);
-            document.getElementById("modelSearchInput").value = "";
-            document.getElementById("selectedModelId").value = "";
-            document.getElementById("datasetSelect").value = "";
+            // Setelah algoritma berubah, auto pilih model terbaik
+            autoSelectBestModel();
+            populateModelDropdown(
+              document.getElementById("modelSearchInput").value,
+            );
           }
 
           btnIndo.addEventListener("click", () => setActive(btnIndo));
@@ -537,31 +766,45 @@
             modelList.classList.add("show");
           });
           document.addEventListener("click", (e) => {
-            if (!modelInput.contains(e.target) && !modelList.contains(e.target)) {
+            if (
+              !modelInput.contains(e.target) &&
+              !modelList.contains(e.target)
+            ) {
               modelList.classList.remove("show");
             }
           });
         }
 
-        document.getElementById("startTestBtn").addEventListener("click", startTesting);
+        document
+          .getElementById("startTestBtn")
+          .addEventListener("click", startTesting);
 
         function toggleDropdown(btn, menu, icon) {
-          btn.addEventListener("click", () => { menu.classList.toggle("hidden"); icon.classList.toggle("rotate-180"); });
+          btn.addEventListener("click", () => {
+            menu.classList.toggle("hidden");
+            icon.classList.toggle("rotate-180");
+          });
         }
-        toggleDropdown(document.getElementById("dataCollectionBtn"), document.getElementById("dataCollectionMenu"), document.getElementById("dataCollectionIcon"));
+        toggleDropdown(
+          document.getElementById("dataCollectionBtn"),
+          document.getElementById("dataCollectionMenu"),
+          document.getElementById("dataCollectionIcon"),
+        );
 
         if (authToken) {
           loadTrainedModels();
-          loadDatasets();
           loadTestResults();
           initModelDropdown();
           initAlgorithmButtons();
           initSourceCheckboxes();
-          const defaultBtn = document.getElementById("btnIndoBERT");
-          if (defaultBtn) {
-            defaultBtn.classList.remove("bg-gray-200", "text-gray-700");
-            defaultBtn.classList.add("bg-blue-600", "text-white", "shadow-md");
-          }
+          // Set tombol IndoBERT aktif secara default
+          const btnIndo = document.getElementById("btnIndoBERT");
+          btnIndo.classList.remove(
+            "bg-gray-200",
+            "text-gray-700",
+            "hover:bg-gray-300",
+          );
+          btnIndo.classList.add("bg-blue-600", "text-white", "shadow-md");
         } else {
           window.location.href = "login.html";
         }
