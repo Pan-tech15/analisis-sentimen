@@ -11,7 +11,7 @@ from datetime import datetime
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.naive_bayes import MultinomialNB, BernoulliNB
 from sklearn.model_selection import StratifiedKFold, train_test_split
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix, matthews_corrcoef
 from sklearn.preprocessing import LabelEncoder
 
 from app import db
@@ -193,7 +193,7 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
             stratified = general.get('stratified', 'yes') == 'yes'
 
             # Baca split type: 'percentage' atau 'crossval'
-            split_type = split_cfg.get('type', 'percentage')
+            split_type = split_cfg.get('type', 'crossval')
             test_ratio = float(split_cfg.get('test', 20)) / 100
 
             if 'crossval' in split_cfg and isinstance(split_cfg['crossval'], dict):
@@ -301,6 +301,10 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                 skf = StratifiedKFold(n_splits=n_folds, shuffle=shuffle, random_state=random_state)
                 fold_metrics = []
 
+                # Wadah untuk mengakumulasi seluruh prediksi dan label aktual dari semua fold
+                y_true_all = []
+                y_pred_all = []
+
                 for fold_idx, (train_idx, test_idx) in enumerate(skf.split(X_text, y)):
                     X_tr = X_text[train_idx]
                     X_te = X_text[test_idx]
@@ -336,21 +340,33 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                     else:
                         y_pred = np.argmax(final_scores, axis=1)
 
+                    # Simpan true dan pred untuk fold ini
+                    y_true_all.append(y_te)
+                    y_pred_all.append(y_pred)
+
                     acc = accuracy_score(y_te, y_pred)
                     prec_w = precision_score(y_te, y_pred, average='weighted', zero_division=0)
                     rec_w = recall_score(y_te, y_pred, average='weighted', zero_division=0)
                     f1_w = f1_score(y_te, y_pred, average='weighted')
+                    mcc = matthews_corrcoef(y_te, y_pred)
                     fold_metrics.append({
                         'fold': fold_idx + 1,
                         'accuracy': round(acc, 4),
                         'precision': round(prec_w, 4),
                         'recall': round(rec_w, 4),
                         'f1_score': round(f1_w, 4),
-                        'mcc': None
+                        'mcc': round(mcc, 4) 
                     })
                     update_progress(app, training_id,
                                     45 + int((fold_idx+1)/n_folds * 30),
                                     f"Fold {fold_idx+1}/{n_folds} selesai (Akurasi: {acc:.4f})")
+
+                # Gabungkan seluruh prediksi dan label aktual
+                y_true_all = np.concatenate(y_true_all)
+                y_pred_all = np.concatenate(y_pred_all)
+
+                # Hitung confusion matrix gabungan untuk SEMUA kelas (8x8)
+                cm_all = confusion_matrix(y_true_all, y_pred_all, labels=range(len(classes)))
 
                 if model_type == 'BernoulliNB':
                     final_model = BernoulliNB(alpha=alpha, fit_prior=fit_prior)
@@ -369,7 +385,7 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                     'f1_score': round(avg_f1, 4),
                     'precision': round(avg_prec, 4),
                     'recall': round(avg_rec, 4),
-                    'confusion_matrix': [],
+                    'confusion_matrix': cm_all.tolist(),  # ← gunakan matrix gabungan
                     'class_labels': classes,
                     'fold_metrics': fold_metrics,
                     'holdout_path': holdout_path

@@ -328,36 +328,20 @@
                         class="block text-sm font-medium text-gray-700 mb-2"
                       >
                         Strategi Validasi
+                      </label>
+                      <label class="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          id="epochCheckbox"
+                          class="form-checkbox h-4 w-4 text-blue-600"
+                        />
+                        <span class="text-sm text-gray-700">Epoch‑based</span>
                         <span
                           class="info-icon"
-                          data-tooltip="• Cross Validation membagi data training menjadi beberapa lipatan untuk mengevaluasi stabilitas model dengan membagi 1 fold testing dan sisanya fold training. 
-                          • Epoch‑based untuk melatih data berulang kali sebanyak n-epoch."
+                          data-tooltip="Hanya satu kali split data training/validasi. Early Stopping akan menghentikan pelatihan jika tidak ada peningkatan."
                           >ⓘ</span
                         >
                       </label>
-                      <div class="flex gap-4">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="validationType"
-                            value="crossval"
-                            class="form-radio h-4 w-4 text-blue-600"
-                          />
-                          <span class="text-sm text-gray-700"
-                            >Cross Validation</span
-                          >
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="validationType"
-                            value="epoch"
-                            checked
-                            class="form-radio h-4 w-4 text-blue-600"
-                          />
-                          <span class="text-sm text-gray-700">Epoch‑based</span>
-                        </label>
-                      </div>
                     </div>
 
                     <div id="cvParams" class="hidden">
@@ -381,40 +365,6 @@
                             max="10"
                             class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-300"
                           />
-                        </div>
-                        <div class="flex flex-col gap-2 justify-end">
-                          <label class="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              id="stratifiedFolds"
-                              checked
-                              class="form-checkbox h-4 w-4 text-blue-600"
-                            />
-                            <span class="text-sm text-gray-700">
-                              Stratified Folds
-                              <span
-                                class="info-icon"
-                                data-tooltip="Menjaga proporsi setiap kelas tetap sama di setiap fold. Direkomendasikan jika distribusi label tidak seimbang."
-                                >ⓘ</span
-                              >
-                            </span>
-                          </label>
-                          <label class="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              id="parallelFolds"
-                              checked
-                              class="form-checkbox h-4 w-4 text-blue-600"
-                            />
-                            <span class="text-sm text-gray-700">
-                              Parallel Folds
-                              <span
-                                class="info-icon"
-                                data-tooltip="Memproses setiap fold secara paralel untuk mempercepat waktu evaluasi."
-                                >ⓘ</span
-                              >
-                            </span>
-                          </label>
                         </div>
                       </div>
                     </div>
@@ -2096,9 +2046,10 @@
         let params = {};
 
         if (algorithm === "indobert") {
-          const validationType = document.querySelector(
-            'input[name="validationType"]:checked',
-          ).value;
+          const validationType = document.getElementById("epochCheckbox")
+            .checked
+            ? "epoch"
+            : "crossval";
           const stratified =
             validationType === "crossval"
               ? document.getElementById("stratifiedFolds").checked
@@ -2239,10 +2190,16 @@
             document.getElementById("fusionMethodSelect").value;
           const fusionFormula =
             document.getElementById("fusionFormulaInput").value;
-          // Lexicon-NB
+          // Lexicon-NB (selalu cross validation)
+          const crossvalFolds = 10; // default, sesuaikan jika perlu
           params = {
             general: { randomState: 42 },
-            split: { type: "percentage", train: trainPct, test: testPct },
+            split: {
+              type: "crossval",
+              train: trainPct,
+              test: testPct,
+              crossval: { folds: crossvalFolds },
+            },
             naivebayes: {
               alpha:
                 parseFloat(document.getElementById("lexiconAlpha").value) ||
