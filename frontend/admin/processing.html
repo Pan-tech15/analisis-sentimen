@@ -1155,6 +1155,49 @@
         <!-- Training History Table -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-8">
           <h2 class="font-semibold text-gray-700 mb-4">Training History</h2>
+
+          <!-- Filter Bar: Search + Date Range -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Cari teks</label
+              >
+              <input
+                type="text"
+                id="historySearchInput"
+                placeholder="Dataset, Model, Rasio..."
+                class="w-full border rounded-lg p-2"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Dari tanggal</label
+              >
+              <input
+                type="date"
+                id="dateFromInput"
+                class="w-full border rounded-lg p-2"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Sampai tanggal</label
+              >
+              <input
+                type="date"
+                id="dateToInput"
+                class="w-full border rounded-lg p-2"
+              />
+            </div>
+            <div class="flex items-end">
+              <button
+                id="applyHistoryFilterBtn"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg w-full"
+              >
+                <i class="fas fa-filter mr-1"></i>Terapkan Filter
+              </button>
+            </div>
+          </div>
           <div class="overflow-x-auto">
             <table class="min-w-full border border-gray-200">
               <thead class="bg-blue-500 text-white">

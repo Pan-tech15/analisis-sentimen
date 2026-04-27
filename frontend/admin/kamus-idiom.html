@@ -219,18 +219,12 @@
 
         <!-- Filter, Search, dan Tabel -->
         <div class="bg-white p-6 rounded-xl shadow-md">
-          <!-- Header dengan total badge -->
           <div class="flex justify-between items-center mb-3">
             <h2 class="text-lg font-semibold text-gray-800">
               <i class="fas fa-list-alt mr-2 text-blue-600"></i>Daftar Idiom
             </h2>
           </div>
 
-          <span
-            id="totalIdiomsBadge"
-            class="bg-blue-100 text-blue-800 text-xl font-medium px-3 py-1 rounded-full"
-            >Total: 0</span
-          >
           <!-- Search & Sort -->
           <div class="flex flex-wrap gap-4 mb-4">
             <div class="flex-1">
@@ -271,8 +265,16 @@
             </table>
           </div>
 
-          <!-- Pagination -->
-          <div id="pagination" class="flex justify-center mt-4 space-x-2"></div>
+          <!-- Total dan Pagination di bawah tabel: total di kanan, pagination di kiri/tengah? -->
+          <!-- Diminta: total diletakkan di bawah tabel kanan -->
+          <div class="flex flex-wrap justify-between items-center mt-4 gap-3">
+            <div id="pagination" class="flex justify-center space-x-2"></div>
+            <span
+              id="totalIdiomsBadge"
+              class="bg-blue-100 text-blue-800 text-x1 font-medium px-3 py-1 rounded-full"
+              >Total: 0</span
+            >
+          </div>
         </div>
       </main>
     </div>
@@ -340,7 +342,7 @@
       let totalPages = 1;
       let currentSort = "asc";
       let currentSearch = "";
-      let totalIdioms = 0; // untuk menyimpan total seluruh data
+      let totalIdioms = 0;
 
       async function apiFetch(endpoint, options = {}) {
         const headers = {
@@ -368,7 +370,6 @@
           const result = await response.json();
           window.idiomsData = result.data;
           totalPages = result.total_pages;
-          // Ambil total dari response, fallback ke hitungan dari data jika tidak ada
           totalIdioms =
             result.total || result.total_items || window.idiomsData.length;
           document.getElementById("totalIdiomsBadge").textContent =
