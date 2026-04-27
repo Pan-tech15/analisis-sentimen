@@ -32,7 +32,7 @@
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- SIDEBAR (sama seperti sebelumnya) -->
+      <!-- SIDEBAR -->
       <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
         <div class="p-4 border-b">
           <span
@@ -262,7 +262,7 @@
           class="bg-white p-6 rounded-xl shadow-md mb-6"
         >
           <h2 class="font-semibold text-gray-700 mb-4">
-            Stabilitas Performa (5-Fold Cross Validation)
+            Stabilitas Performa (Cross Validation)
           </h2>
           <div class="overflow-x-auto">
             <table class="min-w-full border border-gray-200">
@@ -319,6 +319,19 @@
         const marginBottom = 100;
         let tooltipDiv = null;
 
+        // Helper: konversi nilai ke angka yang aman untuk .toFixed() - tidak akan melemparkan error
+        function safeToFixed(val, digits, fallback = "-") {
+          if (
+            val === null ||
+            val === undefined ||
+            (typeof val === "number" && isNaN(val))
+          )
+            return fallback;
+          let num = Number(val);
+          if (isNaN(num)) return fallback;
+          return num.toFixed(digits);
+        }
+
         function getColor(intensity) {
           const r = Math.min(255, Math.floor(255 * intensity * 1.5));
           const g = Math.min(255, Math.floor(255 * (1.5 - intensity * 1.2)));
@@ -328,6 +341,7 @@
 
         function calculateMetricsFromCM(cm, labelsList) {
           const n = cm.length;
+          if (n === 0) return null;
           let tp = 0,
             fp = 0,
             fn = 0,
@@ -406,360 +420,417 @@
         }
 
         function renderConfigParams(params, algorithm) {
-          const container = document.getElementById("configContainer");
-          if (!container) return;
-          container.innerHTML = "";
+          try {
+            const container = document.getElementById("configContainer");
+            if (!container) return;
+            container.innerHTML = "";
 
-          if (!params) {
-            container.innerHTML =
-              '<p class="text-gray-500 col-span-full">Konfigurasi tidak tersedia.</p>';
-            return;
-          }
-
-          function addItem(label, value, icon = "fa-cog") {
-            const div = document.createElement("div");
-            div.className =
-              "flex items-start space-x-2 p-2 bg-gray-50 rounded-lg";
-            div.innerHTML = `
-            <i class="fas ${icon} text-blue-500 mt-1 w-5"></i>
-            <div>
-                <p class="text-xs text-gray-500">${label}</p>
-                <p class="font-medium text-gray-800 break-all">${value}</p>
-            </div>
-        `;
-            container.appendChild(div);
-          }
-
-          function addCategoryHeader(title) {
-            const header = document.createElement("div");
-            header.className = "col-span-full mt-3 mb-1 first:mt-0";
-            header.innerHTML = `<h3 class="font-semibold text-sm text-gray-600 border-b pb-1">${title}</h3>`;
-            container.appendChild(header);
-          }
-
-          // === PEMBAGIAN DATA ===
-          const split = params.split || {};
-          addCategoryHeader("🔀 Pembagian Data");
-          addItem(
-            "Metode",
-            split.type === "crossval"
-              ? `Cross Validation (${split.crossval?.folds || "-"} folds)`
-              : `Percentage Split (${split.train || "-"}:${split.test || "-"})`,
-            "fa-code-branch",
-          );
-          if (split.type === "crossval") {
-            addItem(
-              "Jumlah Fold",
-              split.crossval?.folds || "-",
-              "fa-layer-group",
-            );
-          } else {
-            addItem("Rasio Train", split.train || "-", "fa-chart-pie");
-            addItem("Rasio Test", split.test || "-", "fa-chart-pie");
-          }
-
-          // ========== CEK APAKAH INI LEXICON-NB ==========
-          if (params.naivebayes) {
-            // --- Naive Bayes ---
-            const nb = params.naivebayes;
-            addCategoryHeader("🧠 Naive Bayes");
-            addItem("Alpha", nb.alpha || "-", "fa-sliders-h");
-            addItem(
-              "Model Type",
-              nb.model_type || nb.modelType || "-",
-              "fa-cube",
-            );
-            addItem("Vectorizer", nb.vectorizer || "-", "fa-font");
-
-            // --- Hybrid Fusion ---
-            const fusion = params.fusion || {};
-            addCategoryHeader("🔗 Hybrid Fusion");
-            addItem("Fusion Method", fusion.method || "-", "fa-code-merge");
-            addItem("Formula", fusion.formula || "-", "fa-superscript");
-
-            // --- Emotion Rankings (SORTED by rank 1-7) ---
-            const rankings = params.emotion_rankings;
-            if (rankings && Object.keys(rankings).length > 0) {
-              addCategoryHeader("😊 Urutan Ranking Emosi (1–7)");
-              const sorted = Object.entries(rankings).sort(
-                (a, b) => a[1] - b[1],
-              );
-              for (const [emotion, rank] of sorted) {
-                addItem(
-                  emotion.charAt(0).toUpperCase() + emotion.slice(1),
-                  rank,
-                  "fa-smile",
-                );
-              }
+            if (!params) {
+              container.innerHTML =
+                '<p class="text-gray-500 col-span-full">Konfigurasi tidak tersedia.</p>';
+              return;
             }
-          }
-          // ========== JIKA BUKAN LEXICON, MAKA INDOBERT ==========
-          else {
-            // === PARAMETER UMUM (HANYA UNTUK INDOBERT) ===
-            const general = params.general || {};
-            addCategoryHeader("⚙️ Parameter Umum");
-            addItem("Random State", general.randomState || "-", "fa-dice");
-            addItem(
-              "Shuffle Before Split",
-              general.shuffle ? "Ya" : "Tidak",
-              "fa-random",
-            );
-            addItem(
-              "Stratified Folds",
-              general.stratified ? "Ya" : "Tidak",
-              "fa-layer-group",
-            );
 
-            // --- IndoBERT ---
-            const bert = params.indobert || {};
-            addCategoryHeader("🤖 IndoBERT");
-            addItem("Model Name", bert.modelName || "-", "fa-robot");
-            addItem(
-              "Max Sequence Length",
-              bert.maxSeqLength || "-",
-              "fa-text-width",
-            );
-            addItem("Pooling Strategy", bert.pooling || "-", "fa-water");
-            addItem("Batch Size", bert.batchSize || "-", "fa-layer-group");
+            function addItem(label, value, icon = "fa-cog") {
+              const div = document.createElement("div");
+              div.className =
+                "flex items-start space-x-2 p-2 bg-gray-50 rounded-lg";
+              div.innerHTML = `
+              <i class="fas ${icon} text-blue-500 mt-1 w-5"></i>
+              <div>
+                  <p class="text-xs text-gray-500">${label}</p>
+                  <p class="font-medium text-gray-800 break-all">${value}</p>
+              </div>
+          `;
+              container.appendChild(div);
+            }
 
-            // --- Fine-Tuning ---
-            const ft = params.finetune || {};
-            addCategoryHeader("🎯 Fine-Tuning IndoBERT");
-            if (ft.enabled) {
-              addItem("Status", "Aktif", "fa-check-circle text-green-600");
-              addItem("Epochs", ft.epochs || "-", "fa-clock");
+            function addCategoryHeader(title) {
+              const header = document.createElement("div");
+              header.className = "col-span-full mt-3 mb-1 first:mt-0";
+              header.innerHTML = `<h3 class="font-semibold text-sm text-gray-600 border-b pb-1">${title}</h3>`;
+              container.appendChild(header);
+            }
+
+            // === PEMBAGIAN DATA ===
+            const split = params.split || {};
+            addCategoryHeader("🔀 Pembagian Data");
+            addItem(
+              "Metode",
+              split.type === "crossval"
+                ? `Cross Validation (${split.crossval?.folds || "-"} folds)`
+                : `Percentage Split (${split.train || "-"}:${split.test || "-"})`,
+              "fa-code-branch",
+            );
+            if (split.type === "crossval") {
               addItem(
-                "Learning Rate",
-                ft.learningRate || "-",
-                "fa-tachometer-alt",
-              );
-              addItem("Optimizer", ft.optimizer || "-", "fa-cogs");
-              addItem("Weight Decay", ft.weightDecay || "-", "fa-weight-scale");
-              addItem(
-                "Warmup Ratio",
-                ft.warmupRatio || "-",
-                "fa-temperature-high",
-              );
-              addItem("Freeze Layers", ft.freezeLayers || "-", "fa-lock");
-              addItem(
-                "Gradient Accumulation",
-                ft.gradientAccumulation || "-",
+                "Jumlah Fold",
+                split.crossval?.folds || "-",
                 "fa-layer-group",
               );
-              addItem("Max Grad Norm", ft.maxGradNorm || "-", "fa-chart-line");
             } else {
-              addItem("Status", "Tidak Aktif", "fa-ban text-red-500");
+              addItem("Rasio Train", split.train || "-", "fa-chart-pie");
+              addItem("Rasio Test", split.test || "-", "fa-chart-pie");
             }
 
-            // --- UMAP ---
-            const umap = params.umap || {};
-            addCategoryHeader("📉 UMAP (Reduksi Dimensi)");
-            if (umap.enabled) {
-              addItem("Status", "Aktif", "fa-check-circle text-green-600");
-              addItem("n_components", umap.nComponents || "-", "fa-arrows-alt");
-              addItem("n_neighbors", umap.nNeighbors || "-", "fa-users");
-              addItem("min_dist", umap.minDist || "-", "fa-arrows-alt-h");
-              addItem("metric", umap.metric || "-", "fa-ruler");
-              addItem("random_state", umap.randomState || "-", "fa-dice");
-            } else {
-              addItem("Status", "Tidak Aktif", "fa-ban text-red-500");
+            // ========== CEK APAKAH INI LEXICON-NB ==========
+            if (params.naivebayes) {
+              // --- Naive Bayes ---
+              const nb = params.naivebayes;
+              addCategoryHeader("🧠 Naive Bayes");
+              addItem("Alpha", nb.alpha || "-", "fa-sliders-h");
+              addItem(
+                "Model Type",
+                nb.model_type || nb.modelType || "-",
+                "fa-cube",
+              );
+              addItem("Vectorizer", nb.vectorizer || "-", "fa-font");
+
+              // --- Hybrid Fusion ---
+              const fusion = params.fusion || {};
+              addCategoryHeader("🔗 Hybrid Fusion");
+              addItem("Fusion Method", fusion.method || "-", "fa-code-merge");
+              addItem("Formula", fusion.formula || "-", "fa-superscript");
+
+              // --- Emotion Rankings (SORTED by rank 1-7) ---
+              const rankings = params.emotion_rankings;
+              if (rankings && Object.keys(rankings).length > 0) {
+                addCategoryHeader("😊 Urutan Ranking Emosi (1–7)");
+                const sorted = Object.entries(rankings).sort(
+                  (a, b) => a[1] - b[1],
+                );
+                for (const [emotion, rank] of sorted) {
+                  addItem(
+                    emotion.charAt(0).toUpperCase() + emotion.slice(1),
+                    rank,
+                    "fa-smile",
+                  );
+                }
+              }
             }
+            // ========== JIKA BUKAN LEXICON, MAKA INDOBERT ==========
+            else {
+              // === PARAMETER UMUM (HANYA UNTUK INDOBERT) ===
+              const general = params.general || {};
+              addCategoryHeader("⚙️ Parameter Umum");
+              addItem("Random State", general.randomState || "-", "fa-dice");
+              addItem(
+                "Shuffle Before Split",
+                general.shuffle ? "Ya" : "Tidak",
+                "fa-random",
+              );
+              addItem(
+                "Stratified Folds",
+                general.stratified ? "Ya" : "Tidak",
+                "fa-layer-group",
+              );
 
-            // --- KNN ---
-            const knn = params.knn || {};
-            addCategoryHeader("👥 KNN");
-            addItem("K (n_neighbors)", knn.k || "-", "fa-neuter");
-            addItem("Metrik Jarak", knn.metric || "-", "fa-ruler");
-            addItem("weights", knn.weights || "-", "fa-balance-scale");
-            addItem("algorithm", knn.algorithm || "-", "fa-code-branch");
-            addItem("leaf_size", knn.leafSize || "-", "fa-leaf");
-            addItem("p (Minkowski)", knn.p || "-", "fa-chart-line");
+              // --- IndoBERT ---
+              const bert = params.indobert || {};
+              addCategoryHeader("🤖 IndoBERT");
+              addItem("Model Name", bert.modelName || "-", "fa-robot");
+              addItem(
+                "Max Sequence Length",
+                bert.maxSeqLength || "-",
+                "fa-text-width",
+              );
+              addItem("Pooling Strategy", bert.pooling || "-", "fa-water");
+              addItem("Batch Size", bert.batchSize || "-", "fa-layer-group");
 
-            // --- Confidence Adjustment ---
-            const hybrid = params.hybrid || {};
-            const hybridMethod = hybrid.method || "none";
-            let hybridText = "Tidak Aktif";
-            if (hybridMethod === "confidence") hybridText = "Confidence‑Based";
-            else if (hybridMethod === "weighted")
-              hybridText = `Weighted Average (α=${hybrid.alpha || "0.7"})`;
-            addItem("Confidence Adjustment", hybridText, "fa-sliders-h");
+              // --- Fine-Tuning ---
+              const ft = params.finetune || {};
+              addCategoryHeader("🎯 Fine-Tuning IndoBERT");
+              if (ft.enabled) {
+                addItem("Status", "Aktif", "fa-check-circle text-green-600");
+                addItem("Epochs", ft.epochs || "-", "fa-clock");
+                addItem(
+                  "Learning Rate",
+                  ft.learningRate || "-",
+                  "fa-tachometer-alt",
+                );
+                addItem("Optimizer", ft.optimizer || "-", "fa-cogs");
+                addItem(
+                  "Weight Decay",
+                  ft.weightDecay || "-",
+                  "fa-weight-scale",
+                );
+                addItem(
+                  "Warmup Ratio",
+                  ft.warmupRatio || "-",
+                  "fa-temperature-high",
+                );
+                addItem("Freeze Layers", ft.freezeLayers || "-", "fa-lock");
+                addItem(
+                  "Gradient Accumulation",
+                  ft.gradientAccumulation || "-",
+                  "fa-layer-group",
+                );
+                addItem(
+                  "Max Grad Norm",
+                  ft.maxGradNorm || "-",
+                  "fa-chart-line",
+                );
+              } else {
+                addItem("Status", "Tidak Aktif", "fa-ban text-red-500");
+              }
+
+              // --- UMAP ---
+              const umap = params.umap || {};
+              addCategoryHeader("📉 UMAP (Reduksi Dimensi)");
+              if (umap.enabled) {
+                addItem("Status", "Aktif", "fa-check-circle text-green-600");
+                addItem(
+                  "n_components",
+                  umap.nComponents || "-",
+                  "fa-arrows-alt",
+                );
+                addItem("n_neighbors", umap.nNeighbors || "-", "fa-users");
+                addItem("min_dist", umap.minDist || "-", "fa-arrows-alt-h");
+                addItem("metric", umap.metric || "-", "fa-ruler");
+                addItem("random_state", umap.randomState || "-", "fa-dice");
+              } else {
+                addItem("Status", "Tidak Aktif", "fa-ban text-red-500");
+              }
+
+              // --- KNN ---
+              const knn = params.knn || {};
+              addCategoryHeader("👥 KNN");
+              addItem("K (n_neighbors)", knn.k || "-", "fa-neuter");
+              addItem("Metrik Jarak", knn.metric || "-", "fa-ruler");
+              addItem("weights", knn.weights || "-", "fa-balance-scale");
+              addItem("algorithm", knn.algorithm || "-", "fa-code-branch");
+              addItem("leaf_size", knn.leafSize || "-", "fa-leaf");
+              addItem("p (Minkowski)", knn.p || "-", "fa-chart-line");
+
+              // --- Confidence Adjustment ---
+              const hybrid = params.hybrid || {};
+              const hybridMethod = hybrid.method || "none";
+              let hybridText = "Tidak Aktif";
+              if (hybridMethod === "confidence")
+                hybridText = "Confidence‑Based";
+              else if (hybridMethod === "weighted")
+                hybridText = `Weighted Average (α=${hybrid.alpha || "0.7"})`;
+              addItem("Confidence Adjustment", hybridText, "fa-sliders-h");
+            }
+          } catch (e) {
+            console.error("Error in renderConfigParams:", e);
           }
         }
 
         // ========== TABEL EVALUASI PER EPOCH / FOLD ==========
         function renderEpochFoldTable(data) {
-          const section = document.getElementById("epochFoldSection");
-          const titleEl = document.getElementById("epochFoldTitle");
-          const tbody = document.getElementById("epochFoldTableBody");
-          if (!section || !tbody) return;
+          try {
+            const section = document.getElementById("epochFoldSection");
+            const titleEl = document.getElementById("epochFoldTitle");
+            const tbody = document.getElementById("epochFoldTableBody");
+            if (!section || !tbody) return;
 
-          let items = null;
-          let isEpoch = false;
+            let items = null;
+            let isEpoch = false;
 
-          if (
-            data.epoch_metrics &&
-            Array.isArray(data.epoch_metrics) &&
-            data.epoch_metrics.length > 0
-          ) {
-            items = data.epoch_metrics;
-            isEpoch = true;
-            titleEl.innerHTML =
-              '<i class="fas fa-chart-line mr-2 text-blue-600"></i> Evaluasi per Epoch';
-          } else if (
-            data.fold_metrics &&
-            Array.isArray(data.fold_metrics) &&
-            data.fold_metrics.length > 0
-          ) {
-            items = data.fold_metrics;
-            isEpoch = false;
-            titleEl.innerHTML =
-              '<i class="fas fa-chart-line mr-2 text-blue-600"></i> Evaluasi per Fold (Cross-Validation)';
-          } else {
-            section.classList.add("hidden");
-            return;
-          }
+            // Cari di trainingData.metrics (diperbaiki)
+            const m = data.metrics || data;
 
-          section.classList.remove("hidden");
-          tbody.innerHTML = "";
+            if (
+              m.epoch_metrics &&
+              Array.isArray(m.epoch_metrics) &&
+              m.epoch_metrics.length > 0
+            ) {
+              items = m.epoch_metrics;
+              isEpoch = true;
+              titleEl.innerHTML =
+                '<i class="fas fa-chart-line mr-2 text-blue-600"></i> Evaluasi per Epoch';
+            } else if (
+              m.fold_metrics &&
+              Array.isArray(m.fold_metrics) &&
+              m.fold_metrics.length > 0
+            ) {
+              items = m.fold_metrics;
+              isEpoch = false;
+              titleEl.innerHTML =
+                '<i class="fas fa-chart-line mr-2 text-blue-600"></i> Evaluasi per Fold (Cross-Validation)';
+            } else {
+              section.classList.add("hidden");
+              return;
+            }
 
-          let totalAcc = 0,
-            totalPrec = 0,
-            totalRec = 0,
-            totalF1 = 0,
-            totalLoss = 0,
-            totalMcc = 0;
-          const n = items.length;
+            section.classList.remove("hidden");
+            tbody.innerHTML = "";
 
-          items.forEach((item, idx) => {
-            const row = tbody.insertRow();
-            const epochOrFold = isEpoch
-              ? `Epoch ${item.epoch || idx + 1}`
-              : `Fold ${item.fold || idx + 1}`;
-            const acc = (item.accuracy * 100).toFixed(2);
-            const prec = (item.precision * 100).toFixed(2);
-            const rec = (item.recall * 100).toFixed(2);
-            const f1 = (item.f1_score * 100).toFixed(2);
-            const loss = item.loss !== undefined ? item.loss.toFixed(4) : "-";
-            const mcc = item.mcc !== undefined ? item.mcc.toFixed(4) : "-";
+            let totalAcc = 0,
+              totalPrec = 0,
+              totalRec = 0,
+              totalF1 = 0,
+              totalLoss = 0,
+              totalMcc = 0;
+            const n = items.length;
 
-            totalAcc += parseFloat(acc);
-            totalPrec += parseFloat(prec);
-            totalRec += parseFloat(rec);
-            totalF1 += parseFloat(f1);
-            if (item.loss !== undefined) totalLoss += item.loss;
-            if (item.mcc !== undefined) totalMcc += item.mcc;
+            items.forEach((item, idx) => {
+              const row = tbody.insertRow();
+              const epochOrFold = isEpoch
+                ? `Epoch ${item.epoch || idx + 1}`
+                : `Fold ${item.fold || idx + 1}`;
+              // gunakan safeToFixed untuk mencegah error
+              const acc = safeToFixed(
+                item.accuracy != null ? item.accuracy * 100 : null,
+                2,
+              );
+              const prec = safeToFixed(
+                item.precision != null ? item.precision * 100 : null,
+                2,
+              );
+              const rec = safeToFixed(
+                item.recall != null ? item.recall * 100 : null,
+                2,
+              );
+              const f1 = safeToFixed(
+                item.f1_score != null ? item.f1_score * 100 : null,
+                2,
+              );
+              const loss = safeToFixed(item.loss, 4);
+              const mcc = safeToFixed(item.mcc, 4);
 
-            row.innerHTML = `
-              <td class="px-4 py-2 border border-gray-200 font-medium">${epochOrFold}</td>
-              <td class="px-4 py-2 border border-gray-200 text-center">${acc}%</td>
-              <td class="px-4 py-2 border border-gray-200 text-center">${prec}%</td>
-              <td class="px-4 py-2 border border-gray-200 text-center">${rec}%</td>
-              <td class="px-4 py-2 border border-gray-200 text-center">${f1}%</td>
-              <td class="px-4 py-2 border border-gray-200 text-center">${loss}</td>
-              <td class="px-4 py-2 border border-gray-200 text-center">${mcc}</td>
+              totalAcc += item.accuracy != null ? item.accuracy * 100 : 0;
+              totalPrec += item.precision != null ? item.precision * 100 : 0;
+              totalRec += item.recall != null ? item.recall * 100 : 0;
+              totalF1 += item.f1_score != null ? item.f1_score * 100 : 0;
+              if (item.loss !== undefined) totalLoss += item.loss;
+              if (item.mcc !== undefined) totalMcc += item.mcc;
+
+              row.innerHTML = `
+                <td class="px-4 py-2 border border-gray-200 font-medium">${epochOrFold}</td>
+                <td class="px-4 py-2 border border-gray-200 text-center">${acc}%</td>
+                <td class="px-4 py-2 border border-gray-200 text-center">${prec}%</td>
+                <td class="px-4 py-2 border border-gray-200 text-center">${rec}%</td>
+                <td class="px-4 py-2 border border-gray-200 text-center">${f1}%</td>
+                <td class="px-4 py-2 border border-gray-200 text-center">${loss}</td>
+                <td class="px-4 py-2 border border-gray-200 text-center">${mcc}</td>
+              `;
+            });
+
+            const avgAcc = (totalAcc / n).toFixed(2);
+            const avgPrec = (totalPrec / n).toFixed(2);
+            const avgRec = (totalRec / n).toFixed(2);
+            const avgF1 = (totalF1 / n).toFixed(2);
+            const avgLoss = (totalLoss / n).toFixed(4);
+            const avgMcc = (totalMcc / n).toFixed(4);
+
+            const avgRow = tbody.insertRow();
+            avgRow.classList.add("bg-gray-100", "font-semibold");
+            avgRow.innerHTML = `
+              <td class="px-4 py-2 border border-gray-200 font-medium">Rata-rata</td>
+              <td class="px-4 py-2 border border-gray-200 text-center">${avgAcc}%</td>
+              <td class="px-4 py-2 border border-gray-200 text-center">${avgPrec}%</td>
+              <td class="px-4 py-2 border border-gray-200 text-center">${avgRec}%</td>
+              <td class="px-4 py-2 border border-gray-200 text-center">${avgF1}%</td>
+              <td class="px-4 py-2 border border-gray-200 text-center">${avgLoss}</td>
+              <td class="px-4 py-2 border border-gray-200 text-center">${avgMcc}</td>
             `;
-          });
-
-          const avgAcc = (totalAcc / n).toFixed(2);
-          const avgPrec = (totalPrec / n).toFixed(2);
-          const avgRec = (totalRec / n).toFixed(2);
-          const avgF1 = (totalF1 / n).toFixed(2);
-          const avgLoss = (totalLoss / n).toFixed(4);
-          const avgMcc = (totalMcc / n).toFixed(4);
-
-          const avgRow = tbody.insertRow();
-          avgRow.classList.add("bg-gray-100", "font-semibold");
-          avgRow.innerHTML = `
-            <td class="px-4 py-2 border border-gray-200 font-medium">Rata-rata</td>
-            <td class="px-4 py-2 border border-gray-200 text-center">${avgAcc}%</td>
-            <td class="px-4 py-2 border border-gray-200 text-center">${avgPrec}%</td>
-            <td class="px-4 py-2 border border-gray-200 text-center">${avgRec}%</td>
-            <td class="px-4 py-2 border border-gray-200 text-center">${avgF1}%</td>
-            <td class="px-4 py-2 border border-gray-200 text-center">${avgLoss}</td>
-            <td class="px-4 py-2 border border-gray-200 text-center">${avgMcc}</td>
-          `;
+          } catch (e) {
+            console.error("Error in renderEpochFoldTable:", e);
+            // jangan tampilkan error ke user, cukup sembunyikan section
+            const section = document.getElementById("epochFoldSection");
+            if (section) section.classList.add("hidden");
+          }
         }
 
         // ========== TABEL STABILITAS PERFORMA (DATA ASLI DARI BACKEND) ==========
         function renderStabilityTable() {
-          const section = document.getElementById("stabilitySection");
-          const tbody = document.getElementById("stabilityTableBody");
-          if (!section || !tbody) return;
+          try {
+            const section = document.getElementById("stabilitySection");
+            const tbody = document.getElementById("stabilityTableBody");
+            if (!section || !tbody) return;
 
-          // Ambil data fold_metrics dari hasil training
-          const metricsData = trainingData?.metrics || {};
-          const foldMetrics = metricsData.fold_metrics;
-          if (
-            !foldMetrics ||
-            !Array.isArray(foldMetrics) ||
-            foldMetrics.length === 0
-          ) {
-            // Jika tidak ada data fold (misal percentage split), sembunyikan tabel
-            section.style.display = "none";
-            return;
+            // Ambil data fold_metrics dari hasil training
+            const metricsData = trainingData?.metrics || {};
+            const foldMetrics = metricsData.fold_metrics;
+            if (
+              !foldMetrics ||
+              !Array.isArray(foldMetrics) ||
+              foldMetrics.length === 0
+            ) {
+              // Jika tidak ada data fold (misal percentage split), sembunyikan tabel
+              section.style.display = "none";
+              return;
+            }
+
+            section.style.display = "block";
+            tbody.innerHTML = "";
+
+            let sumAcc = 0,
+              sumPrec = 0,
+              sumRec = 0,
+              sumF1 = 0,
+              sumMcc = 0,
+              sumAuc = 0;
+            const n = foldMetrics.length;
+
+            foldMetrics.forEach((f) => {
+              const row = tbody.insertRow();
+              // gunakan safeToFixed
+              const acc = safeToFixed(
+                f.accuracy != null ? f.accuracy * 100 : null,
+                2,
+              );
+              const prec = safeToFixed(
+                f.precision != null ? f.precision * 100 : null,
+                2,
+              );
+              const rec = safeToFixed(
+                f.recall != null ? f.recall * 100 : null,
+                2,
+              );
+              const f1 = safeToFixed(
+                f.f1_score != null ? f.f1_score * 100 : null,
+                2,
+              );
+              const mcc = safeToFixed(f.mcc, 4);
+              const roc_auc = safeToFixed(
+                f.roc_auc != null ? f.roc_auc * 100 : null,
+                2,
+              );
+
+              sumAcc += f.accuracy != null ? f.accuracy * 100 : 0;
+              sumPrec += f.precision != null ? f.precision * 100 : 0;
+              sumRec += f.recall != null ? f.recall * 100 : 0;
+              sumF1 += f.f1_score != null ? f.f1_score * 100 : 0;
+              if (f.mcc != null) sumMcc += f.mcc;
+              if (f.roc_auc != null) sumAuc += f.roc_auc;
+
+              row.innerHTML = `
+            <td class="px-4 py-2 border border-gray-200 font-medium">Fold ${f.fold || ""}</td>
+            <td class="px-4 py-2 border border-gray-200 text-center">${acc}%</td>
+            <td class="px-4 py-2 border border-gray-200 text-center">${prec}%</td>
+            <td class="px-4 py-2 border border-gray-200 text-center">${rec}%</td>
+            <td class="px-4 py-2 border border-gray-200 text-center">${f1}%</td>
+            <td class="px-4 py-2 border border-gray-200 text-center">${mcc}</td>
+            <td class="px-4 py-2 border border-gray-200 text-center">${roc_auc}%</td>
+          `;
+            });
+
+            const avgAcc = (sumAcc / n).toFixed(2);
+            const avgPrec = (sumPrec / n).toFixed(2);
+            const avgRec = (sumRec / n).toFixed(2);
+            const avgF1 = (sumF1 / n).toFixed(2);
+            const avgMcc = (sumMcc / n).toFixed(4);
+            const avgAuc = (sumAuc / n).toFixed(2);
+
+            const avgRow = tbody.insertRow();
+            avgRow.classList.add("bg-gray-100", "font-semibold");
+            avgRow.innerHTML = `
+          <td class="px-4 py-2 border border-gray-200 font-medium">Rata‑rata</td>
+          <td class="px-4 py-2 border border-gray-200 text-center">${avgAcc}%</td>
+          <td class="px-4 py-2 border border-gray-200 text-center">${avgPrec}%</td>
+          <td class="px-4 py-2 border border-gray-200 text-center">${avgRec}%</td>
+          <td class="px-4 py-2 border border-gray-200 text-center">${avgF1}%</td>
+          <td class="px-4 py-2 border border-gray-200 text-center">${avgMcc}</td>
+          <td class="px-4 py-2 border border-gray-200 text-center">${avgAuc}%</td>
+      `;
+          } catch (e) {
+            console.error("Error in renderStabilityTable:", e);
+            const section = document.getElementById("stabilitySection");
+            if (section) section.style.display = "none";
           }
-
-          section.style.display = "block";
-          tbody.innerHTML = "";
-
-          let sumAcc = 0,
-            sumPrec = 0,
-            sumRec = 0,
-            sumF1 = 0,
-            sumMcc = 0,
-            sumAuc = 0;
-          const n = foldMetrics.length;
-
-          foldMetrics.forEach((f) => {
-            const row = tbody.insertRow();
-            const acc =
-              f.accuracy !== undefined ? (f.accuracy * 100).toFixed(2) : "-";
-            const prec =
-              f.precision !== undefined ? (f.precision * 100).toFixed(2) : "-";
-            const rec =
-              f.recall !== undefined ? (f.recall * 100).toFixed(2) : "-";
-            const f1 =
-              f.f1_score !== undefined ? (f.f1_score * 100).toFixed(2) : "-";
-            const mcc = f.mcc !== undefined ? f.mcc.toFixed(4) : "-";
-            const roc_auc =
-              f.roc_auc !== undefined ? (f.roc_auc * 100).toFixed(2) : "-";
-
-            sumAcc += f.accuracy * 100;
-            sumPrec += f.precision * 100;
-            sumRec += f.recall * 100;
-            sumF1 += f.f1_score * 100;
-            if (f.mcc !== undefined) sumMcc += f.mcc;
-            if (f.roc_auc !== undefined) sumAuc += f.roc_auc;
-
-            row.innerHTML = `
-          <td class="px-4 py-2 border border-gray-200 font-medium">Fold ${f.fold || ""}</td>
-          <td class="px-4 py-2 border border-gray-200 text-center">${acc}%</td>
-          <td class="px-4 py-2 border border-gray-200 text-center">${prec}%</td>
-          <td class="px-4 py-2 border border-gray-200 text-center">${rec}%</td>
-          <td class="px-4 py-2 border border-gray-200 text-center">${f1}%</td>
-          <td class="px-4 py-2 border border-gray-200 text-center">${mcc}</td>
-          <td class="px-4 py-2 border border-gray-200 text-center">${roc_auc}%</td>
-        `;
-          });
-
-          const avgAcc = (sumAcc / n).toFixed(2);
-          const avgPrec = (sumPrec / n).toFixed(2);
-          const avgRec = (sumRec / n).toFixed(2);
-          const avgF1 = (sumF1 / n).toFixed(2);
-          const avgMcc = (sumMcc / n).toFixed(4);
-          const avgAuc = (sumAuc / n).toFixed(2);
-
-          const avgRow = tbody.insertRow();
-          avgRow.classList.add("bg-gray-100", "font-semibold");
-          avgRow.innerHTML = `
-        <td class="px-4 py-2 border border-gray-200 font-medium">Rata‑rata</td>
-        <td class="px-4 py-2 border border-gray-200 text-center">${avgAcc}%</td>
-        <td class="px-4 py-2 border border-gray-200 text-center">${avgPrec}%</td>
-        <td class="px-4 py-2 border border-gray-200 text-center">${avgRec}%</td>
-        <td class="px-4 py-2 border border-gray-200 text-center">${avgF1}%</td>
-        <td class="px-4 py-2 border border-gray-200 text-center">${avgMcc}</td>
-        <td class="px-4 py-2 border border-gray-200 text-center">${avgAuc}%</td>
-    `;
         }
 
         // ========== FETCH DATA DARI API ==========
@@ -797,172 +868,194 @@
 
             metrics = trainingData.metrics || {};
 
-            if (metrics.confusion_matrix) matrix = metrics.confusion_matrix;
-            else matrix = [];
-            if (metrics.class_labels) labels = metrics.class_labels;
-            else
-              labels = [
-                "Senang",
-                "Percaya",
-                "Terkejut",
-                "Netral",
-                "Takut",
-                "Sedih",
-                "Marah",
-              ];
+            // amankan pengisian matrix dan labels
+            matrix =
+              metrics.confusion_matrix &&
+              Array.isArray(metrics.confusion_matrix)
+                ? metrics.confusion_matrix
+                : [];
+            labels =
+              metrics.class_labels && Array.isArray(metrics.class_labels)
+                ? metrics.class_labels
+                : [
+                    "Senang",
+                    "Percaya",
+                    "Terkejut",
+                    "Netral",
+                    "Takut",
+                    "Sedih",
+                    "Marah",
+                  ];
 
             drawHeatmap();
             populateMetricsTable();
-            renderEpochFoldTable(trainingData);
             renderStabilityTable();
           } catch (error) {
-            console.error(error);
+            console.error("Error loading training detail:", error);
             alert("Gagal memuat detail training: " + error.message);
           }
         }
 
         function populateMetricsTable() {
-          const tbody = document.getElementById("metricsTableBody");
-          tbody.innerHTML = "";
+          try {
+            const tbody = document.getElementById("metricsTableBody");
+            tbody.innerHTML = "";
 
-          const acc = metrics.accuracy?.toFixed(4) || "-";
-          const prec = metrics.precision?.toFixed(4) || "-";
-          const rec = metrics.recall?.toFixed(4) || "-";
-          const f1 = metrics.f1_score?.toFixed(4) || "-";
+            // amankan akses .toFixed()
+            const acc = safeToFixed(metrics.accuracy, 4);
+            const prec = safeToFixed(metrics.precision, 4);
+            const rec = safeToFixed(metrics.recall, 4);
+            const f1 = safeToFixed(metrics.f1_score, 4);
 
-          let calc = null;
-          if (matrix.length > 0 && labels.length > 0) {
-            calc = calculateMetricsFromCM(matrix, labels);
-          }
+            let calc = null;
+            if (matrix.length > 0 && labels.length > 0) {
+              calc = calculateMetricsFromCM(matrix, labels);
+            }
 
-          const rows = [
-            ["Akurasi", acc],
-            ["Presisi (Weighted)", prec],
-            ["Recall (Weighted)", rec],
-            ["F1-Score (Weighted)", f1],
-          ];
+            const rows = [
+              ["Akurasi", acc],
+              ["Presisi (Weighted)", prec],
+              ["Recall (Weighted)", rec],
+              ["F1-Score (Weighted)", f1],
+            ];
 
-          if (calc) {
-            rows.push(
-              ["Presisi (Macro)", calc.macro_precision.toFixed(4)],
-              ["Recall (Macro)", calc.macro_recall.toFixed(4)],
-              ["F1-Score (Macro)", calc.macro_f1.toFixed(4)],
-              ["Matthews Correlation Coefficient (MCC)", calc.mcc.toFixed(4)],
-            );
-          }
-          rows.push(["ROC-AUC (Macro)", "- (tidak dihitung)"]);
+            if (calc) {
+              rows.push(
+                ["Presisi (Macro)", safeToFixed(calc.macro_precision, 4)],
+                ["Recall (Macro)", safeToFixed(calc.macro_recall, 4)],
+                ["F1-Score (Macro)", safeToFixed(calc.macro_f1, 4)],
+                [
+                  "Matthews Correlation Coefficient (MCC)",
+                  safeToFixed(calc.mcc, 4),
+                ],
+              );
+            }
+            rows.push(["ROC-AUC (Macro)", "- (tidak dihitung)"]);
 
-          for (let [name, value] of rows) {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-              <td class="px-4 py-2 border border-gray-200 font-medium">${name}</td>
-              <td class="px-4 py-2 border border-gray-200">${value}</td>
-            `;
-            tbody.appendChild(tr);
+            for (let [name, value] of rows) {
+              const tr = document.createElement("tr");
+              tr.innerHTML = `
+                <td class="px-4 py-2 border border-gray-200 font-medium">${name}</td>
+                <td class="px-4 py-2 border border-gray-200">${value}</td>
+              `;
+              tbody.appendChild(tr);
+            }
+          } catch (e) {
+            console.error("Error in populateMetricsTable:", e);
           }
         }
 
         // DRAW HEATMAP
         function drawHeatmap() {
-          canvas = document.getElementById("confusionHeatmap");
-          if (!canvas) return;
-          if (!matrix.length || !labels.length) {
-            console.warn("Data matrix atau labels kosong");
-            return;
-          }
-          ctx = canvas.getContext("2d");
-          size = canvas.width;
-          const gridSize = size - marginLeft - marginRight;
-          cellSize = gridSize / matrix.length;
-          const maxVal = Math.max(...matrix.flat());
+          try {
+            canvas = document.getElementById("confusionHeatmap");
+            if (!canvas) return;
+            // amankan pengecekan
+            if (
+              !Array.isArray(matrix) ||
+              matrix.length === 0 ||
+              !Array.isArray(labels) ||
+              labels.length === 0
+            ) {
+              console.warn("Data matrix atau labels kosong");
+              return;
+            }
+            ctx = canvas.getContext("2d");
+            size = canvas.width;
+            const gridSize = size - marginLeft - marginRight;
+            cellSize = gridSize / matrix.length;
+            const maxVal = Math.max(...matrix.flat());
 
-          ctx.clearRect(0, 0, size, size);
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(0, 0, size, size);
+            ctx.clearRect(0, 0, size, size);
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, size, size);
 
-          for (let i = 0; i < matrix.length; i++) {
-            for (let j = 0; j < matrix[i].length; j++) {
-              const val = matrix[i][j];
-              const intensity = maxVal > 0 ? val / maxVal : 0;
-              ctx.fillStyle = getColor(intensity);
-              ctx.fillRect(
-                marginLeft + j * cellSize,
-                marginTop + i * cellSize,
-                cellSize,
-                cellSize,
+            for (let i = 0; i < matrix.length; i++) {
+              for (let j = 0; j < matrix[i].length; j++) {
+                const val = matrix[i][j];
+                const intensity = maxVal > 0 ? val / maxVal : 0;
+                ctx.fillStyle = getColor(intensity);
+                ctx.fillRect(
+                  marginLeft + j * cellSize,
+                  marginTop + i * cellSize,
+                  cellSize,
+                  cellSize,
+                );
+                ctx.fillStyle = intensity > 0.65 ? "white" : "#1f2937";
+                ctx.font = `bold ${Math.max(12, cellSize * 0.28)}px "Segoe UI", system-ui`;
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(
+                  val,
+                  marginLeft + j * cellSize + cellSize / 2,
+                  marginTop + i * cellSize + cellSize / 2,
+                );
+              }
+            }
+
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 1.5;
+            for (let i = 0; i <= matrix.length; i++) {
+              ctx.beginPath();
+              ctx.moveTo(marginLeft + i * cellSize, marginTop);
+              ctx.lineTo(
+                marginLeft + i * cellSize,
+                marginTop + matrix.length * cellSize,
               );
-              ctx.fillStyle = intensity > 0.65 ? "white" : "#1f2937";
-              ctx.font = `bold ${Math.max(12, cellSize * 0.28)}px "Segoe UI", system-ui`;
-              ctx.textAlign = "center";
-              ctx.textBaseline = "middle";
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.moveTo(marginLeft, marginTop + i * cellSize);
+              ctx.lineTo(
+                marginLeft + matrix.length * cellSize,
+                marginTop + i * cellSize,
+              );
+              ctx.stroke();
+            }
+
+            ctx.fillStyle = "#1f2937";
+            ctx.font = '13px "Segoe UI", system-ui';
+            ctx.textAlign = "right";
+            ctx.textBaseline = "middle";
+            for (let i = 0; i < labels.length; i++) {
               ctx.fillText(
-                val,
-                marginLeft + j * cellSize + cellSize / 2,
+                labels[i],
+                marginLeft - 10,
                 marginTop + i * cellSize + cellSize / 2,
               );
             }
-          }
 
-          ctx.strokeStyle = "#ffffff";
-          ctx.lineWidth = 1.5;
-          for (let i = 0; i <= matrix.length; i++) {
-            ctx.beginPath();
-            ctx.moveTo(marginLeft + i * cellSize, marginTop);
-            ctx.lineTo(
-              marginLeft + i * cellSize,
-              marginTop + matrix.length * cellSize,
-            );
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(marginLeft, marginTop + i * cellSize);
-            ctx.lineTo(
-              marginLeft + matrix.length * cellSize,
-              marginTop + i * cellSize,
-            );
-            ctx.stroke();
-          }
-
-          ctx.fillStyle = "#1f2937";
-          ctx.font = '13px "Segoe UI", system-ui';
-          ctx.textAlign = "right";
-          ctx.textBaseline = "middle";
-          for (let i = 0; i < labels.length; i++) {
-            ctx.fillText(
-              labels[i],
-              marginLeft - 10,
-              marginTop + i * cellSize + cellSize / 2,
-            );
-          }
-
-          ctx.save();
-          ctx.font = '13px "Segoe UI", system-ui';
-          ctx.textAlign = "left";
-          ctx.textBaseline = "middle";
-          for (let i = 0; i < labels.length; i++) {
-            const x = marginLeft + i * cellSize + cellSize / 2;
-            const y = marginTop + matrix.length * cellSize + 20;
             ctx.save();
-            ctx.translate(x, y);
-            ctx.rotate(-Math.PI / 5);
-            ctx.fillStyle = "#1f2937";
-            ctx.fillText(labels[i], 0, 0);
+            ctx.font = '13px "Segoe UI", system-ui';
+            ctx.textAlign = "left";
+            ctx.textBaseline = "middle";
+            for (let i = 0; i < labels.length; i++) {
+              const x = marginLeft + i * cellSize + cellSize / 2;
+              const y = marginTop + matrix.length * cellSize + 20;
+              ctx.save();
+              ctx.translate(x, y);
+              ctx.rotate(-Math.PI / 5);
+              ctx.fillStyle = "#1f2937";
+              ctx.fillText(labels[i], 0, 0);
+              ctx.restore();
+            }
             ctx.restore();
-          }
-          ctx.restore();
 
-          ctx.font = 'bold 14px "Segoe UI", system-ui';
-          ctx.fillStyle = "#374151";
-          ctx.textAlign = "center";
-          ctx.fillText(
-            "Prediksi",
-            size / 2 + marginLeft / 2,
-            marginTop + matrix.length * cellSize + 60,
-          );
-          ctx.save();
-          ctx.translate(20, marginTop + (matrix.length * cellSize) / 2);
-          ctx.rotate(-Math.PI / 2);
-          ctx.fillText("Aktual", 0, 0);
-          ctx.restore();
+            ctx.font = 'bold 14px "Segoe UI", system-ui';
+            ctx.fillStyle = "#374151";
+            ctx.textAlign = "center";
+            ctx.fillText(
+              "Prediksi",
+              size / 2 + marginLeft / 2,
+              marginTop + matrix.length * cellSize + 60,
+            );
+            ctx.save();
+            ctx.translate(20, marginTop + (matrix.length * cellSize) / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText("Aktual", 0, 0);
+            ctx.restore();
+          } catch (e) {
+            console.error("Error drawing heatmap:", e);
+          }
         }
 
         function createTooltip() {
