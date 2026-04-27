@@ -115,11 +115,10 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             if 'kalimat' not in df.columns or 'emotion' not in df.columns:
                 raise ValueError("Dataset harus memiliki kolom 'kalimat' dan 'emotion'")
 
-            # Kolom has_idiom opsional – jika tidak ada, tetap bisa berjalan hanya dengan emosi
+            # Kolom has_idiom opsional
             has_idiom_col = 'has_idiom' in df.columns
 
             def determine_label(row):
-                # Jika kolom has_idiom tersedia, gunakan itu
                 if has_idiom_col:
                     is_idiom = row['has_idiom']
                     if isinstance(is_idiom, str):
@@ -128,25 +127,17 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                         is_idiom = bool(is_idiom)
                     if not is_idiom:
                         return 'non_idiom'
-                # Jika ada idiom (atau tidak ada kolom has_idiom), gunakan emosi
                 emo = row['emotion']
                 if pd.isna(emo):
-                    # Jika tidak ada has_idiom dan emosi NaN, tetap beri label 'non_idiom'
                     return 'non_idiom'
                 emo_clean = clean_and_map_emotion(emo)
                 if emo_clean is None:
-                    # Emosi tidak dikenal, anggap non_idiom
                     return 'non_idiom'
                 return emo_clean
 
             df['label'] = df.apply(determine_label, axis=1)
+            df = df[df['label'] != 'invalid']
 
-            # Hapus data dengan label yang tidak diinginkan (seharusnya tidak ada)
-            before = len(df)
-            df = df[df['label'] != 'invalid']  # jika kita definisikan invalid, tapi tidak ada
-            after = len(df)
-
-            # Hitung distribusi
             label_counts = df['label'].value_counts()
             log(f"Distribusi label: {dict(label_counts)}", training_id)
 
@@ -164,6 +155,7 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             num_classes = len(le.classes_)
             log(f"Label encoded: {le.classes_}", training_id)
 
+            # ========== 2. Baca parameter dari config ==========
             params = config.params
 
             # --- Parameter umum ---
@@ -176,7 +168,7 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             shuffle = to_bool(general.get('shuffle', 'yes'))
             stratified = to_bool(general.get('stratified', 'yes'))
 
-                        # ========== 2. Split Awal (Training vs Hold‑out) ==========
+            # --- Split awal (Training vs Hold‑out) ---
             split_config = params.get('split', {})
             train_pct = split_config.get('train', 80)
             test_pct = split_config.get('test', 20)
@@ -193,7 +185,6 @@ def train_indobert_knn(app, training_id, config, dataset_path):
 
             log(f"Split data: Training={len(X_train_texts)} sampel, Hold‑out={len(X_holdout_texts)} sampel", training_id)
 
-            # Simpan hold‑out set untuk testing nanti
             holdout_df = pd.DataFrame({
                 'kalimat': X_holdout_texts,
                 'label': le.inverse_transform(y_holdout)
@@ -205,15 +196,12 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             holdout_df.to_csv(holdout_path, index=False)
             log(f"Hold‑out set disimpan di {holdout_path}", training_id)
 
-            # Mulai sekarang hanya gunakan data training
             texts = X_train_texts
             y_encoded = y_train
             total_samples = len(texts)
 
-
-            # (split_config sudah dibaca di atas, jadi tidak perlu dibaca ulang)
+            # Tentukan tipe split
             split_type = split_config.get('type', 'crossval')
-            # Jika epoch‑based, perlakukan sebagai percentage split
             if split_type == 'epoch':
                 split_type = 'percentage'
             cv_folds = int(split_config.get('crossval', {}).get('folds', 5))
@@ -271,7 +259,6 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             hybrid_method = hybrid_params.get('method', 'none')
             hybrid_alpha = float(hybrid_params.get('alpha', 0.7))
 
-            # Tampilkan dengan jelas metode yang digunakan
             log("=" * 60, training_id)
             log(f"KONFIGURASI HYBRID: method = '{hybrid_method}', alpha = {hybrid_alpha}", training_id)
             log("=" * 60, training_id)
@@ -285,6 +272,8 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             log(f"Device: {device}", training_id)
 
             tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+            epoch_metrics_list = []   # untuk menampung metrik per epoch
 
             # ========== 4. Fine‑Tuning (jika diaktifkan) ==========
             if do_finetune:
@@ -338,6 +327,33 @@ def train_indobert_knn(app, training_id, config, dataset_path):
 
                     avg_loss = total_loss / len(train_loader)
                     log(f"Epoch {epoch+1}/{ft_epochs} - Loss: {avg_loss:.4f}", training_id)
+
+                    # Evaluasi metrik per epoch
+                    model.eval()
+                    y_true_epoch, y_pred_epoch = [], []
+                    with torch.no_grad():
+                        for batch in val_loader:
+                            input_ids = batch['input_ids'].to(device)
+                            attention_mask = batch['attention_mask'].to(device)
+                            labels = batch['labels'].to(device)
+                            logits = model(input_ids, attention_mask)
+                            preds = torch.argmax(logits, dim=1)
+                            y_true_epoch.extend(labels.cpu().numpy())
+                            y_pred_epoch.extend(preds.cpu().numpy())
+                    acc_epoch = accuracy_score(y_true_epoch, y_pred_epoch)
+                    prec_epoch = precision_score(y_true_epoch, y_pred_epoch, average='weighted', zero_division=0)
+                    rec_epoch = recall_score(y_true_epoch, y_pred_epoch, average='weighted', zero_division=0)
+                    f1_epoch = f1_score(y_true_epoch, y_pred_epoch, average='weighted')
+                    epoch_metrics_list.append({
+                        'epoch': epoch + 1,
+                        'accuracy': round(acc_epoch, 4),
+                        'precision': round(prec_epoch, 4),
+                        'recall': round(rec_epoch, 4),
+                        'f1_score': round(f1_epoch, 4),
+                        'loss': round(avg_loss, 4)
+                    })
+                    model.train()
+
                     training.progress = 10 + int((epoch+1) / ft_epochs * 20)
                     training.metrics['progress_message'] = f'Fine‑Tuning epoch {epoch+1}/{ft_epochs}'
                     db.session.commit()
@@ -361,7 +377,7 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                 for i in range(0, total_samples, batch_size):
                     batch_texts = texts[i:i+batch_size]
                     encoded = tokenizer(batch_texts, padding=True, truncation=True,
-                    max_length=max_seq_length, return_tensors='pt').to(device)
+                                        max_length=max_seq_length, return_tensors='pt').to(device)
                     if do_finetune:
                         outputs = ft_model.bert(**encoded)
                     else:
@@ -423,7 +439,6 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                 algorithm=algorithm, leaf_size=leaf_size, p=p, n_jobs=-1
             )
 
-            # Evaluasi
             if split_type == 'percentage':
                 test_size = float(split_config.get('test', 20)) / 100.0
                 X_train, X_test, y_train, y_test = train_test_split(
@@ -437,11 +452,9 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                 confidence = 1.0 / (1.0 + mean_dist)
                 confidence = confidence.reshape(-1, 1)
 
-                # Hitung KNN murni
                 y_pred_knn_only = np.argmax(proba_knn, axis=1)
                 acc_knn_only = accuracy_score(y_test, y_pred_knn_only)
 
-                # Hybrid
                 if hybrid_method == 'confidence':
                     final_scores = proba_knn * confidence
                 elif hybrid_method == 'weighted':
@@ -467,7 +480,8 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                     'class_labels': le.classes_.tolist(),
                     'hybrid_method': hybrid_method,
                     'use_umap': use_umap,
-                    'finetuned': do_finetune
+                    'finetuned': do_finetune,
+                    'epoch_metrics': epoch_metrics_list
                 }
                 knn.fit(X, y_encoded)
             else:
@@ -515,7 +529,8 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                         'hybrid_method': hybrid_method,
                         'use_umap': use_umap,
                         'finetuned': do_finetune,
-                        'eval_method': 'percentage_split_fallback'
+                        'eval_method': 'percentage_split_fallback',
+                        'epoch_metrics': epoch_metrics_list
                     }
                     knn.fit(X, y_encoded)
                 else:
@@ -543,7 +558,6 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                     confidence = np.vstack(conf_list)
                     y_true_all = np.concatenate(y_true_list)
 
-                    # Hitung KNN murni
                     y_pred_knn_only = np.argmax(proba_knn, axis=1)
                     acc_knn_only = accuracy_score(y_true_all, y_pred_knn_only)
 
@@ -572,7 +586,8 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                         'class_labels': le.classes_.tolist(),
                         'hybrid_method': hybrid_method,
                         'use_umap': use_umap,
-                        'finetuned': do_finetune
+                        'finetuned': do_finetune,
+                        'epoch_metrics': epoch_metrics_list
                     }
                     knn.fit(X, y_encoded)
 
