@@ -146,7 +146,7 @@
           <div
             class="bg-white p-4 rounded-xl shadow-md border-l-4 border-green-500"
           >
-            <p class="text-sm text-gray-500 uppercase">Idiom Count</p>
+            <p class="text-sm text-gray-500 uppercase">Idiom in dictionary</p>
             <p class="text-2xl font-bold text-gray-800">200</p>
             <p class="text-xs text-gray-400 mt-1">Active idiom dictionary</p>
           </div>
@@ -180,18 +180,37 @@
             </div>
           </div>
 
-          <!-- Pie Chart: Idiom vs Non-Idiom -->
-          <div class="bg-white p-4 rounded-xl shadow-md">
+          <!-- Pie Chart: Idiom vs Non-Idiom + Ringkasan Angka -->
+          <div class="bg-white p-4 rounded-xl shadow-md flex flex-col">
             <h2 class="font-semibold text-gray-700 mb-2">
               Sentence Distribution (Idiom vs Non-Idiom)
             </h2>
-            <div class="h-64 flex items-center justify-center">
-              <canvas id="idiomPieChart"></canvas>
+            <div
+              class="flex flex-col md:flex-row items-center justify-center gap-4 h-64"
+            >
+              <div class="w-64 h-64">
+                <canvas id="idiomPieChart"></canvas>
+              </div>
+              <!-- Informasi tambahan langsung terlihat -->
+              <div
+                class="bg-gray-50 p-4 rounded-lg w-48 text-center shadow-inner"
+              >
+                <p class="text-sm text-gray-600 font-medium">Idiom</p>
+                <p class="text-2xl font-bold text-blue-600">3,210</p>
+                <p class="text-xs text-gray-500">(59.2%)</p>
+                <hr class="my-2" />
+                <p class="text-sm text-gray-600 font-medium">Non‑idiom</p>
+                <p class="text-2xl font-bold text-gray-600">2,211</p>
+                <p class="text-xs text-gray-500">(40.8%)</p>
+                <hr class="my-2" />
+                <p class="text-sm font-medium text-gray-700">Total</p>
+                <p class="text-xl font-bold">5,421</p>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Model Readiness Status (ADDED) -->
+        <!-- Model Readiness Status -->
         <div class="mt-6 grid grid-cols-2 gap-4">
           <div
             class="bg-white p-3 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between"
@@ -225,7 +244,7 @@
           </div>
         </div>
 
-        <!-- GANTI BAGIAN "Current Best Model" DENGAN INI -->
+        <!-- Best Model Cards -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           <!-- Card: IndoBERT-KNN -->
           <div
@@ -235,8 +254,6 @@
               <h3 class="font-semibold text-gray-700 text-lg">
                 <i class="fas fa-robot text-blue-500 mr-2"></i>Best IndoBERT-KNN
               </h3>
-              <span
-              >
             </div>
             <div class="grid grid-cols-4 gap-2 text-center">
               <div>
@@ -260,7 +277,10 @@
               class="mt-3 flex justify-between text-xs text-gray-400 border-t pt-2"
             >
               <span><i class="far fa-clock mr-1"></i>14 Apr 2026</span>
-              <span><i class="fas fa-tachometer-alt mr-1"></i>5 menit 13 detik</span>
+              <span
+                ><i class="fas fa-tachometer-alt mr-1"></i>5 menit 13
+                detik</span
+              >
             </div>
           </div>
 
@@ -296,7 +316,9 @@
               class="mt-3 flex justify-between text-xs text-gray-400 border-t pt-2"
             >
               <span><i class="far fa-clock mr-1"></i>12 Apr 2026</span>
-              <span><i class="fas fa-tachometer-alt mr-1"></i>1 menit 2 detik</span>
+              <span
+                ><i class="fas fa-tachometer-alt mr-1"></i>1 menit 2 detik</span
+              >
             </div>
           </div>
         </div>
@@ -316,35 +338,40 @@
       const dataCollectionIcon = document.getElementById("dataCollectionIcon");
       toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
 
-      // Bar Chart (English labels)
+      // Data untuk Bar Chart
+      const emotionLabels = [
+        "Happy",
+        "Trust",
+        "Surprise",
+        "Neutral",
+        "Anger",
+        "Sadness",
+        "Fear",
+        "No Idiom",
+      ];
+      const sentenceCounts = [245, 180, 120, 600, 112, 150, 95, 2211];
+      const barColors = [
+        "#10b981",
+        "#3b82f6",
+        "#f59e0b",
+        "#6b7280",
+        "#ef4444",
+        "#8b5cf6",
+        "#ec489a",
+        "#d1d5db",
+      ];
+
+      // Bar Chart dengan nilai langsung di atas bar (afterDraw)
       const ctxBar = document.getElementById("emotionChart").getContext("2d");
-      new Chart(ctxBar, {
+      const barChart = new Chart(ctxBar, {
         type: "bar",
         data: {
-          labels: [
-            "Happy",
-            "Trust",
-            "Surprise",
-            "Neutral",
-            "Anger",
-            "Sadness",
-            "Fear",
-            "No Idiom",
-          ],
+          labels: emotionLabels,
           datasets: [
             {
               label: "Sentence Count",
-              data: [245, 180, 120, 600, 112, 150, 95, 2211],
-              backgroundColor: [
-                "#10b981",
-                "#3b82f6",
-                "#f59e0b",
-                "#6b7280",
-                "#ef4444",
-                "#8b5cf6",
-                "#ec489a",
-                "#d1d5db",
-              ],
+              data: sentenceCounts,
+              backgroundColor: barColors,
               borderRadius: 6,
             },
           ],
@@ -357,6 +384,7 @@
               position: "top",
               labels: { boxWidth: 10, font: { size: 11 } },
             },
+            tooltip: { enabled: true }, // tetap aktif namun nilai sudah terlihat
           },
           scales: {
             y: {
@@ -367,14 +395,36 @@
                 font: { size: 11 },
               },
             },
-            x: {
-              ticks: { font: { size: 10 }, maxRotation: 25 },
-            },
+            x: { ticks: { font: { size: 10 }, maxRotation: 25 } },
           },
         },
+        // Plugin afterDraw untuk menampilkan angka di atas bar
+        plugins: [
+          {
+            afterDraw(chart) {
+              const ctx = chart.ctx;
+              chart.data.datasets.forEach((dataset, i) => {
+                const meta = chart.getDatasetMeta(i);
+                if (!meta.hidden) {
+                  meta.data.forEach((element, index) => {
+                    const value = dataset.data[index];
+                    const x = element.x;
+                    const y = element.y - 6;
+                    ctx.save();
+                    ctx.font = "bold 12px 'Segoe UI'";
+                    ctx.fillStyle = "#1f2937";
+                    ctx.textAlign = "center";
+                    ctx.fillText(value, x, y);
+                    ctx.restore();
+                  });
+                }
+              });
+            },
+          },
+        ],
       });
 
-      // Pie Chart (English labels)
+      // Pie Chart (idiom vs non-idiom) - tidak perlu plugin karena sudah ada ringkasan angka di sebelah
       const ctxPie = document.getElementById("idiomPieChart").getContext("2d");
       new Chart(ctxPie, {
         type: "pie",
@@ -392,11 +442,11 @@
           responsive: true,
           maintainAspectRatio: true,
           plugins: {
-            legend: { position: "bottom", labels: { font: { size: 12 } } },
+            legend: { position: "bottom", labels: { font: { size: 11 } } },
             tooltip: {
               callbacks: {
                 label: (ctx) =>
-                  `${ctx.label}: ${ctx.raw} sentences (${(
+                  `${ctx.label}: ${ctx.raw} kalimat (${(
                     (ctx.raw / (3210 + 2211)) *
                     100
                   ).toFixed(1)}%)`,
