@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evaluasi Model - IdiomSense Admin</title>
+    <title>Model Evaluation - IdiomSense Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <style>
         .table-section { margin-bottom: 2rem; }
         .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
@@ -34,7 +35,7 @@
         </div>
         <nav class="p-4">
             <ul class="space-y-1">
-                <li><a href="beranda-admin.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"><i class="fas fa-tachometer-alt w-5"></i><span>Beranda</span></a></li>
+                <li><a href="beranda-admin.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"><i class="fas fa-tachometer-alt w-5"></i><span>Dashboard</span></a></li>
                 <li>
                     <button id="dataCollectionBtn" class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700">
                         <div class="flex items-center space-x-2"><i class="fas fa-database w-5"></i><span>Data Collection</span></div>
@@ -42,50 +43,56 @@
                     </button>
                     <ul id="dataCollectionMenu" class="ml-6 mt-1 space-y-1 hidden">
                         <li><a href="dataset.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-table w-5 mr-2"></i>Dataset</a></li>
-                        <li><a href="kamus-idiom.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-book w-5 mr-2"></i>Kamus Idiom</a></li>
+                        <li><a href="kamus-idiom.html" class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-book w-5 mr-2"></i>Idiom Dictionary</a></li>
                     </ul>
                 </li>
                 <li><a href="preprocessing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-filter w-5"></i><span>Pre-Processing</span></a></li>
                 <li><a href="processing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-brain w-5"></i><span>Processing</span></a></li>
                 <li><a href="testing.html" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"><i class="fas fa-vial w-5"></i><span>Testing</span></a></li>
-                <li><a href="evaluasi.html" class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-chart-simple w-5"></i><span>Evaluasi</span></a></li>
+                <li><a href="evaluasi.html" class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-chart-simple w-5"></i><span>Evaluation</span></a></li>
                 <li class="pt-4 mt-4 border-t"><a href="login.html" class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a></li>
             </ul>
         </nav>
     </aside>
 
     <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">Evaluasi Model</h1>
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Model Evaluation</h1>
 
         <div class="bg-white p-4 rounded-xl shadow-md mb-6">
-            <label for="algoSelect" class="block text-sm font-medium text-gray-700 mb-2">Pilih Algoritma</label>
+            <label for="algoSelect" class="block text-sm font-medium text-gray-700 mb-2">Select Algorithm</label>
             <select id="algoSelect" class="w-full md:w-64 border rounded-lg p-2 focus:ring-2 focus:ring-blue-400">
                 <option value="IndoBERT-KNN+UMAP">IndoBERT‑KNN+UMAP</option>
                 <option value="Lexicon-NB">Naive Bayes‑Lexicon</option>
             </select>
         </div>
 
-        <!-- Tabel Training -->
+        <!-- Training Table (13 columns) -->
         <div class="table-section bg-white p-6 rounded-xl shadow-md">
             <div class="table-header">
-                <h2 class="font-semibold text-gray-700 text-lg">Evaluasi Training</h2>
+                <h2 class="font-semibold text-gray-700 text-lg">Training Evaluation</h2>
                 <div class="relative">
                     <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                    <input type="text" id="trainingSearch" placeholder="Cari..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-64 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+                    <input type="text" id="trainingSearch" placeholder="Search..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-64 focus:ring-2 focus:ring-blue-400 focus:outline-none">
                 </div>
             </div>
             <div class="overflow-x-auto">
-                <table class="min-w-full border border-gray-200">
+                <table class="min-w-full border border-gray-200 text-sm">
                     <thead class="bg-blue-500 text-white">
                         <tr>
-                            <th class="px-4 py-2 border border-blue-400">Nama</th>
+                            <th class="px-4 py-2 border border-blue-400">Name</th>
                             <th class="px-4 py-2 border border-blue-400">Model</th>
-                            <th class="px-4 py-2 border border-blue-400">Akurasi</th>
-                            <th class="px-4 py-2 border border-blue-400">Presisi</th>
-                            <th class="px-4 py-2 border border-blue-400">Recall</th>
-                            <th class="px-4 py-2 border border-blue-400">F1-Score</th>
-                            <th class="px-4 py-2 border border-blue-400">Tanggal</th>
-                            <th class="px-4 py-2 border border-blue-400">Aksi</th>
+                            <th class="px-4 py-2 border border-blue-400">Accuracy (W)</th>
+                            <th class="px-4 py-2 border border-blue-400">Precision (W)</th>
+                            <th class="px-4 py-2 border border-blue-400">Recall (W)</th>
+                            <th class="px-4 py-2 border border-blue-400">F1‑Score (W)</th>
+                            <th class="px-4 py-2 border border-blue-400">Accuracy (M)</th>
+                            <th class="px-4 py-2 border border-blue-400">Precision (M)</th>
+                            <th class="px-4 py-2 border border-blue-400">Recall (M)</th>
+                            <th class="px-4 py-2 border border-blue-400">F1‑Score (M)</th>
+                            <th class="px-4 py-2 border border-blue-400">MCC</th>
+                            <th class="px-4 py-2 border border-blue-400">ROC‑AUC</th>
+                            <th class="px-4 py-2 border border-blue-400">Date</th>
+                            <th class="px-4 py-2 border border-blue-400">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="trainingTableBody"></tbody>
@@ -94,27 +101,33 @@
             <div id="trainingPagination" class="flex justify-center mt-4 space-x-2"></div>
         </div>
 
-        <!-- Tabel Testing -->
+        <!-- Testing Table (13 columns) -->
         <div class="table-section bg-white p-6 rounded-xl shadow-md">
             <div class="table-header">
-                <h2 class="font-semibold text-gray-700 text-lg">Evaluasi Testing</h2>
+                <h2 class="font-semibold text-gray-700 text-lg">Testing Evaluation</h2>
                 <div class="relative">
                     <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                    <input type="text" id="testingSearch" placeholder="Cari..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-64 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+                    <input type="text" id="testingSearch" placeholder="Search..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-64 focus:ring-2 focus:ring-blue-400 focus:outline-none">
                 </div>
             </div>
             <div class="overflow-x-auto">
-                <table class="min-w-full border border-gray-200">
+                <table class="min-w-full border border-gray-200 text-sm">
                     <thead class="bg-green-500 text-white">
                         <tr>
-                            <th class="px-4 py-2 border border-green-400">Nama</th>
+                            <th class="px-4 py-2 border border-green-400">Name</th>
                             <th class="px-4 py-2 border border-green-400">Model</th>
-                            <th class="px-4 py-2 border border-green-400">Akurasi</th>
-                            <th class="px-4 py-2 border border-green-400">Presisi</th>
-                            <th class="px-4 py-2 border border-green-400">Recall</th>
-                            <th class="px-4 py-2 border border-green-400">F1-Score</th>
-                            <th class="px-4 py-2 border border-green-400">Tanggal</th>
-                            <th class="px-4 py-2 border border-green-400">Aksi</th>
+                            <th class="px-4 py-2 border border-green-400">Accuracy (W)</th>
+                            <th class="px-4 py-2 border border-green-400">Precision (W)</th>
+                            <th class="px-4 py-2 border border-green-400">Recall (W)</th>
+                            <th class="px-4 py-2 border border-green-400">F1‑Score (W)</th>
+                            <th class="px-4 py-2 border border-green-400">Accuracy (M)</th>
+                            <th class="px-4 py-2 border border-green-400">Precision (M)</th>
+                            <th class="px-4 py-2 border border-green-400">Recall (M)</th>
+                            <th class="px-4 py-2 border border-green-400">F1‑Score (M)</th>
+                            <th class="px-4 py-2 border border-green-400">MCC</th>
+                            <th class="px-4 py-2 border border-green-400">ROC‑AUC</th>
+                            <th class="px-4 py-2 border border-green-400">Date</th>
+                            <th class="px-4 py-2 border border-green-400">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="testingTableBody"></tbody>
@@ -123,32 +136,46 @@
             <div id="testingPagination" class="flex justify-center mt-4 space-x-2"></div>
         </div>
 
-        <!-- Tabel Comparison + Grafik -->
+        <!-- Comparison Table + Charts (14 columns) -->
         <div class="table-section bg-white p-6 rounded-xl shadow-md">
             <div class="table-header">
-                <h2 class="font-semibold text-gray-700 text-lg">Evaluasi Comparison</h2>
+                <h2 class="font-semibold text-gray-700 text-lg">Comparison Evaluation</h2>
             </div>
             <div class="overflow-x-auto mb-6">
-                <table class="min-w-full border border-gray-200">
+                <table class="min-w-full border border-gray-200 text-sm">
                     <thead class="bg-purple-500 text-white">
                         <tr>
-                            <th class="px-4 py-2 border border-purple-400">Sumber</th>
-                            <th class="px-4 py-2 border border-purple-400">Nama</th>
+                            <th class="px-4 py-2 border border-purple-400">Source</th>
+                            <th class="px-4 py-2 border border-purple-400">Name</th>
                             <th class="px-4 py-2 border border-purple-400">Model</th>
-                            <th class="px-4 py-2 border border-purple-400">Akurasi</th>
-                            <th class="px-4 py-2 border border-purple-400">Presisi</th>
-                            <th class="px-4 py-2 border border-purple-400">Recall</th>
-                            <th class="px-4 py-2 border border-purple-400">F1-Score</th>
-                            <th class="px-4 py-2 border border-purple-400">Tanggal</th>
-                            <th class="px-4 py-2 border border-purple-400">Aksi</th>
+                            <th class="px-4 py-2 border border-purple-400">Accuracy (W)</th>
+                            <th class="px-4 py-2 border border-purple-400">Precision (W)</th>
+                            <th class="px-4 py-2 border border-purple-400">Recall (W)</th>
+                            <th class="px-4 py-2 border border-purple-400">F1‑Score (W)</th>
+                            <th class="px-4 py-2 border border-purple-400">Accuracy (M)</th>
+                            <th class="px-4 py-2 border border-purple-400">Precision (M)</th>
+                            <th class="px-4 py-2 border border-purple-400">Recall (M)</th>
+                            <th class="px-4 py-2 border border-purple-400">F1‑Score (M)</th>
+                            <th class="px-4 py-2 border border-purple-400">MCC</th>
+                            <th class="px-4 py-2 border border-purple-400">ROC‑AUC</th>
+                            <th class="px-4 py-2 border border-purple-400">Date</th>
+                            <th class="px-4 py-2 border border-purple-400">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="comparisonTableBody"></tbody>
                 </table>
             </div>
 
+            <!-- Weighted Chart -->
             <div class="chart-wrapper">
-                <canvas id="comparisonChart"></canvas>
+                <h3 class="text-sm font-semibold text-gray-700 mb-2">Weighted Metrics Comparison</h3>
+                <canvas id="comparisonChartWeighted"></canvas>
+            </div>
+
+            <!-- Macro Chart -->
+            <div class="chart-wrapper">
+                <h3 class="text-sm font-semibold text-gray-700 mb-2">Macro Metrics Comparison</h3>
+                <canvas id="comparisonChartMacro"></canvas>
             </div>
         </div>
     </main>
@@ -156,36 +183,50 @@
 
 <script>
     (function() {
-        // ==================== DATA DUMMY ====================
+        // Dummy data with all metrics
         const dummyTraining = [
-            { id:1, dataset_filename:"dataset_april.csv", algorithm:"IndoBERT‑KNN+UMAP", created_at:"2026-04-20T09:15:00", completed_at:"2026-04-20T09:25:00", status:"completed", metrics:{accuracy:0.852, precision:0.84, recall:0.82, f1_score:0.83}, model_path:"models/model_a.pkl" },
-            { id:2, dataset_filename:"dataset_april.csv", algorithm:"IndoBERT‑KNN+UMAP", created_at:"2026-04-21T14:30:00", completed_at:"2026-04-21T14:45:00", status:"completed", metrics:{accuracy:0.891, precision:0.88, recall:0.87, f1_score:0.875}, model_path:"models/model_b.pkl" },
-            { id:3, dataset_filename:"dataset_maret.csv", algorithm:"IndoBERT‑KNN+UMAP", created_at:"2026-04-22T08:00:00", completed_at:"2026-04-22T08:12:00", status:"completed", metrics:{accuracy:0.823, precision:0.81, recall:0.80, f1_score:0.805}, model_path:null },
-            { id:4, dataset_filename:"dataset_april.csv", algorithm:"IndoBERT‑KNN+UMAP", created_at:"2026-04-23T11:20:00", completed_at:null, status:"running", metrics:{accuracy:0.76, precision:0.74, recall:0.73, f1_score:0.735}, model_path:null }
+            { id:1, dataset_filename:"dataset_april.csv", algorithm:"IndoBERT‑KNN+UMAP", created_at:"2026-04-20T09:15:00", completed_at:"2026-04-20T09:25:00", status:"completed",
+              metrics:{ accuracy:0.852, precision:0.84, recall:0.82, f1_score:0.83,
+                        macro_accuracy:0.80, macro_precision:0.78, macro_recall:0.77, macro_f1_score:0.775, mcc:0.76, roc_auc:0.88 },
+              model_path:"models/model_a.pkl" },
+            { id:2, dataset_filename:"dataset_april.csv", algorithm:"IndoBERT‑KNN+UMAP", created_at:"2026-04-21T14:30:00", completed_at:"2026-04-21T14:45:00", status:"completed",
+              metrics:{ accuracy:0.891, precision:0.88, recall:0.87, f1_score:0.875,
+                        macro_accuracy:0.86, macro_precision:0.85, macro_recall:0.84, macro_f1_score:0.845, mcc:0.83, roc_auc:0.92 },
+              model_path:"models/model_b.pkl" },
+            { id:3, dataset_filename:"dataset_maret.csv", algorithm:"IndoBERT‑KNN+UMAP", created_at:"2026-04-22T08:00:00", completed_at:"2026-04-22T08:12:00", status:"completed",
+              metrics:{ accuracy:0.823, precision:0.81, recall:0.80, f1_score:0.805,
+                        macro_accuracy:0.79, macro_precision:0.78, macro_recall:0.77, macro_f1_score:0.775, mcc:0.75, roc_auc:0.85 },
+              model_path:null },
+            { id:4, dataset_filename:"dataset_april.csv", algorithm:"IndoBERT‑KNN+UMAP", created_at:"2026-04-23T11:20:00", completed_at:null, status:"running",
+              metrics:{ accuracy:0.76, precision:0.74, recall:0.73, f1_score:0.735,
+                        macro_accuracy:0.72, macro_precision:0.71, macro_recall:0.70, macro_f1_score:0.705, mcc:0.68, roc_auc:0.80 },
+              model_path:null }
         ];
 
         const dummyTesting = [
-            { id:10, dataset_filename:"uji_alpha.csv", algorithm:"IndoBERT‑KNN+UMAP", created_at:"2026-04-21T16:00:00", completed_at:"2026-04-21T16:05:00", status:"completed", metrics:{accuracy:0.812, precision:0.80, recall:0.79, f1_score:0.795}, model_path:"models/model_test1.pkl" },
-            { id:11, dataset_filename:"uji_beta.csv", algorithm:"IndoBERT‑KNN+UMAP", created_at:"2026-04-22T09:30:00", completed_at:"2026-04-22T09:35:00", status:"completed", metrics:{accuracy:0.875, precision:0.87, recall:0.86, f1_score:0.865}, model_path:"models/model_test2.pkl" },
-            { id:12, dataset_filename:"uji_gamma.csv", algorithm:"IndoBERT‑KNN+UMAP", created_at:"2026-04-23T15:00:00", completed_at:"2026-04-23T15:04:00", status:"completed", metrics:{accuracy:0.798, precision:0.82, recall:0.77, f1_score:0.794}, model_path:null }
+            { id:10, dataset_filename:"uji_alpha.csv", algorithm:"IndoBERT‑KNN+UMAP", created_at:"2026-04-21T16:00:00", completed_at:"2026-04-21T16:05:00", status:"completed",
+              metrics:{ accuracy:0.812, precision:0.80, recall:0.79, f1_score:0.795,
+                        macro_accuracy:0.78, macro_precision:0.77, macro_recall:0.76, macro_f1_score:0.765, mcc:0.74, roc_auc:0.84 },
+              model_path:"models/model_test1.pkl" },
+            { id:11, dataset_filename:"uji_beta.csv", algorithm:"IndoBERT‑KNN+UMAP", created_at:"2026-04-22T09:30:00", completed_at:"2026-04-22T09:35:00", status:"completed",
+              metrics:{ accuracy:0.875, precision:0.87, recall:0.86, f1_score:0.865,
+                        macro_accuracy:0.84, macro_precision:0.83, macro_recall:0.82, macro_f1_score:0.825, mcc:0.81, roc_auc:0.90 },
+              model_path:"models/model_test2.pkl" },
+            { id:12, dataset_filename:"uji_gamma.csv", algorithm:"IndoBERT‑KNN+UMAP", created_at:"2026-04-23T15:00:00", completed_at:"2026-04-23T15:04:00", status:"completed",
+              metrics:{ accuracy:0.798, precision:0.82, recall:0.77, f1_score:0.794,
+                        macro_accuracy:0.76, macro_precision:0.75, macro_recall:0.74, macro_f1_score:0.745, mcc:0.72, roc_auc:0.82 },
+              model_path:null }
         ];
 
-        // State tabel
         const tables = {
             training: {
-                data: [...dummyTraining],
-                filtered: [],
-                currentPage: 1,
-                rowsPerPage: 5,
+                data: [...dummyTraining], filtered: [], currentPage: 1, rowsPerPage: 5,
                 tbody: document.getElementById('trainingTableBody'),
                 pagination: document.getElementById('trainingPagination'),
                 searchInput: document.getElementById('trainingSearch')
             },
             testing: {
-                data: [...dummyTesting],
-                filtered: [],
-                currentPage: 1,
-                rowsPerPage: 5,
+                data: [...dummyTesting], filtered: [], currentPage: 1, rowsPerPage: 5,
                 tbody: document.getElementById('testingTableBody'),
                 pagination: document.getElementById('testingPagination'),
                 searchInput: document.getElementById('testingSearch')
@@ -193,9 +234,14 @@
         };
 
         const algoSelect = document.getElementById('algoSelect');
-        let chartInstance = null;
+        let chartInstanceWeighted = null;
+        let chartInstanceMacro = null;
+        Chart.register(ChartDataLabels);
 
-        // ============ FUNGSI UMUM ============
+        function formatMetric(val, digits = 2) {
+            return val != null ? (val * 100).toFixed(digits) + '%' : '-';
+        }
+
         function filterTableData(tableKey) {
             const table = tables[tableKey];
             const query = table.searchInput.value.trim().toLowerCase();
@@ -203,11 +249,11 @@
                 table.filtered = [...table.data];
             } else {
                 table.filtered = table.data.filter(item => {
-                    const nama = (item.dataset_filename || '').toLowerCase();
+                    const name = (item.dataset_filename || '').toLowerCase();
                     const model = (item.algorithm || '').toLowerCase();
-                    const akurasi = item.metrics?.accuracy != null ? (item.metrics.accuracy * 100).toFixed(2) : '-';
-                    const tanggal = item.created_at ? new Date(item.created_at).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }).toLowerCase() : '-';
-                    return nama.includes(query) || model.includes(query) || akurasi.includes(query) || tanggal.includes(query);
+                    const accuracy = item.metrics?.accuracy != null ? (item.metrics.accuracy * 100).toFixed(2) : '-';
+                    const date = item.created_at ? new Date(item.created_at).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }).toLowerCase() : '-';
+                    return name.includes(query) || model.includes(query) || accuracy.includes(query) || date.includes(query);
                 });
             }
             table.currentPage = 1;
@@ -220,30 +266,33 @@
             const start = (table.currentPage - 1) * table.rowsPerPage;
             const end = start + table.rowsPerPage;
             const pageData = table.filtered.slice(start, end);
-            
-            table.tbody.innerHTML = '';
+            const tbody = table.tbody;
+            tbody.innerHTML = '';
             if (pageData.length === 0) {
-                table.tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-gray-500">Tidak ada data.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="14" class="text-center py-4 text-gray-500">No data available.</td></tr>`;
                 return;
             }
 
             pageData.forEach(item => {
-                const row = table.tbody.insertRow();
+                const m = item.metrics || {};
+                const row = tbody.insertRow();
                 row.insertCell(0).innerHTML = item.dataset_filename || '-';
                 row.insertCell(1).innerHTML = item.algorithm || '-';
-                const acc = item.metrics?.accuracy != null ? (item.metrics.accuracy * 100).toFixed(2) + '%' : '-';
-                const prec = item.metrics?.precision != null ? (item.metrics.precision * 100).toFixed(2) + '%' : '-';
-                const rec = item.metrics?.recall != null ? (item.metrics.recall * 100).toFixed(2) + '%' : '-';
-                const f1 = item.metrics?.f1_score != null ? (item.metrics.f1_score * 100).toFixed(2) + '%' : '-';
-                row.insertCell(2).innerHTML = acc;
-                row.insertCell(3).innerHTML = prec;
-                row.insertCell(4).innerHTML = rec;
-                row.insertCell(5).innerHTML = f1;
+                row.insertCell(2).innerHTML = formatMetric(m.accuracy);
+                row.insertCell(3).innerHTML = formatMetric(m.precision);
+                row.insertCell(4).innerHTML = formatMetric(m.recall);
+                row.insertCell(5).innerHTML = formatMetric(m.f1_score);
+                row.insertCell(6).innerHTML = formatMetric(m.macro_accuracy);
+                row.insertCell(7).innerHTML = formatMetric(m.macro_precision);
+                row.insertCell(8).innerHTML = formatMetric(m.macro_recall);
+                row.insertCell(9).innerHTML = formatMetric(m.macro_f1_score);
+                row.insertCell(10).innerHTML = m.mcc != null ? m.mcc.toFixed(4) : '-';
+                row.insertCell(11).innerHTML = m.roc_auc != null ? (m.roc_auc * 100).toFixed(2) + '%' : '-';
                 const d = item.created_at ? new Date(item.created_at) : null;
-                row.insertCell(6).innerHTML = d ? d.toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '-';
-                const actCell = row.insertCell(7);
+                row.insertCell(12).innerHTML = d ? d.toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+                const actCell = row.insertCell(13);
                 actCell.className = 'px-4 py-2 border border-gray-200 text-center';
-                actCell.innerHTML = `<a href="validasi.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2" title="Lihat detail"><i class="fas fa-eye"></i></a><button class="text-green-600 hover:text-green-800 download-model" data-id="${item.id}" ${!item.model_path ? 'disabled' : ''} title="Download model"><i class="fas fa-download"></i></button>`;
+                actCell.innerHTML = `<a href="validasi.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2" title="View details"><i class="fas fa-eye"></i></a><button class="text-green-600 hover:text-green-800 download-model" data-id="${item.id}" ${!item.model_path ? 'disabled' : ''} title="Download model"><i class="fas fa-download"></i></button>`;
                 for (let cell of row.cells) cell.classList.add('border', 'border-gray-200', 'px-4', 'py-2');
             });
         }
@@ -277,9 +326,7 @@
             table.pagination.appendChild(nextBtn);
         }
 
-        // ============ COMPARISON & CHART ============
         function updateComparisonAndChart() {
-            // Ambil model terbaik dari training dan testing
             const bestTraining = tables.training.data
                 .filter(item => item.metrics?.accuracy != null)
                 .sort((a, b) => b.metrics.accuracy - a.metrics.accuracy)[0];
@@ -287,97 +334,114 @@
                 .filter(item => item.metrics?.accuracy != null)
                 .sort((a, b) => b.metrics.accuracy - a.metrics.accuracy)[0];
 
-            // Render tabel comparison
             const tbody = document.getElementById('comparisonTableBody');
             tbody.innerHTML = '';
 
-            if (!bestTraining && !bestTesting) {
-                tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-gray-500">Belum ada data untuk dibandingkan.</td></tr>';
-            }
-
             function createRow(source, item) {
                 if (!item) return;
+                const m = item.metrics || {};
                 const row = tbody.insertRow();
                 const sourceCell = row.insertCell(0);
                 sourceCell.innerHTML = `<span class="inline-block px-2 py-1 text-xs font-semibold rounded-full ${source === 'Training' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}">${source}</span>`;
                 row.insertCell(1).innerHTML = item.dataset_filename || '-';
                 row.insertCell(2).innerHTML = item.algorithm || '-';
-                const acc = item.metrics?.accuracy != null ? (item.metrics.accuracy * 100).toFixed(2) + '%' : '-';
-                const prec = item.metrics?.precision != null ? (item.metrics.precision * 100).toFixed(2) + '%' : '-';
-                const rec = item.metrics?.recall != null ? (item.metrics.recall * 100).toFixed(2) + '%' : '-';
-                const f1 = item.metrics?.f1_score != null ? (item.metrics.f1_score * 100).toFixed(2) + '%' : '-';
-                row.insertCell(3).innerHTML = acc;
-                row.insertCell(4).innerHTML = prec;
-                row.insertCell(5).innerHTML = rec;
-                row.insertCell(6).innerHTML = f1;
+                row.insertCell(3).innerHTML = formatMetric(m.accuracy);
+                row.insertCell(4).innerHTML = formatMetric(m.precision);
+                row.insertCell(5).innerHTML = formatMetric(m.recall);
+                row.insertCell(6).innerHTML = formatMetric(m.f1_score);
+                row.insertCell(7).innerHTML = formatMetric(m.macro_accuracy);
+                row.insertCell(8).innerHTML = formatMetric(m.macro_precision);
+                row.insertCell(9).innerHTML = formatMetric(m.macro_recall);
+                row.insertCell(10).innerHTML = formatMetric(m.macro_f1_score);
+                row.insertCell(11).innerHTML = m.mcc != null ? m.mcc.toFixed(4) : '-';
+                row.insertCell(12).innerHTML = m.roc_auc != null ? (m.roc_auc * 100).toFixed(2) + '%' : '-';
                 const d = item.created_at ? new Date(item.created_at) : null;
-                row.insertCell(7).innerHTML = d ? d.toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '-';
-                const actCell = row.insertCell(8);
+                row.insertCell(13).innerHTML = d ? d.toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+                const actCell = row.insertCell(14);
                 actCell.className = 'px-4 py-2 border border-gray-200 text-center';
-                actCell.innerHTML = `<a href="validasi.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2" title="Lihat detail"><i class="fas fa-eye"></i></a>`;
+                actCell.innerHTML = `<a href="validasi.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2" title="View details"><i class="fas fa-eye"></i></a>`;
                 for (let cell of row.cells) cell.classList.add('border', 'border-gray-200', 'px-4', 'py-2');
             }
 
             if (bestTraining) createRow('Training', bestTraining);
             if (bestTesting) createRow('Testing', bestTesting);
+            if (!bestTraining && !bestTesting) {
+                tbody.innerHTML = '<tr><td colspan="15" class="text-center py-4 text-gray-500">No data available for comparison.</td></tr>';
+            }
 
-            // Render chart
-            const ctx = document.getElementById('comparisonChart').getContext('2d');
-            if (chartInstance) chartInstance.destroy();
-
-            const labels = ['Akurasi', 'Presisi', 'Recall', 'F1-Score'];
-            const trainValues = bestTraining ? [
+            // Weighted Chart
+            const ctxWeighted = document.getElementById('comparisonChartWeighted').getContext('2d');
+            if (chartInstanceWeighted) chartInstanceWeighted.destroy();
+            const labelsW = ['Accuracy', 'Precision', 'Recall', 'F1‑Score'];
+            const trainWeighted = bestTraining ? [
                 bestTraining.metrics.accuracy || 0,
                 bestTraining.metrics.precision || 0,
                 bestTraining.metrics.recall || 0,
                 bestTraining.metrics.f1_score || 0
             ] : [];
-            const testValues = bestTesting ? [
+            const testWeighted = bestTesting ? [
                 bestTesting.metrics.accuracy || 0,
                 bestTesting.metrics.precision || 0,
                 bestTesting.metrics.recall || 0,
                 bestTesting.metrics.f1_score || 0
             ] : [];
-
-            chartInstance = new Chart(ctx, {
+            chartInstanceWeighted = new Chart(ctxWeighted, {
                 type: 'bar',
                 data: {
-                    labels: labels,
+                    labels: labelsW,
                     datasets: [
-                        {
-                            label: 'Training Terbaik',
-                            data: trainValues,
-                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                            borderColor: '#2563eb',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Testing Terbaik',
-                            data: testValues,
-                            backgroundColor: 'rgba(16, 185, 129, 0.7)',
-                            borderColor: '#059669',
-                            borderWidth: 1
-                        }
+                        { label: 'Training', data: trainWeighted, backgroundColor: 'rgba(59,130,246,0.85)', borderColor: '#2563eb', borderWidth:1 },
+                        { label: 'Testing', data: testWeighted, backgroundColor: 'rgba(16,185,129,0.85)', borderColor: '#059669', borderWidth:1 }
                     ]
                 },
                 options: {
                     responsive: true,
                     plugins: {
                         legend: { position: 'bottom' },
-                        tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${(ctx.raw * 100).toFixed(1)}%` } }
+                        tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${(ctx.raw*100).toFixed(1)}%` } },
+                        datalabels: { anchor: 'end', align: 'end', formatter: v => (v*100).toFixed(1)+'%', font:{weight:'bold',size:10}, color:'#1f2937' }
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 1,
-                            ticks: { callback: val => Math.round(val * 100) + '%' }
-                        }
-                    }
+                    scales: { y: { beginAtZero: true, max:1, ticks: { callback: v => Math.round(v*100)+'%' } } }
+                }
+            });
+
+            // Macro Chart
+            const ctxMacro = document.getElementById('comparisonChartMacro').getContext('2d');
+            if (chartInstanceMacro) chartInstanceMacro.destroy();
+            const labelsM = ['Accuracy', 'Precision', 'Recall', 'F1‑Score'];
+            const trainMacro = bestTraining ? [
+                bestTraining.metrics.macro_accuracy || 0,
+                bestTraining.metrics.macro_precision || 0,
+                bestTraining.metrics.macro_recall || 0,
+                bestTraining.metrics.macro_f1_score || 0
+            ] : [];
+            const testMacro = bestTesting ? [
+                bestTesting.metrics.macro_accuracy || 0,
+                bestTesting.metrics.macro_precision || 0,
+                bestTesting.metrics.macro_recall || 0,
+                bestTesting.metrics.macro_f1_score || 0
+            ] : [];
+            chartInstanceMacro = new Chart(ctxMacro, {
+                type: 'bar',
+                data: {
+                    labels: labelsM,
+                    datasets: [
+                        { label: 'Training', data: trainMacro, backgroundColor: 'rgba(59,130,246,0.85)', borderColor: '#2563eb', borderWidth:1 },
+                        { label: 'Testing', data: testMacro, backgroundColor: 'rgba(16,185,129,0.85)', borderColor: '#059669', borderWidth:1 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${(ctx.raw*100).toFixed(1)}%` } },
+                        datalabels: { anchor: 'end', align: 'end', formatter: v => (v*100).toFixed(1)+'%', font:{weight:'bold',size:10}, color:'#1f2937' }
+                    },
+                    scales: { y: { beginAtZero: true, max:1, ticks: { callback: v => Math.round(v*100)+'%' } } }
                 }
             });
         }
 
-        // ============ INISIALISASI ============
         function initAll() {
             filterTableData('training');
             filterTableData('testing');
@@ -392,15 +456,11 @@
             };
         }
 
-        // Event search
         tables.training.searchInput.addEventListener('input', debounce(() => { filterTableData('training'); updateComparisonAndChart(); }, 300));
         tables.testing.searchInput.addEventListener('input', debounce(() => { filterTableData('testing'); updateComparisonAndChart(); }, 300));
 
-        algoSelect.addEventListener('change', () => {
-            initAll();
-        });
+        algoSelect.addEventListener('change', initAll);
 
-        // Sidebar toggle
         function toggleDropdown(btn, menu, icon) {
             btn.addEventListener('click', () => {
                 menu.classList.toggle('hidden');
@@ -412,7 +472,6 @@
         const dataCollectionIcon = document.getElementById('dataCollectionIcon');
         toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
 
-        // Jalankan
         initAll();
     })();
 </script>
