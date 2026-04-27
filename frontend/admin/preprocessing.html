@@ -27,7 +27,7 @@
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- Sidebar (English, Processing as direct link) -->
+      <!-- Sidebar (sama seperti sebelumnya) -->
       <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
         <div class="p-4 border-b">
           <span
@@ -46,7 +46,6 @@
                 ><span>Dashboard</span></a
               >
             </li>
-            <!-- Data Collection dropdown -->
             <li>
               <button
                 id="dataCollectionBtn"
@@ -79,7 +78,6 @@
               </ul>
             </li>
             <li>
-              <!-- Pre-Processing active -->
               <a
                 href="preprocessing.html"
                 class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"
@@ -87,7 +85,6 @@
               >
             </li>
             <li>
-              <!-- Processing as direct link -->
               <a
                 href="processing.html"
                 class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
@@ -180,41 +177,52 @@
 
         <!-- Preprocessing History Section -->
         <div class="bg-white p-6 rounded-xl shadow-md">
-          <!-- Header with Search and Date Filters -->
-          <div class="flex flex-wrap justify-between items-center mb-4 gap-3">
+          <div class="flex justify-between items-center mb-4">
             <h2 class="font-semibold text-gray-700 text-lg">
               Preprocessing History
             </h2>
-            <div class="flex flex-wrap items-center gap-2">
-              <!-- Date Filters -->
-              <div class="flex items-center gap-1">
-                <span class="text-sm text-gray-600">From</span>
-                <input
-                  type="date"
-                  id="startDateFilter"
-                  class="border border-gray-300 rounded px-2 py-1 text-sm w-36 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                />
-              </div>
-              <div class="flex items-center gap-1">
-                <span class="text-sm text-gray-600">To</span>
-                <input
-                  type="date"
-                  id="endDateFilter"
-                  class="border border-gray-300 rounded px-2 py-1 text-sm w-36 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                />
-              </div>
-              <!-- Search -->
-              <div class="relative">
-                <i
-                  class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                ></i>
-                <input
-                  type="text"
-                  id="historySearchInput"
-                  placeholder="Search name..."
-                  class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-56 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                />
-              </div>
+          </div>
+
+          <!-- Filter Bar (konsisten dengan halaman Dataset) -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Search text</label
+              >
+              <input
+                type="text"
+                id="filterSearchInput"
+                placeholder="Dataset name..."
+                class="w-full border rounded-lg p-2"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >From date</label
+              >
+              <input
+                type="date"
+                id="filterDateFrom"
+                class="w-full border rounded-lg p-2"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >To date</label
+              >
+              <input
+                type="date"
+                id="filterDateTo"
+                class="w-full border rounded-lg p-2"
+              />
+            </div>
+            <div class="flex items-end">
+              <button
+                id="applyFilterBtn"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg w-full"
+              >
+                <i class="fas fa-filter mr-1"></i>Apply Filter
+              </button>
             </div>
           </div>
 
@@ -223,9 +231,7 @@
               <thead class="bg-blue-500 text-white">
                 <tr>
                   <th class="px-4 py-2 border border-blue-400 w-16">No</th>
-                  <th class="px-4 py-2 border border-blue-400">
-                    Preprocessing Name
-                  </th>
+                  <th class="px-4 py-2 border border-blue-400">Dataset Name</th>
                   <th class="px-4 py-2 border border-blue-400">Date</th>
                   <th class="px-4 py-2 border border-blue-400 w-24">Actions</th>
                 </tr>
@@ -233,13 +239,11 @@
               <tbody id="historyTableBody"></tbody>
             </table>
           </div>
-          <!-- Pagination (English style: Previous, Page info, input+Go, Next) -->
-          <div
-            id="historyPagination"
-            class="flex justify-center mt-4 space-x-2"
-          ></div>
+          <!-- Pagination (konsisten dengan halaman Dataset) -->
+          <div id="historyPagination" class="flex justify-center mt-4"></div>
           <p class="text-xs text-gray-500 mt-2">
-            <i class="fas fa-info-circle"></i> Double-click on the name to edit.
+            <i class="fas fa-info-circle"></i> Double-click on the dataset name
+            to edit.
           </p>
         </div>
       </main>
@@ -259,10 +263,10 @@
         const progressPercent = document.getElementById("progressPercent");
         const downloadBtn = document.getElementById("downloadBtn");
         const historyTbody = document.getElementById("historyTableBody");
-        const historySearchInput =
-          document.getElementById("historySearchInput");
-        const startDateFilter = document.getElementById("startDateFilter");
-        const endDateFilter = document.getElementById("endDateFilter");
+        const filterSearchInput = document.getElementById("filterSearchInput");
+        const filterDateFrom = document.getElementById("filterDateFrom");
+        const filterDateTo = document.getElementById("filterDateTo");
+        const applyFilterBtn = document.getElementById("applyFilterBtn");
         const historyPagination = document.getElementById("historyPagination");
 
         let allHistory = [];
@@ -323,51 +327,49 @@
             allHistory.sort(
               (a, b) => new Date(b.created_at) - new Date(a.created_at),
             );
-            filterHistory();
+            applyFilter(); // langsung filter saat load
           } catch (error) {
             console.error(error);
             allHistory = [];
-            filterHistory();
+            applyFilter();
             historyTbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-500">Failed to load history.  </td></tr>`;
           }
         }
 
-        function filterHistory() {
-          const query = historySearchInput.value.trim().toLowerCase();
-          const startDate = startDateFilter.value
-            ? new Date(startDateFilter.value)
-            : null;
-          const endDate = endDateFilter.value
-            ? new Date(endDateFilter.value)
-            : null;
-          if (endDate) {
-            endDate.setHours(23, 59, 59, 999);
-          }
+        function applyFilter() {
+          const searchText = filterSearchInput.value.trim().toLowerCase();
+          const dateFrom = filterDateFrom.value;
+          const dateTo = filterDateTo.value;
 
           filteredHistory = allHistory.filter((item) => {
-            const name = (
-              item.name || `Preprocessing #${item.id}`
-            ).toLowerCase();
-            const dateStr = item.created_at
-              ? new Date(item.created_at)
-                  .toLocaleString("en-US", {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  })
-                  .toLowerCase()
-              : "";
-            const textMatch =
-              !query || name.includes(query) || dateStr.includes(query);
+            // Filter teks: cari di dataset name
+            let textMatch = true;
+            if (searchText) {
+              const name = (
+                item.name || `Preprocessing #${item.id}`
+              ).toLowerCase();
+              textMatch = name.includes(searchText);
+            }
 
+            // Filter tanggal
             let dateMatch = true;
-            if (startDate || endDate) {
-              const itemDate = item.created_at
+            if (dateFrom || dateTo) {
+              const uploadDate = item.created_at
                 ? new Date(item.created_at)
                 : null;
-              if (!itemDate) dateMatch = false;
-              else {
-                if (startDate && itemDate < startDate) dateMatch = false;
-                if (endDate && itemDate > endDate) dateMatch = false;
+              if (!uploadDate) {
+                dateMatch = false;
+              } else {
+                if (dateFrom) {
+                  const from = new Date(dateFrom);
+                  from.setHours(0, 0, 0, 0);
+                  if (uploadDate < from) dateMatch = false;
+                }
+                if (dateTo && dateMatch) {
+                  const to = new Date(dateTo);
+                  to.setHours(23, 59, 59, 999);
+                  if (uploadDate > to) dateMatch = false;
+                }
               }
             }
             return textMatch && dateMatch;
@@ -384,7 +386,7 @@
           const pageData = filteredHistory.slice(start, end);
 
           if (pageData.length === 0) {
-            historyTbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500">No data available.</td></tr>`;
+            historyTbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500">No data available. Using `;
             return;
           }
 
@@ -706,20 +708,11 @@
           downloadHistoryCSV(currentPreprocId);
         }
 
-        let debounceTimer;
-        function debouncedFilter() {
-          clearTimeout(debounceTimer);
-          debounceTimer = setTimeout(() => filterHistory(), 300);
-        }
-
-        historySearchInput.addEventListener("input", debouncedFilter);
-        startDateFilter.addEventListener("change", debouncedFilter);
-        endDateFilter.addEventListener("change", debouncedFilter);
-
         startBtn.addEventListener("click", startCleaning);
         downloadBtn.addEventListener("click", downloadCSV);
+        applyFilterBtn.addEventListener("click", applyFilter);
 
-        // Sidebar dropdown (only for Data Collection)
+        // Sidebar dropdown
         function toggleDropdown(btn, menu, icon) {
           btn.addEventListener("click", () => {
             menu.classList.toggle("hidden");
@@ -736,7 +729,6 @@
           dataCollectionMenu,
           dataCollectionIcon,
         );
-        // No toggle needed for Processing (direct link)
 
         if (authToken) {
           loadDatasets();

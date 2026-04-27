@@ -30,7 +30,7 @@
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- Sidebar (English) -->
+      <!-- Sidebar (unchanged) -->
       <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
         <div class="p-4 border-b">
           <span
@@ -125,9 +125,24 @@
       <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
         <h1 class="text-3xl font-bold text-gray-800 mb-6">Dataset</h1>
 
-        <!-- Upload Raw Dataset -->
+        <!-- Upload Raw Dataset with Manual Dataset Name -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-6">
           <h2 class="font-semibold text-gray-700 mb-4">Upload Raw Dataset</h2>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Dataset Name <span class="text-red-500">*</span></label
+            >
+            <input
+              type="text"
+              id="datasetNameInput"
+              class="w-full md:w-96 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400"
+              placeholder="Example: Idiom Data April 2026"
+            />
+            <p class="text-xs text-gray-500 mt-1">
+              Unique name for this dataset
+            </p>
+          </div>
+
           <div
             class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 transition"
             id="uploadArea"
@@ -138,7 +153,7 @@
               <span class="text-blue-600 font-medium">click to select</span>
             </p>
             <p class="text-xs text-gray-400 mt-1">
-              CSV/Excel format (id, kalimat, has_idiom, idiom_text, sentiment,
+              CSV/Excel format (id, text, has_idiom, idiom_text, sentiment,
               emotion, idiom_meaning)
             </p>
             <input
@@ -156,7 +171,7 @@
           </button>
         </div>
 
-        <!-- Dataset List with Pagination -->
+        <!-- Dataset List with Filter and Download Button -->
         <div class="bg-white p-6 rounded-xl shadow-md">
           <div class="flex justify-between items-center mb-4">
             <h2 class="font-semibold text-gray-700">Dataset List</h2>
@@ -167,12 +182,58 @@
               Export All
             </button>
           </div>
+
+          <!-- Filter Bar: Search + Date Range -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Search text</label
+              >
+              <input
+                type="text"
+                id="filterSearchInput"
+                placeholder="Dataset name, file name..."
+                class="w-full border rounded-lg p-2"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >From date</label
+              >
+              <input
+                type="date"
+                id="filterDateFrom"
+                class="w-full border rounded-lg p-2"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >To date</label
+              >
+              <input
+                type="date"
+                id="filterDateTo"
+                class="w-full border rounded-lg p-2"
+              />
+            </div>
+            <div class="flex items-end">
+              <button
+                id="applyFilterBtn"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg w-full"
+              >
+                <i class="fas fa-filter mr-1"></i>Apply Filter
+              </button>
+            </div>
+          </div>
+
+          <!-- Table -->
           <div class="overflow-x-auto">
             <table class="min-w-full border border-gray-200">
               <thead class="bg-blue-500 text-white">
                 <tr>
+                  <th class="px-4 py-2 border border-blue-400">Dataset Name</th>
                   <th class="px-4 py-2 border border-blue-400">File Name</th>
-                  <th class="px-4 py-2 border border-blue-400">Rows</th>
+                  <th class="px-4 py-2 border border-blue-400">Total Rows</th>
                   <th class="px-4 py-2 border border-blue-400">Upload Date</th>
                   <th class="px-4 py-2 border border-blue-400">Actions</th>
                 </tr>
@@ -180,11 +241,10 @@
               <tbody id="datasetTableBody" class="bg-white"></tbody>
             </table>
           </div>
-          <!-- Pagination (consistent with Idiom Dictionary) -->
           <div id="datasetPagination" class="flex justify-center mt-4"></div>
         </div>
 
-        <!-- Chart Container (Emotion Bar Chart + Idiom Bar Chart) -->
+        <!-- Chart Container -->
         <div
           id="chartContainer"
           class="bg-white p-4 rounded-xl shadow-md mt-6 hidden"
@@ -242,6 +302,12 @@
       let currentEmotionChart = null;
       let currentIdiomChart = null;
 
+      // Original and filtered data
+      let allDatasets = [];
+      let filteredDatasets = [];
+      let currentPage = 1;
+
+      // === API helper ===
       async function apiFetch(endpoint, options = {}) {
         const headers = {
           "Content-Type": "application/json",
@@ -259,39 +325,77 @@
         return response;
       }
 
-      // === Dataset List ===
-      async function loadDatasets(page = 1) {
+      // === Load datasets from server ===
+      async function loadDatasets() {
         try {
           const response = await apiFetch("/datasets/");
           if (!response) return;
           if (!response.ok) throw new Error("Failed to fetch datasets");
           const datasets = await response.json();
-          window.allDatasets = datasets;
-          window.currentDatasetPage = page;
-          renderDatasetTable();
-          renderDatasetPagination();
+          allDatasets = datasets;
+          applyFilter(); // apply filter after load
         } catch (error) {
           console.error(error);
           alert("Failed to load dataset list");
         }
       }
 
+      // === Client-side filter ===
+      function applyFilter() {
+        const searchText = document
+          .getElementById("filterSearchInput")
+          .value.trim()
+          .toLowerCase();
+        const dateFrom = document.getElementById("filterDateFrom").value;
+        const dateTo = document.getElementById("filterDateTo").value;
+
+        filteredDatasets = allDatasets.filter((ds) => {
+          // Text filter: dataset_name and original_filename
+          let textMatch = true;
+          if (searchText) {
+            const name = (ds.dataset_name || "").toLowerCase();
+            const filename = (
+              ds.original_filename ||
+              ds.filename ||
+              ""
+            ).toLowerCase();
+            textMatch =
+              name.includes(searchText) || filename.includes(searchText);
+          }
+
+          // Date filter
+          let dateMatch = true;
+          if (dateFrom || dateTo) {
+            const uploadDate = new Date(ds.uploaded_at);
+            if (dateFrom) {
+              const from = new Date(dateFrom);
+              from.setHours(0, 0, 0, 0);
+              if (uploadDate < from) dateMatch = false;
+            }
+            if (dateTo && dateMatch) {
+              const to = new Date(dateTo);
+              to.setHours(23, 59, 59, 999);
+              if (uploadDate > to) dateMatch = false;
+            }
+          }
+          return textMatch && dateMatch;
+        });
+
+        currentPage = 1;
+        renderDatasetTable();
+        renderDatasetPagination();
+      }
+
+      // === Rename dataset (custom name) ===
       async function renameDataset(id, newName) {
         try {
           const response = await apiFetch(`/datasets/${id}`, {
             method: "PUT",
-            body: JSON.stringify({ filename: newName }),
+            body: JSON.stringify({ dataset_name: newName }),
           });
           if (!response) return false;
           if (response.ok) {
-            await loadDatasets(window.currentDatasetPage);
-            const viewedFileDiv = document.getElementById("viewedFileName");
-            if (viewedFileDiv.innerText.includes("Dataset:")) {
-              const dataset = window.allDatasets.find((d) => d.id === id);
-              if (dataset) {
-                viewedFileDiv.innerHTML = `<i class="fas fa-file-alt mr-1"></i> Dataset: <strong>${dataset.filename}</strong>`;
-              }
-            }
+            await loadDatasets();
             return true;
           } else {
             const err = await response.json();
@@ -305,14 +409,15 @@
         }
       }
 
-      function createEditableName(ds) {
+      // === Editable Dataset Name ===
+      function createEditableDatasetName(ds) {
         const span = document.createElement("span");
-        span.textContent = ds.filename;
+        span.textContent = ds.dataset_name || ds.filename;
         span.className = "editable-name font-medium";
-        span.title = "Double-click to rename";
+        span.title = "Double-click to rename dataset";
         span.addEventListener("dblclick", (e) => {
           e.stopPropagation();
-          const oldName = ds.filename;
+          const oldName = span.textContent;
           const input = document.createElement("input");
           input.type = "text";
           input.value = oldName;
@@ -325,40 +430,75 @@
             if (newName && newName !== oldName) {
               await renameDataset(ds.id, newName);
             } else if (!newName) {
-              alert("Name cannot be empty");
+              alert("Dataset name cannot be empty");
               input.focus();
               return;
             }
           };
           input.addEventListener("blur", saveRename);
           input.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") {
-              saveRename();
-            }
+            if (e.key === "Enter") saveRename();
           });
         });
         return span;
       }
 
+      // === Download dataset ===
+      async function downloadDataset(id, filename) {
+        try {
+          const response = await fetch(`${API_BASE}/datasets/${id}/download`, {
+            method: "GET",
+            headers: { Authorization: `Bearer ${authToken}` },
+          });
+          if (!response.ok) {
+            const err = await response.json();
+            alert(err.message || "Download failed");
+            return;
+          }
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        } catch (error) {
+          console.error(error);
+          alert("Error downloading dataset");
+        }
+      }
+
+      // === Render table with filtered data ===
       function renderDatasetTable() {
-        const start = (window.currentDatasetPage - 1) * rowsPerPage;
+        const start = (currentPage - 1) * rowsPerPage;
         const end = start + rowsPerPage;
-        const pageData = window.allDatasets.slice(start, end);
+        const pageData = filteredDatasets.slice(start, end);
         const tbody = document.getElementById("datasetTableBody");
         tbody.innerHTML = "";
+        if (pageData.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="5" class="text-center py-4 text-gray-500">No datasets available.</td></tr>';
+          return;
+        }
         pageData.forEach((ds) => {
           const row = tbody.insertRow();
+          // Dataset Name (editable)
           const nameCell = row.insertCell(0);
-          nameCell.appendChild(createEditableName(ds));
-          row.insertCell(1).innerHTML = ds.rows;
-          row.insertCell(2).innerHTML = new Date(
+          nameCell.appendChild(createEditableDatasetName(ds));
+          // Original File Name
+          row.insertCell(1).innerHTML = ds.original_filename || ds.filename;
+          row.insertCell(2).innerHTML = ds.rows;
+          row.insertCell(3).innerHTML = new Date(
             ds.uploaded_at,
           ).toLocaleDateString();
           const actions = document.createElement("td");
-          actions.className = "px-4 py-2 border border-gray-200";
+          actions.className = "px-4 py-2 border border-gray-200 text-center";
           actions.innerHTML = `
-            <i class="fas fa-eye text-blue-500 mr-3 cursor-pointer hover:text-blue-700" data-id="${ds.id}" data-filename="${ds.filename}" data-action="view"></i>
+            <i class="fas fa-eye text-blue-500 mr-3 cursor-pointer hover:text-blue-700" data-id="${ds.id}" data-filename="${ds.dataset_name || ds.filename}" data-action="view"></i>
             <i class="fas fa-book text-green-500 mr-3 cursor-pointer hover:text-green-700" data-id="${ds.id}" data-action="extract"></i>
+            <i class="fas fa-download text-purple-500 mr-3 cursor-pointer hover:text-purple-700" data-id="${ds.id}" data-filename="${ds.original_filename || ds.filename}" data-action="download"></i>
             <i class="fas fa-trash text-red-500 cursor-pointer hover:text-red-700" data-id="${ds.id}" data-action="delete"></i>
           `;
           row.appendChild(actions);
@@ -366,11 +506,12 @@
             cell.classList.add("border", "border-gray-200", "px-4", "py-2");
           }
         });
+        // Event listeners for action buttons
         document.querySelectorAll('[data-action="view"]').forEach((icon) => {
           icon.addEventListener("click", async (e) => {
             const id = parseInt(icon.dataset.id);
-            const filename = icon.dataset.filename;
-            await showCharts(id, filename);
+            const name = icon.dataset.filename;
+            await showCharts(id, name);
           });
         });
         document.querySelectorAll('[data-action="extract"]').forEach((icon) => {
@@ -385,6 +526,15 @@
             }
           });
         });
+        document
+          .querySelectorAll('[data-action="download"]')
+          .forEach((icon) => {
+            icon.addEventListener("click", async (e) => {
+              const id = parseInt(icon.dataset.id);
+              const filename = icon.dataset.filename;
+              await downloadDataset(id, filename);
+            });
+          });
         document.querySelectorAll('[data-action="delete"]').forEach((icon) => {
           icon.addEventListener("click", async (e) => {
             const id = parseInt(icon.dataset.id);
@@ -395,9 +545,9 @@
         });
       }
 
-      // === Pagination (English style with Previous, Next, Go, Page info) ===
+      // === Pagination ===
       function renderDatasetPagination() {
-        const totalItems = window.allDatasets.length;
+        const totalItems = filteredDatasets.length;
         const totalPages = Math.ceil(totalItems / rowsPerPage);
         const paginationDiv = document.getElementById("datasetPagination");
         paginationDiv.innerHTML = "";
@@ -406,36 +556,32 @@
         const container = document.createElement("div");
         container.className = "flex items-center space-x-2";
 
-        // Previous button
         const prevBtn = document.createElement("button");
         prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
-        prevBtn.className = `px-3 py-1 rounded border ${window.currentDatasetPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
-        prevBtn.disabled = window.currentDatasetPage === 1;
+        prevBtn.className = `px-3 py-1 rounded border ${currentPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
+        prevBtn.disabled = currentPage === 1;
         prevBtn.onclick = () => {
-          if (window.currentDatasetPage > 1) {
-            window.currentDatasetPage--;
+          if (currentPage > 1) {
+            currentPage--;
             renderDatasetTable();
             renderDatasetPagination();
           }
         };
         container.appendChild(prevBtn);
 
-        // Page info
         const pageInfo = document.createElement("span");
         pageInfo.className = "text-gray-700";
-        pageInfo.innerText = `Page ${window.currentDatasetPage} of ${totalPages}`;
+        pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
         container.appendChild(pageInfo);
 
-        // Page number input
         const pageInput = document.createElement("input");
         pageInput.type = "number";
         pageInput.min = 1;
         pageInput.max = totalPages;
-        pageInput.value = window.currentDatasetPage;
+        pageInput.value = currentPage;
         pageInput.className = "w-16 border rounded px-2 py-1 text-center";
         container.appendChild(pageInput);
 
-        // Go button
         const goBtn = document.createElement("button");
         goBtn.innerText = "Go";
         goBtn.className =
@@ -445,30 +591,28 @@
           if (isNaN(newPage)) newPage = 1;
           if (newPage < 1) newPage = 1;
           if (newPage > totalPages) newPage = totalPages;
-          window.currentDatasetPage = newPage;
+          currentPage = newPage;
           renderDatasetTable();
           renderDatasetPagination();
         };
         container.appendChild(goBtn);
 
-        // Next button
         const nextBtn = document.createElement("button");
         nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
-        nextBtn.className = `px-3 py-1 rounded border ${window.currentDatasetPage === totalPages ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
-        nextBtn.disabled = window.currentDatasetPage === totalPages;
+        nextBtn.className = `px-3 py-1 rounded border ${currentPage === totalPages ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
+        nextBtn.disabled = currentPage === totalPages;
         nextBtn.onclick = () => {
-          if (window.currentDatasetPage < totalPages) {
-            window.currentDatasetPage++;
+          if (currentPage < totalPages) {
+            currentPage++;
             renderDatasetTable();
             renderDatasetPagination();
           }
         };
         container.appendChild(nextBtn);
-
         paginationDiv.appendChild(container);
       }
 
-      // === Show Charts (Emotion Bar Chart + Idiom Bar Chart) ===
+      // === Show Charts (dummy data) ===
       async function showCharts(datasetId, filename) {
         try {
           const emotionLabels = [
@@ -486,12 +630,11 @@
               Math.floor(Math.random() * 100) + ((seed * 7 + idx) % 80),
           );
           const totalRows =
-            window.allDatasets.find((d) => d.id === datasetId)?.rows || 100;
+            allDatasets.find((d) => d.id === datasetId)?.rows || 100;
           const idiomCount = Math.floor(totalRows * (0.3 + (seed % 50) / 100));
           const nonIdiomCount = totalRows - idiomCount;
 
-          const container = document.getElementById("chartContainer");
-          container.classList.remove("hidden");
+          document.getElementById("chartContainer").classList.remove("hidden");
           document.getElementById("viewedFileName").innerHTML =
             `<i class="fas fa-file-alt mr-1"></i> Dataset: <strong>${filename}</strong>`;
 
@@ -525,35 +668,15 @@
             options: {
               responsive: true,
               maintainAspectRatio: true,
-              plugins: {
-                legend: {
-                  position: "top",
-                  labels: { font: { size: 14, weight: "bold" } },
-                },
-                tooltip: {
-                  callbacks: {
-                    label: (ctx) => `${ctx.dataset.label}: ${ctx.raw}`,
-                  },
-                  bodyFont: { size: 13 },
-                },
-              },
+              plugins: { legend: { position: "top" } },
               scales: {
                 y: {
                   beginAtZero: true,
-                  title: {
-                    display: true,
-                    text: "Sentence Count",
-                    font: { size: 13, weight: "bold" },
-                  },
-                  ticks: { font: { size: 12 } },
-                },
-                x: {
-                  ticks: { font: { size: 12, weight: "500" }, rotation: 0 },
+                  title: { display: true, text: "Sentence Count" },
                 },
               },
             },
           });
-
           const ctxIdiom = document
             .getElementById("idiomBarChart")
             .getContext("2d");
@@ -573,26 +696,12 @@
             options: {
               responsive: true,
               maintainAspectRatio: true,
-              plugins: {
-                legend: { position: "top", labels: { font: { size: 14 } } },
-                tooltip: {
-                  callbacks: {
-                    label: (ctx) => `${ctx.dataset.label}: ${ctx.raw}`,
-                  },
-                  bodyFont: { size: 13 },
-                },
-              },
+              plugins: { legend: { position: "top" } },
               scales: {
                 y: {
                   beginAtZero: true,
-                  title: {
-                    display: true,
-                    text: "Sentence Count",
-                    font: { size: 13, weight: "bold" },
-                  },
-                  ticks: { font: { size: 12 } },
+                  title: { display: true, text: "Sentence Count" },
                 },
-                x: { ticks: { font: { size: 13, weight: "500" } } },
               },
             },
           });
@@ -602,7 +711,7 @@
         }
       }
 
-      // === Other functions (delete, extract, upload) ===
+      // === Delete and Extract idioms ===
       async function deleteDataset(id) {
         try {
           const response = await apiFetch(`/datasets/${id}`, {
@@ -611,7 +720,7 @@
           if (!response) return;
           if (response.ok) {
             alert("Dataset deleted");
-            loadDatasets(window.currentDatasetPage);
+            await loadDatasets();
             document.getElementById("chartContainer").classList.add("hidden");
           } else {
             const err = await response.json();
@@ -631,18 +740,15 @@
           );
           if (!response) return;
           const result = await response.json();
-          if (response.ok) {
-            alert(result.message);
-          } else {
-            alert(result.message || "Failed to extract idioms");
-          }
+          if (response.ok) alert(result.message);
+          else alert(result.message || "Failed to extract idioms");
         } catch (error) {
           console.error(error);
           alert("Error extracting idioms");
         }
       }
 
-      // Upload
+      // === Upload logic ===
       const uploadArea = document.getElementById("uploadArea");
       const fileInput = document.getElementById("fileInput");
       uploadArea.addEventListener("click", () => fileInput.click());
@@ -656,20 +762,26 @@
       uploadArea.addEventListener("drop", (e) => {
         e.preventDefault();
         uploadArea.classList.remove("border-blue-500", "bg-blue-50");
-        const files = e.dataTransfer.files;
-        if (files.length) fileInput.files = files;
+        if (e.dataTransfer.files.length) fileInput.files = e.dataTransfer.files;
       });
-
       document
         .getElementById("uploadBtn")
         .addEventListener("click", async () => {
+          const datasetName = document
+            .getElementById("datasetNameInput")
+            .value.trim();
+          if (!datasetName) {
+            alert("Please fill in the Dataset Name first.");
+            return;
+          }
           if (fileInput.files.length === 0) {
-            alert("Please select a CSV file first.");
+            alert("Please select a CSV/Excel file first.");
             return;
           }
           const file = fileInput.files[0];
           const formData = new FormData();
           formData.append("file", file);
+          formData.append("dataset_name", datasetName);
           try {
             const response = await fetch(`${API_BASE}/datasets/upload`, {
               method: "POST",
@@ -685,7 +797,8 @@
             if (response.ok) {
               alert("Upload successful");
               fileInput.value = "";
-              await loadDatasets(1);
+              document.getElementById("datasetNameInput").value = "";
+              await loadDatasets();
             } else {
               alert(result.message || "Upload failed");
             }
@@ -698,18 +811,16 @@
       document.getElementById("exportAllBtn").addEventListener("click", () => {
         alert("Export feature will be available soon.");
       });
-
       document.getElementById("closeChartBtn").addEventListener("click", () => {
         document.getElementById("chartContainer").classList.add("hidden");
-        if (currentEmotionChart) {
-          currentEmotionChart.destroy();
-          currentEmotionChart = null;
-        }
-        if (currentIdiomChart) {
-          currentIdiomChart.destroy();
-          currentIdiomChart = null;
-        }
+        if (currentEmotionChart) currentEmotionChart.destroy();
+        if (currentIdiomChart) currentIdiomChart.destroy();
       });
+      document
+        .getElementById("applyFilterBtn")
+        .addEventListener("click", () => {
+          applyFilter();
+        });
 
       function toggleDropdown(btn, menu, icon) {
         btn.addEventListener("click", () => {
@@ -722,7 +833,7 @@
       const dataCollectionIcon = document.getElementById("dataCollectionIcon");
       toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
 
-      loadDatasets(1);
+      loadDatasets();
     </script>
   </body>
 </html>
