@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="id">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Test Result Validation - IdiomSense Admin</title>
+    <title>Validasi Hasil Testing - IdiomSense Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
       rel="stylesheet"
@@ -32,7 +32,7 @@
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- Sidebar dengan gradien (konsisten dengan halaman lain) -->
+      <!-- Sidebar -->
       <aside
         class="w-64 bg-white shadow-2xl flex-shrink-0 overflow-y-auto border-r border-gray-100"
       >
@@ -124,15 +124,15 @@
       </aside>
 
       <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
-        <!-- Header dengan gradient -->
+        <!-- Header -->
         <div
           class="mb-8 p-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500 rounded-xl shadow-lg text-white"
         >
           <h1 class="text-3xl font-bold flex items-center">
-            <i class="fas fa-chart-bar mr-3"></i> Test Result Validation
+            <i class="fas fa-chart-bar mr-3"></i> Validasi Hasil Testing
           </h1>
           <p class="text-blue-100 mt-1">
-            Detailed evaluation of model performance on test datasets
+            Evaluasi performa model pada data uji (hold‑out set)
           </p>
         </div>
 
@@ -140,35 +140,23 @@
         <div class="bg-white p-6 rounded-xl shadow-md mb-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p class="text-sm text-gray-500">Test Dataset Name</p>
+              <p class="text-sm text-gray-500">Nama Dataset</p>
               <p id="datasetName" class="font-semibold text-gray-800">-</p>
             </div>
             <div>
-              <p class="text-sm text-gray-500">Model Tested</p>
+              <p class="text-sm text-gray-500">Model</p>
               <p id="modelName" class="font-semibold text-gray-800">-</p>
             </div>
           </div>
         </div>
 
-        <!-- Konfigurasi Model -->
-        <div class="bg-white p-6 rounded-xl shadow-md mb-6">
-          <h2 class="font-semibold text-gray-700 mb-4 flex items-center">
-            <i class="fas fa-sliders-h mr-2 text-blue-600"></i>
-            Model Configuration
-          </h2>
-          <div
-            id="configContainer"
-            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm"
-          ></div>
-        </div>
-
         <!-- Confusion Matrix -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-6">
           <h2 class="font-semibold text-gray-700 mb-2">
-            Confusion Matrix (Emotion) - Test Data
+            Confusion Matrix (Emosi) - Data Uji
           </h2>
           <p class="text-xs text-gray-500 mb-4">
-            Actual vs Predicted - Hover over cells for details
+            Aktual vs Prediksi - Hover pada sel untuk melihat detail
           </p>
           <div class="flex justify-center overflow-x-auto">
             <div
@@ -190,115 +178,48 @@
                 class="w-5 h-5 rounded"
                 style="background-color: #2c7bb6"
               ></div>
-              <span class="ml-1">Low</span>
+              <span class="ml-1">Rendah</span>
             </div>
             <div class="flex items-center">
               <div
                 class="w-5 h-5 rounded"
                 style="background-color: #abd9e9"
               ></div>
-              <span class="ml-1">Medium</span>
+              <span class="ml-1">Sedang</span>
             </div>
             <div class="flex items-center">
               <div
                 class="w-5 h-5 rounded"
                 style="background-color: #fdae61"
               ></div>
-              <span class="ml-1">High</span>
+              <span class="ml-1">Tinggi</span>
             </div>
             <div class="flex items-center">
               <div
                 class="w-5 h-5 rounded"
                 style="background-color: #d7191c"
               ></div>
-              <span class="ml-1">Very High</span>
+              <span class="ml-1">Sangat Tinggi</span>
             </div>
-          </div>
-        </div>
-
-        <!-- Tabel Evaluasi per Epoch / Fold (opsional) -->
-        <div
-          id="epochFoldSection"
-          class="bg-white p-6 rounded-xl shadow-md mb-6 hidden"
-        >
-          <h2
-            id="epochFoldTitle"
-            class="font-semibold text-gray-700 mb-4 flex items-center"
-          >
-            <i class="fas fa-chart-line mr-2 text-blue-600"></i>
-            Evaluation per Epoch / Fold
-          </h2>
-          <div class="overflow-x-auto">
-            <table class="min-w-full border border-gray-200">
-              <thead class="bg-gray-100">
-                <tr>
-                  <th class="px-4 py-2 border border-gray-300">Epoch / Fold</th>
-                  <th class="px-4 py-2 border border-gray-300">Accuracy (%)</th>
-                  <th class="px-4 py-2 border border-gray-300">
-                    Precision (%)
-                  </th>
-                  <th class="px-4 py-2 border border-gray-300">Recall (%)</th>
-                  <th class="px-4 py-2 border border-gray-300">F1-Score (%)</th>
-                  <th class="px-4 py-2 border border-gray-300">Loss</th>
-                  <th class="px-4 py-2 border border-gray-300">MCC</th>
-                </tr>
-              </thead>
-              <tbody id="epochFoldTableBody"></tbody>
-            </table>
           </div>
         </div>
 
         <!-- Tabel Metrik Evaluasi Klasifikasi -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-6">
           <h2 class="font-semibold text-gray-700 mb-4">
-            Classification Evaluation Metrics
-          </h2>
-          <div class="overflow-x-auto">
-            <table class="min-w-full border border-gray-200">
-              <thead class="bg-blue-500">
-                <tr>
-                  <th class="text-white py-2 border border-gray-300">Metric</th>
-                  <th class="text-white px-4 py-2 border border-gray-300">
-                    Value
-                  </th>
-                </tr>
-              </thead>
-              <tbody id="metricsTableBody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Tabel Stabilitas Performa (Cross Validation) - dengan dummy jika perlu -->
-        <div
-          id="stabilitySection"
-          class="bg-white p-6 rounded-xl shadow-md mb-6"
-          style="display: none"
-        >
-          <h2 class="font-semibold text-gray-700 mb-4">
-            Performance Stability (Cross Validation)
+            Metrik Evaluasi Klasifikasi
           </h2>
           <div class="overflow-x-auto">
             <table class="min-w-full border border-gray-200">
               <thead class="bg-blue-500 text-white">
                 <tr>
-                  <th class="px-4 py-2 border border-gray-300">Fold</th>
-                  <th class="px-4 py-2 border border-gray-300">Accuracy (%)</th>
-                  <th class="px-4 py-2 border border-gray-300">
-                    Precision (%)
-                  </th>
-                  <th class="px-4 py-2 border border-gray-300">Recall (%)</th>
-                  <th class="px-4 py-2 border border-gray-300">F1-Score (%)</th>
-                  <th class="px-4 py-2 border border-gray-300">MCC</th>
-                  <th class="px-4 py-2 border border-gray-300">ROC-AUC (%)</th>
+                  <th class="px-4 py-2 border border-blue-400">Metrik</th>
+                  <th class="px-4 py-2 border border-blue-400">Nilai</th>
                 </tr>
               </thead>
-              <tbody id="stabilityTableBody"></tbody>
+              <tbody id="metricsTableBody"></tbody>
             </table>
           </div>
-          <p class="text-xs text-gray-500 mt-3">
-            * Mean and standard deviation are calculated from cross-validation
-            folds.
-          </p>
         </div>
 
         <!-- Tombol kembali -->
@@ -308,7 +229,7 @@
             class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-5 rounded-lg transition flex items-center space-x-2"
           >
             <i class="fas fa-arrow-left"></i>
-            <span>Back to Testing</span>
+            <span>Kembali ke Testing</span>
           </a>
         </div>
       </main>
@@ -320,93 +241,8 @@
         const urlParams = new URLSearchParams(window.location.search);
         const testingId = urlParams.get("id");
 
-        // Dummy data for stability (10-fold) – fallback jika backend tidak mengirim
-        const dummyFoldMetrics = [
-          {
-            fold: 1,
-            accuracy: 0.9448,
-            precision: 0.9459,
-            recall: 0.9448,
-            f1_score: 0.9448,
-            mcc: 0.9244,
-          },
-          {
-            fold: 2,
-            accuracy: 0.9521,
-            precision: 0.9532,
-            recall: 0.9521,
-            f1_score: 0.9525,
-            mcc: 0.9341,
-          },
-          {
-            fold: 3,
-            accuracy: 0.9497,
-            precision: 0.9511,
-            recall: 0.9497,
-            f1_score: 0.9499,
-            mcc: 0.931,
-          },
-          {
-            fold: 4,
-            accuracy: 0.9387,
-            precision: 0.9396,
-            recall: 0.9387,
-            f1_score: 0.9386,
-            mcc: 0.9154,
-          },
-          {
-            fold: 5,
-            accuracy: 0.9497,
-            precision: 0.9502,
-            recall: 0.9497,
-            f1_score: 0.9498,
-            mcc: 0.9305,
-          },
-          {
-            fold: 6,
-            accuracy: 0.9534,
-            precision: 0.9552,
-            recall: 0.9534,
-            f1_score: 0.9539,
-            mcc: 0.936,
-          },
-          {
-            fold: 7,
-            accuracy: 0.9497,
-            precision: 0.9515,
-            recall: 0.9497,
-            f1_score: 0.9499,
-            mcc: 0.9311,
-          },
-          {
-            fold: 8,
-            accuracy: 0.9607,
-            precision: 0.9628,
-            recall: 0.9607,
-            f1_score: 0.9607,
-            mcc: 0.946,
-          },
-          {
-            fold: 9,
-            accuracy: 0.9509,
-            precision: 0.9525,
-            recall: 0.9509,
-            f1_score: 0.9511,
-            mcc: 0.9327,
-          },
-          {
-            fold: 10,
-            accuracy: 0.9423,
-            precision: 0.9461,
-            recall: 0.9423,
-            f1_score: 0.943,
-            mcc: 0.9213,
-          },
-        ];
-
         let matrix = [];
         let labels = [];
-        let metrics = null;
         let testingData = null;
 
         let canvas, ctx, size, cellSize;
@@ -512,402 +348,77 @@
           };
         }
 
-        function renderConfigParams(params, algorithm) {
-          const container = document.getElementById("configContainer");
-          if (!container) return;
-          container.innerHTML = "";
-          if (!params) {
-            container.innerHTML =
-              '<p class="text-gray-500 col-span-full">Konfigurasi tidak tersedia.</p>';
-            return;
-          }
-          function addItem(label, value, icon = "fa-cog") {
-            const div = document.createElement("div");
-            div.className =
-              "flex items-start space-x-2 p-2 bg-gray-50 rounded-lg";
-            div.innerHTML = `<i class="fas ${icon} text-blue-500 mt-1 w-5"></i><div><p class="text-xs text-gray-500">${label}</p><p class="font-medium text-gray-800 break-all">${value}</p></div>`;
-            container.appendChild(div);
-          }
-          function addCategoryHeader(title) {
-            const header = document.createElement("div");
-            header.className = "col-span-full mt-3 mb-1 first:mt-0";
-            header.innerHTML = `<h3 class="font-semibold text-sm text-gray-600 border-b pb-1">${title}</h3>`;
-            container.appendChild(header);
-          }
-
-          const split = params.split || {};
-          addCategoryHeader("🔀 Data Split");
-          addItem(
-            "Method",
-            split.type === "crossval"
-              ? `Cross Validation (${split.crossval?.folds || "-"} folds)`
-              : `Percentage Split (${split.train || "-"}:${split.test || "-"})`,
-            "fa-code-branch",
-          );
-          if (split.type === "crossval")
-            addItem(
-              "Number of Folds",
-              split.crossval?.folds || "-",
-              "fa-layer-group",
-            );
-          else {
-            addItem("Train Ratio", split.train || "-", "fa-chart-pie");
-            addItem("Test Ratio", split.test || "-", "fa-chart-pie");
-          }
-
-          if (params.naivebayes) {
-            const nb = params.naivebayes;
-            addCategoryHeader("🧠 Naive Bayes");
-            addItem("Alpha", nb.alpha || "-", "fa-sliders-h");
-            addItem(
-              "Model Type",
-              nb.model_type || nb.modelType || "-",
-              "fa-cube",
-            );
-            addItem("Vectorizer", nb.vectorizer || "-", "fa-font");
-            const fusion = params.fusion || {};
-            addCategoryHeader("🔗 Hybrid Fusion");
-            addItem("Fusion Method", fusion.method || "-", "fa-code-merge");
-            addItem("Formula", fusion.formula || "-", "fa-superscript");
-            const rankings = params.emotion_rankings;
-            if (rankings && Object.keys(rankings).length > 0) {
-              addCategoryHeader("😊 Emotion Ranking (1–7)");
-              const sorted = Object.entries(rankings).sort(
-                (a, b) => a[1] - b[1],
-              );
-              for (const [emotion, rank] of sorted)
-                addItem(
-                  emotion.charAt(0).toUpperCase() + emotion.slice(1),
-                  rank,
-                  "fa-smile",
-                );
-            }
-          } else {
-            const general = params.general || {};
-            addCategoryHeader("⚙️ General Parameters");
-            addItem("Random State", general.randomState || "-", "fa-dice");
-            addItem(
-              "Shuffle Before Split",
-              general.shuffle ? "Yes" : "No",
-              "fa-random",
-            );
-            addItem(
-              "Stratified Folds",
-              general.stratified ? "Yes" : "No",
-              "fa-layer-group",
-            );
-
-            const bert = params.indobert || {};
-            addCategoryHeader("🤖 IndoBERT");
-            addItem("Model Name", bert.modelName || "-", "fa-robot");
-            addItem(
-              "Max Sequence Length",
-              bert.maxSeqLength || "-",
-              "fa-text-width",
-            );
-            addItem("Pooling Strategy", bert.pooling || "-", "fa-water");
-            addItem("Batch Size", bert.batchSize || "-", "fa-layer-group");
-
-            const ft = params.finetune || {};
-            addCategoryHeader("🎯 Fine-Tuning IndoBERT");
-            if (ft.enabled) {
-              addItem("Status", "Active", "fa-check-circle text-green-600");
-              addItem("Epochs", ft.epochs || "-", "fa-clock");
-              addItem(
-                "Learning Rate",
-                ft.learningRate || "-",
-                "fa-tachometer-alt",
-              );
-              addItem("Optimizer", ft.optimizer || "-", "fa-cogs");
-              addItem("Weight Decay", ft.weightDecay || "-", "fa-weight-scale");
-              addItem(
-                "Warmup Ratio",
-                ft.warmupRatio || "-",
-                "fa-temperature-high",
-              );
-              addItem("Freeze Layers", ft.freezeLayers || "-", "fa-lock");
-              addItem(
-                "Gradient Accumulation",
-                ft.gradientAccumulation || "-",
-                "fa-layer-group",
-              );
-              addItem("Max Grad Norm", ft.maxGradNorm || "-", "fa-chart-line");
-            } else addItem("Status", "Inactive", "fa-ban text-red-500");
-
-            const umap = params.umap || {};
-            addCategoryHeader("📉 UMAP (Dimensionality Reduction)");
-            if (umap.enabled) {
-              addItem("Status", "Active", "fa-check-circle text-green-600");
-              addItem("n_components", umap.nComponents || "-", "fa-arrows-alt");
-              addItem("n_neighbors", umap.nNeighbors || "-", "fa-users");
-              addItem("min_dist", umap.minDist || "-", "fa-arrows-alt-h");
-              addItem("metric", umap.metric || "-", "fa-ruler");
-              addItem("random_state", umap.randomState || "-", "fa-dice");
-            } else addItem("Status", "Inactive", "fa-ban text-red-500");
-
-            const knn = params.knn || {};
-            addCategoryHeader("👥 KNN");
-            addItem("k (n_neighbors)", knn.k || "-", "fa-neuter");
-            addItem("Distance Metric", knn.metric || "-", "fa-ruler");
-            addItem("Weights", knn.weights || "-", "fa-balance-scale");
-            addItem("Algorithm", knn.algorithm || "-", "fa-code-branch");
-            addItem("Leaf Size", knn.leafSize || "-", "fa-leaf");
-            addItem("p (Minkowski)", knn.p || "-", "fa-chart-line");
-
-            const hybrid = params.hybrid || {};
-            const method = hybrid.method || "none";
-            let hybridText = "Inactive";
-            if (method === "confidence") hybridText = "Confidence‑Based";
-            else if (method === "weighted")
-              hybridText = `Weighted Average (α=${hybrid.alpha || "0.7"})`;
-            addItem("Confidence Adjustment", hybridText, "fa-sliders-h");
-          }
-        }
-
-        function renderEpochFoldTable(data) {
-          const section = document.getElementById("epochFoldSection");
-          const titleEl = document.getElementById("epochFoldTitle");
-          const tbody = document.getElementById("epochFoldTableBody");
-          if (!section || !tbody) return;
-          const m = data.metrics || data;
-          let items = null,
-            isEpoch = false;
-          if (
-            m.epoch_metrics &&
-            Array.isArray(m.epoch_metrics) &&
-            m.epoch_metrics.length > 0
-          ) {
-            items = m.epoch_metrics;
-            isEpoch = true;
-            titleEl.innerHTML =
-              '<i class="fas fa-chart-line mr-2 text-blue-600"></i> Evaluation per Epoch';
-          } else if (
-            m.fold_metrics &&
-            Array.isArray(m.fold_metrics) &&
-            m.fold_metrics.length > 0
-          ) {
-            items = m.fold_metrics;
-            isEpoch = false;
-            titleEl.innerHTML =
-              '<i class="fas fa-chart-line mr-2 text-blue-600"></i> Evaluation per Fold (Cross-Validation)';
-          } else {
-            section.classList.add("hidden");
-            return;
-          }
-          section.classList.remove("hidden");
-          tbody.innerHTML = "";
-          let totalAcc = 0,
-            totalPrec = 0,
-            totalRec = 0,
-            totalF1 = 0,
-            totalLoss = 0,
-            totalMcc = 0;
-          const n = items.length;
-          items.forEach((item, idx) => {
-            const row = tbody.insertRow();
-            const epochOrFold = isEpoch
-              ? `Epoch ${item.epoch || idx + 1}`
-              : `Fold ${item.fold || idx + 1}`;
-            const acc = safeToFixed(
-              item.accuracy != null ? item.accuracy * 100 : null,
-              2,
-            );
-            const prec = safeToFixed(
-              item.precision != null ? item.precision * 100 : null,
-              2,
-            );
-            const rec = safeToFixed(
-              item.recall != null ? item.recall * 100 : null,
-              2,
-            );
-            const f1 = safeToFixed(
-              item.f1_score != null ? item.f1_score * 100 : null,
-              2,
-            );
-            const loss = safeToFixed(item.loss, 4);
-            const mcc = safeToFixed(item.mcc, 4);
-            totalAcc += item.accuracy != null ? item.accuracy * 100 : 0;
-            totalPrec += item.precision != null ? item.precision * 100 : 0;
-            totalRec += item.recall != null ? item.recall * 100 : 0;
-            totalF1 += item.f1_score != null ? item.f1_score * 100 : 0;
-            if (item.loss !== undefined) totalLoss += item.loss;
-            if (item.mcc !== undefined) totalMcc += item.mcc;
-            row.innerHTML = `<td class="px-4 py-2 border border-gray-200 font-medium">${epochOrFold}</td>
-                             <td class="px-4 py-2 border border-gray-200 text-center">${acc}%</td>
-                             <td class="px-4 py-2 border border-gray-200 text-center">${prec}%</td>
-                             <td class="px-4 py-2 border border-gray-200 text-center">${rec}%</td>
-                             <td class="px-4 py-2 border border-gray-200 text-center">${f1}%</td>
-                             <td class="px-4 py-2 border border-gray-200 text-center">${loss}</td>
-                             <td class="px-4 py-2 border border-gray-200 text-center">${mcc}</td>`;
-          });
-          const avgRow = tbody.insertRow();
-          avgRow.classList.add("bg-gray-100", "font-semibold");
-          avgRow.innerHTML = `<td class="px-4 py-2 border border-gray-200 font-medium">Average</td>
-                              <td class="px-4 py-2 border border-gray-200 text-center">${(totalAcc / n).toFixed(2)}%</td>
-                              <td class="px-4 py-2 border border-gray-200 text-center">${(totalPrec / n).toFixed(2)}%</td>
-                              <td class="px-4 py-2 border border-gray-200 text-center">${(totalRec / n).toFixed(2)}%</td>
-                              <td class="px-4 py-2 border border-gray-200 text-center">${(totalF1 / n).toFixed(2)}%</td>
-                              <td class="px-4 py-2 border border-gray-200 text-center">${(totalLoss / n).toFixed(4)}</td>
-                              <td class="px-4 py-2 border border-gray-200 text-center">${(totalMcc / n).toFixed(4)}</td>`;
-        }
-
-        function renderStabilityTable() {
-          const section = document.getElementById("stabilitySection");
-          const tbody = document.getElementById("stabilityTableBody");
-          if (!section || !tbody) return;
-          const metricsData = testingData?.metrics || {};
-          let foldMetrics = metricsData.fold_metrics;
-          if (
-            !foldMetrics ||
-            !Array.isArray(foldMetrics) ||
-            foldMetrics.length === 0
-          ) {
-            foldMetrics = dummyFoldMetrics;
-            section.style.display = "block";
-          } else {
-            section.style.display = "block";
-          }
-          tbody.innerHTML = "";
-          let sumAcc = 0,
-            sumPrec = 0,
-            sumRec = 0,
-            sumF1 = 0,
-            sumMcc = 0,
-            sumAuc = 0;
-          const n = foldMetrics.length;
-          foldMetrics.forEach((f) => {
-            const acc = safeToFixed(
-              f.accuracy != null ? f.accuracy * 100 : null,
-              2,
-            );
-            const prec = safeToFixed(
-              f.precision != null ? f.precision * 100 : null,
-              2,
-            );
-            const rec = safeToFixed(
-              f.recall != null ? f.recall * 100 : null,
-              2,
-            );
-            const f1 = safeToFixed(
-              f.f1_score != null ? f.f1_score * 100 : null,
-              2,
-            );
-            const mcc = safeToFixed(f.mcc, 4);
-            const roc_auc = safeToFixed(
-              f.roc_auc != null ? f.roc_auc * 100 : null,
-              2,
-            );
-            sumAcc += f.accuracy != null ? f.accuracy * 100 : 0;
-            sumPrec += f.precision != null ? f.precision * 100 : 0;
-            sumRec += f.recall != null ? f.recall * 100 : 0;
-            sumF1 += f.f1_score != null ? f.f1_score * 100 : 0;
-            if (f.mcc != null) sumMcc += f.mcc;
-            if (f.roc_auc != null) sumAuc += f.roc_auc;
-            tbody.insertRow().innerHTML = `<td class="px-4 py-2 border border-gray-200 font-medium">Fold ${f.fold || ""}</td>
-                                            <td class="px-4 py-2 border border-gray-200 text-center">${acc}%</td>
-                                            <td class="px-4 py-2 border border-gray-200 text-center">${prec}%</td>
-                                            <td class="px-4 py-2 border border-gray-200 text-center">${rec}%</td>
-                                            <td class="px-4 py-2 border border-gray-200 text-center">${f1}%</td>
-                                            <td class="px-4 py-2 border border-gray-200 text-center">${mcc}</td>
-                                            <td class="px-4 py-2 border border-gray-200 text-center">${roc_auc}%</td>`;
-          });
-          const avgRow = tbody.insertRow();
-          avgRow.classList.add("bg-gray-100", "font-semibold");
-          avgRow.innerHTML = `<td class="px-4 py-2 border border-gray-200 font-medium">Average</td>
-                              <td class="px-4 py-2 border border-gray-200 text-center">${(sumAcc / n).toFixed(2)}%</td>
-                              <td class="px-4 py-2 border border-gray-200 text-center">${(sumPrec / n).toFixed(2)}%</td>
-                              <td class="px-4 py-2 border border-gray-200 text-center">${(sumRec / n).toFixed(2)}%</td>
-                              <td class="px-4 py-2 border border-gray-200 text-center">${(sumF1 / n).toFixed(2)}%</td>
-                              <td class="px-4 py-2 border border-gray-200 text-center">${(sumMcc / n).toFixed(4)}</td>
-                              <td class="px-4 py-2 border border-gray-200 text-center">${(sumAuc / n).toFixed(2)}%</td>`;
-        }
-
         async function loadTestingDetail() {
           if (!testingId) {
-            alert("Test ID not found in URL");
+            alert("ID testing tidak ditemukan di URL");
             return;
           }
           try {
             const res = await fetch(`${API_BASE}/api/testing/${testingId}`);
-            if (!res.ok) throw new Error("Failed to load test data");
+            if (!res.ok) throw new Error("Gagal memuat data testing");
             testingData = await res.json();
+
             document.getElementById("datasetName").textContent =
               testingData.dataset_filename || "-";
             document.getElementById("modelName").textContent =
               testingData.algorithm || "-";
 
-            let params = testingData.params;
-            if (!params && testingData.model_config_id) {
-              try {
-                const configRes = await fetch(
-                  `${API_BASE}/api/processing/configs/${testingData.model_config_id}`,
-                );
-                if (configRes.ok) {
-                  const configData = await configRes.json();
-                  params = configData.params;
-                }
-              } catch (e) {
-                console.warn(e);
-              }
-            }
-            renderConfigParams(params, testingData.algorithm);
-            metrics = testingData.metrics || {};
+            // Data metrik langsung di root (backend baru)
             matrix =
-              metrics.confusion_matrix &&
-              Array.isArray(metrics.confusion_matrix)
-                ? metrics.confusion_matrix
+              testingData.confusion_matrix &&
+              Array.isArray(testingData.confusion_matrix)
+                ? testingData.confusion_matrix
                 : [];
             labels =
-              metrics.class_labels && Array.isArray(metrics.class_labels)
-                ? metrics.class_labels
+              testingData.class_labels &&
+              Array.isArray(testingData.class_labels)
+                ? testingData.class_labels
                 : [
-                    "Happy",
-                    "Trust",
-                    "Surprise",
-                    "Neutral",
-                    "Fear",
-                    "Sad",
-                    "Angry",
+                    "Senang",
+                    "Percaya",
+                    "Terkejut",
+                    "Netral",
+                    "Takut",
+                    "Sedih",
+                    "Marah",
                   ];
+
             drawHeatmap();
             populateMetricsTable();
-            renderEpochFoldTable(testingData);
-            renderStabilityTable();
           } catch (error) {
             console.error(error);
-            alert("Failed to load test details: " + error.message);
+            alert("Gagal memuat detail testing: " + error.message);
           }
         }
 
         function populateMetricsTable() {
           const tbody = document.getElementById("metricsTableBody");
           tbody.innerHTML = "";
-          const acc = safeToFixed(metrics.accuracy, 4);
-          const prec = safeToFixed(metrics.precision, 4);
-          const rec = safeToFixed(metrics.recall, 4);
-          const f1 = safeToFixed(metrics.f1_score, 4);
+          const acc = safeToFixed(testingData.accuracy, 4);
+          const prec = safeToFixed(testingData.precision, 4);
+          const rec = safeToFixed(testingData.recall, 4);
+          const f1 = safeToFixed(testingData.f1_score, 4);
           let calc = null;
           if (matrix.length > 0 && labels.length > 0)
             calc = calculateMetricsFromCM(matrix, labels);
           const rows = [
-            ["Accuracy", acc],
-            ["Precision (Weighted)", prec],
+            ["Akurasi", acc],
+            ["Presisi (Weighted)", prec],
             ["Recall (Weighted)", rec],
             ["F1-Score (Weighted)", f1],
           ];
           if (calc) {
-            rows.push([
-              "Precision (Macro)",
-              safeToFixed(calc.macro_precision, 4),
-            ]);
-            rows.push(["Recall (Macro)", safeToFixed(calc.macro_recall, 4)]);
-            rows.push(["F1-Score (Macro)", safeToFixed(calc.macro_f1, 4)]);
-            rows.push([
-              "Matthews Correlation Coefficient (MCC)",
-              safeToFixed(calc.mcc, 4),
-            ]);
+            rows.push(
+              ["Presisi (Macro)", safeToFixed(calc.macro_precision, 4)],
+              ["Recall (Macro)", safeToFixed(calc.macro_recall, 4)],
+              ["F1-Score (Macro)", safeToFixed(calc.macro_f1, 4)],
+              [
+                "Matthews Correlation Coefficient (MCC)",
+                safeToFixed(calc.mcc, 4),
+              ],
+            );
           }
-          rows.push(["ROC-AUC (Macro)", "-"]);
+          rows.push(["ROC-AUC (Macro)", "- (tidak dihitung)"]);
           for (let [name, value] of rows) {
             const tr = document.createElement("tr");
             tr.innerHTML = `<td class="px-4 py-2 border border-gray-200 font-medium">${name}</td><td class="px-4 py-2 border border-gray-200">${value}</td>`;
@@ -938,7 +449,10 @@
                 cellSize,
               );
               ctx.fillStyle = intensity > 0.65 ? "white" : "#1f2937";
-              ctx.font = `bold ${Math.max(12, cellSize * 0.28)}px "Segoe UI", system-ui`;
+              ctx.font = `bold ${Math.max(
+                12,
+                cellSize * 0.28,
+              )}px "Segoe UI", system-ui`;
               ctx.textAlign = "center";
               ctx.textBaseline = "middle";
               ctx.fillText(
@@ -995,14 +509,14 @@
           ctx.fillStyle = "#374151";
           ctx.textAlign = "center";
           ctx.fillText(
-            "Predicted",
+            "Prediksi",
             size / 2 + marginLeft / 2,
             marginTop + matrix.length * cellSize + 60,
           );
           ctx.save();
           ctx.translate(20, marginTop + (matrix.length * cellSize) / 2);
           ctx.rotate(-Math.PI / 2);
-          ctx.fillText("Actual", 0, 0);
+          ctx.fillText("Aktual", 0, 0);
           ctx.restore();
         }
 
@@ -1031,7 +545,7 @@
             const val = matrix[row][col],
               totalRow = matrix[row].reduce((a, b) => a + b, 0),
               percent = totalRow > 0 ? ((val / totalRow) * 100).toFixed(1) : 0;
-            tooltipDiv.innerHTML = `<strong>${labels[row]} → ${labels[col]}</strong><br>Count: ${val}<br>Percentage: ${percent}% of actual class`;
+            tooltipDiv.innerHTML = `<strong>${labels[row]} → ${labels[col]}</strong><br>Jumlah: ${val}<br>Persentase: ${percent}% dari kelas aktual`;
             tooltipDiv.style.left = e.clientX + 15 + "px";
             tooltipDiv.style.top = e.clientY - 30 + "px";
             tooltipDiv.style.display = "block";
