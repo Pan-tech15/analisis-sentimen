@@ -6,6 +6,8 @@ class Dataset(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     filename = db.Column(db.String(200), nullable=False)
+    original_filename = db.Column(db.String(200), nullable=True)  
+    dataset_name = db.Column(db.String(200), nullable=True)
     filepath = db.Column(db.String(500), nullable=False)
     row_count = db.Column(db.Integer, default=0)
     has_idiom_count = db.Column(db.Integer, default=0)
