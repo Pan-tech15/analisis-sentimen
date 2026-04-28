@@ -194,18 +194,18 @@
             <div class="flex flex-wrap items-center gap-4">
               <label class="inline-flex items-center cursor-pointer">
                 <input type="radio" name="modelChoice" value="new" id="modelChoiceNew" class="form-radio h-4 w-4 text-blue-600" checked />
-                <span class="ml-2 text-sm text-gray-700"><i class="fas fa-plus-circle text-green-500 mr-1"></i> Bikin Model Baru</span>
+                <span class="ml-2 text-sm text-gray-700"><i class="fas fa-plus-circle text-green-500 mr-1"></i> Create a New Model</span>
               </label>
               <label class="inline-flex items-center cursor-pointer">
                 <input type="radio" name="modelChoice" value="existing" id="modelChoiceExisting" class="form-radio h-4 w-4 text-blue-600" />
-                <span class="ml-2 text-sm text-gray-700"><i class="fas fa-folder-open text-blue-500 mr-1"></i> Gunakan Model yang Sudah Ada</span>
+                <span class="ml-2 text-sm text-gray-700"><i class="fas fa-folder-open text-blue-500 mr-1"></i> Use Existing Models</span>
               </label>
               <button id="btnSelectExistingModel" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm hidden transition flex items-center space-x-1">
-                <i class="fas fa-list"></i><span>Pilih Model</span>
+                <i class="fas fa-list"></i><span>Select Model</span>
               </button>
             </div>
             <p class="text-xs text-gray-500 mt-3" id="modelChoiceHint">
-              <i class="fas fa-info-circle mr-1"></i> Parameter akan di-reset ke default. Anda bisa mengaturnya sendiri.
+              <i class="fas fa-info-circle mr-1"></i> The parameters will be reset to default. You can set them yourself.
             </p>
           </div>
 
@@ -231,7 +231,7 @@
               <div class="border-t pt-4 mt-2">
                 <h3 class="font-medium text-gray-800 mb-4">Parameter Configuration</h3>
                 <fieldset class="mb-6 border border-gray-300 rounded-xl p-5 bg-blue-50 shadow-sm">
-                  <legend class="font-semibold text-gray-800 px-3 py-1 bg-blue-100 rounded-full text-sm">A. Parameter Umum</legend>
+                  <legend class="font-semibold text-gray-800 px-3 py-1 bg-blue-100 rounded-full text-sm">A. General Parameters</legend>
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Early Stopping Patience <span class="info-icon" data-param-key="earlyStoppingPatience" data-tooltip="Number of epochs without improvement before stopping.">ⓘ</span></label><input type="number" id="earlyStoppingPatience" value="2" min="1" max="10" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-300" /></div>
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Random State <span class="info-icon" data-param-key="randomState" data-tooltip="Seed for reproducibility of results.">ⓘ</span></label><input type="number" id="randomState" value="42" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-300" /></div>
@@ -404,22 +404,22 @@
       </div>
     </div>
 
-    <!-- POP-UP: Pilih Model yang Sudah Ada -->
+    <!-- POP-UP: Select an Existing Model -->
     <div id="modelSelectPopup" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-[3000] modal-backdrop">
       <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden relative transform transition-all modal-container">
         <div class="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 border-b px-6 py-4 flex justify-between items-center rounded-t-2xl text-white">
-          <h2 class="text-xl font-bold flex items-center"><i class="fas fa-list mr-2"></i> Pilih Model yang Sudah Ada</h2>
+          <h2 class="text-xl font-bold flex items-center"><i class="fas fa-list mr-2"></i> Select an Existing Model</h2>
           <button id="closeModelSelectPopup" class="text-white hover:text-gray-200"><i class="fas fa-times text-2xl"></i></button>
         </div>
         <div class="overflow-y-auto p-6 custom-scroll">
-          <p class="text-sm text-gray-600 mb-4">Menampilkan model untuk algoritma: <strong id="popupAlgoName">IndoBERT-KNN</strong></p>
+          <p class="text-sm text-gray-600 mb-4">Showing the model for the algorithm: <strong id="popupAlgoName">IndoBERT-KNN</strong></p>
           <div class="overflow-x-auto">
             <table class="min-w-full border border-gray-200">
-              <thead class="bg-blue-500 text-white"><tr><th class="px-4 py-2 border border-blue-400">No</th><th class="px-4 py-2 border border-blue-400">Nama Model</th><th class="px-4 py-2 border border-blue-400">Akurasi</th><th class="px-4 py-2 border border-blue-400">Dataset</th><th class="px-4 py-2 border border-blue-400">Tanggal</th></tr></thead>
+              <thead class="bg-blue-500 text-white"><tr><th class="px-4 py-2 border border-blue-400">No</th><th class="px-4 py-2 border border-blue-400">Model Name</th><th class="px-4 py-2 border border-blue-400">Accuracy</th><th class="px-4 py-2 border border-blue-400">Dataset</th><th class="px-4 py-2 border border-blue-400">Date</th></tr></thead>
               <tbody id="modelSelectTableBody"></tbody>
             </table>
           </div>
-          <p id="noModelMessage" class="text-center text-gray-500 py-8 hidden"><i class="fas fa-info-circle mr-1"></i> Belum ada model tersimpan untuk algoritma ini.</p>
+          <p id="noModelMessage" class="text-center text-gray-500 py-8 hidden"><i class="fas fa-info-circle mr-1"></i> There are no saved models for this algorithm yet.</p>
         </div>
       </div>
     </div>
@@ -608,7 +608,7 @@
       document.getElementById("modelChoiceNew").addEventListener("change", function() {
         if (this.checked) {
           document.getElementById("btnSelectExistingModel").classList.add("hidden");
-          document.getElementById("modelChoiceHint").innerHTML = '<i class="fas fa-info-circle mr-1"></i> Parameter akan di-reset ke default. Anda bisa mengaturnya sendiri.';
+          document.getElementById("modelChoiceHint").innerHTML = '<i class="fas fa-info-circle mr-1"></i> The parameters will be reset to default. You can set them yourself.';
           document.getElementById("modelNameInput").value = "";
           if (document.getElementById("tuningAlgo").value === "indobert") resetIndobertToDefault(); else resetLexiconToDefault();
         }
@@ -616,7 +616,7 @@
       document.getElementById("modelChoiceExisting").addEventListener("change", function() {
         if (this.checked) {
           document.getElementById("btnSelectExistingModel").classList.remove("hidden");
-          document.getElementById("modelChoiceHint").innerHTML = '<i class="fas fa-info-circle mr-1"></i> Klik tombol "Pilih Model" untuk memilih dari model yang sudah ada.';
+          document.getElementById("modelChoiceHint").innerHTML = '<i class="fas fa-info-circle mr-1"></i> Click the "Select Model" button to choose from existing models.';
         }
       });
       document.getElementById("btnSelectExistingModel").addEventListener("click", openModelSelectPopup);
