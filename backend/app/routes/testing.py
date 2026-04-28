@@ -1,4 +1,5 @@
 import threading
+import joblib  # <-- tambahkan ini
 from flask import Blueprint, request, jsonify, current_app
 from app import db
 from app.models.training import Training
@@ -81,4 +82,40 @@ def get_detail(testing_id):
     testing = Testing.query.get(testing_id)
     if not testing:
         return jsonify({'error': 'Testing tidak ditemukan'}), 404
-    return jsonify(testing.to_dict()), 200
+
+    training = Training.query.get(testing.training_id)
+    if not training:
+        return jsonify({'error': 'Training terkait tidak ditemukan'}), 404
+
+    config = training.config
+
+    # Ambil class_labels dari training.metrics atau dari model artifacts
+    class_labels = []
+    if training.metrics and 'class_labels' in training.metrics:
+        class_labels = training.metrics['class_labels']
+    elif training.model_path:
+        try:
+            artifacts = joblib.load(training.model_path)
+            le = artifacts.get('label_encoder')
+            if le:
+                class_labels = le.classes_.tolist()
+            else:
+                class_labels = artifacts.get('classes', [])
+        except Exception:
+            class_labels = []
+
+    result = {
+        'id': testing.id,
+        'training_id': testing.training_id,
+        'status': testing.status,
+        'accuracy': testing.accuracy,
+        'f1_score': testing.f1_score,
+        'precision': testing.precision,
+        'recall': testing.recall,
+        'confusion_matrix': testing.confusion_matrix,
+        'class_labels': class_labels,
+        'tested_at': testing.tested_at.isoformat() if testing.tested_at else None,
+        'dataset_filename': training.dataset_filename,
+        'algorithm': config.algorithm if config else None,
+    }
+    return jsonify(result), 200

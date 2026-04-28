@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, send_file
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
 from app import db
@@ -16,6 +16,7 @@ ALLOWED_EXTENSIONS = {'csv'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+# ------------------- UPLOAD DATASET -------------------
 @dataset_bp.route('/upload', methods=['POST'])
 @jwt_required()
 def upload_dataset():
@@ -26,22 +27,28 @@ def upload_dataset():
 
     if 'file' not in request.files:
         return jsonify({'message': 'No file part'}), 400
+
     file = request.files['file']
     if file.filename == '':
         return jsonify({'message': 'No selected file'}), 400
+
     if not allowed_file(file.filename):
         return jsonify({'message': 'Only CSV files allowed'}), 400
 
-    filename = secure_filename(file.filename)
-    # Buat nama unik dengan timestamp
+    # Ambil dataset_name dari form, default string kosong lalu bisa None
+    dataset_name = request.form.get('dataset_name', '').strip()
+    if not dataset_name:
+        dataset_name = None   # biarkan NULL di database, frontend bisa menampilkan fallback
+
+    original_filename = secure_filename(file.filename)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    saved_filename = f"{timestamp}_{filename}"
-    upload_folder = current_app.config.get('UPLOAD_FOLDER', 'data/raw')
+    saved_filename = f"{timestamp}_{original_filename}"
+    upload_folder = current_app.config.get(upload_folder)
     os.makedirs(upload_folder, exist_ok=True)
     filepath = os.path.join(upload_folder, saved_filename)
     file.save(filepath)
 
-    # Baca CSV untuk menghitung baris dan statistik
+    # Baca CSV untuk statistik
     try:
         df = pd.read_csv(filepath)
         required_columns = {'id', 'kalimat', 'has_idiom', 'idiom_text', 'emotion', 'idiom_meaning'}
@@ -56,9 +63,10 @@ def upload_dataset():
         os.remove(filepath)
         return jsonify({'message': f'Error reading CSV: {str(e)}'}), 400
 
-    # Simpan ke database
     new_dataset = DatasetModel(
         filename=saved_filename,
+        original_filename=original_filename,
+        dataset_name=dataset_name,
         filepath=filepath,
         row_count=row_count,
         has_idiom_count=has_idiom_count,
@@ -73,6 +81,8 @@ def upload_dataset():
         'dataset': {
             'id': new_dataset.id,
             'filename': new_dataset.filename,
+            'original_filename': new_dataset.original_filename,
+            'dataset_name': new_dataset.dataset_name,
             'rows': new_dataset.row_count,
             'has_idiom': new_dataset.has_idiom_count,
             'no_idiom': new_dataset.no_idiom_count,
@@ -81,6 +91,7 @@ def upload_dataset():
     }), 201
 
 
+# ------------------- LIST DATASETS -------------------
 @dataset_bp.route('/', methods=['GET'])
 @jwt_required()
 def list_datasets():
@@ -90,6 +101,8 @@ def list_datasets():
         result.append({
             'id': ds.id,
             'filename': ds.filename,
+            'original_filename': ds.original_filename,
+            'dataset_name': ds.dataset_name,
             'rows': ds.row_count,
             'has_idiom': ds.has_idiom_count,
             'no_idiom': ds.no_idiom_count,
@@ -98,21 +111,70 @@ def list_datasets():
     return jsonify(result), 200
 
 
+# ------------------- RENAME DATASET -------------------
+@dataset_bp.route('/<int:dataset_id>', methods=['PUT'])
+@jwt_required()
+def rename_dataset(dataset_id):
+    dataset = DatasetModel.query.get(dataset_id)
+    if not dataset:
+        return jsonify({'message': 'Dataset not found'}), 404
+
+    data = request.get_json()
+    new_name = data.get('dataset_name', '').strip()
+    if not new_name:
+        return jsonify({'message': 'Dataset name cannot be empty'}), 400
+
+    dataset.dataset_name = new_name
+    db.session.commit()
+
+    return jsonify({
+        'message': 'Dataset renamed successfully',
+        'dataset': {
+            'id': dataset.id,
+            'dataset_name': dataset.dataset_name,
+            'original_filename': dataset.original_filename,
+        }
+    }), 200
+
+
+# ------------------- DELETE DATASET -------------------
 @dataset_bp.route('/<int:dataset_id>', methods=['DELETE'])
 @jwt_required()
 def delete_dataset(dataset_id):
     dataset = DatasetModel.query.get(dataset_id)
     if not dataset:
         return jsonify({'message': 'Dataset not found'}), 404
-    
-    # Hapus file fisik
+
     if os.path.exists(dataset.filepath):
         os.remove(dataset.filepath)
-    
+
     db.session.delete(dataset)
     db.session.commit()
     return jsonify({'message': 'Dataset deleted'}), 200
 
+
+# ------------------- DOWNLOAD DATASET -------------------
+@dataset_bp.route('/<int:dataset_id>/download', methods=['GET'])
+@jwt_required()
+def download_dataset(dataset_id):
+    dataset = DatasetModel.query.get(dataset_id)
+    if not dataset:
+        return jsonify({'message': 'Dataset not found'}), 404
+
+    filepath = dataset.filepath
+    # Jika path masih relatif (backward compatibility), jadikan absolut
+    if not os.path.isabs(filepath):
+        upload_folder = os.path.abspath(current_app.config.get('UPLOAD_FOLDER', 'data/raw'))
+        filepath = os.path.join(upload_folder, os.path.basename(filepath))
+    
+    if not os.path.exists(filepath):
+        return jsonify({'message': 'File not found on server'}), 404
+
+    download_name = dataset.original_filename or dataset.filename
+    return send_file(filepath, as_attachment=True, download_name=download_name)
+
+
+# ------------------- EXTRACT IDIOMS -------------------
 @dataset_bp.route('/<int:dataset_id>/extract-idioms', methods=['POST'])
 @jwt_required()
 def extract_idioms_to_kamus(dataset_id):
@@ -142,7 +204,6 @@ def extract_idioms_to_kamus(dataset_id):
                 skipped += 1
                 continue
 
-            # Cek kombinasi idiom_text dan idiom_meaning (case-insensitive)
             existing = Idiom.query.filter(
                 db.func.lower(Idiom.idiom_text) == idiom_text.lower(),
                 db.func.lower(Idiom.idiom_meaning) == idiom_meaning.lower()
@@ -171,27 +232,26 @@ def extract_idioms_to_kamus(dataset_id):
         traceback.print_exc()
         return jsonify({'message': f'Terjadi kesalahan: {str(e)}'}), 500
 
+
+# ------------------- PREVIEW DATASET -------------------
 @dataset_bp.route('/<int:dataset_id>/preview', methods=['GET'])
 @jwt_required()
 def preview_dataset(dataset_id):
     dataset = DatasetModel.query.get(dataset_id)
     if not dataset:
         return jsonify({'message': 'Dataset not found'}), 404
-    
-    # Baca file CSV
+
     try:
         df = pd.read_csv(dataset.filepath)
     except Exception as e:
         return jsonify({'message': f'Error reading file: {str(e)}'}), 500
-    
-    # Parameter filter & pagination
+
     search = request.args.get('search', '').lower()
     emotion = request.args.get('emotion', '')
-    has_idiom = request.args.get('has_idiom', '')  # '1', '0', atau ''
+    has_idiom = request.args.get('has_idiom', '')
     page = int(request.args.get('page', 1))
     per_page = int(request.args.get('per_page', 10))
-    
-    # Filter data
+
     filtered_df = df.copy()
     if search:
         filtered_df = filtered_df[filtered_df['kalimat'].str.lower().str.contains(search, na=False)]
@@ -199,19 +259,18 @@ def preview_dataset(dataset_id):
         filtered_df = filtered_df[filtered_df['emotion'].str.lower() == emotion.lower()]
     if has_idiom != '':
         filtered_df = filtered_df[filtered_df['has_idiom'] == int(has_idiom)]
-    
+
     total_rows = len(filtered_df)
     start = (page - 1) * per_page
     end = start + per_page
     page_df = filtered_df.iloc[start:end]
-    
+
     records = page_df.to_dict(orient='records')
-    # Konversi NaN ke None
     for rec in records:
         for k, v in rec.items():
             if pd.isna(v):
                 rec[k] = None
-    
+
     return jsonify({
         'dataset_id': dataset_id,
         'filename': dataset.filename,
@@ -220,4 +279,3 @@ def preview_dataset(dataset_id):
         'per_page': per_page,
         'data': records
     }), 200
-
