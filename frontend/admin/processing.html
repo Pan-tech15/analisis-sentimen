@@ -107,6 +107,14 @@
         background: #c1c1c1;
         border-radius: 10px;
       }
+      /* Tabel di pop-up model selection */
+      .model-select-row {
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .model-select-row:hover {
+        background: #eef2ff;
+      }
     </style>
   </head>
   <body class="bg-gray-100 font-sans antialiased">
@@ -284,8 +292,24 @@
             </p>
           </div>
 
-          <!-- Select Ratio & Algorithm & Model -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <!-- Nama Model -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Model Name</label
+            >
+            <input
+              type="text"
+              id="modelNameInput"
+              placeholder="Enter model name..."
+              class="w-full md:w-96 border rounded-lg p-2 focus:ring-2 focus:ring-blue-400"
+            />
+            <p class="text-xs text-gray-500 mt-1">
+              Give a unique name for this model configuration.
+            </p>
+          </div>
+
+          <!-- Select Ratio & Algorithm -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1"
                 >Select Ratio</label
@@ -309,14 +333,52 @@
                 <option value="lexicon">Naive Bayes‑Lexicon</option>
               </select>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Select Model</label
+          </div>
+
+          <!-- Pilihan Model: Baru atau Existing -->
+          <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <label class="block text-sm font-medium text-gray-700 mb-3"
+              >Select Model</label
+            >
+            <div class="flex flex-wrap items-center gap-4">
+              <label class="inline-flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  name="modelChoice"
+                  value="new"
+                  id="modelChoiceNew"
+                  class="form-radio h-4 w-4 text-blue-600"
+                  checked
+                />
+                <span class="ml-2 text-sm text-gray-700"
+                  ><i class="fas fa-plus-circle text-green-500 mr-1"></i> Bikin
+                  Model Baru</span
+                >
+              </label>
+              <label class="inline-flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  name="modelChoice"
+                  value="existing"
+                  id="modelChoiceExisting"
+                  class="form-radio h-4 w-4 text-blue-600"
+                />
+                <span class="ml-2 text-sm text-gray-700"
+                  ><i class="fas fa-folder-open text-blue-500 mr-1"></i> Gunakan
+                  Model yang Sudah Ada</span
+                >
+              </label>
+              <button
+                id="btnSelectExistingModel"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm hidden transition flex items-center space-x-1"
               >
-              <select id="oldModelSelect" class="w-full border rounded-lg p-2">
-                <option value="">-- New Model --</option>
-              </select>
+                <i class="fas fa-list"></i><span>Pilih Model</span>
+              </button>
             </div>
+            <p class="text-xs text-gray-500 mt-3" id="modelChoiceHint">
+              <i class="fas fa-info-circle mr-1"></i> Parameter akan di-reset ke
+              default. Anda bisa mengaturnya sendiri.
+            </p>
           </div>
 
           <!-- Dynamic Parameter Form -->
@@ -378,7 +440,9 @@
                     </div>
                   </div>
                   <p class="text-xs text-gray-500 mt-2">
-                    <i class="fas fa-info-circle mr-1"></i> Validation using the Epoch‑based approach (single split data training/validation).
+                    <i class="fas fa-info-circle mr-1"></i> Validation using the
+                    Epoch‑based approach (single split data
+                    training/validation).
                   </p>
                 </fieldset>
 
@@ -392,7 +456,8 @@
                     B. Input Layer
                   </legend>
                   <p class="text-xs text-gray-500 mb-4">
-                    Manages the token representation and form of data entering the model.
+                    Manages the token representation and form of data entering
+                    the model.
                   </p>
                   <div
                     class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
@@ -458,7 +523,8 @@
                     </div>
                     <div class="sm:col-span-2 lg:col-span-3">
                       <p class="text-xs text-gray-500">
-                        <i class="fas fa-info-circle mr-1"></i> IndoBERT's built-in WordPiece tokenizer is used automatically.
+                        <i class="fas fa-info-circle mr-1"></i> IndoBERT's
+                        built-in WordPiece tokenizer is used automatically.
                       </p>
                     </div>
                   </div>
@@ -474,7 +540,8 @@
                     C. Hidden Layer (Encoder & Fine‑Tuning)
                   </legend>
                   <p class="text-xs text-gray-500 mb-4">
-                    12-layer transformer architecture with 12 attention heads. Additional training (fine-tuning) can be enabled.
+                    12-layer transformer architecture with 12 attention heads.
+                    Additional training (fine-tuning) can be enabled.
                   </p>
                   <div
                     class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
@@ -698,7 +765,8 @@
                     D. Output Layer (Classification Head)
                   </legend>
                   <p class="text-xs text-gray-500 mb-4">
-                    Transforming contextual vectors into emotion class probabilities.
+                    Transforming contextual vectors into emotion class
+                    probabilities.
                   </p>
                   <div
                     class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
@@ -766,7 +834,8 @@
                     </div>
                     <div class="sm:col-span-2 lg:col-span-3">
                       <p class="text-xs text-gray-500">
-                        <i class="fas fa-info-circle mr-1"></i> The number of classes (8) and Softmax are determined automatically.
+                        <i class="fas fa-info-circle mr-1"></i> The number of
+                        classes (8) and Softmax are determined automatically.
                       </p>
                     </div>
                   </div>
@@ -1068,7 +1137,7 @@
                   <label
                     class="text-sm font-medium text-gray-700 mb-3 flex items-center"
                   >
-                    Emotion Ranking Order (1–7)                    
+                    Emotion Ranking Order (1–7)
                     <span
                       class="info-icon"
                       data-param-key="emotionRanking"
@@ -1262,7 +1331,9 @@
               <thead class="bg-blue-500 text-white">
                 <tr>
                   <th class="px-4 py-2 border border-blue-400">Rasio</th>
-                  <th class="px-4 py-2 border border-blue-400">Dataset Name</th>
+                  <th class="px-4 py-2 border border-blue-400">
+                    Dataset Name
+                  </th>
                   <th class="px-4 py-2 border border-blue-400">Model</th>
                   <th class="px-4 py-2 border border-blue-400">Accuracy</th>
                   <th class="px-4 py-2 border border-blue-400">Date</th>
@@ -1279,7 +1350,8 @@
         <!-- Highest Yielding Model -->
         <div class="bg-white p-6 rounded-xl shadow-md">
           <h2 class="font-semibold text-gray-700 mb-4 flex items-center">
-            <i class="fas fa-trophy text-yellow-500 mr-2"></i> Highest Yielding Model
+            <i class="fas fa-trophy text-yellow-500 mr-2"></i> Highest Yielding
+            Model
           </h2>
           <div id="bestModelContainer" class="text-gray-600"></div>
         </div>
@@ -1318,6 +1390,53 @@
       </div>
     </div>
 
+    <!-- POP-UP: Pilih Model yang Sudah Ada -->
+    <div
+      id="modelSelectPopup"
+      class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-[3000] modal-backdrop"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden relative transform transition-all modal-container"
+      >
+        <div
+          class="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 border-b px-6 py-4 flex justify-between items-center rounded-t-2xl text-white"
+        >
+          <h2 class="text-xl font-bold flex items-center">
+            <i class="fas fa-list mr-2"></i> Pilih Model yang Sudah Ada
+          </h2>
+          <button
+            id="closeModelSelectPopup"
+            class="text-white hover:text-gray-200"
+          >
+            <i class="fas fa-times text-2xl"></i>
+          </button>
+        </div>
+        <div class="overflow-y-auto p-6 custom-scroll">
+          <p class="text-sm text-gray-600 mb-4" id="popupAlgoLabel">
+            Menampilkan model untuk algoritma: <strong id="popupAlgoName">IndoBERT-KNN</strong>
+          </p>
+          <div class="overflow-x-auto">
+            <table class="min-w-full border border-gray-200">
+              <thead class="bg-blue-500 text-white">
+                <tr>
+                  <th class="px-4 py-2 border border-blue-400">No</th>
+                  <th class="px-4 py-2 border border-blue-400">Nama Model</th>
+                  <th class="px-4 py-2 border border-blue-400">Akurasi</th>
+                  <th class="px-4 py-2 border border-blue-400">Dataset</th>
+                  <th class="px-4 py-2 border border-blue-400">Tanggal</th>
+                </tr>
+              </thead>
+              <tbody id="modelSelectTableBody"></tbody>
+            </table>
+          </div>
+          <p id="noModelMessage" class="text-center text-gray-500 py-8 hidden">
+            <i class="fas fa-info-circle mr-1"></i> Belum ada model tersimpan
+            untuk algoritma ini.
+          </p>
+        </div>
+      </div>
+    </div>
+
     <script>
       // ==================== CONFIGURATION ====================
       const API_BASE = "http://localhost:5000";
@@ -1327,6 +1446,57 @@
       const targetDimInput = document.getElementById("targetDim");
       const umapNComponentsInput = document.getElementById("umapNComponents");
       let trainingParamsStore = {};
+
+      // ==================== DEFAULT PARAMETERS ====================
+      const defaultIndobertParams = {
+        earlyStoppingPatience: 2,
+        randomState: 42,
+        maxSeqLength: "128",
+        padding: "max_length",
+        truncation: "True",
+        batchSizeParam: "16",
+        enableFinetune: false,
+        ftEpoch: 3,
+        ftLearningRate: "2e-5",
+        ftOptimizer: "AdamW",
+        ftWeightDecay: 0.01,
+        ftWarmupRatio: 0.1,
+        ftFreezeLayers: 9,
+        ftGradAccum: 1,
+        ftMaxGradNorm: 1.0,
+        ftDropout: 0.1,
+        pooling: "MEAN",
+        targetDim: 768,
+        enableUMAP: false,
+        umapNComponents: 5,
+        umapNNeighbors: 30,
+        umapMinDist: 0.1,
+        umapMetric: "cosine",
+        umapRandomState: 42,
+        knnK: 7,
+        knnMetric: "cosine",
+        knnWeights: "distance",
+        knnAlgorithm: "auto",
+        knnLeafSize: 30,
+        knnP: 2,
+        hybridMethod: "none",
+      };
+
+      const defaultLexiconParams = {
+        lexiconAlpha: "1.0",
+        lexiconModelType: "MultinomialNB",
+        lexiconVectorizer: "CountVectorizer",
+        fusionMethodSelect: "product",
+        emotionRankings: {
+          happy: 1,
+          Believe: 2,
+          Surprised: 3,
+          Neutral: 4,
+          Sad: 5,
+          scared: 6,
+          Angry: 7,
+        },
+      };
 
       // ==================== EMOSI & FUSION ====================
       const emotionLabels = [
@@ -1343,7 +1513,7 @@
         const container = document.getElementById("emotionRankingContainer");
         if (!container) return;
         container.innerHTML = "";
-        emotionLabels.forEach((label) => {
+        emotionLabels.forEach((label, idx) => {
           const div = document.createElement("div");
           div.className = "flex flex-col items-center";
           const span = document.createElement("span");
@@ -1356,6 +1526,7 @@
             const opt = document.createElement("option");
             opt.value = i;
             opt.textContent = i;
+            if (i === idx + 1) opt.selected = true;
             select.appendChild(opt);
           }
           div.appendChild(span);
@@ -1523,369 +1694,155 @@
         window.addEventListener("scroll", hideTooltip, true);
       })();
 
-      // Detail parameter (tetap sama, tidak diubah)
+      // Detail parameter (tetap sama)
       const PARAM_DETAILS = {
         maxSeqLength: {
           title: "Max Sequence Length",
-          html: `
-    <p><b>Definition:</b> The maximum number of tokens (word pieces) that the model processes for each sentence. Tokens can be full words or sub‑words.</p>
-    <p><b>Value range:</b> 64, 128, 256, 512 tokens.</p>
-    <p><b>Effect:</b></p>
-    <ul class="list-disc list-inside ml-2">
-      <li><b>Larger (512):</b> The model can read longer sentences without cutting off important information. However, training becomes slower, uses more GPU memory, and may include a lot of padding (empty tokens) if sentences are actually short.</li>
-      <li><b>Smaller (64):</b> Training is faster and more memory‑efficient, but long sentences will be cut off in the middle. Emotion information at the end of a sentence could be lost.</li>
-    </ul>
-    <p><b>Recommendation:</b> For standard Indonesian sentences (average 15–25 words), <b>128</b> is already very sufficient and efficient. Use 256 only if your dataset contains many long sentences (>30 words). 512 is rarely needed for short classification tasks like emotion analysis.</p>
-    <p><i>Analogy:</i> Like reading a message through a small window vs. a large window. A small window lets you see only part of the content; a large window shows the whole conversation but wastes space.</p>
-  `,
+          html: `<p><b>Definition:</b> The maximum number of tokens (word pieces) that the model processes for each sentence.</p><p><b>Value range:</b> 64, 128, 256, 512 tokens.</p><p><b>Recommendation:</b> <b>128</b> is sufficient and efficient.</p>`,
         },
         padding: {
           title: "Padding",
-          html: `
-    <p><b>Definition:</b> Strategy to equalise the length of all inputs in a batch by adding filler tokens (usually 0) at the end of shorter sentences.</p>
-    <p><b>Options:</b> <code>max_length</code> (all inputs are forced to the set maximum length, resulting in more padding), <code>longest</code> (only follows the longest sentence in the batch, more efficient).</p>
-    <p><b>Effect:</b></p>
-    <ul class="list-disc list-inside ml-2">
-      <li><b>max_length:</b> Consistent across batches, easier for parallel computation, but wastes padding tokens if most sentences are short.</li>
-      <li><b>longest:</b> More efficient because padding is minimal, but input length can vary per batch, making the data flow slightly less predictable.</li>
-    </ul>
-    <p><b>Recommendation:</b> Choose <b>max_length</b> for stability and easier debugging, especially when Max Sequence Length is set fairly small (128). Choose <code>longest</code> if you want to optimise GPU memory usage.</p>
-  `,
+          html: `<p><b>Definition:</b> Strategy to equalise the length of all inputs in a batch.</p><p><b>Options:</b> max_length, longest.</p>`,
         },
         truncation: {
           title: "Truncation",
-          html: `
-    <p><b>Definition:</b> Determines whether sentences longer than Max Sequence Length will be truncated.</p>
-    <p><b>Options:</b> <code>True</code> (cut off), <code>False</code> (leave as is, which may cause an error).</p>
-    <p><b>Effect:</b> When <code>True</code>, the end of the sentence is discarded; if important information lies at the end, accuracy may drop. If <code>False</code> and a sentence exceeds the limit, training will fail.</p>
-    <p><b>Recommendation:</b> <b>Always enable (True)</b> to keep the process safe, provided Max Sequence Length is large enough to accommodate most sentences. If you are very worried about losing information, increase Max Sequence Length rather than turning off Truncation.</p>
-  `,
+          html: `<p><b>Definition:</b> Determines whether sentences longer than Max Sequence Length will be truncated.</p>`,
         },
         batchSizeParam: {
           title: "Batch Size",
-          html: `
-    <p><b>Definition:</b> Number of data samples processed together in one training step.</p>
-    <p><b>Value range:</b> 8, 16, 32, 64.</p>
-    <p><b>Effect:</b></p>
-    <ul class="list-disc list-inside ml-2">
-      <li><b>Small (8):</b> More memory‑efficient; gradients are calculated from few examples so the learning direction is "noisier" but can help escape bad local minima. Overall training is slower.</li>
-      <li><b>Large (64):</b> Faster per epoch because of maximum GPU parallelism, but requires more memory. Gradients are more stable, but may be less sensitive to subtle patterns.</li>
-    </ul>
-    <p><b>Recommendation:</b> <b>16</b> or <b>32</b> is a good balance for GPUs with 8–12 GB RAM. If you run out of memory, drop to 8 and also consider Gradient Accumulation.</p>
-  `,
+          html: `<p><b>Definition:</b> Number of data samples processed together.</p><p><b>Recommendation:</b> 16 or 32.</p>`,
         },
         earlyStoppingPatience: {
           title: "Early Stopping Patience",
-          html: `
-    <p><b>Definition:</b> The number of consecutive epochs without improvement in accuracy (or the validation metric). Once this limit is reached, training stops automatically to prevent overfitting and save time.</p>
-    <p><b>Range:</b> 1 – 10 (smaller values are stricter).</p>
-    <p><b>Effect:</b></p>
-    <ul class="list-disc list-inside ml-2">
-      <li><b>Small values (1‑2):</b> Training stops as soon as performance stagnates briefly, possibly before the model has fully matured.</li>
-      <li><b>Large values (5‑10):</b> Gives more chance for improvement, but may lead to overfitting if performance never recovers.</li>
-    </ul>
-    <p><b>Recommendation:</b> <b>2</b> or <b>3</b> is a good starting point. If you have a large dataset or a low learning rate, you may increase it slightly.</p>
-  `,
+          html: `<p><b>Definition:</b> Number of epochs without improvement before stopping.</p>`,
         },
         randomState: {
           title: "Random State",
-          html: `
-    <p><b>Definition:</b> A fixed number (seed) used for random initialisation such as training/validation split, weight initialisation, or shuffling.</p>
-    <p><b>Effect:</b> Using the same seed makes experiments fully reproducible. Change this number to try different "luck" variations (e.g., 42, 123, 2024).</p>
-    <p><b>Recommendation:</b> Keep <b>42</b> as the iconic default. Only change it when you want to test the model’s sensitivity to initialisation.</p>
-  `,
+          html: `<p><b>Definition:</b> Fixed number for reproducible experiments.</p>`,
         },
         pooling: {
           title: "Pooling Strategy",
-          html: `
-    <p><b>Definition:</b> How the vectors of all tokens in a sentence are combined into a single sentence representation vector.</p>
-    <p><b>Options:</b>
-      <br><code>CLS</code> – Uses only the first token [CLS] (the built‑in aggregate representation of BERT).
-      <br><code>MEAN</code> – Averages all tokens (excluding padding).
-      <br><code>MAX</code> – Takes the maximum value per dimension across all tokens.
-    </p>
-    <p><b>Effect:</b> CLS is simple but sometimes misses local information. MEAN better represents the whole sentence. MAX captures the most prominent features.</p>
-    <p><b>Recommendation:</b> <b>MEAN</b> often gives the best results for sentence classification. Also try CLS if you want a strong baseline.</p>
-  `,
+          html: `<p><b>Definition:</b> How token vectors are combined.</p><p><b>Options:</b> CLS, MEAN, MAX.</p>`,
         },
         ftDropout: {
           title: "Classifier Dropout",
-          html: `
-    <p><b>Definition:</b> The percentage of neurons in the classification layer that are randomly turned off during training. Prevents the model from relying too heavily on specific neurons (overfitting).</p>
-    <p><b>Range:</b> 0.0 – 0.5 (0.1 means 10% of neurons are dropped).</p>
-    <p><b>Effect:</b> Higher dropout gives stronger regularisation but can make learning harder. Too low and the model easily memorises the training data (overfits).</p>
-    <p><b>Recommendation:</b> <b>0.1</b> works well for small to medium datasets. For very small datasets (<1000), you can increase it to 0.3.</p>
-  `,
+          html: `<p><b>Definition:</b> Percentage of neurons dropped during training.</p>`,
         },
         enableFinetune: {
           title: "Fine‑Tuning (Enable)",
-          html: `
-    <p><b>Definition:</b> Activates additional training (fine‑tuning) of the IndoBERT model with your data, so the model adapts to the specific characteristics of your dataset.</p>
-    <p><b>Effect:</b> Without fine‑tuning, the model merely works as a frozen feature extractor. With fine‑tuning, accuracy usually increases dramatically, but it requires more time and memory.</p>
-    <p><b>Recommendation:</b> <b>Enable</b> if you have at least a few hundred samples and a capable GPU. Otherwise, leave it off for fast feature extraction.</p>
-    <p><i>Analogy:</i> Fine‑tuning is like hiring a professional translator (IndoBERT) who already masters Indonesian, then giving them examples of your emotion texts so they become even better.</p>
-  `,
+          html: `<p><b>Definition:</b> Activates additional training of IndoBERT.</p>`,
         },
         ftEpoch: {
           title: "Epoch (Fine‑Tuning)",
-          html: `
-    <p><b>Definition:</b> How many times the model will see the entire training dataset from start to finish.</p>
-    <p><b>Range:</b> 1 – 50.</p>
-    <p><b>Effect:</b> Too few → the model hasn’t learned enough patterns. Too many → the model starts memorising data (overfitting) and performance on new data actually drops.</p>
-    <p><b>Recommendation:</b> Start with <b>3</b>. Watch the validation accuracy curve; if it is still slowly rising after 3 epochs, increase to 5–10. If it flattens or drops, reduce.</p>
-  `,
+          html: `<p><b>Definition:</b> Number of times the model sees the entire dataset.</p>`,
         },
         ftLearningRate: {
           title: "Learning Rate (Fine‑Tuning)",
-          html: `
-    <p><b>Definition:</b> How big a step the model takes when updating its weights. A small value means careful steps; a large value means big leaps.</p>
-    <p><b>Range:</b> 5e‑6 (0.000005) to 1e‑4 (0.0001).</p>
-    <p><b>Effect:</b> Too small → learning is very slow, requiring many epochs. Too large → weights change drastically, possibly "jumping over" the optimum or even diverging (error gets larger).</p>
-    <p><b>Recommendation:</b> <b>2e‑5</b> or <b>3e‑5</b> are standard values for transformer fine‑tuning. For very large datasets, you can lower it slightly to 1e‑5. If you have only a few hundred samples, you may raise it to 5e‑5.</p>
-  `,
+          html: `<p><b>Definition:</b> Step size for weight updates.</p>`,
         },
         ftOptimizer: {
           title: "Optimizer",
-          html: `
-    <p><b>Definition:</b> The algorithm that determines how the learning rate is applied to update the weights.</p>
-    <p><b>Options:</b> AdamW (Adam with decoupled weight decay, the most modern), Adam (basic version), SGD (Stochastic Gradient Descent, classic but sometimes still superior).</p>
-    <p><b>Effect:</b> AdamW is generally the most stable and fastest for fine‑tuning. SGD requires more careful tuning of the learning rate.</p>
-    <p><b>Recommendation:</b> <b>AdamW</b> for all cases; no need to change unless you are very experienced.</p>
-  `,
+          html: `<p><b>Definition:</b> Algorithm for weight updates.</p>`,
         },
         ftWeightDecay: {
           title: "Weight Decay",
-          html: `
-    <p><b>Definition:</b> A penalty that encourages the model’s weights to remain small, so the model does not become overly complex and overfit.</p>
-    <p><b>Range:</b> 0.0 – 0.1. Usually 0.01.</p>
-    <p><b>Effect:</b> Larger values give stronger overfitting prevention, but if too large the model may underfit (become too simple).</p>
-    <p><b>Recommendation:</b> <b>0.01</b> is the default and almost always works well. For very small datasets, you can try 0.1.</p>
-  `,
+          html: `<p><b>Definition:</b> Penalty to keep weights small.</p>`,
         },
         ftWarmupRatio: {
           title: "Warmup Ratio",
-          html: `
-    <p><b>Definition:</b> The proportion of steps at the beginning of training where the learning rate gradually increases from zero to the full value. Prevents drastic changes early on.</p>
-    <p><b>Range:</b> 0.0 – 1.0 (0.1 means 10% of total steps are warmup).</p>
-    <p><b>Effect:</b> Without warmup, the start of training can be unstable. Too large a warmup reduces effective learning time.</p>
-    <p><b>Recommendation:</b> <b>0.1</b> is fine. Only adjust if the total number of steps is very small (e.g., epoch = 1).</p>
-  `,
+          html: `<p><b>Definition:</b> Proportion of steps for learning rate warmup.</p>`,
         },
         ftFreezeLayers: {
           title: "Freeze Layers",
-          html: `
-    <p><b>Definition:</b> The number of the first layers of IndoBERT whose weights are frozen (not updated) during fine‑tuning. Early layers contain general language knowledge.</p>
-    <p><b>Range:</b> 0 – 12 (0 = none frozen).</p>
-    <p><b>Effect:</b> Freezing early layers speeds up training, saves memory, and reduces overfitting on small datasets. However, if too many layers are frozen, the model cannot adapt to the specific data.</p>
-    <p><b>Recommendation:</b> For datasets with <1000 samples, freeze 9‑12 layers. For 1k‑5k, 6‑9. Above 10k, you can use 0‑6. <b>9</b> is a safe number for many cases.</p>
-  `,
+          html: `<p><b>Definition:</b> Number of first layers frozen during fine-tuning.</p>`,
         },
         ftGradAccum: {
           title: "Gradient Accumulation",
-          html: `
-    <p><b>Definition:</b> The number of batches whose gradients are accumulated before a single weight update. Effectively simulates a larger batch size without using more GPU memory.</p>
-    <p><b>Range:</b> 1 – 8.</p>
-    <p><b>Effect:</b> For example, batch size 8 with accumulation 4 means weights are updated every 32 samples. Higher accumulation mimics a larger batch, but training time per epoch does not increase (only updates happen less frequently).</p>
-    <p><b>Recommendation:</b> Keep <b>1</b> if memory is sufficient. Increase to 2 or 4 if you want the effect of a larger batch without adding memory.</p>
-  `,
+          html: `<p><b>Definition:</b> Batches accumulated before weight update.</p>`,
         },
         ftMaxGradNorm: {
           title: "Max Grad Norm",
-          html: `
-    <p><b>Definition:</b> The maximum allowed length of the gradient vector. If it exceeds this value, the gradient is scaled down proportionally (gradient clipping).</p>
-    <p><b>Range:</b> 0.1 – 10.</p>
-    <p><b>Effect:</b> Prevents "exploding gradients" which can make training unstable or even produce NaN. Too small a value can slow down learning.</p>
-    <p><b>Recommendation:</b> <b>1.0</b> is a safe standard. Lower it to 0.5 only if the model frequently becomes unstable.</p>
-  `,
+          html: `<p><b>Definition:</b> Maximum gradient norm for clipping.</p>`,
         },
         enableUMAP: {
           title: "UMAP (Enable)",
-          html: `
-    <p><b>Definition:</b> Activates UMAP dimensionality reduction to transform high‑dimensional feature vectors (768) into a lower dimension before passing them to KNN.</p>
-    <p><b>Effect:</b> Speeds up KNN classification and reduces noise, but may discard important information. Without UMAP, KNN works on the original 768 dimensions (after pooling).</p>
-    <p><b>Recommendation:</b> Enable if you want exploration or have a lot of data (>3000). For small datasets, you can leave it off to keep information intact. Set n_components to around 50–200 as a starting point.</p>
-    <p><i>Analogy:</i> UMAP is like creating a summary of a long report – you get the key points, but some details might be lost.</p>
-  `,
+          html: `<p><b>Definition:</b> Activates UMAP dimensionality reduction.</p>`,
         },
         umapNComponents: {
           title: "n_components (UMAP)",
-          html: `
-    <p><b>Definition:</b> The number of dimensions in the UMAP output. Smaller values make the data more compact.</p>
-    <p><b>Range:</b> 2 – 100 (or up to the original dimension of 768).</p>
-    <p><b>Effect:</b> Too small (2‑3) → a lot of information is lost, making it hard for KNN to distinguish emotions. Too large (>200) → the reduction is less significant, so KNN remains heavy.</p>
-    <p><b>Recommendation:</b> Start with <b>50</b> or <b>100</b>. Use 2‑3 for visualisation only, not for serious classification. If UMAP is disabled, this value is ignored.</p>
-  `,
+          html: `<p><b>Definition:</b> Number of dimensions in UMAP output.</p>`,
         },
         umapNNeighbors: {
           title: "n_neighbors (UMAP)",
-          html: `
-    <p><b>Definition:</b> The number of neighbour points considered when constructing the local structure. This determines how "local" or "global" UMAP’s view is.</p>
-    <p><b>Range:</b> 2 – 200.</p>
-    <p><b>Effect:</b> Small values (5‑15) focus on fine details (micro clusters); large values (50‑200) see the broader picture. Too small may produce noise; too large may erase important clusters.</p>
-    <p><b>Recommendation:</b> <b>30</b> is a good middle ground for most datasets. You can increase it slightly if your data is fairly homogeneous.</p>
-  `,
+          html: `<p><b>Definition:</b> Number of neighbor points for local structure.</p>`,
         },
         umapMinDist: {
           title: "min_dist (UMAP)",
-          html: `
-    <p><b>Definition:</b> The minimum distance between points in the UMAP output space. Controls how tightly points are packed.</p>
-    <p><b>Range:</b> 0.0 – 1.0.</p>
-    <p><b>Effect:</b> Small values (0.0‑0.1) → points are close together, forming tight clumps. Large values (0.5‑0.9) → points spread out, separating clusters more clearly.</p>
-    <p><b>Recommendation:</b> <b>0.1</b> is usually good. If the embedding looks too crowded, raise it to 0.4.</p>
-  `,
+          html: `<p><b>Definition:</b> Minimum distance between points in output.</p>`,
         },
         umapMetric: {
           title: "metric (UMAP)",
-          html: `
-    <p><b>Definition:</b> How distances between vectors are measured when building the neighbour graph.</p>
-    <p><b>Options:</b> cosine (angle, good for text), euclidean (straight line), manhattan (city block).</p>
-    <p><b>Effect:</b> Cosine is often best for text because it is not sensitive to vector length. Euclidean is suitable when both direction and magnitude matter.</p>
-    <p><b>Recommendation:</b> <b>cosine</b> for language embeddings.</p>
-  `,
+          html: `<p><b>Definition:</b> Distance measurement method.</p>`,
         },
         umapRandomState: {
           title: "random_state (UMAP)",
-          html: `
-    <p><b>Definition:</b> Seed for UMAP’s random initialisation so that results are reproducible.</p>
-    <p><b>Recommendation:</b> Match the main Random State (e.g., <b>42</b>).</p>
-  `,
+          html: `<p><b>Definition:</b> Seed for UMAP reproducibility.</p>`,
         },
         knnK: {
           title: "k (n_neighbors) KNN",
-          html: `
-    <p><b>Definition:</b> The number of nearest neighbours consulted to determine the class of a new data point.</p>
-    <p><b>Range:</b> 1 – 50.</p>
-    <p><b>Effect:</b> Small k (1‑3) → the model is very flexible, easily influenced by noise (overfit). Large k (>15) → decisions are stable, but may erase complex class boundaries (underfit).</p>
-    <p><b>Recommendation:</b> For datasets of hundreds to thousands, <b>5, 7, 11</b> are often optimal. Use odd numbers to avoid ties.</p>
-    <p><i>Analogy:</i> Like asking for opinions. k=1 means asking only the nearest friend, which could be biased. k=11 means a small group discussion, fairer.</p>
-  `,
+          html: `<p><b>Definition:</b> Number of nearest neighbors.</p>`,
         },
         knnMetric: {
           title: "Distance Metric (KNN)",
-          html: `
-    <p><b>Definition:</b> How "similarity" between two feature vectors is measured.</p>
-    <p><b>Options:</b> cosine, euclidean, manhattan.</p>
-    <p><b>Effect:</b> Cosine focuses on angle, ideal for text. Euclidean considers magnitude, useful when it carries meaning. Manhattan is an alternative that is robust to outliers.</p>
-    <p><b>Recommendation:</b> <b>cosine</b> for BERT embeddings. Euclidean can be tried if you use non‑text features.</p>
-  `,
+          html: `<p><b>Definition:</b> How similarity is measured.</p>`,
         },
         knnWeights: {
           title: "Weights (KNN)",
-          html: `
-    <p><b>Definition:</b> How the votes of neighbours are weighted.</p>
-    <p><b>Options:</b> uniform (all neighbours considered equal), distance (closer neighbours have a stronger vote).</p>
-    <p><b>Effect:</b> uniform is simple and fast. distance often improves accuracy because more relevant neighbours are prioritised.</p>
-    <p><b>Recommendation:</b> <b>distance</b> is almost always better, especially when data is unevenly distributed.</p>
-  `,
+          html: `<p><b>Definition:</b> How neighbor votes are weighted.</p>`,
         },
         knnAlgorithm: {
           title: "Algorithm (KNN)",
-          html: `
-    <p><b>Definition:</b> The algorithm used to find nearest neighbours.</p>
-    <p><b>Options:</b> auto, ball_tree, kd_tree, brute. ‘auto’ chooses the best one based on the data.</p>
-    <p><b>Recommendation:</b> Leave as <b>auto</b>. Only change if you experience specific performance issues.</p>
-  `,
+          html: `<p><b>Definition:</b> Algorithm for nearest neighbor search.</p>`,
         },
         knnLeafSize: {
           title: "Leaf Size (KNN)",
-          html: `
-    <p><b>Definition:</b> Leaf size for tree‑based algorithms (ball_tree/kd_tree). Affects tree construction and query speed.</p>
-    <p><b>Range:</b> 1 – 100.</p>
-    <p><b>Effect:</b> Smaller values → tree is more branched, query may be faster but requires more memory. Larger values → tree construction is faster.</p>
-    <p><b>Recommendation:</b> Keep at <b>30</b> (default). It is not very sensitive.</p>
-  `,
+          html: `<p><b>Definition:</b> Leaf size for tree-based algorithms.</p>`,
         },
         knnP: {
           title: "p (Minkowski) KNN",
-          html: `
-    <p><b>Definition:</b> Parameter for the Minkowski metric, if you choose that metric. p=2 gives Euclidean, p=1 gives Manhattan.</p>
-    <p><b>Note:</b> Since this page does not directly provide a Minkowski option, this parameter is only relevant if the backend supports it. Usually ignored.</p>
-  `,
+          html: `<p><b>Definition:</b> Minkowski metric parameter.</p>`,
         },
         hybridMethod: {
           title: "Confidence Adjustment (Hybrid)",
-          html: `
-    <p><b>Definition:</b> Method for correcting KNN probabilities based on how confident KNN is about its prediction.</p>
-    <p><b>Options:</b> Pure KNN (no adjustment), Confidence‑based (multiply probability by confidence score), Weighted Average (combine probability with weighted confidence score).</p>
-    <p><b>Effect:</b> Confidence‑based can reduce the impact of uncertain predictions. Weighted Average is more flexible. If your data has many similar classes, it can help.</p>
-    <p><b>Recommendation:</b> Start with <b>Pure KNN</b>. If results are unsatisfying, try <b>Confidence‑based</b>.</p>
-  `,
+          html: `<p><b>Definition:</b> Method for correcting KNN probabilities.</p>`,
         },
         targetDim: {
           title: "Target Embedding Dimension",
-          html: `
-    <p><b>Definition:</b> The final dimension of the feature vector that will be used by KNN. If UMAP is active, this will equal n_components. If not, it remains 768 (the original IndoBERT dimension) and cannot be changed from here.</p>
-    <p><b>Range:</b> 2 – 768.</p>
-    <p><b>Effect:</b> Smaller → more compact but risks losing important information. Larger → richer representation but KNN runs slower.</p>
-    <p><b>Recommendation:</b> If UMAP is enabled, use 128–256 as a balance of speed and accuracy. Without UMAP, the dimension stays 768, which is already optimal from BERT.</p>
-  `,
+          html: `<p><b>Definition:</b> Final dimension of feature vector for KNN.</p>`,
         },
-        // ========== LEXICON + NB ==========
         lexiconAlpha: {
           title: "Alpha (Laplace Smoothing)",
-          html: `
-    <p><b>Definition:</b> Laplace (or Lidstone) smoothing parameter for Naive Bayes. Prevents zero probabilities when a word does not appear in the training data.</p>
-    <p><b>Range:</b> Typically > 0; a value of 1.0 gives pure Laplace smoothing. Smaller values (e.g., 0.1) or larger values (2‑5) are also possible.</p>
-    <p><b>Effects:</b></p>
-    <ul class="list-disc list-inside ml-2">
-      <li><b>Small values (0.1–0.5):</b> The model relies more on observed data, but new words may receive very small probabilities, which can influence predictions.</li>
-      <li><b>Large values (2–5):</b> Probabilities become more uniform, reducing overfitting on rare words, but may blur differences between classes.</li>
-    </ul>
-    <p><b>Recommendation:</b> Keep <b>1.0</b> (default). If your dataset is very small, increase it to 2‑3. For larger datasets, you can try 0.5.</p>
-  `,
+          html: `<p><b>Definition:</b> Laplace smoothing parameter for Naive Bayes.</p>`,
         },
         lexiconModelType: {
           title: "Model Type (Naive Bayes)",
-          html: `
-    <p><b>Definition:</b> The variant of Naive Bayes to be used.</p>
-    <p><b>Options:</b>
-      <br><code>MultinomialNB</code> – suitable for word frequency (count) data; assumes features follow a multinomial distribution.
-      <br><code>BernoulliNB</code> – suitable for binary data (word presence/absence); assumes independent Bernoulli features.
-    </p>
-    <p><b>Effects:</b> Multinomial usually works better for text with many word occurrences, while Bernoulli can be better when the presence of a word is more important than its frequency.</p>
-    <p><b>Recommendation:</b> Use <b>MultinomialNB</b> as the default. Try BernoulliNB for very small datasets or if you have binary feature engineering.</p>
-  `,
+          html: `<p><b>Definition:</b> Variant of Naive Bayes.</p>`,
         },
         lexiconVectorizer: {
-          title: "Vectorizer (Text Representation)",
-          html: `
-    <p><b>Definition:</b> Method to convert raw text into a numeric vector that can be processed by Naive Bayes.</p>
-    <p><b>Options:</b>
-      <br><code>CountVectorizer</code> – counts the frequency of each word (bag‑of‑words).
-      <br><code>TfidfVectorizer</code> – uses TF‑IDF weighting, which reduces the influence of very frequent words (like “the”, “and”).
-    </p>
-    <p><b>Effects:</b> CountVectorizer is simple, but common words can dominate. TfidfVectorizer penalises overly frequent words and often improves accuracy; however, on small datasets it may lose important information.</p>
-    <p><b>Recommendation:</b> <b>TfidfVectorizer</b> usually gives better results. Use CountVectorizer if you want a fast model and the dataset has already been cleaned of common words.</p>
-  `,
+          title: "Vectorizer",
+          html: `<p><b>Definition:</b> Method to convert text to numeric vector.</p>`,
         },
         emotionRanking: {
-          title: "Emotion Ranking Order (1–7)",
-          html: `
-    <p><b>Definition:</b> Priority order of the 7 emotions (Happy, Trust, Surprise, Neutral, Fear, Sad, Angry) used by the Lexicon module to decide the dominant emotion when scores are equal, or to give more weight to a dominant emotion.</p>
-    <p><b>How to fill:</b> Each emotion receives a unique number from 1 (most dominant/important) to 7 (least dominant). No duplicate numbers are allowed.</p>
-    <p><b>Effects:</b> When two emotions have similar scores, the one with a higher ranking will be prioritised. The ranking can also influence rule‑based score calculations.</p>
-    <p><b>Recommendation:</b> Set the ranking based on your domain priorities or data distribution. If unsure, leave the default order (1‑7 as shown) or consult a linguistics expert. <b>Do not assign rankings randomly</b>, as it can affect classification results.</p>
-  `,
+          title: "Emotion Ranking Order",
+          html: `<p><b>Definition:</b> Priority order of 7 emotions.</p>`,
         },
         fusionMethodSelect: {
-          title: "Fusion Method (Naive Bayes + Lexicon)",
-          html: `
-    <p><b>Definition:</b> Method for combining the probabilities from the Naive Bayes model (P_NB) with the confidence scores from the Lexicon (S_lexicon) into a final probability.</p>
-    <p><b>Options:</b>
-      <br><code>Product</code> – P_final = P_NB × (1 + S_lexicon). Strengthens predictions when both sources agree.
-      <br><code>Sum</code> – P_final = P_NB + S_lexicon. Simple, but may produce values outside the normal probability range.
-      <br><code>Weighted Average</code> – P_final = α · P_NB + (1 − α) · S_lexicon. Gives balanced weight to both sources.
-    </p>
-    <p><b>Effects:</b> Product tends to reinforce high‑confidence predictions but can make other predictions very small. Sum is additive and easy to interpret. Weighted Average is the most flexible; you can adjust the weight (α).</p>
-    <p><b>Recommendation:</b> Start with <b>Weighted Average</b> with α = 0.6‑0.8 so the NB model dominates. Try Product if you want sharper final probabilities.</p>
-  `,
+          title: "Fusion Method",
+          html: `<p><b>Definition:</b> Method for combining NB and Lexicon scores.</p>`,
         },
         fusionFormulaInput: {
           title: "Fusion Formula",
-          html: `
-    <p><b>Definition:</b> The mathematical formula applied according to the chosen Fusion Method.</p>
-    <p><b>Effects:</b> The formula is automatically displayed based on your selection. You do not need to change it manually – this field is for reference only.</p>
-  `,
+          html: `<p><b>Definition:</b> Formula for the selected fusion method.</p>`,
         },
       };
 
@@ -2125,7 +2082,7 @@
           else div.classList.add("hidden");
         });
 
-      // Toggle UMAP + sinkronisasi (tanpa konfirmasi)
+      // Toggle UMAP + sinkronisasi
       document
         .getElementById("enableUMAP")
         .addEventListener("change", function () {
@@ -2160,7 +2117,7 @@
             indo.classList.add("hidden");
             lex.classList.remove("hidden");
           }
-          populateModelSelect(this.value);
+          updatePopupAlgoLabel();
           renderBestModel(
             this.value === "indobert" ? "IndoBERT-KNN" : "Lexicon-NB",
           );
@@ -2170,6 +2127,333 @@
 
       loadRatioDropdown();
 
+      // ==================== MODEL SELECT POP-UP ====================
+      function getCurrentAlgoName() {
+        const algo = document.getElementById("tuningAlgo").value;
+        return algo === "indobert" ? "IndoBERT-KNN" : "Lexicon-NB";
+      }
+
+      function updatePopupAlgoLabel() {
+        const algoName = getCurrentAlgoName();
+        document.getElementById("popupAlgoName").textContent = algoName;
+      }
+
+      function openModelSelectPopup() {
+        updatePopupAlgoLabel();
+        const algoName = getCurrentAlgoName();
+        const filtered = trainingHistory.filter(
+          (m) => m.algorithm === algoName,
+        );
+        const tbody = document.getElementById("modelSelectTableBody");
+        const noMsg = document.getElementById("noModelMessage");
+        tbody.innerHTML = "";
+
+        if (filtered.length === 0) {
+          noMsg.classList.remove("hidden");
+        } else {
+          noMsg.classList.add("hidden");
+          filtered.forEach((m, idx) => {
+            const row = document.createElement("tr");
+            row.className =
+              "model-select-row border-b border-gray-200 hover:bg-indigo-50";
+            const acc =
+              m.metrics?.accuracy != null
+                ? (m.metrics.accuracy * 100).toFixed(2) + "%"
+                : "-";
+            const name = m.config_name || m.dataset_filename || "Model #" + m.id;
+            const dataset = m.dataset_filename || "-";
+            const date = m.created_at
+              ? new Date(m.created_at).toLocaleString("id-ID", {
+                  dateStyle: "short",
+                  timeStyle: "short",
+                })
+              : "-";
+            row.innerHTML = `
+                    <td class="px-4 py-3 text-center">${idx + 1}</td>
+                    <td class="px-4 py-3 font-medium text-gray-800">${name}</td>
+                    <td class="px-4 py-3 text-center font-bold text-green-700">${acc}</td>
+                    <td class="px-4 py-3 text-sm text-gray-600">${dataset}</td>
+                    <td class="px-4 py-3 text-sm text-gray-500">${date}</td>`;
+            row.addEventListener("click", () => {
+              selectExistingModel(m);
+            });
+            tbody.appendChild(row);
+          });
+        }
+
+        const popup = document.getElementById("modelSelectPopup");
+        popup.classList.remove("hidden");
+        const container = popup.querySelector(".modal-container");
+        if (container) {
+          setTimeout(() => container.classList.add("show"), 10);
+        }
+      }
+
+      function closeModelSelectPopup() {
+        const popup = document.getElementById("modelSelectPopup");
+        const container = popup.querySelector(".modal-container");
+        if (container) container.classList.remove("show");
+        setTimeout(() => popup.classList.add("hidden"), 200);
+      }
+
+      function selectExistingModel(model) {
+        // Isi nama model
+        const modelName =
+          model.config_name || model.dataset_filename || "Model #" + model.id;
+        document.getElementById("modelNameInput").value = modelName;
+
+        // Ambil parameter
+        const params = model.params || trainingParamsStore[model.id] || {};
+        const algorithm = model.algorithm || getCurrentAlgoName();
+
+        if (algorithm === "IndoBERT-KNN") {
+          fillIndobertParams(params);
+        } else if (algorithm === "Lexicon-NB") {
+          fillLexiconParams(params);
+        }
+
+        // Tutup pop-up
+        closeModelSelectPopup();
+      }
+
+      function fillIndobertParams(params) {
+        // Reset dulu ke default, lalu isi dari params
+        resetIndobertToDefault();
+
+        if (!params || Object.keys(params).length === 0) return;
+
+        // General
+        if (params.general) {
+          if (params.general.randomState != null)
+            document.getElementById("randomState").value =
+              params.general.randomState;
+        }
+        // Split
+        if (params.split) {
+          if (params.split.early_stopping_patience != null)
+            document.getElementById("earlyStoppingPatience").value =
+              params.split.early_stopping_patience;
+        }
+        // IndoBERT
+        if (params.indobert) {
+          const ib = params.indobert;
+          if (ib.maxSeqLength)
+            document.getElementById("maxSeqLength").value = ib.maxSeqLength;
+          if (ib.padding) document.getElementById("padding").value = ib.padding;
+          if (ib.truncation != null)
+            document.getElementById("truncation").value = ib.truncation
+              ? "True"
+              : "False";
+          if (ib.batchSize)
+            document.getElementById("batchSizeParam").value = ib.batchSize;
+          if (ib.pooling) document.getElementById("pooling").value = ib.pooling;
+        }
+        // Finetune
+        if (params.finetune) {
+          const ft = params.finetune;
+          if (ft.enabled != null) {
+            document.getElementById("enableFinetune").checked = ft.enabled;
+            const div = document.getElementById("finetuneParams");
+            if (ft.enabled) div.classList.remove("hidden");
+            else div.classList.add("hidden");
+          }
+          if (ft.epochs != null)
+            document.getElementById("ftEpoch").value = ft.epochs;
+          if (ft.learningRate)
+            document.getElementById("ftLearningRate").value = ft.learningRate;
+          if (ft.optimizer)
+            document.getElementById("ftOptimizer").value = ft.optimizer;
+          if (ft.weightDecay != null)
+            document.getElementById("ftWeightDecay").value = ft.weightDecay;
+          if (ft.warmupRatio != null)
+            document.getElementById("ftWarmupRatio").value = ft.warmupRatio;
+          if (ft.freezeLayers != null)
+            document.getElementById("ftFreezeLayers").value = ft.freezeLayers;
+          if (ft.gradientAccumulation != null)
+            document.getElementById("ftGradAccum").value =
+              ft.gradientAccumulation;
+          if (ft.maxGradNorm != null)
+            document.getElementById("ftMaxGradNorm").value = ft.maxGradNorm;
+          if (ft.dropout != null)
+            document.getElementById("ftDropout").value = ft.dropout;
+        }
+        // UMAP
+        if (params.umap) {
+          const um = params.umap;
+          if (um.enabled != null) {
+            document.getElementById("enableUMAP").checked = um.enabled;
+            const div = document.getElementById("umapParams");
+            if (um.enabled) div.classList.remove("hidden");
+            else div.classList.add("hidden");
+          }
+          if (um.nComponents != null)
+            document.getElementById("umapNComponents").value = um.nComponents;
+          if (um.nNeighbors != null)
+            document.getElementById("umapNNeighbors").value = um.nNeighbors;
+          if (um.minDist != null)
+            document.getElementById("umapMinDist").value = um.minDist;
+          if (um.metric)
+            document.getElementById("umapMetric").value = um.metric;
+          if (um.randomState != null)
+            document.getElementById("umapRandomState").value = um.randomState;
+        }
+        // Target dim
+        if (params.indobert?.targetDim != null) {
+          document.getElementById("targetDim").value = params.indobert.targetDim;
+        } else if (params.umap?.nComponents != null && params.umap?.enabled) {
+          document.getElementById("targetDim").value = params.umap.nComponents;
+        }
+        // KNN
+        if (params.knn) {
+          const kn = params.knn;
+          if (kn.k != null) document.getElementById("knnK").value = kn.k;
+          if (kn.metric)
+            document.getElementById("knnMetric").value = kn.metric;
+          if (kn.weights)
+            document.getElementById("knnWeights").value = kn.weights;
+          if (kn.algorithm)
+            document.getElementById("knnAlgorithm").value = kn.algorithm;
+          if (kn.leafSize != null)
+            document.getElementById("knnLeafSize").value = kn.leafSize;
+          if (kn.p != null) document.getElementById("knnP").value = kn.p;
+        }
+        // Hybrid
+        if (params.hybrid) {
+          if (params.hybrid.method)
+            document.getElementById("hybridMethod").value =
+              params.hybrid.method;
+        }
+      }
+
+      function fillLexiconParams(params) {
+        resetLexiconToDefault();
+
+        if (!params || Object.keys(params).length === 0) return;
+
+        // Naive Bayes
+        if (params.naivebayes) {
+          const nb = params.naivebayes;
+          if (nb.alpha != null)
+            document.getElementById("lexiconAlpha").value = nb.alpha;
+          if (nb.model_type)
+            document.getElementById("lexiconModelType").value = nb.model_type;
+          if (nb.vectorizer)
+            document.getElementById("lexiconVectorizer").value = nb.vectorizer;
+        }
+        // Fusion
+        if (params.fusion) {
+          if (params.fusion.method)
+            document.getElementById("fusionMethodSelect").value =
+              params.fusion.method;
+          updateFusionFormula();
+        }
+        // Emotion rankings
+        if (params.emotion_rankings) {
+          const rankSelects = document.querySelectorAll(
+            "#emotionRankingContainer select.emotion-rank",
+          );
+          rankSelects.forEach((sel) => {
+            const emotion = sel.getAttribute("data-emotion");
+            if (
+              params.emotion_rankings[emotion] != null &&
+              params.emotion_rankings[emotion] >= 1 &&
+              params.emotion_rankings[emotion] <= 7
+            ) {
+              sel.value = params.emotion_rankings[emotion];
+            }
+          });
+        }
+      }
+
+      function resetIndobertToDefault() {
+        document.getElementById("earlyStoppingPatience").value =
+          defaultIndobertParams.earlyStoppingPatience;
+        document.getElementById("randomState").value =
+          defaultIndobertParams.randomState;
+        document.getElementById("maxSeqLength").value =
+          defaultIndobertParams.maxSeqLength;
+        document.getElementById("padding").value =
+          defaultIndobertParams.padding;
+        document.getElementById("truncation").value =
+          defaultIndobertParams.truncation;
+        document.getElementById("batchSizeParam").value =
+          defaultIndobertParams.batchSizeParam;
+        document.getElementById("enableFinetune").checked =
+          defaultIndobertParams.enableFinetune;
+        document.getElementById("finetuneParams").classList.add("hidden");
+        document.getElementById("ftEpoch").value =
+          defaultIndobertParams.ftEpoch;
+        document.getElementById("ftLearningRate").value =
+          defaultIndobertParams.ftLearningRate;
+        document.getElementById("ftOptimizer").value =
+          defaultIndobertParams.ftOptimizer;
+        document.getElementById("ftWeightDecay").value =
+          defaultIndobertParams.ftWeightDecay;
+        document.getElementById("ftWarmupRatio").value =
+          defaultIndobertParams.ftWarmupRatio;
+        document.getElementById("ftFreezeLayers").value =
+          defaultIndobertParams.ftFreezeLayers;
+        document.getElementById("ftGradAccum").value =
+          defaultIndobertParams.ftGradAccum;
+        document.getElementById("ftMaxGradNorm").value =
+          defaultIndobertParams.ftMaxGradNorm;
+        document.getElementById("ftDropout").value =
+          defaultIndobertParams.ftDropout;
+        document.getElementById("pooling").value =
+          defaultIndobertParams.pooling;
+        document.getElementById("targetDim").value =
+          defaultIndobertParams.targetDim;
+        document.getElementById("enableUMAP").checked =
+          defaultIndobertParams.enableUMAP;
+        document.getElementById("umapParams").classList.add("hidden");
+        document.getElementById("umapNComponents").value =
+          defaultIndobertParams.umapNComponents;
+        document.getElementById("umapNNeighbors").value =
+          defaultIndobertParams.umapNNeighbors;
+        document.getElementById("umapMinDist").value =
+          defaultIndobertParams.umapMinDist;
+        document.getElementById("umapMetric").value =
+          defaultIndobertParams.umapMetric;
+        document.getElementById("umapRandomState").value =
+          defaultIndobertParams.umapRandomState;
+        document.getElementById("knnK").value = defaultIndobertParams.knnK;
+        document.getElementById("knnMetric").value =
+          defaultIndobertParams.knnMetric;
+        document.getElementById("knnWeights").value =
+          defaultIndobertParams.knnWeights;
+        document.getElementById("knnAlgorithm").value =
+          defaultIndobertParams.knnAlgorithm;
+        document.getElementById("knnLeafSize").value =
+          defaultIndobertParams.knnLeafSize;
+        document.getElementById("knnP").value = defaultIndobertParams.knnP;
+        document.getElementById("hybridMethod").value =
+          defaultIndobertParams.hybridMethod;
+      }
+
+      function resetLexiconToDefault() {
+        document.getElementById("lexiconAlpha").value =
+          defaultLexiconParams.lexiconAlpha;
+        document.getElementById("lexiconModelType").value =
+          defaultLexiconParams.lexiconModelType;
+        document.getElementById("lexiconVectorizer").value =
+          defaultLexiconParams.lexiconVectorizer;
+        document.getElementById("fusionMethodSelect").value =
+          defaultLexiconParams.fusionMethodSelect;
+        updateFusionFormula();
+
+        const rankSelects = document.querySelectorAll(
+          "#emotionRankingContainer select.emotion-rank",
+        );
+        rankSelects.forEach((sel) => {
+          const emotion = sel.getAttribute("data-emotion");
+          if (
+            defaultLexiconParams.emotionRankings[emotion] != null
+          ) {
+            sel.value = defaultLexiconParams.emotionRankings[emotion];
+          }
+        });
+      }
+
       // ==================== TRAINING HISTORY ====================
       async function loadTrainingHistory() {
         try {
@@ -2178,7 +2462,6 @@
           });
           if (!res.ok) throw new Error("Failed to load history");
           trainingHistory = await res.json();
-          // Simpan params ke store jika ada
           trainingHistory.forEach((item) => {
             if (item.params) trainingParamsStore[item.id] = item.params;
           });
@@ -2186,26 +2469,9 @@
           console.error(err);
           trainingHistory = [];
         }
-        populateModelSelect();
         renderTrainingTable();
         renderTrainingPagination();
         renderBestModel();
-      }
-
-      function populateModelSelect(algorithm) {
-        const select = document.getElementById("oldModelSelect");
-        if (!select) return;
-        select.innerHTML = '<option value="">-- New Model --</option>';
-        if (!algorithm) algorithm = document.getElementById("tuningAlgo").value;
-        const algoName =
-          algorithm === "indobert" ? "IndoBERT-KNN" : "Lexicon-NB";
-        trainingHistory.forEach((m) => {
-          if (m.algorithm !== algoName) return;
-          const opt = document.createElement("option");
-          opt.value = m.id;
-          opt.textContent = `${m.config_name || m.dataset_filename} (${m.algorithm}) - Acc: ${m.metrics?.accuracy?.toFixed(3) || "N/A"}`;
-          select.appendChild(opt);
-        });
       }
 
       function renderTrainingTable() {
@@ -2328,8 +2594,6 @@
                     </a>
                   </div>
                 </div>`;
-
-        // Simpan best.id agar bisa diakses dari showParamModal
         container.dataset.bestId = best.id;
       }
 
@@ -2462,6 +2726,11 @@
           alert("Please select a dataset first.");
           return;
         }
+        const modelNameInput = document.getElementById("modelNameInput").value.trim();
+        if (!modelNameInput) {
+          alert("Please enter a model name.");
+          return;
+        }
         const algorithm = document.getElementById("tuningAlgo").value;
         const ratioSelect = document.getElementById("ratioSelect");
         const ratioValue = ratioSelect.value;
@@ -2568,7 +2837,6 @@
             hybrid,
           };
         } else {
-          // Lexicon-NB
           const rankSelects = document.querySelectorAll(
             "#emotionRankingContainer select.emotion-rank",
           );
@@ -2611,18 +2879,12 @@
           };
         }
 
-        const modelName = document.getElementById("oldModelSelect").value
-          ? document.getElementById("oldModelSelect").options[
-              document.getElementById("oldModelSelect").selectedIndex
-            ].text
-          : "Model-" + Date.now();
-
         try {
           const configRes = await fetch(`${API_BASE}/api/processing/configs`, {
             method: "POST",
             headers: getHeaders(),
             body: JSON.stringify({
-              name: modelName,
+              name: modelNameInput,
               algorithm:
                 algorithm === "indobert" ? "IndoBERT-KNN" : "Lexicon-NB",
               params: params,
@@ -2713,6 +2975,47 @@
         }
       });
 
+      // Model choice radio buttons
+      document
+        .getElementById("modelChoiceNew")
+        .addEventListener("change", function () {
+          if (this.checked) {
+            document.getElementById("btnSelectExistingModel").classList.add("hidden");
+            document.getElementById("modelChoiceHint").innerHTML =
+              '<i class="fas fa-info-circle mr-1"></i> Parameter akan di-reset ke default. Anda bisa mengaturnya sendiri.';
+            document.getElementById("modelNameInput").value = "";
+            // Reset parameter ke default sesuai algoritma
+            const algo = document.getElementById("tuningAlgo").value;
+            if (algo === "indobert") resetIndobertToDefault();
+            else resetLexiconToDefault();
+          }
+        });
+      document
+        .getElementById("modelChoiceExisting")
+        .addEventListener("change", function () {
+          if (this.checked) {
+            document.getElementById("btnSelectExistingModel").classList.remove("hidden");
+            document.getElementById("modelChoiceHint").innerHTML =
+              '<i class="fas fa-info-circle mr-1"></i> Klik tombol "Pilih Model" untuk memilih dari model yang sudah ada.';
+          }
+        });
+
+      // Tombol Pilih Model
+      document
+        .getElementById("btnSelectExistingModel")
+        .addEventListener("click", openModelSelectPopup);
+
+      // Close pop-up
+      document
+        .getElementById("closeModelSelectPopup")
+        .addEventListener("click", closeModelSelectPopup);
+      window.addEventListener("click", (e) => {
+        const popup = document.getElementById("modelSelectPopup");
+        if (e.target === popup) {
+          closeModelSelectPopup();
+        }
+      });
+
       function toggleDropdown(btn, menu, icon) {
         btn.addEventListener("click", () => {
           menu.classList.toggle("hidden");
@@ -2745,6 +3048,9 @@
       document
         .getElementById("fusionMethodSelect")
         .addEventListener("change", updateFusionFormula);
+
+      // Inisialisasi label pop-up
+      updatePopupAlgoLabel();
     </script>
   </body>
 </html>
