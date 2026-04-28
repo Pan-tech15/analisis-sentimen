@@ -258,7 +258,7 @@
               <thead class="bg-blue-500 text-white">
                 <tr>
                   <th class="px-4 py-2 border border-blue-400">Metric</th>
-                  <th class="px-4 py-2 border border-blue-400">value</th>
+                  <th class="px-4 py-2 border border-blue-400">Value</th>
                 </tr>
               </thead>
               <tbody id="metricsTableBody"></tbody>
@@ -302,7 +302,7 @@
             class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-5 rounded-lg transition flex items-center space-x-2"
           >
             <i class="fas fa-arrow-left"></i>
-            <span>Back</span>
+            <span>Back To Processing</span>
           </a>
         </div>
       </main>
@@ -458,7 +458,7 @@
             }
 
             const split = params.split || {};
-            addCategoryHeader("🔀 Pembagian Data");
+            addCategoryHeader("🔀 Data Sharing");
             addItem(
               "Method",
               split.type === "crossval"
@@ -495,7 +495,7 @@
 
               const rankings = params.emotion_rankings;
               if (rankings && Object.keys(rankings).length > 0) {
-                addCategoryHeader("😊 Urutan Ranking Emosi (1–7)");
+                addCategoryHeader("😊 Order of emotional intensity (1–7)");
                 const sorted = Object.entries(rankings).sort(
                   (a, b) => a[1] - b[1],
                 );
@@ -609,107 +609,107 @@
           }
         }
 
-        function renderEpochFoldTable(data) {
-          try {
-            const section = document.getElementById("epochFoldSection");
-            const titleEl = document.getElementById("epochFoldTitle");
-            const tbody = document.getElementById("epochFoldTableBody");
-            if (!section || !tbody) return;
-            const m = data.metrics || data;
-            let items = null,
-              isEpoch = false;
-            if (
-              m.epoch_metrics &&
-              Array.isArray(m.epoch_metrics) &&
-              m.epoch_metrics.length > 0
-            ) {
-              items = m.epoch_metrics;
-              isEpoch = true;
-              titleEl.innerHTML =
-                '<i class="fas fa-chart-line mr-2 text-blue-600"></i> Evaluasi per Epoch';
-            } else if (
-              m.fold_metrics &&
-              Array.isArray(m.fold_metrics) &&
-              m.fold_metrics.length > 0
-            ) {
-              items = m.fold_metrics;
-              isEpoch = false;
-              titleEl.innerHTML =
-                '<i class="fas fa-chart-line mr-2 text-blue-600"></i> Evaluasi per Fold (Cross-Validation)';
-            } else {
-              section.classList.add("hidden");
-              return;
-            }
-            section.classList.remove("hidden");
-            tbody.innerHTML = "";
-            let totalAcc = 0,
-              totalPrec = 0,
-              totalRec = 0,
-              totalF1 = 0,
-              totalLoss = 0,
-              totalMcc = 0;
-            const n = items.length;
-            items.forEach((item, idx) => {
-              const row = tbody.insertRow();
-              const epochOrFold = isEpoch
-                ? `Epoch ${item.epoch || idx + 1}`
-                : `Fold ${item.fold || idx + 1}`;
-              const acc = safeToFixed(
-                item.accuracy != null ? item.accuracy * 100 : null,
-                2,
-              );
-              const prec = safeToFixed(
-                item.precision != null ? item.precision * 100 : null,
-                2,
-              );
-              const rec = safeToFixed(
-                item.recall != null ? item.recall * 100 : null,
-                2,
-              );
-              const f1 = safeToFixed(
-                item.f1_score != null ? item.f1_score * 100 : null,
-                2,
-              );
-              const loss = safeToFixed(item.loss, 4);
-              const mcc = safeToFixed(item.mcc, 4);
-              totalAcc += item.accuracy != null ? item.accuracy * 100 : 0;
-              totalPrec += item.precision != null ? item.precision * 100 : 0;
-              totalRec += item.recall != null ? item.recall * 100 : 0;
-              totalF1 += item.f1_score != null ? item.f1_score * 100 : 0;
-              if (item.loss !== undefined) totalLoss += item.loss;
-              if (item.mcc !== undefined) totalMcc += item.mcc;
-              row.innerHTML = `
-                <td class="px-4 py-2 border border-gray-200 font-medium">${epochOrFold}</td>
-                <td class="px-4 py-2 border border-gray-200 text-center">${acc}%</td>
-                <td class="px-4 py-2 border border-gray-200 text-center">${prec}%</td>
-                <td class="px-4 py-2 border border-gray-200 text-center">${rec}%</td>
-                <td class="px-4 py-2 border border-gray-200 text-center">${f1}%</td>
-                <td class="px-4 py-2 border border-gray-200 text-center">${loss}</td>
-                <td class="px-4 py-2 border border-gray-200 text-center">${mcc}</td>`;
-            });
-            const avgAcc = (totalAcc / n).toFixed(2);
-            const avgPrec = (totalPrec / n).toFixed(2);
-            const avgRec = (totalRec / n).toFixed(2);
-            const avgF1 = (totalF1 / n).toFixed(2);
-            const avgLoss = (totalLoss / n).toFixed(4);
-            const avgMcc = (totalMcc / n).toFixed(4);
-            const avgRow = tbody.insertRow();
-            avgRow.classList.add("bg-gray-100", "font-semibold");
-            avgRow.innerHTML = `
-              <td class="px-4 py-2 border border-gray-200 font-medium">Rata-rata</td>
-              <td class="px-4 py-2 border border-gray-200 text-center">${avgAcc}%</td>
-              <td class="px-4 py-2 border border-gray-200 text-center">${avgPrec}%</td>
-              <td class="px-4 py-2 border border-gray-200 text-center">${avgRec}%</td>
-              <td class="px-4 py-2 border border-gray-200 text-center">${avgF1}%</td>
-              <td class="px-4 py-2 border border-gray-200 text-center">${avgLoss}</td>
-              <td class="px-4 py-2 border border-gray-200 text-center">${avgMcc}</td>
-            `;
-          } catch (e) {
-            console.error("Error in renderEpochFoldTable:", e);
-            const section = document.getElementById("epochFoldSection");
-            if (section) section.classList.add("hidden");
-          }
-        }
+        // function renderEpochFoldTable(data) {
+        //   try {
+        //     const section = document.getElementById("epochFoldSection");
+        //     const titleEl = document.getElementById("epochFoldTitle");
+        //     const tbody = document.getElementById("epochFoldTableBody");
+        //     if (!section || !tbody) return;
+        //     const m = data.metrics || data;
+        //     let items = null,
+        //       isEpoch = false;
+        //     if (
+        //       m.epoch_metrics &&
+        //       Array.isArray(m.epoch_metrics) &&
+        //       m.epoch_metrics.length > 0
+        //     ) {
+        //       items = m.epoch_metrics;
+        //       isEpoch = true;
+        //       titleEl.innerHTML =
+        //         '<i class="fas fa-chart-line mr-2 text-blue-600"></i> Evaluasi per Epoch';
+        //     } else if (
+        //       m.fold_metrics &&
+        //       Array.isArray(m.fold_metrics) &&
+        //       m.fold_metrics.length > 0
+        //     ) {
+        //       items = m.fold_metrics;
+        //       isEpoch = false;
+        //       titleEl.innerHTML =
+        //         '<i class="fas fa-chart-line mr-2 text-blue-600"></i> Evaluasi per Fold (Cross-Validation)';
+        //     } else {
+        //       section.classList.add("hidden");
+        //       return;
+        //     }
+        //     section.classList.remove("hidden");
+        //     tbody.innerHTML = "";
+        //     let totalAcc = 0,
+        //       totalPrec = 0,
+        //       totalRec = 0,
+        //       totalF1 = 0,
+        //       totalLoss = 0,
+        //       totalMcc = 0;
+        //     const n = items.length;
+        //     items.forEach((item, idx) => {
+        //       const row = tbody.insertRow();
+        //       const epochOrFold = isEpoch
+        //         ? `Epoch ${item.epoch || idx + 1}`
+        //         : `Fold ${item.fold || idx + 1}`;
+        //       const acc = safeToFixed(
+        //         item.accuracy != null ? item.accuracy * 100 : null,
+        //         2,
+        //       );
+        //       const prec = safeToFixed(
+        //         item.precision != null ? item.precision * 100 : null,
+        //         2,
+        //       );
+        //       const rec = safeToFixed(
+        //         item.recall != null ? item.recall * 100 : null,
+        //         2,
+        //       );
+        //       const f1 = safeToFixed(
+        //         item.f1_score != null ? item.f1_score * 100 : null,
+        //         2,
+        //       );
+        //       const loss = safeToFixed(item.loss, 4);
+        //       const mcc = safeToFixed(item.mcc, 4);
+        //       totalAcc += item.accuracy != null ? item.accuracy * 100 : 0;
+        //       totalPrec += item.precision != null ? item.precision * 100 : 0;
+        //       totalRec += item.recall != null ? item.recall * 100 : 0;
+        //       totalF1 += item.f1_score != null ? item.f1_score * 100 : 0;
+        //       if (item.loss !== undefined) totalLoss += item.loss;
+        //       if (item.mcc !== undefined) totalMcc += item.mcc;
+        //       row.innerHTML = `
+        //         <td class="px-4 py-2 border border-gray-200 font-medium">${epochOrFold}</td>
+        //         <td class="px-4 py-2 border border-gray-200 text-center">${acc}%</td>
+        //         <td class="px-4 py-2 border border-gray-200 text-center">${prec}%</td>
+        //         <td class="px-4 py-2 border border-gray-200 text-center">${rec}%</td>
+        //         <td class="px-4 py-2 border border-gray-200 text-center">${f1}%</td>
+        //         <td class="px-4 py-2 border border-gray-200 text-center">${loss}</td>
+        //         <td class="px-4 py-2 border border-gray-200 text-center">${mcc}</td>`;
+        //     });
+        //     const avgAcc = (totalAcc / n).toFixed(2);
+        //     const avgPrec = (totalPrec / n).toFixed(2);
+        //     const avgRec = (totalRec / n).toFixed(2);
+        //     const avgF1 = (totalF1 / n).toFixed(2);
+        //     const avgLoss = (totalLoss / n).toFixed(4);
+        //     const avgMcc = (totalMcc / n).toFixed(4);
+        //     const avgRow = tbody.insertRow();
+        //     avgRow.classList.add("bg-gray-100", "font-semibold");
+        //     avgRow.innerHTML = `
+        //       <td class="px-4 py-2 border border-gray-200 font-medium">Rata-rata</td>
+        //       <td class="px-4 py-2 border border-gray-200 text-center">${avgAcc}%</td>
+        //       <td class="px-4 py-2 border border-gray-200 text-center">${avgPrec}%</td>
+        //       <td class="px-4 py-2 border border-gray-200 text-center">${avgRec}%</td>
+        //       <td class="px-4 py-2 border border-gray-200 text-center">${avgF1}%</td>
+        //       <td class="px-4 py-2 border border-gray-200 text-center">${avgLoss}</td>
+        //       <td class="px-4 py-2 border border-gray-200 text-center">${avgMcc}</td>
+        //     `;
+        //   } catch (e) {
+        //     console.error("Error in renderEpochFoldTable:", e);
+        //     const section = document.getElementById("epochFoldSection");
+        //     if (section) section.classList.add("hidden");
+        //   }
+        // }
 
         function renderStabilityTable() {
           try {
@@ -836,13 +836,13 @@
               metrics.class_labels && Array.isArray(metrics.class_labels)
                 ? metrics.class_labels
                 : [
-                    "Senang",
-                    "Percaya",
-                    "Terkejut",
-                    "Netral",
-                    "Takut",
-                    "Sedih",
-                    "Marah",
+                    "Happy",
+                    "Believe",
+                    "Surprised",
+                    "Neutral",
+                    "Scared",
+                    "Sad",
+                    "Angry",
                   ];
             drawHeatmap();
             populateMetricsTable();
@@ -867,8 +867,8 @@
               calc = calculateMetricsFromCM(matrix, labels);
             }
             const rows = [
-              ["Akurasi", acc],
-              ["Presisi (Weighted)", prec],
+              ["Accuracy", acc],
+              ["Precision (Weighted)", prec],
               ["Recall (Weighted)", rec],
               ["F1-Score (Weighted)", f1],
             ];
@@ -986,14 +986,14 @@
             ctx.fillStyle = "#374151";
             ctx.textAlign = "center";
             ctx.fillText(
-              "Prediksi",
+              "Prediction",
               size / 2 + marginLeft / 2,
               marginTop + matrix.length * cellSize + 60,
             );
             ctx.save();
             ctx.translate(20, marginTop + (matrix.length * cellSize) / 2);
             ctx.rotate(-Math.PI / 2);
-            ctx.fillText("Aktual", 0, 0);
+            ctx.fillText("Current", 0, 0);
             ctx.restore();
           } catch (e) {
             console.error("Error drawing heatmap:", e);
