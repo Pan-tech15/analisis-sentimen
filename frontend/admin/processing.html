@@ -345,7 +345,7 @@
                         <span
                           class="info-icon"
                           data-param-key="earlyStoppingPatience"
-                          data-tooltip="Jumlah epoch tanpa peningkatan sebelum berhenti."
+                          data-tooltip="Number of epochs without improvement before stopping."
                           >ⓘ</span
                         ></label
                       >
@@ -365,7 +365,7 @@
                         <span
                           class="info-icon"
                           data-param-key="randomState"
-                          data-tooltip="Seed untuk reproduksibilitas hasil."
+                          data-tooltip="Seed for reproducibility of results."
                           >ⓘ</span
                         ></label
                       >
@@ -378,9 +378,7 @@
                     </div>
                   </div>
                   <p class="text-xs text-gray-500 mt-2">
-                    <i class="fas fa-info-circle mr-1"></i> Validasi menggunakan
-                    pendekatan Epoch‑based (single split data
-                    training/validasi).
+                    <i class="fas fa-info-circle mr-1"></i> Validation using the Epoch‑based approach (single split data training/validation).
                   </p>
                 </fieldset>
 
@@ -394,8 +392,7 @@
                     B. Input Layer
                   </legend>
                   <p class="text-xs text-gray-500 mb-4">
-                    Mengatur representasi token dan bentuk data yang masuk ke
-                    model.
+                    Manages the token representation and form of data entering the model.
                   </p>
                   <div
                     class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
@@ -407,7 +404,7 @@
                         <span
                           class="info-icon"
                           data-param-key="maxSeqLength"
-                          data-tooltip="Panjang maksimum token yang diproses."
+                          data-tooltip="Maximum length of tokens processed."
                           >ⓘ</span
                         ></label
                       >
@@ -428,7 +425,7 @@
                         <span
                           class="info-icon"
                           data-param-key="padding"
-                          data-tooltip="Strategi penyeragaman panjang input."
+                          data-tooltip="Input length standardization strategy."
                           >ⓘ</span
                         ></label
                       >
@@ -447,7 +444,7 @@
                         <span
                           class="info-icon"
                           data-param-key="truncation"
-                          data-tooltip="Potong teks jika melebihi Max Sequence Length?"
+                          data-tooltip="Cut text if it exceeds Max Sequence Length"
                           >ⓘ</span
                         ></label
                       >
@@ -461,8 +458,7 @@
                     </div>
                     <div class="sm:col-span-2 lg:col-span-3">
                       <p class="text-xs text-gray-500">
-                        <i class="fas fa-info-circle mr-1"></i> Tokenizer
-                        WordPiece bawaan IndoBERT digunakan secara otomatis.
+                        <i class="fas fa-info-circle mr-1"></i> IndoBERT's built-in WordPiece tokenizer is used automatically.
                       </p>
                     </div>
                   </div>
@@ -478,8 +474,7 @@
                     C. Hidden Layer (Encoder & Fine‑Tuning)
                   </legend>
                   <p class="text-xs text-gray-500 mb-4">
-                    Arsitektur transformer 12-layer dengan 12 attention head.
-                    Pelatihan tambahan (fine‑tuning) dapat diaktifkan.
+                    12-layer transformer architecture with 12 attention heads. Additional training (fine-tuning) can be enabled.
                   </p>
                   <div
                     class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
@@ -491,7 +486,7 @@
                         <span
                           class="info-icon"
                           data-param-key="batchSizeParam"
-                          data-tooltip="Jumlah sampel per langkah."
+                          data-tooltip="Number of samples per step."
                           >ⓘ</span
                         ></label
                       >
@@ -524,7 +519,7 @@
                           <span
                             class="info-icon"
                             data-param-key="enableFinetune"
-                            data-tooltip="Aktifkan pelatihan tambahan pada model."
+                            data-tooltip="Enable additional training on the model."
                             >ⓘ</span
                           ></span
                         >
@@ -703,8 +698,7 @@
                     D. Output Layer (Classification Head)
                   </legend>
                   <p class="text-xs text-gray-500 mb-4">
-                    Mengubah vektor kontekstual menjadi probabilitas kelas
-                    emosi.
+                    Transforming contextual vectors into emotion class probabilities.
                   </p>
                   <div
                     class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
@@ -716,7 +710,7 @@
                         <span
                           class="info-icon"
                           data-param-key="pooling"
-                          data-tooltip="Cara menggabungkan vektor token."
+                          data-tooltip="How to combine token vectors."
                           >ⓘ</span
                         ></label
                       >
@@ -736,7 +730,7 @@
                         <span
                           class="info-icon"
                           data-param-key="ftDropout"
-                          data-tooltip="Dropout pada lapisan klasifikasi."
+                          data-tooltip="Dropout in the classification layer."
                           >ⓘ</span
                         ></label
                       >
@@ -757,7 +751,7 @@
                         <span
                           class="info-icon"
                           data-param-key="targetDim"
-                          data-tooltip="Dimensi akhir vektor fitur untuk KNN."
+                          data-tooltip="Final dimensions of the feature vector for KNN."
                           >ⓘ</span
                         ></label
                       >
@@ -772,8 +766,7 @@
                     </div>
                     <div class="sm:col-span-2 lg:col-span-3">
                       <p class="text-xs text-gray-500">
-                        <i class="fas fa-info-circle mr-1"></i> Jumlah kelas (8)
-                        dan Softmax ditentukan otomatis.
+                        <i class="fas fa-info-circle mr-1"></i> The number of classes (8) and Softmax are determined automatically.
                       </p>
                     </div>
                   </div>
@@ -798,7 +791,7 @@
                         <span
                           class="info-icon"
                           data-param-key="enableUMAP"
-                          data-tooltip="Aktifkan reduksi dimensi."
+                          data-tooltip="Enable dimension reduction."
                           >ⓘ</span
                         ></span
                       >
@@ -815,7 +808,7 @@
                         <span
                           class="info-icon"
                           data-param-key="umapNComponents"
-                          data-tooltip="Dimensi output UMAP."
+                          data-tooltip="UMAP output dimensions."
                           >ⓘ</span
                         ></label
                       ><input
@@ -834,7 +827,7 @@
                         <span
                           class="info-icon"
                           data-param-key="umapNNeighbors"
-                          data-tooltip="Ukuran lingkungan lokal."
+                          data-tooltip="Local environmental measures."
                           >ⓘ</span
                         ></label
                       ><input
@@ -853,7 +846,7 @@
                         <span
                           class="info-icon"
                           data-param-key="umapMinDist"
-                          data-tooltip="Jarak minimum antar titik."
+                          data-tooltip="Minimum distance between points."
                           >ⓘ</span
                         ></label
                       ><input
@@ -873,7 +866,7 @@
                         <span
                           class="info-icon"
                           data-param-key="umapMetric"
-                          data-tooltip="Metode pengukuran jarak."
+                          data-tooltip="Distance measurement method."
                           >ⓘ</span
                         ></label
                       ><select
@@ -892,7 +885,7 @@
                         <span
                           class="info-icon"
                           data-param-key="umapRandomState"
-                          data-tooltip="Seed untuk UMAP."
+                          data-tooltip="Seed for UMAP."
                           >ⓘ</span
                         ></label
                       ><input
@@ -924,7 +917,7 @@
                         <span
                           class="info-icon"
                           data-param-key="knnK"
-                          data-tooltip="Jumlah tetangga terdekat."
+                          data-tooltip="Number of nearest neighbors."
                           >ⓘ</span
                         ></label
                       ><input
@@ -943,7 +936,7 @@
                         <span
                           class="info-icon"
                           data-param-key="knnMetric"
-                          data-tooltip="Cara mengukur kemiripan vektor."
+                          data-tooltip="How to measure vector similarity."
                           >ⓘ</span
                         ></label
                       ><select
@@ -962,7 +955,7 @@
                         <span
                           class="info-icon"
                           data-param-key="knnWeights"
-                          data-tooltip="Bobot suara tetangga."
+                          data-tooltip="Neighbor's voice weight."
                           >ⓘ</span
                         ></label
                       ><select
@@ -980,7 +973,7 @@
                         <span
                           class="info-icon"
                           data-param-key="knnAlgorithm"
-                          data-tooltip="Algoritma pencarian tetangga."
+                          data-tooltip="Neighbor search algorithm."
                           >ⓘ</span
                         ></label
                       ><select
@@ -1000,7 +993,7 @@
                         <span
                           class="info-icon"
                           data-param-key="knnLeafSize"
-                          data-tooltip="Ukuran daun untuk tree."
+                          data-tooltip="Leaf size for tree."
                           >ⓘ</span
                         ></label
                       ><input
@@ -1018,7 +1011,7 @@
                         <span
                           class="info-icon"
                           data-param-key="knnP"
-                          data-tooltip="Parameter metrik Minkowski."
+                          data-tooltip="Minkowski metric parameters."
                           >ⓘ</span
                         ></label
                       ><input
@@ -1037,7 +1030,7 @@
                         <span
                           class="info-icon"
                           data-param-key="hybridMethod"
-                          data-tooltip="Metode penyesuaian probabilitas KNN."
+                          data-tooltip="KNN probability adjustment method."
                           >ⓘ</span
                         ></label
                       ><select
@@ -1075,11 +1068,11 @@
                   <label
                     class="text-sm font-medium text-gray-700 mb-3 flex items-center"
                   >
-                    Urutan Ranking Emosi (1–7)
+                    Emotion Ranking Order (1–7)                    
                     <span
                       class="info-icon"
                       data-param-key="emotionRanking"
-                      data-tooltip="Urutan prioritas 7 emosi. 1 = paling dominan."
+                      data-tooltip="Priority order of 7 emotions. 1 = most dominant."
                       >ⓘ</span
                     >
                   </label>
@@ -1097,7 +1090,7 @@
                       <span
                         class="info-icon"
                         data-param-key="lexiconAlpha"
-                        data-tooltip="Parameter smoothing Laplace untuk Naive Bayes."
+                        data-tooltip="Laplace smoothing parameters for Naive Bayes."
                         >ⓘ</span
                       >
                     </label>
@@ -1114,7 +1107,7 @@
                       <span
                         class="info-icon"
                         data-param-key="lexiconModelType"
-                        data-tooltip="Varian Naive Bayes (Multinomial atau Bernoulli)."
+                        data-tooltip="Naive Bayes Variants (Multinomial or Bernoulli)."
                         >ⓘ</span
                       >
                     </label>
@@ -1132,7 +1125,7 @@
                       <span
                         class="info-icon"
                         data-param-key="lexiconVectorizer"
-                        data-tooltip="Cara mengubah teks menjadi vektor (Count atau TF‑IDF)."
+                        data-tooltip="How to convert text to vector (Count or TF‑IDF)."
                         >ⓘ</span
                       >
                     </label>
@@ -1155,7 +1148,7 @@
                     <span
                       class="info-icon"
                       data-param-key="fusionMethodSelect"
-                      data-tooltip="Metode penggabungan probabilitas NB dengan skor Lexicon."
+                      data-tooltip="Method of combining NB probability with Lexicon scores."
                       >ⓘ</span
                     >
                   </label>
@@ -1179,7 +1172,7 @@
                         <span
                           class="info-icon"
                           data-param-key="fusionFormulaInput"
-                          data-tooltip="Rumus yang sesuai dengan Fusion Method."
+                          data-tooltip="Formula that corresponds to Fusion Method."
                           >ⓘ</span
                         >
                       </label>
@@ -1229,7 +1222,7 @@
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Cari teks</label
+                >Search text</label
               ><input
                 type="text"
                 id="historySearchInput"
@@ -1239,7 +1232,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Dari tanggal</label
+                >From date</label
               ><input
                 type="date"
                 id="dateFromInput"
@@ -1248,7 +1241,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Sampai tanggal</label
+                >To date</label
               ><input
                 type="date"
                 id="dateToInput"
@@ -1260,7 +1253,7 @@
                 id="applyHistoryFilterBtn"
                 class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg w-full"
               >
-                <i class="fas fa-filter mr-1"></i>Terapkan Filter
+                <i class="fas fa-filter mr-1"></i>Apply Filter
               </button>
             </div>
           </div>
@@ -1283,11 +1276,10 @@
           <div id="trainingPagination" class="flex justify-center mt-4"></div>
         </div>
 
-        <!-- Model dengan Hasil Tertinggi -->
+        <!-- Highest Yielding Model -->
         <div class="bg-white p-6 rounded-xl shadow-md">
           <h2 class="font-semibold text-gray-700 mb-4 flex items-center">
-            <i class="fas fa-trophy text-yellow-500 mr-2"></i> Model dengan
-            Hasil Tertinggi
+            <i class="fas fa-trophy text-yellow-500 mr-2"></i> Highest Yielding Model
           </h2>
           <div id="bestModelContainer" class="text-gray-600"></div>
         </div>
@@ -1338,13 +1330,13 @@
 
       // ==================== EMOSI & FUSION ====================
       const emotionLabels = [
-        "Senang",
-        "Percaya",
-        "Terkejut",
-        "Netral",
-        "Takut",
-        "Sedih",
-        "Marah",
+        "happy",
+        "Believe",
+        "Surprised",
+        "Neutral",
+        "Sad",
+        "scared",
+        "Angry",
       ];
 
       function createEmotionRankingDropdowns() {
@@ -2304,7 +2296,7 @@
           (m) => m.algorithm === algorithm,
         );
         if (filtered.length === 0) {
-          container.innerHTML = `<p class="text-gray-500">Belum ada data training untuk ${algorithm}.</p>`;
+          container.innerHTML = `<p class="text-gray-500">There is no training data for ${algorithm}.</p>`;
           return;
         }
         let best = filtered.reduce((prev, curr) => {
