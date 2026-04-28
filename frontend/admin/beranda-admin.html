@@ -10,24 +10,32 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      /* Additional custom styles if needed */
+      .chart-container {
+        position: relative;
+        height: 320px;
+      }
+    </style>
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- Sidebar (English) -->
-      <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
-        <div class="p-4 border-b">
-          <span
-            class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
-            >IdiomSense</span
-          >
-          <p class="text-sm text-gray-500">Admin Panel</p>
+      <!-- Sidebar dengan gradien (seperti halaman Evaluation) -->
+      <aside
+        class="w-64 bg-white shadow-2xl flex-shrink-0 overflow-y-auto border-r border-gray-100"
+      >
+        <div
+          class="p-4 border-b bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-b-lg"
+        >
+          <span class="font-bold text-2xl">IdiomSense</span>
+          <p class="text-sm text-blue-100">Admin Panel</p>
         </div>
         <nav class="p-4">
           <ul class="space-y-1">
             <li>
               <a
                 href="beranda-admin.html"
-                class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"
+                class="flex items-center space-x-2 p-2 rounded-lg bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 font-semibold shadow-sm transition-all"
               >
                 <i class="fas fa-tachometer-alt w-5"></i>
                 <span>Dashboard</span>
@@ -36,7 +44,7 @@
             <li>
               <button
                 id="dataCollectionBtn"
-                class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
               >
                 <div class="flex items-center space-x-2">
                   <i class="fas fa-database w-5"></i>
@@ -51,14 +59,14 @@
                 <li>
                   <a
                     href="dataset.html"
-                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                     ><i class="fas fa-table w-5 mr-2"></i>Dataset</a
                   >
                 </li>
                 <li>
                   <a
                     href="kamus-idiom.html"
-                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                     ><i class="fas fa-book w-5 mr-2"></i>Idiom Dictionary</a
                   >
                 </li>
@@ -67,7 +75,7 @@
             <li>
               <a
                 href="preprocessing.html"
-                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
               >
                 <i class="fas fa-filter w-5"></i>
                 <span>Pre-Processing</span>
@@ -76,7 +84,7 @@
             <li>
               <a
                 href="processing.html"
-                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
               >
                 <i class="fas fa-brain w-5"></i>
                 <span>Processing</span>
@@ -85,7 +93,7 @@
             <li>
               <a
                 href="testing.html"
-                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
               >
                 <i class="fas fa-vial w-5"></i>
                 <span>Testing</span>
@@ -94,14 +102,14 @@
             <li>
               <a
                 href="evaluasi.html"
-                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                 ><i class="fas fa-chart-line w-5"></i><span>Evaluation</span></a
               >
             </li>
             <li class="pt-4 mt-4 border-t">
               <a
                 href="login.html"
-                class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"
+                class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50 transition-all"
               >
                 <i class="fas fa-sign-out-alt w-5"></i>
                 <span>Logout</span>
@@ -113,56 +121,49 @@
 
       <!-- Main Content -->
       <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
-        <!-- Header with Quick Actions -->
-        <div class="flex justify-between items-center mb-2">
-          <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
-          <div class="space-x-2">
-            <a
-              href="preprocessing.html"
-              class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm transition shadow-sm"
-            >
-              <i class="fas fa-play mr-1"></i> Start Preprocessing
-            </a>
-            <a
-              href="processing.html"
-              class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm transition shadow-sm"
-            >
-              <i class="fas fa-brain mr-1"></i> Train New Model
-            </a>
-          </div>
+        <!-- Header dengan gradient (seperti halaman Evaluation) -->
+        <div
+          class="mb-8 p-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500 rounded-xl shadow-lg text-white"
+        >
+          <h1 class="text-3xl font-bold flex items-center">
+            <i class="fas fa-chart-line mr-3"></i> Dashboard
+          </h1>
+          <p class="text-blue-100 mt-1">
+            Overview of your data and model performance
+          </p>
         </div>
 
-        <!-- 4 Stat Cards -->
+        <!-- 4 Stat Cards (tidak berubah, hanya perbaikan kelas teks) -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div
             class="bg-white p-4 rounded-xl shadow-md border-l-4 border-blue-500"
           >
-            <p class="text-sm text-gray-500 uppercase">Total Sentences</p>
+            <p class="text-x1 text-gray-500 uppercase">Total Sentences</p>
             <p class="text-2xl font-bold text-gray-800">5,421</p>
-            <p class="text-xs text-gray-400 mt-1">
+            <p class="text-x1 text-gray-400 mt-1">
               <i class="far fa-calendar-alt mr-1"></i> Dataset: idiom_10k_v2
             </p>
           </div>
           <div
             class="bg-white p-4 rounded-xl shadow-md border-l-4 border-green-500"
           >
-            <p class="text-sm text-gray-500 uppercase">Idiom in dictionary</p>
+            <p class="text-x1 text-gray-500 uppercase">Idiom in dictionary</p>
             <p class="text-2xl font-bold text-gray-800">200</p>
-            <p class="text-xs text-gray-400 mt-1">Active idiom dictionary</p>
+            <p class="text-x1 text-gray-400 mt-1">Active idiom dictionary</p>
           </div>
           <div
             class="bg-white p-4 rounded-xl shadow-md border-l-4 border-purple-500"
           >
-            <p class="text-sm text-gray-500 uppercase">Model Count</p>
+            <p class="text-x1 text-gray-500 uppercase">Model Count</p>
             <p class="text-2xl font-bold text-gray-800">5</p>
-            <p class="text-xs text-gray-400 mt-1">Saved in database</p>
+            <p class="text-x1 text-gray-400 mt-1">Saved in database</p>
           </div>
           <div
             class="bg-white p-4 rounded-xl shadow-md border-l-4 border-indigo-500"
           >
-            <p class="text-sm text-gray-500 uppercase">Best Accuracy</p>
+            <p class="text-x1 text-gray-500 uppercase">Best Accuracy</p>
             <p class="text-2xl font-bold text-gray-800">94.2%</p>
-            <p class="text-xs text-gray-400 mt-1">
+            <p class="text-x1 text-gray-400 mt-1">
               IndoBERT-KNN • Apr 12, 2026
             </p>
           </div>
@@ -175,18 +176,18 @@
             <h2 class="font-semibold text-gray-700 mb-2">
               Emotion Distribution (8 Classes)
             </h2>
-            <div class="h-64">
+            <div class="h-80">
               <canvas id="emotionChart"></canvas>
             </div>
           </div>
 
           <!-- Pie Chart: Idiom vs Non-Idiom + Ringkasan Angka -->
           <div class="bg-white p-4 rounded-xl shadow-md flex flex-col">
-            <h2 class="font-semibold text-gray-700 mb-2">
+            <h2 class="font-semibold text-gray-700 mb-4">
               Sentence Distribution (Idiom vs Non-Idiom)
             </h2>
             <div
-              class="flex flex-col md:flex-row items-center justify-center gap-4 h-64"
+              class="flex flex-col md:flex-row items-center justify-center gap-4"
             >
               <div class="w-64 h-64">
                 <canvas id="idiomPieChart"></canvas>
@@ -195,15 +196,15 @@
               <div
                 class="bg-gray-50 p-4 rounded-lg w-48 text-center shadow-inner"
               >
-                <p class="text-sm text-gray-600 font-medium">Idiom</p>
+                <p class="text-x1 text-gray-600 font-medium">Idiom</p>
                 <p class="text-2xl font-bold text-blue-600">3,210</p>
-                <p class="text-xs text-gray-500">(59.2%)</p>
+                <p class="text-x1 text-gray-500">(59.2%)</p>
                 <hr class="my-2" />
-                <p class="text-sm text-gray-600 font-medium">Non‑idiom</p>
+                <p class="text-x1 text-gray-600 font-medium">Non‑idiom</p>
                 <p class="text-2xl font-bold text-gray-600">2,211</p>
-                <p class="text-xs text-gray-500">(40.8%)</p>
+                <p class="text-x1 text-gray-500">(40.8%)</p>
                 <hr class="my-2" />
-                <p class="text-sm font-medium text-gray-700">Total</p>
+                <p class="text-x1 font-medium text-gray-700">Total</p>
                 <p class="text-xl font-bold">5,421</p>
               </div>
             </div>
@@ -223,7 +224,7 @@
               </div>
               <div>
                 <p class="font-medium text-gray-800">IndoBERT‑KNN</p>
-                <p class="text-xs text-gray-500">Trained models: 3 versions</p>
+                <p class="text-x1 text-gray-500">Trained models: 3 versions</p>
               </div>
             </div>
           </div>
@@ -238,7 +239,7 @@
               </div>
               <div>
                 <p class="font-medium text-gray-800">Lexicon‑Naive Bayes</p>
-                <p class="text-xs text-gray-500">Trained models: 2 versions</p>
+                <p class="text-x1 text-gray-500">Trained models: 2 versions</p>
               </div>
             </div>
           </div>
@@ -257,29 +258,28 @@
             </div>
             <div class="grid grid-cols-4 gap-2 text-center">
               <div>
-                <p class="text-xs text-gray-500">Accuracy</p>
+                <p class="text-x1 text-gray-500">Accuracy</p>
                 <p class="text-xl font-bold text-green-600">94.2%</p>
               </div>
               <div>
-                <p class="text-xs text-gray-500">Precision</p>
+                <p class="text-x1 text-gray-500">Precision</p>
                 <p class="text-xl font-bold text-blue-600">93.8%</p>
               </div>
               <div>
-                <p class="text-xs text-gray-500">Recall</p>
+                <p class="text-x1 text-gray-500">Recall</p>
                 <p class="text-xl font-bold text-purple-600">92.5%</p>
               </div>
               <div>
-                <p class="text-xs text-gray-500">F1-Score</p>
+                <p class="text-x1 text-gray-500">F1-Score</p>
                 <p class="text-xl font-bold text-orange-600">93.1%</p>
               </div>
             </div>
             <div
-              class="mt-3 flex justify-between text-xs text-gray-400 border-t pt-2"
+              class="mt-3 flex justify-between text-x1 text-gray-400 border-t pt-2"
             >
               <span><i class="far fa-clock mr-1"></i>14 Apr 2026</span>
               <span
-                ><i class="fas fa-tachometer-alt mr-1"></i>5 menit 13
-                detik</span
+                ><i class="fas fa-tachometer-alt mr-1"></i>5 min 13 sec</span
               >
             </div>
           </div>
@@ -296,31 +296,46 @@
             </div>
             <div class="grid grid-cols-4 gap-2 text-center">
               <div>
-                <p class="text-xs text-gray-500">Accuracy</p>
+                <p class="text-x1 text-gray-500">Accuracy</p>
                 <p class="text-xl font-bold text-yellow-600">88.5%</p>
               </div>
               <div>
-                <p class="text-xs text-gray-500">Precision</p>
+                <p class="text-x1 text-gray-500">Precision</p>
                 <p class="text-xl font-bold text-indigo-600">87.2%</p>
               </div>
               <div>
-                <p class="text-xs text-gray-500">Recall</p>
+                <p class="text-x1 text-gray-500">Recall</p>
                 <p class="text-xl font-bold text-pink-600">86.9%</p>
               </div>
               <div>
-                <p class="text-xs text-gray-500">F1-Score</p>
+                <p class="text-x1 text-gray-500">F1-Score</p>
                 <p class="text-xl font-bold text-teal-600">87.0%</p>
               </div>
             </div>
             <div
-              class="mt-3 flex justify-between text-xs text-gray-400 border-t pt-2"
+              class="mt-3 flex justify-between text-x1 text-gray-400 border-t pt-2"
             >
               <span><i class="far fa-clock mr-1"></i>12 Apr 2026</span>
-              <span
-                ><i class="fas fa-tachometer-alt mr-1"></i>1 menit 2 detik</span
-              >
+              <span><i class="fas fa-tachometer-alt mr-1"></i>1 min 2 sec</span>
             </div>
           </div>
+        </div>
+
+        <!-- BAR CHART: Model Performance Comparison (IndoBERT vs Lexicon) -->
+        <div class="bg-white p-5 rounded-xl shadow-md mt-6">
+          <h2
+            class="font-semibold text-gray-700 text-lg mb-4 flex items-center"
+          >
+            <i class="fas fa-chart-simple text-blue-500 mr-2"></i>
+            Model Performance Comparison
+          </h2>
+          <div class="h-80">
+            <canvas id="comparisonBarChart"></canvas>
+          </div>
+          <p class="text-sm text-gray-500 mt-2 text-center">
+            Perbandingan metrik evaluasi antara model terbaik IndoBERT‑KNN dan
+            Lexicon‑NB
+          </p>
         </div>
       </main>
     </div>
@@ -338,7 +353,7 @@
       const dataCollectionIcon = document.getElementById("dataCollectionIcon");
       toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
 
-      // Data untuk Bar Chart
+      // Data untuk Bar Chart (Emotion Distribution)
       const emotionLabels = [
         "Happy",
         "Trust",
@@ -361,9 +376,9 @@
         "#d1d5db",
       ];
 
-      // Bar Chart dengan nilai langsung di atas bar (afterDraw)
+      // Bar Chart (Emotion Distribution) dengan nilai di atas bar
       const ctxBar = document.getElementById("emotionChart").getContext("2d");
-      const barChart = new Chart(ctxBar, {
+      new Chart(ctxBar, {
         type: "bar",
         data: {
           labels: emotionLabels,
@@ -382,9 +397,9 @@
           plugins: {
             legend: {
               position: "top",
-              labels: { boxWidth: 10, font: { size: 11 } },
+              labels: { boxWidth: 12, font: { size: 16 } },
             },
-            tooltip: { enabled: true }, // tetap aktif namun nilai sudah terlihat
+            tooltip: { enabled: true },
           },
           scales: {
             y: {
@@ -392,13 +407,12 @@
               title: {
                 display: true,
                 text: "Sentence Count",
-                font: { size: 11 },
+                font: { size: 16 },
               },
             },
-            x: { ticks: { font: { size: 10 }, maxRotation: 25 } },
+            x: { ticks: { font: { size: 16 }, maxRotation: 25 } },
           },
         },
-        // Plugin afterDraw untuk menampilkan angka di atas bar
         plugins: [
           {
             afterDraw(chart) {
@@ -424,7 +438,7 @@
         ],
       });
 
-      // Pie Chart (idiom vs non-idiom) - tidak perlu plugin karena sudah ada ringkasan angka di sebelah
+      // Pie Chart (Idiom vs Non-idiom)
       const ctxPie = document.getElementById("idiomPieChart").getContext("2d");
       new Chart(ctxPie, {
         type: "pie",
@@ -442,11 +456,11 @@
           responsive: true,
           maintainAspectRatio: true,
           plugins: {
-            legend: { position: "bottom", labels: { font: { size: 11 } } },
+            legend: { position: "bottom", labels: { font: { size: 12 } } },
             tooltip: {
               callbacks: {
                 label: (ctx) =>
-                  `${ctx.label}: ${ctx.raw} kalimat (${(
+                  `${ctx.label}: ${ctx.raw} sentences (${(
                     (ctx.raw / (3210 + 2211)) *
                     100
                   ).toFixed(1)}%)`,
@@ -454,6 +468,110 @@
             },
           },
         },
+      });
+
+      // ========== BAR CHART PERBANDINGAN MODEL ==========
+      // Data dari best model cards
+      const indobertMetrics = {
+        accuracy: 94.2,
+        precision: 93.8,
+        recall: 92.5,
+        f1: 93.1,
+      };
+      const lexiconMetrics = {
+        accuracy: 88.5,
+        precision: 87.2,
+        recall: 86.9,
+        f1: 87.0,
+      };
+
+      const ctxComparison = document
+        .getElementById("comparisonBarChart")
+        .getContext("2d");
+      new Chart(ctxComparison, {
+        type: "bar",
+        data: {
+          labels: ["Accuracy", "Precision", "Recall", "F1-Score"],
+          datasets: [
+            {
+              label: "IndoBERT-KNN",
+              data: [
+                indobertMetrics.accuracy,
+                indobertMetrics.precision,
+                indobertMetrics.recall,
+                indobertMetrics.f1,
+              ],
+              backgroundColor: "#3b82f6",
+              borderRadius: 6,
+              barPercentage: 0.65,
+              categoryPercentage: 0.8,
+            },
+            {
+              label: "Lexicon-Naive Bayes",
+              data: [
+                lexiconMetrics.accuracy,
+                lexiconMetrics.precision,
+                lexiconMetrics.recall,
+                lexiconMetrics.f1,
+              ],
+              backgroundColor: "#8b5cf6",
+              borderRadius: 6,
+              barPercentage: 0.65,
+              categoryPercentage: 0.8,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: {
+              position: "top",
+              labels: { font: { size: 16, weight: "bold" } },
+            },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.dataset.label}: ${ctx.raw}%`,
+              },
+            },
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              title: {
+                display: true,
+                text: "Percentage (%)",
+                font: { size: 12 },
+              },
+              ticks: { callback: (value) => `${value}%`, stepSize: 20 },
+            },
+            x: { ticks: { font: { size: 16, weight: "500" } } },
+          },
+        },
+        plugins: [
+          {
+            afterDraw(chart) {
+              const ctx = chart.ctx;
+              chart.data.datasets.forEach((dataset, datasetIndex) => {
+                const meta = chart.getDatasetMeta(datasetIndex);
+                if (!meta.hidden) {
+                  meta.data.forEach((element, index) => {
+                    const value = dataset.data[index];
+                    const x = element.x;
+                    const y = element.y - 6;
+                    ctx.save();
+                    ctx.font = "bold 12px 'Segoe UI'";
+                    ctx.fillStyle = "#1f2937";
+                    ctx.textAlign = "center";
+                    ctx.fillText(`${value}%`, x, y);
+                    ctx.restore();
+                  });
+                }
+              });
+            },
+          },
+        ],
       });
     </script>
   </body>

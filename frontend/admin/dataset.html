@@ -30,21 +30,22 @@
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- Sidebar (unchanged) -->
-      <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
-        <div class="p-4 border-b">
-          <span
-            class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
-            >IdiomSense</span
-          >
-          <p class="text-sm text-gray-500">Admin Panel</p>
+      <!-- Sidebar dengan gradien (konsisten dengan Evaluation & Dashboard) -->
+      <aside
+        class="w-64 bg-white shadow-2xl flex-shrink-0 overflow-y-auto border-r border-gray-100"
+      >
+        <div
+          class="p-4 border-b bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-b-lg"
+        >
+          <span class="font-bold text-2xl">IdiomSense</span>
+          <p class="text-sm text-blue-100">Admin Panel</p>
         </div>
         <nav class="p-4">
           <ul class="space-y-1">
             <li>
               <a
                 href="beranda-admin.html"
-                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                 ><i class="fas fa-tachometer-alt w-5"></i
                 ><span>Dashboard</span></a
               >
@@ -52,11 +53,11 @@
             <li>
               <button
                 id="dataCollectionBtn"
-                class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
               >
                 <div class="flex items-center space-x-2">
-                  <i class="fas fa-database w-5"></i
-                  ><span>Data Collection</span>
+                  <i class="fas fa-database w-5"></i>
+                  <span>Data Collection</span>
                 </div>
                 <i
                   id="dataCollectionIcon"
@@ -67,14 +68,14 @@
                 <li>
                   <a
                     href="dataset.html"
-                    class="block p-2 rounded-lg bg-blue-50 text-blue-600"
+                    class="block p-2 rounded-lg bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 font-semibold shadow-sm transition-all"
                     ><i class="fas fa-table w-5 mr-2"></i>Dataset</a
                   >
                 </li>
                 <li>
                   <a
                     href="kamus-idiom.html"
-                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                     ><i class="fas fa-book w-5 mr-2"></i>Idiom Dictionary</a
                   >
                 </li>
@@ -83,14 +84,14 @@
             <li>
               <a
                 href="preprocessing.html"
-                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                 ><i class="fas fa-filter w-5"></i><span>Pre-Processing</span></a
               >
             </li>
             <li>
               <a
                 href="processing.html"
-                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
               >
                 <i class="fas fa-brain w-5"></i>
                 <span>Processing</span>
@@ -99,21 +100,21 @@
             <li>
               <a
                 href="testing.html"
-                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                 ><i class="fas fa-vial w-5"></i><span>Testing</span></a
               >
             </li>
             <li>
               <a
                 href="evaluasi.html"
-                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                 ><i class="fas fa-chart-line w-5"></i><span>Evaluation</span></a
               >
             </li>
             <li class="pt-4 mt-4 border-t">
               <a
                 href="login.html"
-                class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"
+                class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50 transition-all"
                 ><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a
               >
             </li>
@@ -123,7 +124,17 @@
 
       <!-- Main Content -->
       <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">Dataset</h1>
+        <!-- Header dengan gradient (konsisten dengan Evaluation) -->
+        <div
+          class="mb-8 p-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500 rounded-xl shadow-lg text-white"
+        >
+          <h1 class="text-3xl font-bold flex items-center">
+            <i class="fas fa-database mr-3"></i> Dataset
+          </h1>
+          <p class="text-blue-100 mt-1">
+            Manage your raw datasets and view statistics
+          </p>
+        </div>
 
         <!-- Upload Raw Dataset with Manual Dataset Name -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-6">
@@ -143,6 +154,7 @@
             </p>
           </div>
 
+          <!-- Drag & Drop area dengan preview file -->
           <div
             class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 transition"
             id="uploadArea"
@@ -163,9 +175,32 @@
               accept=".csv,.xlsx,.xls"
             />
           </div>
+
+          <!-- Preview file setelah dipilih -->
+          <div id="filePreview" class="mt-4 hidden">
+            <div
+              class="flex items-center justify-between bg-gray-50 p-4 rounded-lg border border-gray-200"
+            >
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-file-csv text-2xl text-green-600"></i>
+                <div>
+                  <p id="previewFileName" class="font-medium text-gray-800"></p>
+                  <p id="previewFileSize" class="text-xs text-gray-500"></p>
+                </div>
+              </div>
+              <button
+                id="clearFileBtn"
+                class="text-red-500 hover:text-red-700 transition"
+                title="Remove file"
+              >
+                <i class="fas fa-times-circle text-xl"></i>
+              </button>
+            </div>
+          </div>
+
           <button
             id="uploadBtn"
-            class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+            class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Upload
           </button>
@@ -307,6 +342,9 @@
       let filteredDatasets = [];
       let currentPage = 1;
 
+      // Preview file handling
+      let selectedFile = null;
+
       // === API helper ===
       async function apiFetch(endpoint, options = {}) {
         const headers = {
@@ -350,7 +388,6 @@
         const dateTo = document.getElementById("filterDateTo").value;
 
         filteredDatasets = allDatasets.filter((ds) => {
-          // Text filter: dataset_name and original_filename
           let textMatch = true;
           if (searchText) {
             const name = (ds.dataset_name || "").toLowerCase();
@@ -363,7 +400,6 @@
               name.includes(searchText) || filename.includes(searchText);
           }
 
-          // Date filter
           let dateMatch = true;
           if (dateFrom || dateTo) {
             const uploadDate = new Date(ds.uploaded_at);
@@ -479,15 +515,13 @@
         tbody.innerHTML = "";
         if (pageData.length === 0) {
           tbody.innerHTML =
-            '<tr><td colspan="5" class="text-center py-4 text-gray-500">No datasets available.</td></tr>';
+            '<td><td colspan="5" class="text-center py-4 text-gray-500">No datasets available. </td></tr>';
           return;
         }
         pageData.forEach((ds) => {
           const row = tbody.insertRow();
-          // Dataset Name (editable)
           const nameCell = row.insertCell(0);
           nameCell.appendChild(createEditableDatasetName(ds));
-          // Original File Name
           row.insertCell(1).innerHTML = ds.original_filename || ds.filename;
           row.insertCell(2).innerHTML = ds.rows;
           row.insertCell(3).innerHTML = new Date(
@@ -748,9 +782,41 @@
         }
       }
 
-      // === Upload logic ===
+      // === Preview file functions ===
+      function formatFileSize(bytes) {
+        if (bytes === 0) return "0 Bytes";
+        const k = 1024;
+        const sizes = ["Bytes", "KB", "MB", "GB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+      }
+
+      function updateFilePreview(file) {
+        if (!file) {
+          document.getElementById("filePreview").classList.add("hidden");
+          selectedFile = null;
+          document.getElementById("uploadBtn").disabled = true;
+          return;
+        }
+        selectedFile = file;
+        const fileName = file.name;
+        const fileSize = formatFileSize(file.size);
+        document.getElementById("previewFileName").textContent = fileName;
+        document.getElementById("previewFileSize").textContent = fileSize;
+        document.getElementById("filePreview").classList.remove("hidden");
+        document.getElementById("uploadBtn").disabled = false;
+      }
+
+      function clearFile() {
+        fileInput.value = "";
+        updateFilePreview(null);
+      }
+
+      // === Upload logic with preview ===
       const uploadArea = document.getElementById("uploadArea");
       const fileInput = document.getElementById("fileInput");
+      const clearFileBtn = document.getElementById("clearFileBtn");
+
       uploadArea.addEventListener("click", () => fileInput.click());
       uploadArea.addEventListener("dragover", (e) => {
         e.preventDefault();
@@ -762,8 +828,23 @@
       uploadArea.addEventListener("drop", (e) => {
         e.preventDefault();
         uploadArea.classList.remove("border-blue-500", "bg-blue-50");
-        if (e.dataTransfer.files.length) fileInput.files = e.dataTransfer.files;
+        const files = e.dataTransfer.files;
+        if (files.length) {
+          fileInput.files = files;
+          updateFilePreview(files[0]);
+        }
       });
+
+      fileInput.addEventListener("change", (e) => {
+        if (fileInput.files.length) {
+          updateFilePreview(fileInput.files[0]);
+        } else {
+          updateFilePreview(null);
+        }
+      });
+
+      clearFileBtn.addEventListener("click", clearFile);
+
       document
         .getElementById("uploadBtn")
         .addEventListener("click", async () => {
@@ -774,13 +855,12 @@
             alert("Please fill in the Dataset Name first.");
             return;
           }
-          if (fileInput.files.length === 0) {
+          if (!selectedFile) {
             alert("Please select a CSV/Excel file first.");
             return;
           }
-          const file = fileInput.files[0];
           const formData = new FormData();
-          formData.append("file", file);
+          formData.append("file", selectedFile);
           formData.append("dataset_name", datasetName);
           try {
             const response = await fetch(`${API_BASE}/datasets/upload`, {
@@ -796,7 +876,7 @@
             const result = await response.json();
             if (response.ok) {
               alert("Upload successful");
-              fileInput.value = "";
+              clearFile();
               document.getElementById("datasetNameInput").value = "";
               await loadDatasets();
             } else {
@@ -832,6 +912,13 @@
       const dataCollectionMenu = document.getElementById("dataCollectionMenu");
       const dataCollectionIcon = document.getElementById("dataCollectionIcon");
       toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
+
+      // === BUKA DROPDOWN DATA COLLECTION SECARA OTOMATIS ===
+      // Karena halaman Dataset berada di dalam menu Data Collection, kita pastikan dropdown terbuka
+      if (dataCollectionMenu && dataCollectionIcon) {
+        dataCollectionMenu.classList.remove("hidden");
+        dataCollectionIcon.classList.add("rotate-180");
+      }
 
       loadDatasets();
     </script>

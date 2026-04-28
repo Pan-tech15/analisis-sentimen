@@ -10,14 +10,43 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     />
     <style>
+      .detail-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+      }
+      .detail-modal.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .detail-modal-content {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        max-width: 520px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      }
       .info-icon {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 18px; /* dari 18px */
-        height: 18px; /* dari 18px */
-        font-size: 18px; /* dari 14px */
-        font-weight: bold; /* baru */
+        width: 18px;
+        height: 18px;
+        font-size: 18px;
+        font-weight: bold;
         color: #3b82f6;
         cursor: pointer;
         margin-left: 4px;
@@ -34,11 +63,11 @@
         z-index: 1000;
         background: #1f2937;
         color: #f9fafb;
-        padding: 0.8rem 1.2rem; /* dari 0.6rem 1rem */
+        padding: 0.8rem 1.2rem;
         border-radius: 0.5rem;
-        font-size: 1rem; /* dari 0.75rem */
+        font-size: 1rem;
         line-height: 1.5;
-        max-width: 360px; /* dari 280px */
+        max-width: 360px;
         word-wrap: break-word;
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         pointer-events: none;
@@ -78,30 +107,17 @@
         background: #c1c1c1;
         border-radius: 10px;
       }
-      .animate-pulse-slow {
-        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-      }
-      @keyframes pulse {
-        0%,
-        100% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0.5;
-        }
-      }
     </style>
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
       <!-- Sidebar -->
       <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
-        <div class="p-4 border-b">
-          <span
-            class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
-            >IdiomSense</span
-          >
-          <p class="text-sm text-gray-500">Admin Panel</p>
+        <div
+          class="p-4 border-b bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-b-lg"
+        >
+          <span class="font-bold text-2xl">IdiomSense</span>
+          <p class="text-sm text-blue-100">Admin Panel</p>
         </div>
         <nav class="p-4">
           <ul class="space-y-1">
@@ -185,23 +201,27 @@
 
       <!-- Main Content -->
       <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">Processing</h1>
+        <div
+          class="mb-8 p-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500 rounded-xl shadow-lg text-white"
+        >
+          <h1 class="text-3xl font-bold flex items-center">
+            <i class="fas fa-filter mr-3"></i> Processing
+          </h1>
+          <p class="text-blue-100 mt-1">Training Model</p>
+        </div>
 
-        <!-- Split Data Ratio Section (REVISED) -->
+        <!-- Split Data Ratio Section -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-8">
           <div class="flex justify-between items-center mb-4">
             <h2 class="font-semibold text-gray-700">Split Data Ratio</h2>
           </div>
-
-          <!-- Form Inline Add (baru) -->
           <div
             class="flex flex-wrap items-end gap-3 mb-4 p-3 bg-gray-50 rounded-lg"
           >
             <div>
               <label class="block text-sm font-medium text-gray-700"
                 >Train (%)</label
-              >
-              <input
+              ><input
                 type="number"
                 id="addTrain"
                 min="0"
@@ -212,8 +232,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700"
                 >Test (%)</label
-              >
-              <input
+              ><input
                 type="number"
                 id="addTest"
                 min="0"
@@ -228,8 +247,6 @@
               <i class="fas fa-plus"></i><span>Add</span>
             </button>
           </div>
-
-          <!-- Split Ratio Table (hanya Train, Test, Actions) -->
           <div class="overflow-x-auto">
             <table class="min-w-full border border-gray-200">
               <thead class="bg-blue-500 text-white">
@@ -242,11 +259,9 @@
               <tbody id="splitTableBody"></tbody>
             </table>
           </div>
-          <!-- Pagination for split ratio -->
           <div id="splitPagination" class="flex justify-center mt-4"></div>
         </div>
 
-        <!-- Model Parameter Tuning Section (IndoBERT / LexiconNB) -->
         <!-- Model Parameter Tuning Section -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-8">
           <h2 class="font-semibold text-gray-700 mb-4">
@@ -313,7 +328,7 @@
                   Parameter Configuration
                 </h3>
 
-                <!-- A. Parameter Umum -->
+                <!-- A. Parameter Umum (hanya epoch-based) -->
                 <fieldset
                   class="mb-6 border border-gray-300 rounded-xl p-5 bg-blue-50 shadow-sm"
                 >
@@ -325,61 +340,15 @@
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
                       <label
-                        class="block text-sm font-medium text-gray-700 mb-2"
-                      >
-                        Strategi Validasi
-                      </label>
-                      <label class="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          id="epochCheckbox"
-                          class="form-checkbox h-4 w-4 text-blue-600"
-                        />
-                        <span class="text-sm text-gray-700">Epoch‑based</span>
-                        <span
-                          class="info-icon"
-                          data-tooltip="Hanya satu kali split data training/validasi. Early Stopping akan menghentikan pelatihan jika tidak ada peningkatan."
-                          >ⓘ</span
-                        >
-                      </label>
-                    </div>
-
-                    <div id="cvParams" class="hidden">
-                      <div class="grid grid-cols-2 gap-4">
-                        <div>
-                          <label
-                            class="block text-sm font-medium text-gray-700 mb-1"
-                          >
-                            Jumlah Fold
-                            <span
-                              class="info-icon"
-                              data-tooltip="Banyaknya lipatan (k) pada K‑Fold Cross Validation. Semakin besar, evaluasi semakin akurat tetapi waktu komputasi meningkat."
-                              >ⓘ</span
-                            >
-                          </label>
-                          <input
-                            type="number"
-                            id="cvFolds"
-                            value="5"
-                            min="2"
-                            max="10"
-                            class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-300"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div id="epochParams">
-                      <label
                         class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Early Stopping Patience
+                        >Early Stopping Patience
                         <span
                           class="info-icon"
-                          data-tooltip="Jumlah epoch berturut‑turut tanpa peningkatan performa yang ditoleransi sebelum pelatihan dihentikan lebih awal."
+                          data-param-key="earlyStoppingPatience"
+                          data-tooltip="Jumlah epoch tanpa peningkatan sebelum berhenti."
                           >ⓘ</span
-                        >
-                      </label>
+                        ></label
+                      >
                       <input
                         type="number"
                         id="earlyStoppingPatience"
@@ -389,18 +358,17 @@
                         class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-300"
                       />
                     </div>
-
                     <div>
                       <label
                         class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Random State
+                        >Random State
                         <span
                           class="info-icon"
-                          data-tooltip="Bilangan bulat yang digunakan sebagai seed untuk proses acak. Membuat hasil eksperimen dapat direproduksi."
+                          data-param-key="randomState"
+                          data-tooltip="Seed untuk reproduksibilitas hasil."
                           >ⓘ</span
-                        >
-                      </label>
+                        ></label
+                      >
                       <input
                         type="number"
                         id="randomState"
@@ -409,34 +377,43 @@
                       />
                     </div>
                   </div>
+                  <p class="text-xs text-gray-500 mt-2">
+                    <i class="fas fa-info-circle mr-1"></i> Validasi menggunakan
+                    pendekatan Epoch‑based (single split data
+                    training/validasi).
+                  </p>
                 </fieldset>
 
-                <!-- B. IndoBERT -->
+                <!-- B. Input Layer -->
                 <fieldset
-                  class="mb-6 border border-gray-300 rounded-xl p-5 bg-purple-50 shadow-sm"
+                  class="mb-6 border border-gray-300 rounded-xl p-5 bg-cyan-50 shadow-sm"
                 >
                   <legend
-                    class="font-semibold text-gray-800 px-3 py-1 bg-purple-100 rounded-full text-sm"
+                    class="font-semibold text-gray-800 px-3 py-1 bg-cyan-100 rounded-full text-sm"
                   >
-                    B. IndoBERT
+                    B. Input Layer
                   </legend>
+                  <p class="text-xs text-gray-500 mb-4">
+                    Mengatur representasi token dan bentuk data yang masuk ke
+                    model.
+                  </p>
                   <div
                     class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
                   >
                     <div>
                       <label
                         class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Max Sequence Length
+                        >Max Sequence Length
                         <span
                           class="info-icon"
-                          data-tooltip="Panjang maksimum token yang akan diproses oleh model. Teks yang lebih panjang akan dipotong, yang lebih pendek akan diisi padding."
+                          data-param-key="maxSeqLength"
+                          data-tooltip="Panjang maksimum token yang diproses."
                           >ⓘ</span
-                        >
-                      </label>
+                        ></label
+                      >
                       <select
                         id="maxSeqLength"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-cyan-300"
                       >
                         <option value="64">64</option>
                         <option value="128" selected>128</option>
@@ -447,34 +424,77 @@
                     <div>
                       <label
                         class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Pooling Strategy
+                        >Padding
                         <span
                           class="info-icon"
-                          data-tooltip="Metode penggabungan vektor representasi token menjadi satu vektor kalimat. CLS mengambil token pertama, MEAN merata‑rata seluruh token, MAX mengambil nilai maksimum tiap dimensi."
+                          data-param-key="padding"
+                          data-tooltip="Strategi penyeragaman panjang input."
                           >ⓘ</span
-                        >
-                      </label>
-                      <select
-                        id="pooling"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
+                        ></label
                       >
-                        <option value="CLS">CLS</option>
-                        <option value="MEAN" selected>MEAN</option>
-                        <option value="MAX">MAX</option>
+                      <select
+                        id="padding"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-cyan-300"
+                      >
+                        <option value="max_length">max_length</option>
+                        <option value="longest">longest</option>
                       </select>
                     </div>
                     <div>
                       <label
                         class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Batch Size
+                        >Truncation
                         <span
                           class="info-icon"
-                          data-tooltip="Jumlah sampel yang diproses sekaligus dalam satu langkah. Ukuran kecil lebih stabil namun lambat, ukuran besar lebih cepat tetapi membutuhkan memori lebih."
+                          data-param-key="truncation"
+                          data-tooltip="Potong teks jika melebihi Max Sequence Length?"
                           >ⓘ</span
-                        >
-                      </label>
+                        ></label
+                      >
+                      <select
+                        id="truncation"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-cyan-300"
+                      >
+                        <option value="True">True</option>
+                        <option value="False">False</option>
+                      </select>
+                    </div>
+                    <div class="sm:col-span-2 lg:col-span-3">
+                      <p class="text-xs text-gray-500">
+                        <i class="fas fa-info-circle mr-1"></i> Tokenizer
+                        WordPiece bawaan IndoBERT digunakan secara otomatis.
+                      </p>
+                    </div>
+                  </div>
+                </fieldset>
+
+                <!-- C. Hidden Layer (Encoder & Fine‑Tuning) -->
+                <fieldset
+                  class="mb-6 border border-gray-300 rounded-xl p-5 bg-purple-50 shadow-sm"
+                >
+                  <legend
+                    class="font-semibold text-gray-800 px-3 py-1 bg-purple-100 rounded-full text-sm"
+                  >
+                    C. Hidden Layer (Encoder & Fine‑Tuning)
+                  </legend>
+                  <p class="text-xs text-gray-500 mb-4">
+                    Arsitektur transformer 12-layer dengan 12 attention head.
+                    Pelatihan tambahan (fine‑tuning) dapat diaktifkan.
+                  </p>
+                  <div
+                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+                  >
+                    <div>
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                        >Batch Size
+                        <span
+                          class="info-icon"
+                          data-param-key="batchSizeParam"
+                          data-tooltip="Jumlah sampel per langkah."
+                          >ⓘ</span
+                        ></label
+                      >
                       <select
                         id="batchSizeParam"
                         class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
@@ -485,249 +505,241 @@
                         <option value="64">64</option>
                       </select>
                     </div>
-                    <div>
-                      <label
-                        class="block text-sm font-medium text-gray-700 mb-1"
+                  </div>
+
+                  <!-- Fine‑Tuning -->
+                  <div class="mt-4 border-t pt-4">
+                    <div class="flex items-center gap-2 mb-3">
+                      <span class="text-sm font-semibold text-gray-700"
+                        >Fine‑Tuning</span
                       >
-                        Padding
-                        <span
-                          class="info-icon"
-                          data-tooltip="Strategi penyeragaman panjang input. 'max_length' akan mengisi semua batch hingga panjang maksimum yang diatur, 'longest' menyesuaikan dengan teks terpanjang dalam batch."
-                          >ⓘ</span
+                      <label class="inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          id="enableFinetune"
+                          class="form-checkbox h-4 w-4 text-green-600"
+                        />
+                        <span class="ml-2 text-xs font-normal text-gray-600"
+                          >Enable
+                          <span
+                            class="info-icon"
+                            data-param-key="enableFinetune"
+                            data-tooltip="Aktifkan pelatihan tambahan pada model."
+                            >ⓘ</span
+                          ></span
                         >
                       </label>
-                      <select
-                        id="padding"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
-                      >
-                        <option value="max_length">max_length</option>
-                        <option value="longest">longest</option>
-                      </select>
                     </div>
-                    <div>
-                      <label
-                        class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Truncation
-                        <span
-                          class="info-icon"
-                          data-tooltip="Jika True, teks yang lebih panjang dari Max Sequence Length akan dipotong. Jika False, teks panjang akan menimbulkan error."
-                          >ⓘ</span
+                    <div
+                      id="finetuneParams"
+                      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2 hidden"
+                    >
+                      <div>
+                        <label
+                          class="block text-sm font-medium text-gray-700 mb-1"
+                          >Epoch
+                          <span
+                            class="info-icon"
+                            data-param-key="ftEpoch"
+                            data-tooltip="Jumlah iterasi pelatihan penuh."
+                            >ⓘ</span
+                          ></label
+                        ><input
+                          type="number"
+                          id="ftEpoch"
+                          value="3"
+                          min="1"
+                          max="50"
+                          class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          class="block text-sm font-medium text-gray-700 mb-1"
+                          >Learning Rate
+                          <span
+                            class="info-icon"
+                            data-param-key="ftLearningRate"
+                            data-tooltip="Kecepatan pembelajaran model."
+                            >ⓘ</span
+                          ></label
+                        ><select
+                          id="ftLearningRate"
+                          class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
                         >
-                      </label>
-                      <select
-                        id="truncation"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
-                      >
-                        <option value="True">True</option>
-                        <option value="False">False</option>
-                      </select>
+                          <option value="5e-6">5e‑6</option>
+                          <option value="1e-5">1e‑5</option>
+                          <option value="2e-5" selected>2e‑5</option>
+                          <option value="3e-5">3e‑5</option>
+                          <option value="5e-5">5e‑5</option>
+                          <option value="1e-4">1e‑4</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label
+                          class="block text-sm font-medium text-gray-700 mb-1"
+                          >Optimizer
+                          <span
+                            class="info-icon"
+                            data-param-key="ftOptimizer"
+                            data-tooltip="Algoritma optimasi."
+                            >ⓘ</span
+                          ></label
+                        ><select
+                          id="ftOptimizer"
+                          class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
+                        >
+                          <option value="AdamW" selected>AdamW</option>
+                          <option value="Adam">Adam</option>
+                          <option value="SGD">SGD</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label
+                          class="block text-sm font-medium text-gray-700 mb-1"
+                          >Weight Decay
+                          <span
+                            class="info-icon"
+                            data-param-key="ftWeightDecay"
+                            data-tooltip="Regularisasi bobot."
+                            >ⓘ</span
+                          ></label
+                        ><input
+                          type="number"
+                          id="ftWeightDecay"
+                          value="0.01"
+                          step="0.001"
+                          min="0"
+                          class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          class="block text-sm font-medium text-gray-700 mb-1"
+                          >Warmup Ratio
+                          <span
+                            class="info-icon"
+                            data-param-key="ftWarmupRatio"
+                            data-tooltip="Proporsi langkah pemanasan."
+                            >ⓘ</span
+                          ></label
+                        ><input
+                          type="number"
+                          id="ftWarmupRatio"
+                          value="0.1"
+                          step="0.01"
+                          min="0"
+                          max="1"
+                          class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          class="block text-sm font-medium text-gray-700 mb-1"
+                          >Freeze Layers
+                          <span
+                            class="info-icon"
+                            data-param-key="ftFreezeLayers"
+                            data-tooltip="Jumlah layer yang dibekukan."
+                            >ⓘ</span
+                          ></label
+                        ><input
+                          type="number"
+                          id="ftFreezeLayers"
+                          value="9"
+                          min="0"
+                          max="12"
+                          class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          class="block text-sm font-medium text-gray-700 mb-1"
+                          >Gradient Accumulation
+                          <span
+                            class="info-icon"
+                            data-param-key="ftGradAccum"
+                            data-tooltip="Akumulasi gradien."
+                            >ⓘ</span
+                          ></label
+                        ><input
+                          type="number"
+                          id="ftGradAccum"
+                          value="1"
+                          min="1"
+                          class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          class="block text-sm font-medium text-gray-700 mb-1"
+                          >Max Grad Norm
+                          <span
+                            class="info-icon"
+                            data-param-key="ftMaxGradNorm"
+                            data-tooltip="Batas maksimum gradien."
+                            >ⓘ</span
+                          ></label
+                        ><input
+                          type="number"
+                          id="ftMaxGradNorm"
+                          value="1.0"
+                          step="0.1"
+                          min="0.1"
+                          class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
+                        />
+                      </div>
                     </div>
                   </div>
                 </fieldset>
 
-                <!-- C. Fine‑Tuning (opsional) -->
+                <!-- D. Output Layer (Classification Head) -->
                 <fieldset
-                  class="mb-6 border border-gray-300 rounded-xl p-5 bg-green-50 shadow-sm"
+                  class="mb-6 border border-gray-300 rounded-xl p-5 bg-pink-50 shadow-sm"
                 >
                   <legend
-                    class="font-semibold text-gray-800 px-3 py-1 bg-green-100 rounded-full text-sm flex items-center gap-2"
+                    class="font-semibold text-gray-800 px-3 py-1 bg-pink-100 rounded-full text-sm"
                   >
-                    C. Fine‑Tuning IndoBERT
-                    <label class="inline-flex items-center ml-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        id="enableFinetune"
-                        class="form-checkbox h-4 w-4 text-green-600"
-                      />
-                      <span class="ml-2 text-xs font-normal text-gray-600">
-                        Enable
-                        <span
-                          class="info-icon"
-                          data-tooltip="Mengaktifkan pelatihan tambahan pada model IndoBERT dengan data Anda. Membutuhkan lebih banyak waktu tetapi dapat meningkatkan akurasi."
-                          >ⓘ</span
-                        >
-                      </span>
-                    </label>
+                    D. Output Layer (Classification Head)
                   </legend>
+                  <p class="text-xs text-gray-500 mb-4">
+                    Mengubah vektor kontekstual menjadi probabilitas kelas
+                    emosi.
+                  </p>
                   <div
-                    id="finetuneParams"
-                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2 hidden"
+                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
                   >
                     <div>
                       <label
                         class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Epoch
+                        >Pooling Strategy
                         <span
                           class="info-icon"
-                          data-tooltip="Jumlah iterasi penuh terhadap seluruh data training. Semakin banyak epoch, model belajar lebih detail tetapi berisiko overfitting."
+                          data-param-key="pooling"
+                          data-tooltip="Cara menggabungkan vektor token."
                           >ⓘ</span
-                        >
-                      </label>
-                      <input
-                        type="number"
-                        id="ftEpoch"
-                        value="3"
-                        min="1"
-                        max="50"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-300"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        class="block text-sm font-medium text-gray-700 mb-1"
+                        ></label
                       >
-                        Learning Rate
-                        <span
-                          class="info-icon"
-                          data-tooltip="Kecepatan model memperbarui bobot. Nilai kecil membuat pelatihan lebih stabil namun lambat, nilai besar bisa mempercepat tetapi berpotensi tidak konvergen."
-                          >ⓘ</span
-                        >
-                      </label>
                       <select
-                        id="ftLearningRate"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-300"
+                        id="pooling"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-300"
                       >
-                        <option value="5e-6">5e‑6</option>
-                        <option value="1e-5">1e‑5</option>
-                        <option value="2e-5" selected>2e‑5</option>
-                        <option value="3e-5">3e‑5</option>
-                        <option value="5e-5">5e‑5</option>
-                        <option value="1e-4">1e‑4</option>
+                        <option value="CLS">CLS</option>
+                        <option value="MEAN" selected>MEAN</option>
+                        <option value="MAX">MAX</option>
                       </select>
                     </div>
                     <div>
                       <label
                         class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Optimizer
+                        >Classifier Dropout
                         <span
                           class="info-icon"
-                          data-tooltip="Algoritma optimasi untuk memperbarui bobot. AdamW adalah varian Adam dengan weight decay terpisah, umum digunakan untuk fine‑tuning transformer."
+                          data-param-key="ftDropout"
+                          data-tooltip="Dropout pada lapisan klasifikasi."
                           >ⓘ</span
-                        >
-                      </label>
-                      <select
-                        id="ftOptimizer"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-300"
+                        ></label
                       >
-                        <option value="AdamW" selected>AdamW</option>
-                        <option value="Adam">Adam</option>
-                        <option value="SGD">SGD</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label
-                        class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Weight Decay
-                        <span
-                          class="info-icon"
-                          data-tooltip="Faktor regularisasi untuk mengurangi besaran bobot. Membantu mencegah overfitting."
-                          >ⓘ</span
-                        >
-                      </label>
-                      <input
-                        type="number"
-                        id="ftWeightDecay"
-                        value="0.01"
-                        step="0.001"
-                        min="0"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-300"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Warmup Ratio
-                        <span
-                          class="info-icon"
-                          data-tooltip="Proporsi langkah pemanasan di mana learning rate dinaikkan secara bertahap dari nol hingga nilai yang ditentukan."
-                          >ⓘ</span
-                        >
-                      </label>
-                      <input
-                        type="number"
-                        id="ftWarmupRatio"
-                        value="0.1"
-                        step="0.01"
-                        min="0"
-                        max="1"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-300"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Freeze Layers
-                        <span
-                          class="info-icon"
-                          data-tooltip="Jumlah layer awal IndoBERT yang dibekukan (tidak dilatih). Membekukan layer awal menjaga representasi bahasa umum, sedangkan layer atas disesuaikan dengan data spesifik."
-                          >ⓘ</span
-                        >
-                      </label>
-                      <input
-                        type="number"
-                        id="ftFreezeLayers"
-                        value="9"
-                        min="0"
-                        max="12"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-300"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Gradient Accumulation
-                        <span
-                          class="info-icon"
-                          data-tooltip="Jumlah batch yang diakumulasi sebelum memperbarui bobot. Simulasi batch size lebih besar tanpa menambah memori GPU."
-                          >ⓘ</span
-                        >
-                      </label>
-                      <input
-                        type="number"
-                        id="ftGradAccum"
-                        value="1"
-                        min="1"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-300"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Max Grad Norm
-                        <span
-                          class="info-icon"
-                          data-tooltip="Batas maksimum gradien untuk clipping. Mencegah gradien meledak (exploding gradient) yang dapat merusak pelatihan."
-                          >ⓘ</span
-                        >
-                      </label>
-                      <input
-                        type="number"
-                        id="ftMaxGradNorm"
-                        value="1.0"
-                        step="0.1"
-                        min="0.1"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-300"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Classifier Dropout
-                        <span
-                          class="info-icon"
-                          data-tooltip="Tingkat dropout yang diterapkan pada lapisan klasifikasi akhir. Membantu mencegah overfitting dengan mematikan sebagian neuron secara acak."
-                          >ⓘ</span
-                        >
-                      </label>
                       <input
                         type="number"
                         id="ftDropout"
@@ -735,34 +747,61 @@
                         step="0.05"
                         min="0"
                         max="0.5"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-300"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-300"
                       />
+                    </div>
+                    <div>
+                      <label
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                        >Target Embedding Dimension
+                        <span
+                          class="info-icon"
+                          data-param-key="targetDim"
+                          data-tooltip="Dimensi akhir vektor fitur untuk KNN."
+                          >ⓘ</span
+                        ></label
+                      >
+                      <input
+                        type="number"
+                        id="targetDim"
+                        value="768"
+                        min="2"
+                        max="768"
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-300"
+                      />
+                    </div>
+                    <div class="sm:col-span-2 lg:col-span-3">
+                      <p class="text-xs text-gray-500">
+                        <i class="fas fa-info-circle mr-1"></i> Jumlah kelas (8)
+                        dan Softmax ditentukan otomatis.
+                      </p>
                     </div>
                   </div>
                 </fieldset>
 
-                <!-- D. UMAP (opsional) -->
+                <!-- UMAP -->
                 <fieldset
                   class="mb-6 border border-gray-300 rounded-xl p-5 bg-orange-50 shadow-sm"
                 >
                   <legend
                     class="font-semibold text-gray-800 px-3 py-1 bg-orange-100 rounded-full text-sm flex items-center gap-2"
                   >
-                    D. UMAP
+                    UMAP
                     <label class="inline-flex items-center ml-2 cursor-pointer">
                       <input
                         type="checkbox"
                         id="enableUMAP"
                         class="form-checkbox h-4 w-4 text-orange-600"
                       />
-                      <span class="ml-2 text-xs font-normal text-gray-600">
-                        Enable
+                      <span class="ml-2 text-xs font-normal text-gray-600"
+                        >Enable
                         <span
                           class="info-icon"
-                          data-tooltip="Mengurangi dimensi fitur sebelum klasifikasi KNN. Dapat mempercepat dan mengurangi noise, namun berpotensi menghilangkan informasi."
+                          data-param-key="enableUMAP"
+                          data-tooltip="Aktifkan reduksi dimensi."
                           >ⓘ</span
-                        >
-                      </span>
+                        ></span
+                      >
                     </label>
                   </legend>
                   <div
@@ -772,15 +811,14 @@
                     <div>
                       <label
                         class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        n_components
+                        >n_components
                         <span
                           class="info-icon"
-                          data-tooltip="Jumlah dimensi hasil reduksi UMAP. Semakin kecil semakin ringkas, tetapi terlalu kecil dapat kehilangan informasi penting."
+                          data-param-key="umapNComponents"
+                          data-tooltip="Dimensi output UMAP."
                           >ⓘ</span
-                        >
-                      </label>
-                      <input
+                        ></label
+                      ><input
                         type="number"
                         id="umapNComponents"
                         value="5"
@@ -792,15 +830,14 @@
                     <div>
                       <label
                         class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        n_neighbors
+                        >n_neighbors
                         <span
                           class="info-icon"
-                          data-tooltip="Ukuran lingkungan lokal untuk UMAP. Nilai kecil fokus pada struktur halus, nilai besar melihat struktur global."
+                          data-param-key="umapNNeighbors"
+                          data-tooltip="Ukuran lingkungan lokal."
                           >ⓘ</span
-                        >
-                      </label>
-                      <input
+                        ></label
+                      ><input
                         type="number"
                         id="umapNNeighbors"
                         value="30"
@@ -812,15 +849,14 @@
                     <div>
                       <label
                         class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        min_dist
+                        >min_dist
                         <span
                           class="info-icon"
-                          data-tooltip="Jarak minimum antar titik dalam ruang hasil UMAP. Mengontrol seberapa rapat titik‑titik dikelompokkan."
+                          data-param-key="umapMinDist"
+                          data-tooltip="Jarak minimum antar titik."
                           >ⓘ</span
-                        >
-                      </label>
-                      <input
+                        ></label
+                      ><input
                         type="number"
                         id="umapMinDist"
                         value="0.1"
@@ -833,15 +869,14 @@
                     <div>
                       <label
                         class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        metric
+                        >metric
                         <span
                           class="info-icon"
-                          data-tooltip="Metode pengukuran jarak antar titik data. Cosine cocok untuk data teks karena mengukur kesamaan arah, bukan besaran."
+                          data-param-key="umapMetric"
+                          data-tooltip="Metode pengukuran jarak."
                           >ⓘ</span
-                        >
-                      </label>
-                      <select
+                        ></label
+                      ><select
                         id="umapMetric"
                         class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-orange-300"
                       >
@@ -853,15 +888,14 @@
                     <div>
                       <label
                         class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        random_state
+                        >random_state
                         <span
                           class="info-icon"
-                          data-tooltip="Seed untuk inisialisasi acak UMAP. Menjamin hasil reduksi yang sama setiap kali dijalankan."
+                          data-param-key="umapRandomState"
+                          data-tooltip="Seed untuk UMAP."
                           >ⓘ</span
-                        >
-                      </label>
-                      <input
+                        ></label
+                      ><input
                         type="number"
                         id="umapRandomState"
                         value="42"
@@ -886,15 +920,14 @@
                     <div>
                       <label
                         class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        k (n_neighbors)
+                        >k (n_neighbors)
                         <span
                           class="info-icon"
-                          data-tooltip="Jumlah tetangga terdekat yang digunakan untuk voting. Semakin kecil k, model lebih sensitif; semakin besar k, keputusan lebih stabil tapi bisa kehilangan detail."
+                          data-param-key="knnK"
+                          data-tooltip="Jumlah tetangga terdekat."
                           >ⓘ</span
-                        >
-                      </label>
-                      <input
+                        ></label
+                      ><input
                         type="number"
                         id="knnK"
                         value="7"
@@ -906,15 +939,14 @@
                     <div>
                       <label
                         class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Metrik Jarak
+                        >Metrik Jarak
                         <span
                           class="info-icon"
-                          data-tooltip="Cara mengukur kemiripan antar vektor. Cosine umum untuk teks, Euclidean sensitif terhadap magnitudo, Manhattan menghitung jarak absolut."
+                          data-param-key="knnMetric"
+                          data-tooltip="Cara mengukur kemiripan vektor."
                           >ⓘ</span
-                        >
-                      </label>
-                      <select
+                        ></label
+                      ><select
                         id="knnMetric"
                         class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-300"
                       >
@@ -926,15 +958,14 @@
                     <div>
                       <label
                         class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Weights
+                        >Weights
                         <span
                           class="info-icon"
-                          data-tooltip="'uniform' memberi bobot sama pada semua tetangga; 'distance' membobot berdasarkan kebalikan jarak, sehingga tetangga lebih dekat lebih berpengaruh."
+                          data-param-key="knnWeights"
+                          data-tooltip="Bobot suara tetangga."
                           >ⓘ</span
-                        >
-                      </label>
-                      <select
+                        ></label
+                      ><select
                         id="knnWeights"
                         class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-300"
                       >
@@ -945,15 +976,14 @@
                     <div>
                       <label
                         class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Algorithm
+                        >Algorithm
                         <span
                           class="info-icon"
-                          data-tooltip="Algoritma pencarian tetangga terdekat. 'auto' memilih otomatis berdasarkan data. 'brute' cocok untuk dimensi rendah."
+                          data-param-key="knnAlgorithm"
+                          data-tooltip="Algoritma pencarian tetangga."
                           >ⓘ</span
-                        >
-                      </label>
-                      <select
+                        ></label
+                      ><select
                         id="knnAlgorithm"
                         class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-300"
                       >
@@ -966,15 +996,14 @@
                     <div>
                       <label
                         class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Leaf Size
+                        >Leaf Size
                         <span
                           class="info-icon"
-                          data-tooltip="Ukuran daun untuk tree-based algorithm (ball_tree/kd_tree). Mempengaruhi kecepatan konstruksi dan pencarian."
+                          data-param-key="knnLeafSize"
+                          data-tooltip="Ukuran daun untuk tree."
                           >ⓘ</span
-                        >
-                      </label>
-                      <input
+                        ></label
+                      ><input
                         type="number"
                         id="knnLeafSize"
                         value="30"
@@ -985,15 +1014,14 @@
                     <div>
                       <label
                         class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        p (Minkowski)
+                        >p (Minkowski)
                         <span
                           class="info-icon"
-                          data-tooltip="Parameter untuk metrik Minkowski. p=2 adalah Euclidean, p=1 adalah Manhattan. Hanya relevan jika metrik 'minkowski' dipilih."
+                          data-param-key="knnP"
+                          data-tooltip="Parameter metrik Minkowski."
                           >ⓘ</span
-                        >
-                      </label>
-                      <input
+                        ></label
+                      ><input
                         type="number"
                         id="knnP"
                         value="2"
@@ -1005,15 +1033,14 @@
                     <div class="sm:col-span-2 lg:col-span-3">
                       <label
                         class="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Confidence Adjustment
+                        >Confidence Adjustment
                         <span
                           class="info-icon"
-                          data-tooltip="Metode penyesuaian probabilitas KNN berdasarkan keyakinan. KNN Murni tidak mengubah; Confidence‑based mengalikan dengan skor keyakinan; Weighted Average menggabungkan probabilitas dengan bobot skor."
+                          data-param-key="hybridMethod"
+                          data-tooltip="Metode penyesuaian probabilitas KNN."
                           >ⓘ</span
-                        >
-                      </label>
-                      <select
+                        ></label
+                      ><select
                         id="hybridMethod"
                         class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-300"
                       >
@@ -1036,18 +1063,26 @@
               </div>
             </div>
 
-            <!-- Lexicon-NB content (DIPERBARUI dengan Emosi & Fusion) -->
+            <!-- Lexicon-NB content -->
             <div id="lexiconTuning" class="hidden">
               <div class="border-t pt-4">
                 <h3 class="font-medium text-gray-800 mb-4">
                   Parameter Configuration - Lexicon+NB
                 </h3>
 
-                <!-- Ranking Emosi -->
+                <!-- Urutan Ranking Emosi -->
                 <div class="mb-6 p-4 bg-gray-50 rounded-lg">
-                  <h4 class="text-sm font-medium text-gray-700 mb-3">
+                  <label
+                    class="text-sm font-medium text-gray-700 mb-3 flex items-center"
+                  >
                     Urutan Ranking Emosi (1–7)
-                  </h4>
+                    <span
+                      class="info-icon"
+                      data-param-key="emotionRanking"
+                      data-tooltip="Urutan prioritas 7 emosi. 1 = paling dominan."
+                      >ⓘ</span
+                    >
+                  </label>
                   <div
                     class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3"
                     id="emotionRankingContainer"
@@ -1057,7 +1092,15 @@
                 <!-- Parameter Dasar -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-sm text-gray-600">Alpha</label>
+                    <label class="block text-sm text-gray-600">
+                      Alpha
+                      <span
+                        class="info-icon"
+                        data-param-key="lexiconAlpha"
+                        data-tooltip="Parameter smoothing Laplace untuk Naive Bayes."
+                        >ⓘ</span
+                      >
+                    </label>
                     <input
                       type="text"
                       id="lexiconAlpha"
@@ -1066,9 +1109,15 @@
                     />
                   </div>
                   <div>
-                    <label class="block text-sm text-gray-600"
-                      >Model Type</label
-                    >
+                    <label class="block text-sm text-gray-600">
+                      Model Type
+                      <span
+                        class="info-icon"
+                        data-param-key="lexiconModelType"
+                        data-tooltip="Varian Naive Bayes (Multinomial atau Bernoulli)."
+                        >ⓘ</span
+                      >
+                    </label>
                     <select
                       id="lexiconModelType"
                       class="w-full border rounded p-2 mt-1"
@@ -1078,9 +1127,15 @@
                     </select>
                   </div>
                   <div>
-                    <label class="block text-sm text-gray-600"
-                      >Vectorizer</label
-                    >
+                    <label class="block text-sm text-gray-600">
+                      Vectorizer
+                      <span
+                        class="info-icon"
+                        data-param-key="lexiconVectorizer"
+                        data-tooltip="Cara mengubah teks menjadi vektor (Count atau TF‑IDF)."
+                        >ⓘ</span
+                      >
+                    </label>
                     <select
                       id="lexiconVectorizer"
                       class="w-full border rounded p-2 mt-1"
@@ -1093,9 +1148,17 @@
 
                 <!-- Hybrid Fusion -->
                 <div class="mt-4 p-4 bg-gray-50 rounded-lg">
-                  <h4 class="text-sm font-medium text-gray-700 mb-3">
+                  <label
+                    class="text-sm font-medium text-gray-700 mb-3 flex items-center"
+                  >
                     Hybrid Fusion
-                  </h4>
+                    <span
+                      class="info-icon"
+                      data-param-key="fusionMethodSelect"
+                      data-tooltip="Metode penggabungan probabilitas NB dengan skor Lexicon."
+                      >ⓘ</span
+                    >
+                  </label>
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label class="block text-sm text-gray-600"
@@ -1111,7 +1174,15 @@
                       </select>
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600">Formula</label>
+                      <label class="block text-sm text-gray-600"
+                        >Formula
+                        <span
+                          class="info-icon"
+                          data-param-key="fusionFormulaInput"
+                          data-tooltip="Rumus yang sesuai dengan Fusion Method."
+                          >ⓘ</span
+                        >
+                      </label>
                       <input
                         type="text"
                         id="fusionFormulaInput"
@@ -1155,14 +1226,11 @@
         <!-- Training History Table -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-8">
           <h2 class="font-semibold text-gray-700 mb-4">Training History</h2>
-
-          <!-- Filter Bar: Search + Date Range -->
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1"
                 >Cari teks</label
-              >
-              <input
+              ><input
                 type="text"
                 id="historySearchInput"
                 placeholder="Dataset, Model, Rasio..."
@@ -1172,8 +1240,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1"
                 >Dari tanggal</label
-              >
-              <input
+              ><input
                 type="date"
                 id="dateFromInput"
                 class="w-full border rounded-lg p-2"
@@ -1182,8 +1249,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1"
                 >Sampai tanggal</label
-              >
-              <input
+              ><input
                 type="date"
                 id="dateToInput"
                 class="w-full border rounded-lg p-2"
@@ -1220,12 +1286,10 @@
         <!-- Model dengan Hasil Tertinggi -->
         <div class="bg-white p-6 rounded-xl shadow-md">
           <h2 class="font-semibold text-gray-700 mb-4 flex items-center">
-            <i class="fas fa-trophy text-yellow-500 mr-2"></i>
-            Model dengan Hasil Tertinggi
+            <i class="fas fa-trophy text-yellow-500 mr-2"></i> Model dengan
+            Hasil Tertinggi
           </h2>
-          <div id="bestModelContainer" class="text-gray-600">
-            <!-- Akan diisi JS -->
-          </div>
+          <div id="bestModelContainer" class="text-gray-600"></div>
         </div>
       </main>
     </div>
@@ -1246,9 +1310,19 @@
             <i class="fas fa-times text-2xl"></i>
           </button>
         </div>
-        <div class="overflow-y-auto p-6 custom-scroll" id="paramModalContent">
-          <!-- Parameter akan ditampilkan di sini -->
-        </div>
+        <div
+          class="overflow-y-auto p-6 custom-scroll"
+          id="paramModalContent"
+        ></div>
+      </div>
+    </div>
+
+    <!-- Modal untuk penjelasan detail parameter -->
+    <div id="detailModal" class="detail-modal">
+      <div class="detail-modal-content">
+        <span class="detail-close" id="closeDetailModal">&times;</span>
+        <h3 id="detailTitle"></h3>
+        <div id="detailContent"></div>
       </div>
     </div>
 
@@ -1258,6 +1332,8 @@
       let trainingHistory = [];
       let currentTrainingPage = 1;
       const rowsPerTrainingPage = 5;
+      const targetDimInput = document.getElementById("targetDim");
+      const umapNComponentsInput = document.getElementById("umapNComponents");
       let trainingParamsStore = {};
 
       // ==================== EMOSI & FUSION ====================
@@ -1322,7 +1398,6 @@
       const rowsPerSplitPage = 5;
       let editingSplitId = null;
 
-      // Helper: render pagination
       function renderPaginationControls(
         containerId,
         currentPage,
@@ -1407,7 +1482,10 @@
           hideTooltip();
           const tooltip = document.createElement("div");
           tooltip.className = "info-tooltip";
-          tooltip.textContent = text;
+          const paramKey =
+            icon.closest("[data-param-key]")?.getAttribute("data-param-key") ||
+            "";
+          tooltip.innerHTML = `${text}${paramKey ? `<br><span class="text-blue-400 underline cursor-pointer" onclick="openDetailModal('${paramKey}')">Detail…</span>` : ""}`;
           document.body.appendChild(tooltip);
 
           const rect = icon.getBoundingClientRect();
@@ -1419,8 +1497,6 @@
           let left =
             rect.left + scrollLeft + rect.width / 2 - tooltip.offsetWidth / 2;
           let top = rect.bottom + scrollTop + 6;
-
-          // jangan keluar layar
           if (left < 10) left = 10;
           if (left + tooltip.offsetWidth > window.innerWidth - 10)
             left = window.innerWidth - tooltip.offsetWidth - 10;
@@ -1433,21 +1509,21 @@
 
           tooltip.style.left = left + "px";
           tooltip.style.top = top + "px";
-          tooltip.classList.add("show");
+          setTimeout(() => tooltip.classList.add("show"), 10);
           currentTooltip = tooltip;
-
-          // Sembunyikan setelah 20 detik
           setTimeout(hideTooltip, 20000);
         }
 
         document.addEventListener("click", function (e) {
           const icon = e.target.closest(".info-icon");
           if (icon) {
-            e.preventDefault(); // cegah aksi default (centang checkbox)
-            e.stopPropagation(); // hentikan propagasi ke parent
+            e.preventDefault();
+            e.stopPropagation();
             const text = icon.getAttribute("data-tooltip");
             if (text) showTooltip(icon, text);
-          } else {
+            return;
+          }
+          if (currentTooltip && !currentTooltip.contains(e.target)) {
             hideTooltip();
           }
         });
@@ -1455,7 +1531,393 @@
         window.addEventListener("scroll", hideTooltip, true);
       })();
 
-      // ==================== LOAD SPLIT RATIOS ====================
+      // Detail parameter (tetap sama, tidak diubah)
+      const PARAM_DETAILS = {
+        maxSeqLength: {
+          title: "Max Sequence Length",
+          html: `
+    <p><b>Definition:</b> The maximum number of tokens (word pieces) that the model processes for each sentence. Tokens can be full words or sub‑words.</p>
+    <p><b>Value range:</b> 64, 128, 256, 512 tokens.</p>
+    <p><b>Effect:</b></p>
+    <ul class="list-disc list-inside ml-2">
+      <li><b>Larger (512):</b> The model can read longer sentences without cutting off important information. However, training becomes slower, uses more GPU memory, and may include a lot of padding (empty tokens) if sentences are actually short.</li>
+      <li><b>Smaller (64):</b> Training is faster and more memory‑efficient, but long sentences will be cut off in the middle. Emotion information at the end of a sentence could be lost.</li>
+    </ul>
+    <p><b>Recommendation:</b> For standard Indonesian sentences (average 15–25 words), <b>128</b> is already very sufficient and efficient. Use 256 only if your dataset contains many long sentences (>30 words). 512 is rarely needed for short classification tasks like emotion analysis.</p>
+    <p><i>Analogy:</i> Like reading a message through a small window vs. a large window. A small window lets you see only part of the content; a large window shows the whole conversation but wastes space.</p>
+  `,
+        },
+        padding: {
+          title: "Padding",
+          html: `
+    <p><b>Definition:</b> Strategy to equalise the length of all inputs in a batch by adding filler tokens (usually 0) at the end of shorter sentences.</p>
+    <p><b>Options:</b> <code>max_length</code> (all inputs are forced to the set maximum length, resulting in more padding), <code>longest</code> (only follows the longest sentence in the batch, more efficient).</p>
+    <p><b>Effect:</b></p>
+    <ul class="list-disc list-inside ml-2">
+      <li><b>max_length:</b> Consistent across batches, easier for parallel computation, but wastes padding tokens if most sentences are short.</li>
+      <li><b>longest:</b> More efficient because padding is minimal, but input length can vary per batch, making the data flow slightly less predictable.</li>
+    </ul>
+    <p><b>Recommendation:</b> Choose <b>max_length</b> for stability and easier debugging, especially when Max Sequence Length is set fairly small (128). Choose <code>longest</code> if you want to optimise GPU memory usage.</p>
+  `,
+        },
+        truncation: {
+          title: "Truncation",
+          html: `
+    <p><b>Definition:</b> Determines whether sentences longer than Max Sequence Length will be truncated.</p>
+    <p><b>Options:</b> <code>True</code> (cut off), <code>False</code> (leave as is, which may cause an error).</p>
+    <p><b>Effect:</b> When <code>True</code>, the end of the sentence is discarded; if important information lies at the end, accuracy may drop. If <code>False</code> and a sentence exceeds the limit, training will fail.</p>
+    <p><b>Recommendation:</b> <b>Always enable (True)</b> to keep the process safe, provided Max Sequence Length is large enough to accommodate most sentences. If you are very worried about losing information, increase Max Sequence Length rather than turning off Truncation.</p>
+  `,
+        },
+        batchSizeParam: {
+          title: "Batch Size",
+          html: `
+    <p><b>Definition:</b> Number of data samples processed together in one training step.</p>
+    <p><b>Value range:</b> 8, 16, 32, 64.</p>
+    <p><b>Effect:</b></p>
+    <ul class="list-disc list-inside ml-2">
+      <li><b>Small (8):</b> More memory‑efficient; gradients are calculated from few examples so the learning direction is "noisier" but can help escape bad local minima. Overall training is slower.</li>
+      <li><b>Large (64):</b> Faster per epoch because of maximum GPU parallelism, but requires more memory. Gradients are more stable, but may be less sensitive to subtle patterns.</li>
+    </ul>
+    <p><b>Recommendation:</b> <b>16</b> or <b>32</b> is a good balance for GPUs with 8–12 GB RAM. If you run out of memory, drop to 8 and also consider Gradient Accumulation.</p>
+  `,
+        },
+        earlyStoppingPatience: {
+          title: "Early Stopping Patience",
+          html: `
+    <p><b>Definition:</b> The number of consecutive epochs without improvement in accuracy (or the validation metric). Once this limit is reached, training stops automatically to prevent overfitting and save time.</p>
+    <p><b>Range:</b> 1 – 10 (smaller values are stricter).</p>
+    <p><b>Effect:</b></p>
+    <ul class="list-disc list-inside ml-2">
+      <li><b>Small values (1‑2):</b> Training stops as soon as performance stagnates briefly, possibly before the model has fully matured.</li>
+      <li><b>Large values (5‑10):</b> Gives more chance for improvement, but may lead to overfitting if performance never recovers.</li>
+    </ul>
+    <p><b>Recommendation:</b> <b>2</b> or <b>3</b> is a good starting point. If you have a large dataset or a low learning rate, you may increase it slightly.</p>
+  `,
+        },
+        randomState: {
+          title: "Random State",
+          html: `
+    <p><b>Definition:</b> A fixed number (seed) used for random initialisation such as training/validation split, weight initialisation, or shuffling.</p>
+    <p><b>Effect:</b> Using the same seed makes experiments fully reproducible. Change this number to try different "luck" variations (e.g., 42, 123, 2024).</p>
+    <p><b>Recommendation:</b> Keep <b>42</b> as the iconic default. Only change it when you want to test the model’s sensitivity to initialisation.</p>
+  `,
+        },
+        pooling: {
+          title: "Pooling Strategy",
+          html: `
+    <p><b>Definition:</b> How the vectors of all tokens in a sentence are combined into a single sentence representation vector.</p>
+    <p><b>Options:</b>
+      <br><code>CLS</code> – Uses only the first token [CLS] (the built‑in aggregate representation of BERT).
+      <br><code>MEAN</code> – Averages all tokens (excluding padding).
+      <br><code>MAX</code> – Takes the maximum value per dimension across all tokens.
+    </p>
+    <p><b>Effect:</b> CLS is simple but sometimes misses local information. MEAN better represents the whole sentence. MAX captures the most prominent features.</p>
+    <p><b>Recommendation:</b> <b>MEAN</b> often gives the best results for sentence classification. Also try CLS if you want a strong baseline.</p>
+  `,
+        },
+        ftDropout: {
+          title: "Classifier Dropout",
+          html: `
+    <p><b>Definition:</b> The percentage of neurons in the classification layer that are randomly turned off during training. Prevents the model from relying too heavily on specific neurons (overfitting).</p>
+    <p><b>Range:</b> 0.0 – 0.5 (0.1 means 10% of neurons are dropped).</p>
+    <p><b>Effect:</b> Higher dropout gives stronger regularisation but can make learning harder. Too low and the model easily memorises the training data (overfits).</p>
+    <p><b>Recommendation:</b> <b>0.1</b> works well for small to medium datasets. For very small datasets (<1000), you can increase it to 0.3.</p>
+  `,
+        },
+        enableFinetune: {
+          title: "Fine‑Tuning (Enable)",
+          html: `
+    <p><b>Definition:</b> Activates additional training (fine‑tuning) of the IndoBERT model with your data, so the model adapts to the specific characteristics of your dataset.</p>
+    <p><b>Effect:</b> Without fine‑tuning, the model merely works as a frozen feature extractor. With fine‑tuning, accuracy usually increases dramatically, but it requires more time and memory.</p>
+    <p><b>Recommendation:</b> <b>Enable</b> if you have at least a few hundred samples and a capable GPU. Otherwise, leave it off for fast feature extraction.</p>
+    <p><i>Analogy:</i> Fine‑tuning is like hiring a professional translator (IndoBERT) who already masters Indonesian, then giving them examples of your emotion texts so they become even better.</p>
+  `,
+        },
+        ftEpoch: {
+          title: "Epoch (Fine‑Tuning)",
+          html: `
+    <p><b>Definition:</b> How many times the model will see the entire training dataset from start to finish.</p>
+    <p><b>Range:</b> 1 – 50.</p>
+    <p><b>Effect:</b> Too few → the model hasn’t learned enough patterns. Too many → the model starts memorising data (overfitting) and performance on new data actually drops.</p>
+    <p><b>Recommendation:</b> Start with <b>3</b>. Watch the validation accuracy curve; if it is still slowly rising after 3 epochs, increase to 5–10. If it flattens or drops, reduce.</p>
+  `,
+        },
+        ftLearningRate: {
+          title: "Learning Rate (Fine‑Tuning)",
+          html: `
+    <p><b>Definition:</b> How big a step the model takes when updating its weights. A small value means careful steps; a large value means big leaps.</p>
+    <p><b>Range:</b> 5e‑6 (0.000005) to 1e‑4 (0.0001).</p>
+    <p><b>Effect:</b> Too small → learning is very slow, requiring many epochs. Too large → weights change drastically, possibly "jumping over" the optimum or even diverging (error gets larger).</p>
+    <p><b>Recommendation:</b> <b>2e‑5</b> or <b>3e‑5</b> are standard values for transformer fine‑tuning. For very large datasets, you can lower it slightly to 1e‑5. If you have only a few hundred samples, you may raise it to 5e‑5.</p>
+  `,
+        },
+        ftOptimizer: {
+          title: "Optimizer",
+          html: `
+    <p><b>Definition:</b> The algorithm that determines how the learning rate is applied to update the weights.</p>
+    <p><b>Options:</b> AdamW (Adam with decoupled weight decay, the most modern), Adam (basic version), SGD (Stochastic Gradient Descent, classic but sometimes still superior).</p>
+    <p><b>Effect:</b> AdamW is generally the most stable and fastest for fine‑tuning. SGD requires more careful tuning of the learning rate.</p>
+    <p><b>Recommendation:</b> <b>AdamW</b> for all cases; no need to change unless you are very experienced.</p>
+  `,
+        },
+        ftWeightDecay: {
+          title: "Weight Decay",
+          html: `
+    <p><b>Definition:</b> A penalty that encourages the model’s weights to remain small, so the model does not become overly complex and overfit.</p>
+    <p><b>Range:</b> 0.0 – 0.1. Usually 0.01.</p>
+    <p><b>Effect:</b> Larger values give stronger overfitting prevention, but if too large the model may underfit (become too simple).</p>
+    <p><b>Recommendation:</b> <b>0.01</b> is the default and almost always works well. For very small datasets, you can try 0.1.</p>
+  `,
+        },
+        ftWarmupRatio: {
+          title: "Warmup Ratio",
+          html: `
+    <p><b>Definition:</b> The proportion of steps at the beginning of training where the learning rate gradually increases from zero to the full value. Prevents drastic changes early on.</p>
+    <p><b>Range:</b> 0.0 – 1.0 (0.1 means 10% of total steps are warmup).</p>
+    <p><b>Effect:</b> Without warmup, the start of training can be unstable. Too large a warmup reduces effective learning time.</p>
+    <p><b>Recommendation:</b> <b>0.1</b> is fine. Only adjust if the total number of steps is very small (e.g., epoch = 1).</p>
+  `,
+        },
+        ftFreezeLayers: {
+          title: "Freeze Layers",
+          html: `
+    <p><b>Definition:</b> The number of the first layers of IndoBERT whose weights are frozen (not updated) during fine‑tuning. Early layers contain general language knowledge.</p>
+    <p><b>Range:</b> 0 – 12 (0 = none frozen).</p>
+    <p><b>Effect:</b> Freezing early layers speeds up training, saves memory, and reduces overfitting on small datasets. However, if too many layers are frozen, the model cannot adapt to the specific data.</p>
+    <p><b>Recommendation:</b> For datasets with <1000 samples, freeze 9‑12 layers. For 1k‑5k, 6‑9. Above 10k, you can use 0‑6. <b>9</b> is a safe number for many cases.</p>
+  `,
+        },
+        ftGradAccum: {
+          title: "Gradient Accumulation",
+          html: `
+    <p><b>Definition:</b> The number of batches whose gradients are accumulated before a single weight update. Effectively simulates a larger batch size without using more GPU memory.</p>
+    <p><b>Range:</b> 1 – 8.</p>
+    <p><b>Effect:</b> For example, batch size 8 with accumulation 4 means weights are updated every 32 samples. Higher accumulation mimics a larger batch, but training time per epoch does not increase (only updates happen less frequently).</p>
+    <p><b>Recommendation:</b> Keep <b>1</b> if memory is sufficient. Increase to 2 or 4 if you want the effect of a larger batch without adding memory.</p>
+  `,
+        },
+        ftMaxGradNorm: {
+          title: "Max Grad Norm",
+          html: `
+    <p><b>Definition:</b> The maximum allowed length of the gradient vector. If it exceeds this value, the gradient is scaled down proportionally (gradient clipping).</p>
+    <p><b>Range:</b> 0.1 – 10.</p>
+    <p><b>Effect:</b> Prevents "exploding gradients" which can make training unstable or even produce NaN. Too small a value can slow down learning.</p>
+    <p><b>Recommendation:</b> <b>1.0</b> is a safe standard. Lower it to 0.5 only if the model frequently becomes unstable.</p>
+  `,
+        },
+        enableUMAP: {
+          title: "UMAP (Enable)",
+          html: `
+    <p><b>Definition:</b> Activates UMAP dimensionality reduction to transform high‑dimensional feature vectors (768) into a lower dimension before passing them to KNN.</p>
+    <p><b>Effect:</b> Speeds up KNN classification and reduces noise, but may discard important information. Without UMAP, KNN works on the original 768 dimensions (after pooling).</p>
+    <p><b>Recommendation:</b> Enable if you want exploration or have a lot of data (>3000). For small datasets, you can leave it off to keep information intact. Set n_components to around 50–200 as a starting point.</p>
+    <p><i>Analogy:</i> UMAP is like creating a summary of a long report – you get the key points, but some details might be lost.</p>
+  `,
+        },
+        umapNComponents: {
+          title: "n_components (UMAP)",
+          html: `
+    <p><b>Definition:</b> The number of dimensions in the UMAP output. Smaller values make the data more compact.</p>
+    <p><b>Range:</b> 2 – 100 (or up to the original dimension of 768).</p>
+    <p><b>Effect:</b> Too small (2‑3) → a lot of information is lost, making it hard for KNN to distinguish emotions. Too large (>200) → the reduction is less significant, so KNN remains heavy.</p>
+    <p><b>Recommendation:</b> Start with <b>50</b> or <b>100</b>. Use 2‑3 for visualisation only, not for serious classification. If UMAP is disabled, this value is ignored.</p>
+  `,
+        },
+        umapNNeighbors: {
+          title: "n_neighbors (UMAP)",
+          html: `
+    <p><b>Definition:</b> The number of neighbour points considered when constructing the local structure. This determines how "local" or "global" UMAP’s view is.</p>
+    <p><b>Range:</b> 2 – 200.</p>
+    <p><b>Effect:</b> Small values (5‑15) focus on fine details (micro clusters); large values (50‑200) see the broader picture. Too small may produce noise; too large may erase important clusters.</p>
+    <p><b>Recommendation:</b> <b>30</b> is a good middle ground for most datasets. You can increase it slightly if your data is fairly homogeneous.</p>
+  `,
+        },
+        umapMinDist: {
+          title: "min_dist (UMAP)",
+          html: `
+    <p><b>Definition:</b> The minimum distance between points in the UMAP output space. Controls how tightly points are packed.</p>
+    <p><b>Range:</b> 0.0 – 1.0.</p>
+    <p><b>Effect:</b> Small values (0.0‑0.1) → points are close together, forming tight clumps. Large values (0.5‑0.9) → points spread out, separating clusters more clearly.</p>
+    <p><b>Recommendation:</b> <b>0.1</b> is usually good. If the embedding looks too crowded, raise it to 0.4.</p>
+  `,
+        },
+        umapMetric: {
+          title: "metric (UMAP)",
+          html: `
+    <p><b>Definition:</b> How distances between vectors are measured when building the neighbour graph.</p>
+    <p><b>Options:</b> cosine (angle, good for text), euclidean (straight line), manhattan (city block).</p>
+    <p><b>Effect:</b> Cosine is often best for text because it is not sensitive to vector length. Euclidean is suitable when both direction and magnitude matter.</p>
+    <p><b>Recommendation:</b> <b>cosine</b> for language embeddings.</p>
+  `,
+        },
+        umapRandomState: {
+          title: "random_state (UMAP)",
+          html: `
+    <p><b>Definition:</b> Seed for UMAP’s random initialisation so that results are reproducible.</p>
+    <p><b>Recommendation:</b> Match the main Random State (e.g., <b>42</b>).</p>
+  `,
+        },
+        knnK: {
+          title: "k (n_neighbors) KNN",
+          html: `
+    <p><b>Definition:</b> The number of nearest neighbours consulted to determine the class of a new data point.</p>
+    <p><b>Range:</b> 1 – 50.</p>
+    <p><b>Effect:</b> Small k (1‑3) → the model is very flexible, easily influenced by noise (overfit). Large k (>15) → decisions are stable, but may erase complex class boundaries (underfit).</p>
+    <p><b>Recommendation:</b> For datasets of hundreds to thousands, <b>5, 7, 11</b> are often optimal. Use odd numbers to avoid ties.</p>
+    <p><i>Analogy:</i> Like asking for opinions. k=1 means asking only the nearest friend, which could be biased. k=11 means a small group discussion, fairer.</p>
+  `,
+        },
+        knnMetric: {
+          title: "Distance Metric (KNN)",
+          html: `
+    <p><b>Definition:</b> How "similarity" between two feature vectors is measured.</p>
+    <p><b>Options:</b> cosine, euclidean, manhattan.</p>
+    <p><b>Effect:</b> Cosine focuses on angle, ideal for text. Euclidean considers magnitude, useful when it carries meaning. Manhattan is an alternative that is robust to outliers.</p>
+    <p><b>Recommendation:</b> <b>cosine</b> for BERT embeddings. Euclidean can be tried if you use non‑text features.</p>
+  `,
+        },
+        knnWeights: {
+          title: "Weights (KNN)",
+          html: `
+    <p><b>Definition:</b> How the votes of neighbours are weighted.</p>
+    <p><b>Options:</b> uniform (all neighbours considered equal), distance (closer neighbours have a stronger vote).</p>
+    <p><b>Effect:</b> uniform is simple and fast. distance often improves accuracy because more relevant neighbours are prioritised.</p>
+    <p><b>Recommendation:</b> <b>distance</b> is almost always better, especially when data is unevenly distributed.</p>
+  `,
+        },
+        knnAlgorithm: {
+          title: "Algorithm (KNN)",
+          html: `
+    <p><b>Definition:</b> The algorithm used to find nearest neighbours.</p>
+    <p><b>Options:</b> auto, ball_tree, kd_tree, brute. ‘auto’ chooses the best one based on the data.</p>
+    <p><b>Recommendation:</b> Leave as <b>auto</b>. Only change if you experience specific performance issues.</p>
+  `,
+        },
+        knnLeafSize: {
+          title: "Leaf Size (KNN)",
+          html: `
+    <p><b>Definition:</b> Leaf size for tree‑based algorithms (ball_tree/kd_tree). Affects tree construction and query speed.</p>
+    <p><b>Range:</b> 1 – 100.</p>
+    <p><b>Effect:</b> Smaller values → tree is more branched, query may be faster but requires more memory. Larger values → tree construction is faster.</p>
+    <p><b>Recommendation:</b> Keep at <b>30</b> (default). It is not very sensitive.</p>
+  `,
+        },
+        knnP: {
+          title: "p (Minkowski) KNN",
+          html: `
+    <p><b>Definition:</b> Parameter for the Minkowski metric, if you choose that metric. p=2 gives Euclidean, p=1 gives Manhattan.</p>
+    <p><b>Note:</b> Since this page does not directly provide a Minkowski option, this parameter is only relevant if the backend supports it. Usually ignored.</p>
+  `,
+        },
+        hybridMethod: {
+          title: "Confidence Adjustment (Hybrid)",
+          html: `
+    <p><b>Definition:</b> Method for correcting KNN probabilities based on how confident KNN is about its prediction.</p>
+    <p><b>Options:</b> Pure KNN (no adjustment), Confidence‑based (multiply probability by confidence score), Weighted Average (combine probability with weighted confidence score).</p>
+    <p><b>Effect:</b> Confidence‑based can reduce the impact of uncertain predictions. Weighted Average is more flexible. If your data has many similar classes, it can help.</p>
+    <p><b>Recommendation:</b> Start with <b>Pure KNN</b>. If results are unsatisfying, try <b>Confidence‑based</b>.</p>
+  `,
+        },
+        targetDim: {
+          title: "Target Embedding Dimension",
+          html: `
+    <p><b>Definition:</b> The final dimension of the feature vector that will be used by KNN. If UMAP is active, this will equal n_components. If not, it remains 768 (the original IndoBERT dimension) and cannot be changed from here.</p>
+    <p><b>Range:</b> 2 – 768.</p>
+    <p><b>Effect:</b> Smaller → more compact but risks losing important information. Larger → richer representation but KNN runs slower.</p>
+    <p><b>Recommendation:</b> If UMAP is enabled, use 128–256 as a balance of speed and accuracy. Without UMAP, the dimension stays 768, which is already optimal from BERT.</p>
+  `,
+        },
+        // ========== LEXICON + NB ==========
+        lexiconAlpha: {
+          title: "Alpha (Laplace Smoothing)",
+          html: `
+    <p><b>Definition:</b> Laplace (or Lidstone) smoothing parameter for Naive Bayes. Prevents zero probabilities when a word does not appear in the training data.</p>
+    <p><b>Range:</b> Typically > 0; a value of 1.0 gives pure Laplace smoothing. Smaller values (e.g., 0.1) or larger values (2‑5) are also possible.</p>
+    <p><b>Effects:</b></p>
+    <ul class="list-disc list-inside ml-2">
+      <li><b>Small values (0.1–0.5):</b> The model relies more on observed data, but new words may receive very small probabilities, which can influence predictions.</li>
+      <li><b>Large values (2–5):</b> Probabilities become more uniform, reducing overfitting on rare words, but may blur differences between classes.</li>
+    </ul>
+    <p><b>Recommendation:</b> Keep <b>1.0</b> (default). If your dataset is very small, increase it to 2‑3. For larger datasets, you can try 0.5.</p>
+  `,
+        },
+        lexiconModelType: {
+          title: "Model Type (Naive Bayes)",
+          html: `
+    <p><b>Definition:</b> The variant of Naive Bayes to be used.</p>
+    <p><b>Options:</b>
+      <br><code>MultinomialNB</code> – suitable for word frequency (count) data; assumes features follow a multinomial distribution.
+      <br><code>BernoulliNB</code> – suitable for binary data (word presence/absence); assumes independent Bernoulli features.
+    </p>
+    <p><b>Effects:</b> Multinomial usually works better for text with many word occurrences, while Bernoulli can be better when the presence of a word is more important than its frequency.</p>
+    <p><b>Recommendation:</b> Use <b>MultinomialNB</b> as the default. Try BernoulliNB for very small datasets or if you have binary feature engineering.</p>
+  `,
+        },
+        lexiconVectorizer: {
+          title: "Vectorizer (Text Representation)",
+          html: `
+    <p><b>Definition:</b> Method to convert raw text into a numeric vector that can be processed by Naive Bayes.</p>
+    <p><b>Options:</b>
+      <br><code>CountVectorizer</code> – counts the frequency of each word (bag‑of‑words).
+      <br><code>TfidfVectorizer</code> – uses TF‑IDF weighting, which reduces the influence of very frequent words (like “the”, “and”).
+    </p>
+    <p><b>Effects:</b> CountVectorizer is simple, but common words can dominate. TfidfVectorizer penalises overly frequent words and often improves accuracy; however, on small datasets it may lose important information.</p>
+    <p><b>Recommendation:</b> <b>TfidfVectorizer</b> usually gives better results. Use CountVectorizer if you want a fast model and the dataset has already been cleaned of common words.</p>
+  `,
+        },
+        emotionRanking: {
+          title: "Emotion Ranking Order (1–7)",
+          html: `
+    <p><b>Definition:</b> Priority order of the 7 emotions (Happy, Trust, Surprise, Neutral, Fear, Sad, Angry) used by the Lexicon module to decide the dominant emotion when scores are equal, or to give more weight to a dominant emotion.</p>
+    <p><b>How to fill:</b> Each emotion receives a unique number from 1 (most dominant/important) to 7 (least dominant). No duplicate numbers are allowed.</p>
+    <p><b>Effects:</b> When two emotions have similar scores, the one with a higher ranking will be prioritised. The ranking can also influence rule‑based score calculations.</p>
+    <p><b>Recommendation:</b> Set the ranking based on your domain priorities or data distribution. If unsure, leave the default order (1‑7 as shown) or consult a linguistics expert. <b>Do not assign rankings randomly</b>, as it can affect classification results.</p>
+  `,
+        },
+        fusionMethodSelect: {
+          title: "Fusion Method (Naive Bayes + Lexicon)",
+          html: `
+    <p><b>Definition:</b> Method for combining the probabilities from the Naive Bayes model (P_NB) with the confidence scores from the Lexicon (S_lexicon) into a final probability.</p>
+    <p><b>Options:</b>
+      <br><code>Product</code> – P_final = P_NB × (1 + S_lexicon). Strengthens predictions when both sources agree.
+      <br><code>Sum</code> – P_final = P_NB + S_lexicon. Simple, but may produce values outside the normal probability range.
+      <br><code>Weighted Average</code> – P_final = α · P_NB + (1 − α) · S_lexicon. Gives balanced weight to both sources.
+    </p>
+    <p><b>Effects:</b> Product tends to reinforce high‑confidence predictions but can make other predictions very small. Sum is additive and easy to interpret. Weighted Average is the most flexible; you can adjust the weight (α).</p>
+    <p><b>Recommendation:</b> Start with <b>Weighted Average</b> with α = 0.6‑0.8 so the NB model dominates. Try Product if you want sharper final probabilities.</p>
+  `,
+        },
+        fusionFormulaInput: {
+          title: "Fusion Formula",
+          html: `
+    <p><b>Definition:</b> The mathematical formula applied according to the chosen Fusion Method.</p>
+    <p><b>Effects:</b> The formula is automatically displayed based on your selection. You do not need to change it manually – this field is for reference only.</p>
+  `,
+        },
+      };
+
+      const detailModal = document.getElementById("detailModal");
+      const detailTitle = document.getElementById("detailTitle");
+      const detailContent = document.getElementById("detailContent");
+      const closeDetailModal = document.getElementById("closeDetailModal");
+
+      function openDetailModal(paramKey) {
+        const info = PARAM_DETAILS[paramKey];
+        if (!info) return;
+        detailTitle.textContent = info.title || paramKey;
+        detailContent.innerHTML =
+          info.html || "<p>Tidak ada informasi detail.</p>";
+        detailModal.classList.add("show");
+      }
+      closeDetailModal.addEventListener("click", () =>
+        detailModal.classList.remove("show"),
+      );
+      window.addEventListener("click", (e) => {
+        if (e.target === detailModal) detailModal.classList.remove("show");
+      });
+
+      // ==================== SPLIT RATIOS ====================
       function getHeaders() {
         const token = localStorage.getItem("access_token");
         return {
@@ -1481,11 +1943,9 @@
         }
       }
 
-      // Render tabel dengan inline edit jika editingSplitId bukan null
       function renderSplitTable() {
         const tbody = document.getElementById("splitTableBody");
         tbody.innerHTML = "";
-
         const start = (currentSplitPage - 1) * rowsPerSplitPage;
         const end = start + rowsPerSplitPage;
         const pageData = splitRatios.slice(start, end);
@@ -1495,21 +1955,13 @@
           row.setAttribute("data-id", s.id);
 
           if (editingSplitId === s.id) {
-            // Mode edit inline
             row.innerHTML = `
-          <td class="border border-gray-200 px-4 py-2">
-            <input type="number" id="editTrain-${s.id}" value="${s.train}" class="w-20 border rounded p-1" />
-          </td>
-          <td class="border border-gray-200 px-4 py-2">
-            <input type="number" id="editTest-${s.id}" value="${s.test}" class="w-20 border rounded p-1" />
-          </td>
-          <td class="border border-gray-200 px-4 py-2 text-center">
-            <button class="text-green-600 hover:text-green-800 mr-2" onclick="saveEditInline(${s.id})"><i class="fas fa-save"></i></button>
-            <button class="text-gray-500 hover:text-gray-700" onclick="cancelEditInline()"><i class="fas fa-times"></i></button>
-          </td>
-        `;
-
-            // Auto-fill Test saat Train di-edit (inline)
+                    <td class="border border-gray-200 px-4 py-2"><input type="number" id="editTrain-${s.id}" value="${s.train}" class="w-20 border rounded p-1" /></td>
+                    <td class="border border-gray-200 px-4 py-2"><input type="number" id="editTest-${s.id}" value="${s.test}" class="w-20 border rounded p-1" /></td>
+                    <td class="border border-gray-200 px-4 py-2 text-center">
+                      <button class="text-green-600 hover:text-green-800 mr-2" onclick="saveEditInline(${s.id})"><i class="fas fa-save"></i></button>
+                      <button class="text-gray-500 hover:text-gray-700" onclick="cancelEditInline()"><i class="fas fa-times"></i></button>
+                    </td>`;
             const trainEdit = document.getElementById(`editTrain-${s.id}`);
             const testEdit = document.getElementById(`editTest-${s.id}`);
             if (trainEdit && testEdit) {
@@ -1520,22 +1972,19 @@
               });
             }
           } else {
-            // Mode normal
             row.insertCell(0).innerHTML = s.train;
             row.insertCell(1).innerHTML = s.test;
             const actions = document.createElement("td");
             actions.className = "px-4 py-2 border border-gray-200 text-center";
             actions.innerHTML = `
-          <i class="fas fa-edit text-blue-500 mr-3 cursor-pointer hover:text-blue-700" data-id="${s.id}"></i>
-          <i class="fas fa-trash text-red-500 cursor-pointer hover:text-red-700" data-id="${s.id}"></i>
-        `;
+                    <i class="fas fa-edit text-blue-500 mr-3 cursor-pointer hover:text-blue-700" data-id="${s.id}"></i>
+                    <i class="fas fa-trash text-red-500 cursor-pointer hover:text-red-700" data-id="${s.id}"></i>`;
             row.appendChild(actions);
-            for (let c of row.cells)
-              c.classList.add("border", "border-gray-200", "px-4", "py-2");
           }
+          for (let c of row.cells)
+            c.classList.add("border", "border-gray-200", "px-4", "py-2");
         });
 
-        // Event listeners untuk edit dan delete
         document
           .querySelectorAll("#splitTableBody .fa-edit")
           .forEach((icon) => {
@@ -1569,7 +2018,6 @@
         );
       }
 
-      // Fungsi Add via form inline
       async function addSplitInline() {
         const train = parseInt(document.getElementById("addTrain").value);
         const test = parseInt(document.getElementById("addTest").value);
@@ -1601,7 +2049,6 @@
         }
       }
 
-      // Fungsi simpan edit inline
       async function saveEditInline(id) {
         const train = parseInt(
           document.getElementById(`editTrain-${id}`).value,
@@ -1654,7 +2101,6 @@
       }
 
       // ==================== DYNAMIC FORM ====================
-      // Load split ratios ke dropdown
       async function loadRatioDropdown() {
         const select = document.getElementById("ratioSelect");
         try {
@@ -1678,23 +2124,6 @@
         }
       }
 
-      // Toggle CV/Epoch fields
-      document
-        .querySelectorAll('input[name="validationType"]')
-        .forEach((radio) => {
-          radio.addEventListener("change", function () {
-            const cv = document.getElementById("cvParams");
-            const ep = document.getElementById("epochParams");
-            if (this.value === "crossval") {
-              cv.classList.remove("hidden");
-              ep.classList.add("hidden");
-            } else {
-              cv.classList.add("hidden");
-              ep.classList.remove("hidden");
-            }
-          });
-        });
-
       // Toggle Fine-Tuning
       document
         .getElementById("enableFinetune")
@@ -1704,14 +2133,27 @@
           else div.classList.add("hidden");
         });
 
-      // Toggle UMAP
+      // Toggle UMAP + sinkronisasi (tanpa konfirmasi)
       document
         .getElementById("enableUMAP")
         .addEventListener("change", function () {
           const div = document.getElementById("umapParams");
-          if (this.checked) div.classList.remove("hidden");
-          else div.classList.add("hidden");
+          if (this.checked) {
+            div.classList.remove("hidden");
+            document.getElementById("umapNComponents").value =
+              targetDimInput.value;
+          } else {
+            div.classList.add("hidden");
+          }
         });
+      targetDimInput.addEventListener("input", function () {
+        if (document.getElementById("enableUMAP").checked)
+          umapNComponentsInput.value = this.value;
+      });
+      umapNComponentsInput.addEventListener("input", function () {
+        if (document.getElementById("enableUMAP").checked)
+          targetDimInput.value = this.value;
+      });
 
       // Toggle Algo content
       document
@@ -1726,18 +2168,14 @@
             indo.classList.add("hidden");
             lex.classList.remove("hidden");
           }
-          // Filter model dropdown
           populateModelSelect(this.value);
-          // Filter best model
           renderBestModel(
             this.value === "indobert" ? "IndoBERT-KNN" : "Lexicon-NB",
           );
         });
-      // Inisialisasi tampilan awal
       document.getElementById("indobertTuning").classList.remove("hidden");
       document.getElementById("lexiconTuning").classList.add("hidden");
 
-      // Panggil load ratio saat halaman load
       loadRatioDropdown();
 
       // ==================== TRAINING HISTORY ====================
@@ -1748,9 +2186,13 @@
           });
           if (!res.ok) throw new Error("Failed to load history");
           trainingHistory = await res.json();
+          // Simpan params ke store jika ada
+          trainingHistory.forEach((item) => {
+            if (item.params) trainingParamsStore[item.id] = item.params;
+          });
         } catch (err) {
           console.error(err);
-          trainingHistory = []; // kosongkan saja
+          trainingHistory = [];
         }
         populateModelSelect();
         renderTrainingTable();
@@ -1762,16 +2204,11 @@
         const select = document.getElementById("oldModelSelect");
         if (!select) return;
         select.innerHTML = '<option value="">-- New Model --</option>';
-
-        // jika tidak diberikan, ambil dari dropdown
-        if (!algorithm) {
-          algorithm = document.getElementById("tuningAlgo").value;
-        }
+        if (!algorithm) algorithm = document.getElementById("tuningAlgo").value;
         const algoName =
           algorithm === "indobert" ? "IndoBERT-KNN" : "Lexicon-NB";
-
         trainingHistory.forEach((m) => {
-          if (m.algorithm !== algoName) return; // filter
+          if (m.algorithm !== algoName) return;
           const opt = document.createElement("option");
           opt.value = m.id;
           opt.textContent = `${m.config_name || m.dataset_filename} (${m.algorithm}) - Acc: ${m.metrics?.accuracy?.toFixed(3) || "N/A"}`;
@@ -1882,104 +2319,84 @@
           return;
         }
         const accPercent = (best.metrics.accuracy * 100).toFixed(2);
-        const params = trainingParamsStore[best.id] || best.params || {};
-
-        // ✅ Isi HTML terlebih dahulu
+        const params = best.params || trainingParamsStore[best.id] || {};
         container.innerHTML = `
-        <div class="border rounded-lg p-4 bg-gradient-to-r from-yellow-50 to-orange-50">
-            <div class="flex flex-wrap justify-between items-start gap-4">
-                <div>
-                    <p class="text-sm text-gray-500">Model Terbaik (${algorithm})</p>
-                    <p class="font-bold text-lg text-gray-800">${best.config_name || best.dataset_filename || "-"}</p>
-                    <p class="text-sm text-gray-600">Dataset: ${best.dataset_filename || "-"}</p>
-                    <p class="text-sm text-gray-600">Rasio: ${best.split_ratio || "-"}</p>
-                    <p class="text-xl font-bold text-green-700 mt-1">Akurasi: ${accPercent}%</p>
-                </div>
-                <a href="validasi.html?id=${best.id}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition inline-flex items-center space-x-2">
-                    <i class="fas fa-chart-bar"></i><span>Lihat Evaluasi</span>
-                </a>
-            </div>
-        </div>
-    `;
+                <div class="border rounded-lg p-4 bg-gradient-to-r from-yellow-50 to-orange-50">
+                  <div class="flex flex-wrap justify-between items-start gap-4">
+                    <div>
+                      <p class="text-sm text-gray-500">Model Terbaik (${algorithm})</p>
+                      <p class="font-bold text-lg text-gray-800">${best.config_name || best.dataset_filename || "-"}</p>
+                      <p class="text-sm text-gray-600">Dataset: ${best.dataset_filename || "-"}</p>
+                      <p class="text-sm text-gray-600">Rasio: ${best.split_ratio || "-"}</p>
+                      <p class="text-xl font-bold text-green-700 mt-1">Akurasi: ${accPercent}%</p>
+                      ${Object.keys(params).length > 0 ? `<button onclick="showParamModal(${best.id})" class="mt-2 bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 text-sm">Lihat Parameter</button>` : ""}
+                    </div>
+                    <a href="validasi.html?id=${best.id}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition inline-flex items-center space-x-2">
+                      <i class="fas fa-chart-bar"></i><span>Lihat Evaluasi</span>
+                    </a>
+                  </div>
+                </div>`;
+
+        // Simpan best.id agar bisa diakses dari showParamModal
+        container.dataset.bestId = best.id;
       }
 
-      function showParamModal(model, params) {
-        const modal = document.getElementById("paramModal");
+      function showParamModal(id) {
+        const model = trainingHistory.find((m) => m.id == id);
+        const params = model?.params || trainingParamsStore[id] || {};
         const content = document.getElementById("paramModalContent");
-        if (!modal || !content) return;
-
-        let paramsHtml = `<div class="space-y-2"><p class="font-semibold">Model: ${model.algorithm}</p>`;
+        let paramsHtml = `<div class="space-y-2"><p class="font-semibold">Model: ${model?.algorithm || "Tidak diketahui"}</p>`;
         if (Object.keys(params).length === 0) {
           paramsHtml +=
-            '<p class="text-gray-500">Parameter lengkap tidak tersedia untuk model ini.</p>';
+            '<p class="text-gray-500">Parameter lengkap tidak tersedia.</p>';
         } else {
           paramsHtml +=
             '<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">';
           for (let [key, val] of Object.entries(params)) {
             if (typeof val === "object") val = JSON.stringify(val);
-            paramsHtml += `
-                <div class="bg-gray-50 p-2 rounded">
-                    <span class="text-xs text-gray-500">${key}</span>
-                    <p class="font-mono text-sm break-all">${val}</p>
-                </div>
-            `;
+            paramsHtml += `<div class="bg-gray-50 p-2 rounded"><span class="text-xs text-gray-500">${key}</span><p class="font-mono text-sm break-all">${val}</p></div>`;
           }
           paramsHtml += "</div>";
         }
         paramsHtml += "</div>";
         content.innerHTML = paramsHtml;
-
-        // Tampilkan modal
+        const modal = document.getElementById("paramModal");
         modal.classList.remove("hidden");
-        // Tambahkan kelas "show" ke container animasi
         const container = modal.querySelector(".modal-container");
         if (container) container.classList.add("show");
       }
 
       // ==================== PROGRESS POLLING ====================
       let pollingInterval = null;
-
       function startTrainingPolling(trainingId) {
-        // Hentikan polling sebelumnya jika ada
-        if (pollingInterval) {
-          clearInterval(pollingInterval);
-        }
-
+        if (pollingInterval) clearInterval(pollingInterval);
         const resultSection = document.getElementById("trainingResultSection");
         const resultContent = document.getElementById("resultContent");
-
-        // Tampilkan kontainer progress
         resultContent.innerHTML = `
-        <div class="space-y-4">
-            <div class="flex items-center justify-between">
-                <h3 class="font-semibold text-gray-700">Training Progress</h3>
-                <span id="pollingStatusLabel" class="text-sm text-gray-500">Memulai...</span>
-            </div>
-            <div class="w-full bg-gray-200 rounded-full h-6">
-                <div id="progressBarFill" class="bg-blue-600 h-6 rounded-full transition-all duration-500" style="width: 0%"></div>
-            </div>
-            <p id="progressMessage" class="text-sm text-gray-600">Menghubungkan ke server...</p>
-        </div>
-    `;
+                <div class="space-y-4">
+                  <div class="flex items-center justify-between">
+                    <h3 class="font-semibold text-gray-700">Training Progress</h3>
+                    <span id="pollingStatusLabel" class="text-sm text-gray-500">Memulai...</span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-6">
+                    <div id="progressBarFill" class="bg-blue-600 h-6 rounded-full transition-all duration-500" style="width: 0%"></div>
+                  </div>
+                  <p id="progressMessage" class="text-sm text-gray-600">Menghubungkan ke server...</p>
+                </div>`;
         resultSection.classList.remove("hidden");
 
-        // Fungsi polling
         const poll = async () => {
           try {
             const res = await fetch(
               `${API_BASE}/api/training/status/${trainingId}`,
-              {
-                headers: getHeaders(),
-              },
+              { headers: getHeaders() },
             );
             if (!res.ok) throw new Error("Gagal mengambil status");
             const data = await res.json();
-
             const percent = data.progress || 0;
             const status = data.status;
             const message =
               data.metrics?.progress_message || "Proses berjalan...";
-
             document.getElementById("progressBarFill").style.width =
               `${percent}%`;
             document.getElementById("progressMessage").textContent = message;
@@ -1997,49 +2414,30 @@
                 .classList.add("bg-green-600");
               document.getElementById("pollingStatusLabel").textContent =
                 "Selesai!";
-
-              // Fetch detail training untuk metrik
               try {
                 const detailRes = await fetch(
                   `${API_BASE}/api/training/${trainingId}`,
-                  {
-                    headers: getHeaders(),
-                  },
+                  { headers: getHeaders() },
                 );
                 if (detailRes.ok) {
                   const detail = await detailRes.json();
                   const m = detail.metrics || {};
                   const metrikHtml = `
-                <div class="mt-4 grid grid-cols-2 gap-3">
-                    <div class="bg-blue-50 p-3 rounded text-center">
-                        <p class="text-sm text-gray-600">Accuracy</p>
-                        <p class="text-xl font-bold text-blue-700">${m.accuracy ? (m.accuracy * 100).toFixed(2) + "%" : "-"}</p>
-                    </div>
-                    <div class="bg-green-50 p-3 rounded text-center">
-                        <p class="text-sm text-gray-600">F1 Score</p>
-                        <p class="text-xl font-bold text-green-700">${m.f1_score ? (m.f1_score * 100).toFixed(2) + "%" : "-"}</p>
-                    </div>
-                    <div class="bg-yellow-50 p-3 rounded text-center">
-                        <p class="text-sm text-gray-600">Precision</p>
-                        <p class="text-xl font-bold text-yellow-700">${m.precision ? (m.precision * 100).toFixed(2) + "%" : "-"}</p>
-                    </div>
-                    <div class="bg-purple-50 p-3 rounded text-center">
-                        <p class="text-sm text-gray-600">Recall</p>
-                        <p class="text-xl font-bold text-purple-700">${m.recall ? (m.recall * 100).toFixed(2) + "%" : "-"}</p>
-                    </div>
-                </div>
-            `;
+                          <div class="mt-4 grid grid-cols-2 gap-3">
+                            <div class="bg-blue-50 p-3 rounded text-center"><p class="text-sm text-gray-600">Accuracy</p><p class="text-xl font-bold text-blue-700">${m.accuracy ? (m.accuracy * 100).toFixed(2) + "%" : "-"}</p></div>
+                            <div class="bg-green-50 p-3 rounded text-center"><p class="text-sm text-gray-600">F1 Score</p><p class="text-xl font-bold text-green-700">${m.f1_score ? (m.f1_score * 100).toFixed(2) + "%" : "-"}</p></div>
+                            <div class="bg-yellow-50 p-3 rounded text-center"><p class="text-sm text-gray-600">Precision</p><p class="text-xl font-bold text-yellow-700">${m.precision ? (m.precision * 100).toFixed(2) + "%" : "-"}</p></div>
+                            <div class="bg-purple-50 p-3 rounded text-center"><p class="text-sm text-gray-600">Recall</p><p class="text-xl font-bold text-purple-700">${m.recall ? (m.recall * 100).toFixed(2) + "%" : "-"}</p></div>
+                          </div>`;
                   resultContent.innerHTML += metrikHtml;
                 }
               } catch (e) {}
-
               resultContent.innerHTML += `
-        <div class="mt-4 text-center">
-            <a href="validasi.html?id=${trainingId}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition inline-flex items-center space-x-2">
-                <i class="fas fa-chart-bar"></i><span>Lihat Evaluasi Lengkap</span>
-            </a>
-        </div>
-    `;
+                      <div class="mt-4 text-center">
+                        <a href="validasi.html?id=${trainingId}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition inline-flex items-center space-x-2">
+                          <i class="fas fa-chart-bar"></i><span>Lihat Evaluasi Lengkap</span>
+                        </a>
+                      </div>`;
               loadTrainingHistory();
             } else if (status === "failed") {
               clearInterval(pollingInterval);
@@ -2052,11 +2450,7 @@
                 .classList.add("bg-red-600");
               document.getElementById("pollingStatusLabel").textContent =
                 "Gagal!";
-              resultContent.innerHTML += `
-                    <div class="mt-4 text-center text-red-600">
-                        <p>Training gagal. Periksa log untuk detail.</p>
-                    </div>
-                `;
+              resultContent.innerHTML += `<div class="mt-4 text-center text-red-600"><p>Training gagal. Periksa log untuk detail.</p></div>`;
               loadTrainingHistory();
             }
           } catch (err) {
@@ -2065,12 +2459,11 @@
               "Kesalahan jaringan saat polling...";
           }
         };
-
-        poll(); // langsung panggil sekali
-        pollingInterval = setInterval(poll, 2000); // setiap 2 detik
+        poll();
+        pollingInterval = setInterval(poll, 2000);
       }
 
-      // ==================== REAL TRAINING VIA API ====================
+      // ==================== TRAINING ====================
       async function onStartTraining() {
         const dataset = document.getElementById("datasetSelect").value;
         if (!dataset) {
@@ -2087,39 +2480,19 @@
         const [trainPct, testPct] = ratioValue.split("-").map(Number);
 
         let params = {};
-
         if (algorithm === "indobert") {
-          const validationType = document.getElementById("epochCheckbox")
-            .checked
-            ? "epoch"
-            : "crossval";
-          const stratified =
-            validationType === "crossval"
-              ? document.getElementById("stratifiedFolds").checked
-              : false;
-
           const general = {
             randomState: parseInt(document.getElementById("randomState").value),
             shuffle: true,
-            stratified: stratified,
           };
-
           const splitConfig = {
-            type: validationType === "crossval" ? "crossval" : "percentage",
+            type: "percentage",
             train: trainPct,
             test: testPct,
+            early_stopping_patience: parseInt(
+              document.getElementById("earlyStoppingPatience").value,
+            ),
           };
-          if (validationType === "crossval") {
-            splitConfig.crossval = {
-              folds: parseInt(document.getElementById("cvFolds").value),
-            };
-          }
-          if (validationType === "crossval") {
-            splitConfig.crossval = {
-              folds: parseInt(document.getElementById("cvFolds").value),
-            };
-          }
-
           const indobert = {
             modelName: "indobenchmark/indobert-base-p2",
             maxSeqLength: parseInt(
@@ -2132,7 +2505,6 @@
             padding: document.getElementById("padding").value,
             truncation: document.getElementById("truncation").value === "True",
           };
-
           const finetuneEnabled =
             document.getElementById("enableFinetune").checked;
           let finetune;
@@ -2162,7 +2534,6 @@
           } else {
             finetune = { enabled: false };
           }
-
           const umapEnabled = document.getElementById("enableUMAP").checked;
           let umap;
           if (umapEnabled) {
@@ -2183,7 +2554,6 @@
           } else {
             umap = { enabled: false };
           }
-
           const knn = {
             k: parseInt(document.getElementById("knnK").value),
             metric: document.getElementById("knnMetric").value,
@@ -2192,12 +2562,10 @@
             leafSize: parseInt(document.getElementById("knnLeafSize").value),
             p: parseInt(document.getElementById("knnP").value),
           };
-
           const hybrid = {
             method: document.getElementById("hybridMethod").value,
             alpha: 0.7,
           };
-
           params = {
             general,
             split: splitConfig,
@@ -2208,7 +2576,7 @@
             hybrid,
           };
         } else {
-          // Ambil ranking emosi
+          // Lexicon-NB
           const rankSelects = document.querySelectorAll(
             "#emotionRankingContainer select.emotion-rank",
           );
@@ -2227,21 +2595,17 @@
             const emotion = sel.getAttribute("data-emotion");
             emotionRankings[emotion] = parseInt(sel.value);
           });
-
-          // Ambil fusion
           const fusionMethod =
             document.getElementById("fusionMethodSelect").value;
           const fusionFormula =
             document.getElementById("fusionFormulaInput").value;
-          // Lexicon-NB (selalu cross validation)
-          const crossvalFolds = 10; // default, sesuaikan jika perlu
           params = {
             general: { randomState: 42 },
             split: {
               type: "crossval",
               train: trainPct,
               test: testPct,
-              crossval: { folds: crossvalFolds },
+              crossval: { folds: 10 },
             },
             naivebayes: {
               alpha:
@@ -2255,7 +2619,6 @@
           };
         }
 
-        // 1. Simpan ModelConfig
         const modelName = document.getElementById("oldModelSelect").value
           ? document.getElementById("oldModelSelect").options[
               document.getElementById("oldModelSelect").selectedIndex
@@ -2281,15 +2644,12 @@
           const configData = await configRes.json();
           const configId = configData.id;
 
-          // 2. Mulai training
-          // dataset path harus menunjuk ke file yang sudah ada di server
-          const datasetPath = dataset;
           const trainRes = await fetch(`${API_BASE}/api/training/start`, {
             method: "POST",
             headers: getHeaders(),
             body: JSON.stringify({
               config_id: configId,
-              dataset_path: datasetPath,
+              dataset_path: dataset,
             }),
           });
           if (!trainRes.ok) {
@@ -2298,8 +2658,6 @@
             return;
           }
           const trainData = await trainRes.json();
-
-          // 3. Mulai polling progress
           startTrainingPolling(trainData.id);
         } catch (err) {
           console.error(err);
@@ -2307,7 +2665,7 @@
         }
       }
 
-      // ==================== LOAD DATASET PREPROCESSED ====================
+      // ==================== LOAD DATASET ====================
       async function loadDatasetOptions() {
         const select = document.getElementById("datasetSelect");
         try {
@@ -2316,15 +2674,10 @@
           });
           if (!res.ok) throw new Error("Gagal memuat dataset");
           const history = await res.json();
-
-          // Kosongkan dulu, sisakan opsi default
           select.innerHTML = '<option value="">-- Choose dataset --</option>';
-
           history.forEach((item) => {
             const opt = document.createElement("option");
-            // Gunakan preprocessed_filepath sebagai value
             opt.value = item.preprocessed_filepath;
-            // Label dengan info tambahan
             opt.textContent = `${item.name || "Preprocessed #" + item.id} (${item.row_count} rows)`;
             select.appendChild(opt);
           });
@@ -2357,23 +2710,17 @@
           const modal = document.getElementById("paramModal");
           const container = modal.querySelector(".modal-container");
           if (container) container.classList.remove("show");
-          setTimeout(() => {
-            modal.classList.add("hidden");
-          }, 200); // sedikit delay agar animasi sempat berjalan
+          setTimeout(() => modal.classList.add("hidden"), 200);
         });
-
       window.addEventListener("click", (e) => {
         const modal = document.getElementById("paramModal");
         if (e.target === modal) {
           const container = modal.querySelector(".modal-container");
           if (container) container.classList.remove("show");
-          setTimeout(() => {
-            modal.classList.add("hidden");
-          }, 200);
+          setTimeout(() => modal.classList.add("hidden"), 200);
         }
       });
 
-      // Sidebar toggle
       function toggleDropdown(btn, menu, icon) {
         btn.addEventListener("click", () => {
           menu.classList.toggle("hidden");
@@ -2386,23 +2733,18 @@
         document.getElementById("dataCollectionIcon"),
       );
 
-      // Initialize
       document
         .getElementById("btnAddSplit")
         .addEventListener("click", addSplitInline);
-
-      // Auto-fill Test saat Train diisi (form add)
       document
         .getElementById("addTrain")
         .addEventListener("input", function () {
           const train = parseInt(this.value);
           const testInput = document.getElementById("addTest");
-          if (!isNaN(train) && train >= 0 && train <= 100) {
-            testInput.value = 100 - train;
-          } else {
-            testInput.value = "";
-          }
+          testInput.value =
+            !isNaN(train) && train >= 0 && train <= 100 ? 100 - train : "";
         });
+
       loadSplitRatios();
       loadTrainingHistory();
       loadDatasetOptions();

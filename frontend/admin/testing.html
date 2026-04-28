@@ -58,21 +58,22 @@
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- Sidebar (sama seperti sebelumnya) -->
-      <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
-        <div class="p-4 border-b">
-          <span
-            class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
-            >IdiomSense</span
-          >
-          <p class="text-sm text-gray-500">Admin Panel</p>
+      <!-- Sidebar dengan gradien (konsisten dengan halaman lain) -->
+      <aside
+        class="w-64 bg-white shadow-2xl flex-shrink-0 overflow-y-auto border-r border-gray-100"
+      >
+        <div
+          class="p-4 border-b bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-b-lg"
+        >
+          <span class="font-bold text-2xl">IdiomSense</span>
+          <p class="text-sm text-blue-100">Admin Panel</p>
         </div>
         <nav class="p-4">
           <ul class="space-y-1">
             <li>
               <a
                 href="beranda-admin.html"
-                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                 ><i class="fas fa-tachometer-alt w-5"></i
                 ><span>Dashboard</span></a
               >
@@ -80,11 +81,11 @@
             <li>
               <button
                 id="dataCollectionBtn"
-                class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
               >
                 <div class="flex items-center space-x-2">
-                  <i class="fas fa-database w-5"></i
-                  ><span>Data Collection</span>
+                  <i class="fas fa-database w-5"></i>
+                  <span>Data Collection</span>
                 </div>
                 <i
                   id="dataCollectionIcon"
@@ -95,14 +96,14 @@
                 <li>
                   <a
                     href="dataset.html"
-                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                     ><i class="fas fa-table w-5 mr-2"></i>Dataset</a
                   >
                 </li>
                 <li>
                   <a
                     href="kamus-idiom.html"
-                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                     ><i class="fas fa-book w-5 mr-2"></i>Idiom Dictionary</a
                   >
                 </li>
@@ -111,35 +112,36 @@
             <li>
               <a
                 href="preprocessing.html"
-                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                 ><i class="fas fa-filter w-5"></i><span>Pre-Processing</span></a
               >
             </li>
             <li>
               <a
                 href="processing.html"
-                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                 ><i class="fas fa-brain w-5"></i><span>Processing</span></a
               >
             </li>
             <li>
+              <!-- Testing active -->
               <a
                 href="testing.html"
-                class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"
+                class="flex items-center space-x-2 p-2 rounded-lg bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 font-semibold shadow-sm transition-all"
                 ><i class="fas fa-vial w-5"></i><span>Testing</span></a
               >
             </li>
             <li>
               <a
                 href="evaluasi.html"
-                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                 ><i class="fas fa-chart-line w-5"></i><span>Evaluation</span></a
               >
             </li>
             <li class="pt-4 mt-4 border-t">
               <a
                 href="login.html"
-                class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"
+                class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50 transition-all"
                 ><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a
               >
             </li>
@@ -148,27 +150,20 @@
       </aside>
 
       <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">Testing</h1>
+        <!-- Header dengan gradient -->
+        <div
+          class="mb-8 p-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500 rounded-xl shadow-lg text-white"
+        >
+          <h1 class="text-3xl font-bold flex items-center">
+            <i class="fas fa-vial mr-3"></i> Testing
+          </h1>
+          <p class="text-blue-100 mt-1">
+            Evaluate model performance on hold‑out datasets or single sentences
+          </p>
+        </div>
 
         <div class="bg-white p-6 rounded-xl shadow-md mb-6">
           <h2 class="font-semibold text-gray-700 mb-4">Test Configuration</h2>
-
-          <!-- Select Trained Model -->
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Select Trained Model</label
-            >
-            <div class="search-dropdown" id="modelDropdown">
-              <input
-                type="text"
-                id="modelSearchInput"
-                placeholder="Search model..."
-                autocomplete="off"
-              />
-              <div id="modelDropdownList" class="dropdown-list"></div>
-            </div>
-            <input type="hidden" id="selectedModelId" value="" />
-          </div>
 
           <!-- Select Algorithm (tombol) -->
           <div class="mb-4">
@@ -194,10 +189,27 @@
             <input type="hidden" id="selectedAlgorithm" value="IndoBERT-KNN" />
           </div>
 
-          <!-- SUMBER DATA (Checkbox) -->
+          <!-- Select Trained Model -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Select Trained Model</label
+            >
+            <div class="search-dropdown" id="modelDropdown">
+              <input
+                type="text"
+                id="modelSearchInput"
+                placeholder="Search model..."
+                autocomplete="off"
+              />
+              <div id="modelDropdownList" class="dropdown-list"></div>
+            </div>
+            <input type="hidden" id="selectedModelId" value="" />
+          </div>
+
+          <!-- Data source (Checkbox) -->
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Sumber Data</label
+              >Data source</label
             >
             <div class="flex gap-6">
               <label class="inline-flex items-center cursor-pointer">
@@ -207,7 +219,7 @@
                   class="form-checkbox h-5 w-5 text-blue-600"
                   checked
                 />
-                <span class="ml-2 text-gray-700">Gunakan Data Set</span>
+                <span class="ml-2 text-gray-700">Use Data Sets</span>
               </label>
               <label class="inline-flex items-center cursor-pointer">
                 <input
@@ -215,7 +227,7 @@
                   id="chkInputText"
                   class="form-checkbox h-5 w-5 text-blue-600"
                 />
-                <span class="ml-2 text-gray-700">Input Text</span>
+                <span class="ml-2 text-gray-700">Text input</span>
               </label>
             </div>
           </div>
@@ -229,37 +241,37 @@
             </p>
           </div>
 
-          <!-- Bagian Input Text -->
+          <!-- Bagian Text input -->
           <div id="inputTextSection" class="hidden mb-4">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1"
-                  >Kalimat</label
+                  >Sentence</label
                 >
                 <textarea
                   id="inputText"
                   rows="3"
                   maxlength="200"
                   class="w-full border border-gray-300 rounded-lg p-2"
-                  placeholder="Masukkan kalimat..."
+                  placeholder="Enter a sentence..."
                 ></textarea>
                 <p class="text-xs text-gray-500 mt-1">Maks 200 karakter</p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1"
-                  >Emosi Terdeteksi</label
+                  >Emotion Detected</label
                 >
                 <input
                   type="text"
                   id="inputEmosi"
                   class="w-full border border-gray-300 rounded-lg p-2 bg-gray-100 cursor-not-allowed"
                   readonly
-                  placeholder="Hasil prediksi..."
+                  placeholder="Prediction results..."
                 />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1"
-                  >Idiom Terdeteksi</label
+                  >Idiom Detected</label
                 >
                 <input
                   type="text"
@@ -271,7 +283,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1"
-                  >Arti Idiom</label
+                  >Meaning of Idioms</label
                 >
                 <input
                   type="text"
@@ -423,7 +435,7 @@
             if (!res) return;
             const history = await res.json();
             modelsList = history
-              .filter((item) => item.status === "completed") // hanya model yang selesai training
+              .filter((item) => item.status === "completed")
               .map((item) => ({
                 id: item.id,
                 name:
@@ -435,9 +447,7 @@
                 displayText: `${item.dataset_filename || item.config_name || `Training #${item.id}`} (${item.algorithm}) - Acc: ${item.metrics?.accuracy ? item.metrics.accuracy.toFixed(3) : "N/A"}`,
                 created_at: item.created_at,
               }));
-            // Urutkan berdasarkan akurasi tertinggi
             modelsList.sort((a, b) => b.accuracy - a.accuracy);
-            // Pilih model terbaik otomatis untuk algoritma yang sedang dipilih
             autoSelectBestModel();
             populateModelDropdown(
               document.getElementById("modelSearchInput").value,
@@ -456,7 +466,7 @@
             (m) => m.algorithm === selectedAlgo,
           );
           if (algoModels.length > 0) {
-            const best = algoModels[0]; // sudah terurut akurasi tertinggi
+            const best = algoModels[0];
             document.getElementById("modelSearchInput").value =
               best.displayText;
             document.getElementById("selectedModelId").value = best.id;
@@ -484,7 +494,6 @@
             div.innerText = "No models found for this algorithm";
             listDiv.appendChild(div);
           } else {
-            // Cari indeks model terbaik (pertama) untuk ditandai
             const bestId = filtered[0].id;
             filtered.forEach((model) => {
               const div = document.createElement("div");
@@ -508,7 +517,6 @@
             const res = await apiFetch("/api/testing/history");
             if (!res) return;
             testResults = await res.json();
-            // Sort by tested_at descending
             testResults.sort(
               (a, b) => new Date(b.tested_at) - new Date(a.tested_at),
             );
@@ -529,26 +537,21 @@
           const tbody = document.getElementById("testResultsBody");
           tbody.innerHTML = "";
           if (pageData.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-500">No test results yet.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-500">No test results yet. </td></tr>`;
             return;
           }
           pageData.forEach((item) => {
             const row = tbody.insertRow();
-            // Dataset/Input
             const datasetInfo =
               item.dataset_filename || item.training_id
                 ? `Hold‑out set (Training #${item.training_id})`
                 : "-";
             row.insertCell(0).innerHTML = datasetInfo;
-            // Model
             row.insertCell(1).innerHTML = item.algorithm || "-";
-            // Accuracy
             row.insertCell(2).innerHTML =
               item.accuracy != null ? item.accuracy.toFixed(3) : "-";
-            // F1-Score
             row.insertCell(3).innerHTML =
               item.f1_score != null ? item.f1_score.toFixed(3) : "-";
-            // Date (DD/MM/YY, HH.MM)
             const d = item.tested_at ? new Date(item.tested_at) : null;
             if (d) {
               const dd = String(d.getDate()).padStart(2, "0");
@@ -560,10 +563,9 @@
             } else {
               row.insertCell(4).innerHTML = "-";
             }
-            // Actions
             const act = row.insertCell(5);
             act.className = "px-4 py-2 border border-gray-200 text-center";
-            act.innerHTML = `<a href="detail-testing.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2"><i class="fas fa-eye"></i></a>`;
+            act.innerHTML = `<a href="validasi-testing.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2"><i class="fas fa-eye"></i></a>`;
             for (let cell of row.cells)
               cell.classList.add("border", "border-gray-200", "px-4", "py-2");
           });
@@ -603,16 +605,16 @@
           let requestBody = { model_id: parseInt(modelId) };
 
           if (isUpload) {
-            // Tidak perlu dataset_id, backend akan otomatis gunakan hold‑out set
+            // hold‑out set
           } else if (isInputText) {
             const kalimat = document.getElementById("inputText").value.trim();
             if (!kalimat) {
-              alert("Masukkan teks kalimat.");
+              alert("Enter a sentence.");
               return;
             }
             requestBody.text = kalimat;
           } else {
-            alert("Pilih sumber data.");
+            alert("Select data source.");
             return;
           }
 
@@ -645,7 +647,7 @@
                 document.getElementById("inputIdiom").value = "";
                 document.getElementById("inputMeaning").value = "";
                 document.getElementById("inputEmosi").value =
-                  result.message || "Tidak terdeteksi";
+                  result.message || "Not detected";
               }
               testStatus.innerText = "Completed";
               progressBar.style.width = "100%";
@@ -683,7 +685,6 @@
           }
         }
 
-        // Checkbox handling
         function initSourceCheckboxes() {
           const chkUpload = document.getElementById("chkUploadDataset");
           const chkInput = document.getElementById("chkInputText");
@@ -743,7 +744,6 @@
             activeBtn.classList.add("bg-blue-600", "text-white", "shadow-md");
 
             selectedAlgoInput.value = activeBtn.getAttribute("data-algo");
-            // Setelah algoritma berubah, auto pilih model terbaik
             autoSelectBestModel();
             populateModelDropdown(
               document.getElementById("modelSearchInput").value,
@@ -797,7 +797,6 @@
           initModelDropdown();
           initAlgorithmButtons();
           initSourceCheckboxes();
-          // Set tombol IndoBERT aktif secara default
           const btnIndo = document.getElementById("btnIndoBERT");
           btnIndo.classList.remove(
             "bg-gray-200",

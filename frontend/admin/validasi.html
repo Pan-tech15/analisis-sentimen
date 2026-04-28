@@ -32,21 +32,22 @@
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- SIDEBAR -->
-      <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
-        <div class="p-4 border-b">
-          <span
-            class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
-            >IdiomSense</span
-          >
-          <p class="text-sm text-gray-500">Admin Panel</p>
+      <!-- SIDEBAR dengan gradien (konsisten dengan halaman lain) -->
+      <aside
+        class="w-64 bg-white shadow-2xl flex-shrink-0 overflow-y-auto border-r border-gray-100"
+      >
+        <div
+          class="p-4 border-b bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-b-lg"
+        >
+          <span class="font-bold text-2xl">IdiomSense</span>
+          <p class="text-sm text-blue-100">Admin Panel</p>
         </div>
         <nav class="p-4">
           <ul class="space-y-1">
             <li>
               <a
                 href="beranda-admin.html"
-                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                 ><i class="fas fa-tachometer-alt w-5"></i
                 ><span>Dashboard</span></a
               >
@@ -54,11 +55,11 @@
             <li>
               <button
                 id="dataCollectionBtn"
-                class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
               >
                 <div class="flex items-center space-x-2">
-                  <i class="fas fa-database w-5"></i
-                  ><span>Data Collection</span>
+                  <i class="fas fa-database w-5"></i>
+                  <span>Data Collection</span>
                 </div>
                 <i
                   id="dataCollectionIcon"
@@ -69,14 +70,14 @@
                 <li>
                   <a
                     href="dataset.html"
-                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                     ><i class="fas fa-table w-5 mr-2"></i>Dataset</a
                   >
                 </li>
                 <li>
                   <a
                     href="kamus-idiom.html"
-                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                     ><i class="fas fa-book w-5 mr-2"></i>Idiom Dictionary</a
                   >
                 </li>
@@ -85,35 +86,36 @@
             <li>
               <a
                 href="preprocessing.html"
-                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                 ><i class="fas fa-filter w-5"></i><span>Pre-Processing</span></a
               >
             </li>
             <li>
+              <!-- Processing aktif -->
               <a
                 href="processing.html"
-                class="flex items-center space-x-2 p-2 rounded-lg bg-blue-50 text-blue-600"
+                class="flex items-center space-x-2 p-2 rounded-lg bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 font-semibold shadow-sm transition-all"
                 ><i class="fas fa-brain w-5"></i><span>Processing</span></a
               >
             </li>
             <li>
               <a
                 href="testing.html"
-                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                 ><i class="fas fa-vial w-5"></i><span>Testing</span></a
               >
             </li>
             <li>
               <a
                 href="evaluasi.html"
-                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                 ><i class="fas fa-chart-line w-5"></i><span>Evaluation</span></a
               >
             </li>
             <li class="pt-4 mt-4 border-t">
               <a
                 href="login.html"
-                class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"
+                class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50 transition-all"
                 ><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a
               >
             </li>
@@ -122,9 +124,17 @@
       </aside>
 
       <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">
-          Validasi Hasil Data Latih
-        </h1>
+        <!-- Header dengan gradient -->
+        <div
+          class="mb-8 p-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500 rounded-xl shadow-lg text-white"
+        >
+          <h1 class="text-3xl font-bold flex items-center">
+            <i class="fas fa-chart-bar mr-3"></i> Validasi Hasil Data Latih
+          </h1>
+          <p class="text-blue-100 mt-1">
+            Evaluasi performa model pada data training
+          </p>
+        </div>
 
         <!-- Info dataset & model -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-6">
@@ -206,7 +216,7 @@
           </div>
         </div>
 
-        <!-- SECTION BARU: Tabel Evaluasi per Epoch / per Fold -->
+        <!-- SECTION: Tabel Evaluasi per Epoch / per Fold -->
         <div
           id="epochFoldSection"
           class="bg-white p-6 rounded-xl shadow-md mb-6 hidden"
@@ -220,17 +230,17 @@
           </h2>
           <div class="overflow-x-auto">
             <table class="min-w-full border border-gray-200">
-              <thead class="bg-gray-100">
+              <thead class="bg-blue-500 text-white">
                 <tr>
-                  <th class="px-4 py-2 border border-gray-300">Epoch / Fold</th>
-                  <th class="px-4 py-2 border border-gray-300">Accuracy (%)</th>
-                  <th class="px-4 py-2 border border-gray-300">
+                  <th class="px-4 py-2 border border-blue-400">Epoch / Fold</th>
+                  <th class="px-4 py-2 border border-blue-400">Accuracy (%)</th>
+                  <th class="px-4 py-2 border border-blue-400">
                     Precision (%)
                   </th>
-                  <th class="px-4 py-2 border border-gray-300">Recall (%)</th>
-                  <th class="px-4 py-2 border border-gray-300">F1-Score (%)</th>
-                  <th class="px-4 py-2 border border-gray-300">Loss</th>
-                  <th class="px-4 py-2 border border-gray-300">MCC</th>
+                  <th class="px-4 py-2 border border-blue-400">Recall (%)</th>
+                  <th class="px-4 py-2 border border-blue-400">F1-Score (%)</th>
+                  <th class="px-4 py-2 border border-blue-400">Loss</th>
+                  <th class="px-4 py-2 border border-blue-400">MCC</th>
                 </tr>
               </thead>
               <tbody id="epochFoldTableBody"></tbody>
@@ -245,10 +255,10 @@
           </h2>
           <div class="overflow-x-auto">
             <table class="min-w-full border border-gray-200">
-              <thead class="bg-gray-100">
+              <thead class="bg-blue-500 text-white">
                 <tr>
-                  <th class="px-4 py-2 border border-gray-300">Metrik</th>
-                  <th class="px-4 py-2 border border-gray-300">Nilai</th>
+                  <th class="px-4 py-2 border border-blue-400">Metrik</th>
+                  <th class="px-4 py-2 border border-blue-400">Nilai</th>
                 </tr>
               </thead>
               <tbody id="metricsTableBody"></tbody>
@@ -256,7 +266,7 @@
           </div>
         </div>
 
-        <!-- Tabel Stabilitas Performa (selalu ditampilkan dengan data dummy untuk frontend) -->
+        <!-- Tabel Stabilitas Performa (Cross Validation) -->
         <div
           id="stabilitySection"
           class="bg-white p-6 rounded-xl shadow-md mb-6"
@@ -266,25 +276,22 @@
           </h2>
           <div class="overflow-x-auto">
             <table class="min-w-full border border-gray-200">
-              <thead class="bg-gray-100">
+              <thead class="bg-blue-500 text-white">
                 <tr>
-                  <th class="px-4 py-2 border border-gray-300">Epoch / Fold</th>
-                  <th class="px-4 py-2 border border-gray-300">Akurasi (%)</th>
-                  <th class="px-4 py-2 border border-gray-300">Presisi (%)</th>
-                  <th class="px-4 py-2 border border-gray-300">Recall (%)</th>
-                  <th class="px-4 py-2 border border-gray-300">F1-Score (%)</th>
-                  <th class="px-4 py-2 border border-gray-300">MCC</th>
-                  <th class="px-4 py-2 border border-gray-300">ROC-AUC (%)</th>
+                  <th class="px-4 py-2 border border-blue-400">Fold</th>
+                  <th class="px-4 py-2 border border-blue-400">Akurasi (%)</th>
+                  <th class="px-4 py-2 border border-blue-400">Presisi (%)</th>
+                  <th class="px-4 py-2 border border-blue-400">Recall (%)</th>
+                  <th class="px-4 py-2 border border-blue-400">F1-Score (%)</th>
+                  <th class="px-4 py-2 border border-blue-400">MCC</th>
+                  <th class="px-4 py-2 border border-blue-400">ROC-AUC (%)</th>
                 </tr>
               </thead>
-              <tbody id="stabilityTableBody">
-                <!-- Data dummy akan diisi JavaScript -->
-              </tbody>
+              <tbody id="stabilityTableBody"></tbody>
             </table>
           </div>
           <p class="text-xs text-gray-500 mt-3">
-            *Nilai mean dan standar deviasi dihitung dari cross-validation (data
-            simulasi).
+            *Nilai mean dan standar deviasi dihitung dari cross-validation.
           </p>
         </div>
 
@@ -319,7 +326,6 @@
         const marginBottom = 100;
         let tooltipDiv = null;
 
-        // Helper: konversi nilai ke angka yang aman untuk .toFixed() - tidak akan melemparkan error
         function safeToFixed(val, digits, fallback = "-") {
           if (
             val === null ||
@@ -424,7 +430,6 @@
             const container = document.getElementById("configContainer");
             if (!container) return;
             container.innerHTML = "";
-
             if (!params) {
               container.innerHTML =
                 '<p class="text-gray-500 col-span-full">Konfigurasi tidak tersedia.</p>';
@@ -452,7 +457,6 @@
               container.appendChild(header);
             }
 
-            // === PEMBAGIAN DATA ===
             const split = params.split || {};
             addCategoryHeader("🔀 Pembagian Data");
             addItem(
@@ -473,9 +477,7 @@
               addItem("Rasio Test", split.test || "-", "fa-chart-pie");
             }
 
-            // ========== CEK APAKAH INI LEXICON-NB ==========
             if (params.naivebayes) {
-              // --- Naive Bayes ---
               const nb = params.naivebayes;
               addCategoryHeader("🧠 Naive Bayes");
               addItem("Alpha", nb.alpha || "-", "fa-sliders-h");
@@ -486,13 +488,11 @@
               );
               addItem("Vectorizer", nb.vectorizer || "-", "fa-font");
 
-              // --- Hybrid Fusion ---
               const fusion = params.fusion || {};
               addCategoryHeader("🔗 Hybrid Fusion");
               addItem("Fusion Method", fusion.method || "-", "fa-code-merge");
               addItem("Formula", fusion.formula || "-", "fa-superscript");
 
-              // --- Emotion Rankings (SORTED by rank 1-7) ---
               const rankings = params.emotion_rankings;
               if (rankings && Object.keys(rankings).length > 0) {
                 addCategoryHeader("😊 Urutan Ranking Emosi (1–7)");
@@ -507,10 +507,7 @@
                   );
                 }
               }
-            }
-            // ========== JIKA BUKAN LEXICON, MAKA INDOBERT ==========
-            else {
-              // === PARAMETER UMUM (HANYA UNTUK INDOBERT) ===
+            } else {
               const general = params.general || {};
               addCategoryHeader("⚙️ Parameter Umum");
               addItem("Random State", general.randomState || "-", "fa-dice");
@@ -525,7 +522,6 @@
                 "fa-layer-group",
               );
 
-              // --- IndoBERT ---
               const bert = params.indobert || {};
               addCategoryHeader("🤖 IndoBERT");
               addItem("Model Name", bert.modelName || "-", "fa-robot");
@@ -537,7 +533,6 @@
               addItem("Pooling Strategy", bert.pooling || "-", "fa-water");
               addItem("Batch Size", bert.batchSize || "-", "fa-layer-group");
 
-              // --- Fine-Tuning ---
               const ft = params.finetune || {};
               addCategoryHeader("🎯 Fine-Tuning IndoBERT");
               if (ft.enabled) {
@@ -574,7 +569,6 @@
                 addItem("Status", "Tidak Aktif", "fa-ban text-red-500");
               }
 
-              // --- UMAP ---
               const umap = params.umap || {};
               addCategoryHeader("📉 UMAP (Reduksi Dimensi)");
               if (umap.enabled) {
@@ -592,7 +586,6 @@
                 addItem("Status", "Tidak Aktif", "fa-ban text-red-500");
               }
 
-              // --- KNN ---
               const knn = params.knn || {};
               addCategoryHeader("👥 KNN");
               addItem("K (n_neighbors)", knn.k || "-", "fa-neuter");
@@ -602,7 +595,6 @@
               addItem("leaf_size", knn.leafSize || "-", "fa-leaf");
               addItem("p (Minkowski)", knn.p || "-", "fa-chart-line");
 
-              // --- Confidence Adjustment ---
               const hybrid = params.hybrid || {};
               const hybridMethod = hybrid.method || "none";
               let hybridText = "Tidak Aktif";
@@ -617,20 +609,15 @@
           }
         }
 
-        // ========== TABEL EVALUASI PER EPOCH / FOLD ==========
         function renderEpochFoldTable(data) {
           try {
             const section = document.getElementById("epochFoldSection");
             const titleEl = document.getElementById("epochFoldTitle");
             const tbody = document.getElementById("epochFoldTableBody");
             if (!section || !tbody) return;
-
-            let items = null;
-            let isEpoch = false;
-
-            // Cari di trainingData.metrics (diperbaiki)
             const m = data.metrics || data;
-
+            let items = null,
+              isEpoch = false;
             if (
               m.epoch_metrics &&
               Array.isArray(m.epoch_metrics) &&
@@ -653,10 +640,8 @@
               section.classList.add("hidden");
               return;
             }
-
             section.classList.remove("hidden");
             tbody.innerHTML = "";
-
             let totalAcc = 0,
               totalPrec = 0,
               totalRec = 0,
@@ -664,13 +649,11 @@
               totalLoss = 0,
               totalMcc = 0;
             const n = items.length;
-
             items.forEach((item, idx) => {
               const row = tbody.insertRow();
               const epochOrFold = isEpoch
                 ? `Epoch ${item.epoch || idx + 1}`
                 : `Fold ${item.fold || idx + 1}`;
-              // gunakan safeToFixed untuk mencegah error
               const acc = safeToFixed(
                 item.accuracy != null ? item.accuracy * 100 : null,
                 2,
@@ -689,14 +672,12 @@
               );
               const loss = safeToFixed(item.loss, 4);
               const mcc = safeToFixed(item.mcc, 4);
-
               totalAcc += item.accuracy != null ? item.accuracy * 100 : 0;
               totalPrec += item.precision != null ? item.precision * 100 : 0;
               totalRec += item.recall != null ? item.recall * 100 : 0;
               totalF1 += item.f1_score != null ? item.f1_score * 100 : 0;
               if (item.loss !== undefined) totalLoss += item.loss;
               if (item.mcc !== undefined) totalMcc += item.mcc;
-
               row.innerHTML = `
                 <td class="px-4 py-2 border border-gray-200 font-medium">${epochOrFold}</td>
                 <td class="px-4 py-2 border border-gray-200 text-center">${acc}%</td>
@@ -704,17 +685,14 @@
                 <td class="px-4 py-2 border border-gray-200 text-center">${rec}%</td>
                 <td class="px-4 py-2 border border-gray-200 text-center">${f1}%</td>
                 <td class="px-4 py-2 border border-gray-200 text-center">${loss}</td>
-                <td class="px-4 py-2 border border-gray-200 text-center">${mcc}</td>
-              `;
+                <td class="px-4 py-2 border border-gray-200 text-center">${mcc}</td>`;
             });
-
             const avgAcc = (totalAcc / n).toFixed(2);
             const avgPrec = (totalPrec / n).toFixed(2);
             const avgRec = (totalRec / n).toFixed(2);
             const avgF1 = (totalF1 / n).toFixed(2);
             const avgLoss = (totalLoss / n).toFixed(4);
             const avgMcc = (totalMcc / n).toFixed(4);
-
             const avgRow = tbody.insertRow();
             avgRow.classList.add("bg-gray-100", "font-semibold");
             avgRow.innerHTML = `
@@ -728,20 +706,16 @@
             `;
           } catch (e) {
             console.error("Error in renderEpochFoldTable:", e);
-            // jangan tampilkan error ke user, cukup sembunyikan section
             const section = document.getElementById("epochFoldSection");
             if (section) section.classList.add("hidden");
           }
         }
 
-        // ========== TABEL STABILITAS PERFORMA (DATA ASLI DARI BACKEND) ==========
         function renderStabilityTable() {
           try {
             const section = document.getElementById("stabilitySection");
             const tbody = document.getElementById("stabilityTableBody");
             if (!section || !tbody) return;
-
-            // Ambil data fold_metrics dari hasil training
             const metricsData = trainingData?.metrics || {};
             const foldMetrics = metricsData.fold_metrics;
             if (
@@ -749,14 +723,11 @@
               !Array.isArray(foldMetrics) ||
               foldMetrics.length === 0
             ) {
-              // Jika tidak ada data fold (misal percentage split), sembunyikan tabel
               section.style.display = "none";
               return;
             }
-
             section.style.display = "block";
             tbody.innerHTML = "";
-
             let sumAcc = 0,
               sumPrec = 0,
               sumRec = 0,
@@ -764,10 +735,7 @@
               sumMcc = 0,
               sumAuc = 0;
             const n = foldMetrics.length;
-
             foldMetrics.forEach((f) => {
-              const row = tbody.insertRow();
-              // gunakan safeToFixed
               const acc = safeToFixed(
                 f.accuracy != null ? f.accuracy * 100 : null,
                 2,
@@ -789,43 +757,39 @@
                 f.roc_auc != null ? f.roc_auc * 100 : null,
                 2,
               );
-
               sumAcc += f.accuracy != null ? f.accuracy * 100 : 0;
               sumPrec += f.precision != null ? f.precision * 100 : 0;
               sumRec += f.recall != null ? f.recall * 100 : 0;
               sumF1 += f.f1_score != null ? f.f1_score * 100 : 0;
               if (f.mcc != null) sumMcc += f.mcc;
               if (f.roc_auc != null) sumAuc += f.roc_auc;
-
-              row.innerHTML = `
-            <td class="px-4 py-2 border border-gray-200 font-medium">Fold ${f.fold || ""}</td>
-            <td class="px-4 py-2 border border-gray-200 text-center">${acc}%</td>
-            <td class="px-4 py-2 border border-gray-200 text-center">${prec}%</td>
-            <td class="px-4 py-2 border border-gray-200 text-center">${rec}%</td>
-            <td class="px-4 py-2 border border-gray-200 text-center">${f1}%</td>
-            <td class="px-4 py-2 border border-gray-200 text-center">${mcc}</td>
-            <td class="px-4 py-2 border border-gray-200 text-center">${roc_auc}%</td>
-          `;
+              tbody.insertRow().innerHTML = `
+                <td class="px-4 py-2 border border-gray-200 font-medium">Fold ${f.fold || ""}</td>
+                <td class="px-4 py-2 border border-gray-200 text-center">${acc}%</td>
+                <td class="px-4 py-2 border border-gray-200 text-center">${prec}%</td>
+                <td class="px-4 py-2 border border-gray-200 text-center">${rec}%</td>
+                <td class="px-4 py-2 border border-gray-200 text-center">${f1}%</td>
+                <td class="px-4 py-2 border border-gray-200 text-center">${mcc}</td>
+                <td class="px-4 py-2 border border-gray-200 text-center">${roc_auc}%</td>
+              `;
             });
-
             const avgAcc = (sumAcc / n).toFixed(2);
             const avgPrec = (sumPrec / n).toFixed(2);
             const avgRec = (sumRec / n).toFixed(2);
             const avgF1 = (sumF1 / n).toFixed(2);
             const avgMcc = (sumMcc / n).toFixed(4);
             const avgAuc = (sumAuc / n).toFixed(2);
-
             const avgRow = tbody.insertRow();
             avgRow.classList.add("bg-gray-100", "font-semibold");
             avgRow.innerHTML = `
-          <td class="px-4 py-2 border border-gray-200 font-medium">Rata‑rata</td>
-          <td class="px-4 py-2 border border-gray-200 text-center">${avgAcc}%</td>
-          <td class="px-4 py-2 border border-gray-200 text-center">${avgPrec}%</td>
-          <td class="px-4 py-2 border border-gray-200 text-center">${avgRec}%</td>
-          <td class="px-4 py-2 border border-gray-200 text-center">${avgF1}%</td>
-          <td class="px-4 py-2 border border-gray-200 text-center">${avgMcc}</td>
-          <td class="px-4 py-2 border border-gray-200 text-center">${avgAuc}%</td>
-      `;
+              <td class="px-4 py-2 border border-gray-200 font-medium">Rata‑rata</td>
+              <td class="px-4 py-2 border border-gray-200 text-center">${avgAcc}%</td>
+              <td class="px-4 py-2 border border-gray-200 text-center">${avgPrec}%</td>
+              <td class="px-4 py-2 border border-gray-200 text-center">${avgRec}%</td>
+              <td class="px-4 py-2 border border-gray-200 text-center">${avgF1}%</td>
+              <td class="px-4 py-2 border border-gray-200 text-center">${avgMcc}</td>
+              <td class="px-4 py-2 border border-gray-200 text-center">${avgAuc}%</td>
+            `;
           } catch (e) {
             console.error("Error in renderStabilityTable:", e);
             const section = document.getElementById("stabilitySection");
@@ -833,7 +797,6 @@
           }
         }
 
-        // ========== FETCH DATA DARI API ==========
         async function loadTrainingDetail() {
           if (!trainingId) {
             alert("ID training tidak ditemukan di URL");
@@ -843,8 +806,6 @@
             const res = await fetch(`${API_BASE}/api/training/${trainingId}`);
             if (!res.ok) throw new Error("Gagal memuat data training");
             trainingData = await res.json();
-            console.log("Training data:", trainingData);
-
             document.getElementById("datasetName").textContent =
               trainingData.dataset_filename || "-";
             document.getElementById("modelName").textContent =
@@ -865,10 +826,7 @@
               }
             }
             renderConfigParams(params, trainingData.algorithm);
-
             metrics = trainingData.metrics || {};
-
-            // amankan pengisian matrix dan labels
             matrix =
               metrics.confusion_matrix &&
               Array.isArray(metrics.confusion_matrix)
@@ -886,12 +844,12 @@
                     "Sedih",
                     "Marah",
                   ];
-
             drawHeatmap();
             populateMetricsTable();
+            renderEpochFoldTable(trainingData);
             renderStabilityTable();
           } catch (error) {
-            console.error("Error loading training detail:", error);
+            console.error(error);
             alert("Gagal memuat detail training: " + error.message);
           }
         }
@@ -900,25 +858,20 @@
           try {
             const tbody = document.getElementById("metricsTableBody");
             tbody.innerHTML = "";
-
-            // amankan akses .toFixed()
             const acc = safeToFixed(metrics.accuracy, 4);
             const prec = safeToFixed(metrics.precision, 4);
             const rec = safeToFixed(metrics.recall, 4);
             const f1 = safeToFixed(metrics.f1_score, 4);
-
             let calc = null;
             if (matrix.length > 0 && labels.length > 0) {
               calc = calculateMetricsFromCM(matrix, labels);
             }
-
             const rows = [
               ["Akurasi", acc],
               ["Presisi (Weighted)", prec],
               ["Recall (Weighted)", rec],
               ["F1-Score (Weighted)", f1],
             ];
-
             if (calc) {
               rows.push(
                 ["Presisi (Macro)", safeToFixed(calc.macro_precision, 4)],
@@ -931,7 +884,6 @@
               );
             }
             rows.push(["ROC-AUC (Macro)", "- (tidak dihitung)"]);
-
             for (let [name, value] of rows) {
               const tr = document.createElement("tr");
               tr.innerHTML = `
@@ -945,31 +897,25 @@
           }
         }
 
-        // DRAW HEATMAP
         function drawHeatmap() {
           try {
             canvas = document.getElementById("confusionHeatmap");
             if (!canvas) return;
-            // amankan pengecekan
             if (
               !Array.isArray(matrix) ||
               matrix.length === 0 ||
               !Array.isArray(labels) ||
               labels.length === 0
-            ) {
-              console.warn("Data matrix atau labels kosong");
+            )
               return;
-            }
             ctx = canvas.getContext("2d");
             size = canvas.width;
             const gridSize = size - marginLeft - marginRight;
             cellSize = gridSize / matrix.length;
             const maxVal = Math.max(...matrix.flat());
-
             ctx.clearRect(0, 0, size, size);
             ctx.fillStyle = "#ffffff";
             ctx.fillRect(0, 0, size, size);
-
             for (let i = 0; i < matrix.length; i++) {
               for (let j = 0; j < matrix[i].length; j++) {
                 const val = matrix[i][j];
@@ -992,7 +938,6 @@
                 );
               }
             }
-
             ctx.strokeStyle = "#ffffff";
             ctx.lineWidth = 1.5;
             for (let i = 0; i <= matrix.length; i++) {
@@ -1011,7 +956,6 @@
               );
               ctx.stroke();
             }
-
             ctx.fillStyle = "#1f2937";
             ctx.font = '13px "Segoe UI", system-ui';
             ctx.textAlign = "right";
@@ -1023,7 +967,6 @@
                 marginTop + i * cellSize + cellSize / 2,
               );
             }
-
             ctx.save();
             ctx.font = '13px "Segoe UI", system-ui';
             ctx.textAlign = "left";
@@ -1039,7 +982,6 @@
               ctx.restore();
             }
             ctx.restore();
-
             ctx.font = 'bold 14px "Segoe UI", system-ui';
             ctx.fillStyle = "#374151";
             ctx.textAlign = "center";
@@ -1065,7 +1007,6 @@
             document.body.appendChild(tooltipDiv);
           }
         }
-
         function showTooltip(e) {
           if (!canvas || !matrix.length) return;
           const rect = canvas.getBoundingClientRect();
@@ -1093,7 +1034,6 @@
             tooltipDiv.style.display = "none";
           }
         }
-
         function hideTooltip() {
           if (tooltipDiv) tooltipDiv.style.display = "none";
         }

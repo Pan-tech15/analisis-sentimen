@@ -19,21 +19,22 @@
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- Sidebar (tidak diubah) -->
-      <aside class="w-64 bg-white shadow-lg flex-shrink-0 overflow-y-auto">
-        <div class="p-4 border-b">
-          <span
-            class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
-            >IdiomSense</span
-          >
-          <p class="text-sm text-gray-500">Admin Panel</p>
+      <!-- Sidebar dengan gradien (konsisten dengan halaman lain) -->
+      <aside
+        class="w-64 bg-white shadow-2xl flex-shrink-0 overflow-y-auto border-r border-gray-100"
+      >
+        <div
+          class="p-4 border-b bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-b-lg"
+        >
+          <span class="font-bold text-2xl">IdiomSense</span>
+          <p class="text-sm text-blue-100">Admin Panel</p>
         </div>
         <nav class="p-4">
           <ul class="space-y-1">
             <li>
               <a
                 href="beranda-admin.html"
-                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 text-gray-700"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                 ><i class="fas fa-tachometer-alt w-5"></i
                 ><span>Dashboard</span></a
               >
@@ -41,11 +42,11 @@
             <li>
               <button
                 id="dataCollectionBtn"
-                class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
               >
                 <div class="flex items-center space-x-2">
-                  <i class="fas fa-database w-5"></i
-                  ><span>Data Collection</span>
+                  <i class="fas fa-database w-5"></i>
+                  <span>Data Collection</span>
                 </div>
                 <i
                   id="dataCollectionIcon"
@@ -56,14 +57,14 @@
                 <li>
                   <a
                     href="dataset.html"
-                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                    class="block p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                     ><i class="fas fa-table w-5 mr-2"></i>Dataset</a
                   >
                 </li>
                 <li>
                   <a
                     href="kamus-idiom.html"
-                    class="block p-2 rounded-lg bg-blue-50 text-blue-600"
+                    class="block p-2 rounded-lg bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 font-semibold shadow-sm transition-all"
                     ><i class="fas fa-book w-5 mr-2"></i>Idiom Dictionary</a
                   >
                 </li>
@@ -72,35 +73,37 @@
             <li>
               <a
                 href="preprocessing.html"
-                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                 ><i class="fas fa-filter w-5"></i><span>Pre-Processing</span></a
               >
             </li>
             <li>
               <a
                 href="processing.html"
-                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
-                ><i class="fas fa-brain w-5"></i><span>Processing</span></a
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
               >
+                <i class="fas fa-brain w-5"></i>
+                <span>Processing</span>
+              </a>
             </li>
             <li>
               <a
                 href="testing.html"
-                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                 ><i class="fas fa-vial w-5"></i><span>Testing</span></a
               >
             </li>
             <li>
               <a
                 href="evaluasi.html"
-                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-all"
                 ><i class="fas fa-chart-line w-5"></i><span>Evaluation</span></a
               >
             </li>
             <li class="pt-4 mt-4 border-t">
               <a
                 href="login.html"
-                class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50"
+                class="flex items-center space-x-2 p-2 rounded-lg text-red-600 hover:bg-red-50 transition-all"
                 ><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a
               >
             </li>
@@ -110,9 +113,19 @@
 
       <!-- Main Content -->
       <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">Idiom Dictionary</h1>
+        <!-- Header dengan gradient -->
+        <div
+          class="mb-8 p-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500 rounded-xl shadow-lg text-white"
+        >
+          <h1 class="text-3xl font-bold flex items-center">
+            <i class="fas fa-book mr-3"></i> Idiom Dictionary
+          </h1>
+          <p class="text-blue-100 mt-1">
+            Manage idioms, meanings, and emotion labels
+          </p>
+        </div>
 
-        <!-- Upload CSV (tidak diubah) -->
+        <!-- Upload CSV dengan Preview File -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-6">
           <h2 class="font-semibold text-gray-700 mb-4">Upload Idiom Data</h2>
           <div
@@ -130,12 +143,36 @@
             </p>
             <input type="file" id="fileInput" class="hidden" accept=".csv" />
           </div>
+
+          <!-- Preview file setelah dipilih -->
+          <div id="filePreview" class="mt-4 hidden">
+            <div
+              class="flex items-center justify-between bg-gray-50 p-4 rounded-lg border border-gray-200"
+            >
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-file-csv text-2xl text-green-600"></i>
+                <div>
+                  <p id="previewFileName" class="font-medium text-gray-800"></p>
+                  <p id="previewFileSize" class="text-xs text-gray-500"></p>
+                </div>
+              </div>
+              <button
+                id="clearFileBtn"
+                class="text-red-500 hover:text-red-700 transition"
+                title="Remove file"
+              >
+                <i class="fas fa-times-circle text-xl"></i>
+              </button>
+            </div>
+          </div>
+
           <button
             id="uploadBtn"
-            class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+            class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Upload
           </button>
+
           <div
             id="previewSection"
             class="bg-white p-6 rounded-xl shadow-md mt-6 hidden"
@@ -150,8 +187,10 @@
                     <th class="px-4 py-2 border border-blue-400 w-64">
                       Meaning
                     </th>
-                    <th class="px-4 py-2 border border-blue-400 w-32">Emosi</th>
-                  </tr>
+                    <th class="px-4 py-2 border border-blue-400 w-32">
+                      Emotion
+                    </th>
+                  </table>
                 </thead>
                 <tbody id="previewTableBody"></tbody>
               </table>
@@ -167,7 +206,7 @@
           </div>
         </div>
 
-        <!-- Add Idiom Manually (tidak diubah) -->
+        <!-- Add Idiom Manually -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-6">
           <h2 class="font-semibold text-gray-700 mb-4">Add Idiom</h2>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -193,19 +232,19 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700"
-                >Emosi</label
+                >Emotion</label
               ><select
                 id="newEmotion"
                 class="mt-1 block w-full border rounded-md p-2"
               >
-                <option value="">-- Pilih Emosi --</option>
-                <option value="Senang">Senang</option>
-                <option value="Sedih">Sedih</option>
-                <option value="Marah">Marah</option>
-                <option value="Takut">Takut</option>
-                <option value="Terkejut">Terkejut</option>
-                <option value="Netral">Netral</option>
-                <option value="Percaya">Percaya</option>
+                <option value="">-- Select Emotion --</option>
+                <option value="Senang">Happy</option>
+                <option value="Sedih">Sad</option>
+                <option value="Marah">Angry</option>
+                <option value="Takut">Fearful</option>
+                <option value="Terkejut">Surprised</option>
+                <option value="Netral">Neutral</option>
+                <option value="Percaya">Trust</option>
               </select>
             </div>
           </div>
@@ -221,7 +260,7 @@
         <div class="bg-white p-6 rounded-xl shadow-md">
           <div class="flex justify-between items-center mb-3">
             <h2 class="text-lg font-semibold text-gray-800">
-              <i class="fas fa-list-alt mr-2 text-blue-600"></i>Daftar Idiom
+              <i class="fas fa-list-alt mr-2 text-blue-600"></i>Idiom List
             </h2>
           </div>
 
@@ -257,7 +296,7 @@
                   <th class="px-4 py-2 border border-blue-400 w-16">No</th>
                   <th class="px-4 py-2 border border-blue-400 w-44">Idiom</th>
                   <th class="px-4 py-2 border border-blue-400 w-64">Meaning</th>
-                  <th class="px-4 py-2 border border-blue-400 w-36">Emosi</th>
+                  <th class="px-4 py-2 border border-blue-400 w-36">Emotion</th>
                   <th class="px-4 py-2 border border-blue-400 w-28">Actions</th>
                 </tr>
               </thead>
@@ -265,13 +304,12 @@
             </table>
           </div>
 
-          <!-- Total dan Pagination di bawah tabel: total di kanan, pagination di kiri/tengah? -->
-          <!-- Diminta: total diletakkan di bawah tabel kanan -->
+          <!-- Total dan Pagination -->
           <div class="flex flex-wrap justify-between items-center mt-4 gap-3">
             <div id="pagination" class="flex justify-center space-x-2"></div>
             <span
               id="totalIdiomsBadge"
-              class="bg-blue-100 text-blue-800 text-x1 font-medium px-3 py-1 rounded-full"
+              class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full"
               >Total: 0</span
             >
           </div>
@@ -279,7 +317,7 @@
       </main>
     </div>
 
-    <!-- Edit Idiom Modal (tidak diubah) -->
+    <!-- Edit Idiom Modal -->
     <div
       id="editModal"
       class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50"
@@ -303,19 +341,19 @@
           />
         </div>
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700">Emosi</label
+          <label class="block text-sm font-medium text-gray-700">Emotion</label
           ><select
             id="editEmotion"
             class="mt-1 block w-full border rounded-md p-2"
           >
-            <option value="">-- Pilih Emosi --</option>
-            <option value="Senang">Senang</option>
-            <option value="Sedih">Sedih</option>
-            <option value="Marah">Marah</option>
-            <option value="Takut">Takut</option>
-            <option value="Terkejut">Terkejut</option>
-            <option value="Netral">Netral</option>
-            <option value="Percaya">Percaya</option>
+            <option value="">-- Select Emotion --</option>
+            <option value="Senang">Happy</option>
+            <option value="Sedih">Sad</option>
+            <option value="Marah">Angry</option>
+            <option value="Takut">Fearful</option>
+            <option value="Terkejut">Surprised</option>
+            <option value="Netral">Neutral</option>
+            <option value="Percaya">Trust</option>
           </select>
         </div>
         <div class="flex justify-end space-x-2">
@@ -343,6 +381,44 @@
       let currentSort = "asc";
       let currentSearch = "";
       let totalIdioms = 0;
+
+      // Preview file handling
+      let selectedFile = null;
+
+      function formatFileSize(bytes) {
+        if (bytes === 0) return "0 Bytes";
+        const k = 1024;
+        const sizes = ["Bytes", "KB", "MB", "GB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+      }
+
+      function updateFilePreview(file) {
+        const previewDiv = document.getElementById("filePreview");
+        const uploadBtn = document.getElementById("uploadBtn");
+        if (!file) {
+          previewDiv.classList.add("hidden");
+          selectedFile = null;
+          uploadBtn.disabled = true;
+          return;
+        }
+        selectedFile = file;
+        document.getElementById("previewFileName").textContent = file.name;
+        document.getElementById("previewFileSize").textContent = formatFileSize(
+          file.size,
+        );
+        previewDiv.classList.remove("hidden");
+        uploadBtn.disabled = false;
+      }
+
+      function clearFile() {
+        const fileInput = document.getElementById("fileInput");
+        fileInput.value = "";
+        updateFilePreview(null);
+        // Also hide the preview section and reset uploadedData
+        document.getElementById("previewSection").classList.add("hidden");
+        uploadedData = [];
+      }
 
       async function apiFetch(endpoint, options = {}) {
         const headers = {
@@ -482,7 +558,7 @@
         paginationDiv.appendChild(container);
       }
 
-      // Add, Delete, Edit functions (tidak diubah)
+      // Add, Delete, Edit functions
       async function addIdiom() {
         const idiomText = document.getElementById("newIdiom").value.trim();
         const meaning = document.getElementById("newMeaning").value.trim();
@@ -599,9 +675,13 @@
         .getElementById("saveEditBtn")
         .addEventListener("click", saveEdit);
 
-      // Upload area (tidak diubah)
+      // Upload area with preview
       const uploadArea = document.getElementById("uploadArea");
       const fileInput = document.getElementById("fileInput");
+      const clearFileBtn = document.getElementById("clearFileBtn");
+      const uploadBtn = document.getElementById("uploadBtn");
+      let uploadedData = [];
+
       uploadArea.addEventListener("click", () => fileInput.click());
       uploadArea.addEventListener("dragover", (e) => {
         e.preventDefault();
@@ -614,13 +694,30 @@
         e.preventDefault();
         uploadArea.classList.remove("border-blue-500", "bg-blue-50");
         const files = e.dataTransfer.files;
-        if (files.length) fileInput.files = files;
+        if (files.length) {
+          fileInput.files = files;
+          updateFilePreview(files[0]);
+        }
       });
-      let uploadedData = [];
 
-      fileInput.addEventListener("change", function (e) {
-        if (fileInput.files.length === 0) return;
-        const file = fileInput.files[0];
+      fileInput.addEventListener("change", (e) => {
+        if (fileInput.files.length) {
+          updateFilePreview(fileInput.files[0]);
+        } else {
+          updateFilePreview(null);
+        }
+      });
+
+      clearFileBtn.addEventListener("click", clearFile);
+
+      // Upload button (only for preview, actual CSV parsing happens when file selected)
+      uploadBtn.addEventListener("click", () => {
+        if (!selectedFile) {
+          alert("Please select a CSV file first.");
+          return;
+        }
+        // Proceed to parse the file (same as before)
+        const file = selectedFile;
         Papa.parse(file, {
           header: true,
           skipEmptyLines: true,
@@ -722,7 +819,7 @@
               alert(result.message);
               uploadedData = [];
               document.getElementById("previewSection").classList.add("hidden");
-              fileInput.value = "";
+              clearFile(); // reset preview and file input
               currentPage = 1;
               loadIdioms();
             } else alert(result.message || "Failed to extract idioms");
@@ -731,10 +828,6 @@
             alert("Error extracting idioms");
           }
         });
-
-      document
-        .getElementById("uploadBtn")
-        .addEventListener("click", () => fileInput.click());
 
       function toggleDropdown(btn, menu, icon) {
         btn.addEventListener("click", () => {
@@ -746,6 +839,13 @@
       const dataCollectionMenu = document.getElementById("dataCollectionMenu");
       const dataCollectionIcon = document.getElementById("dataCollectionIcon");
       toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
+
+      // === BUKA DROPDOWN DATA COLLECTION SECARA OTOMATIS ===
+      // Karena halaman Idiom Dictionary berada di dalam menu Data Collection, kita pastikan dropdown terbuka
+      if (dataCollectionMenu && dataCollectionIcon) {
+        dataCollectionMenu.classList.remove("hidden");
+        dataCollectionIcon.classList.add("rotate-180");
+      }
 
       if (authToken) {
         loadIdioms();
