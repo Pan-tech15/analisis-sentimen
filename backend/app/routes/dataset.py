@@ -16,6 +16,7 @@ ALLOWED_EXTENSIONS = {'csv'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
 # ------------------- UPLOAD DATASET -------------------
 @dataset_bp.route('/upload', methods=['POST'])
 @jwt_required()
@@ -35,15 +36,17 @@ def upload_dataset():
     if not allowed_file(file.filename):
         return jsonify({'message': 'Only CSV files allowed'}), 400
 
-    # Ambil dataset_name dari form, default string kosong lalu bisa None
+    # Ambil dataset_name dari form
     dataset_name = request.form.get('dataset_name', '').strip()
     if not dataset_name:
-        dataset_name = None   # biarkan NULL di database, frontend bisa menampilkan fallback
+        dataset_name = None
 
     original_filename = secure_filename(file.filename)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     saved_filename = f"{timestamp}_{original_filename}"
-    upload_folder = current_app.config.get(upload_folder)
+
+    # PERBAIKAN: gunakan string 'UPLOAD_FOLDER', bukan variabel upload_folder
+    upload_folder = current_app.config.get('UPLOAD_FOLDER', 'data/raw')
     os.makedirs(upload_folder, exist_ok=True)
     filepath = os.path.join(upload_folder, saved_filename)
     file.save(filepath)
@@ -162,11 +165,11 @@ def download_dataset(dataset_id):
         return jsonify({'message': 'Dataset not found'}), 404
 
     filepath = dataset.filepath
-    # Jika path masih relatif (backward compatibility), jadikan absolut
+    # Jika path masih relatif, jadikan absolut
     if not os.path.isabs(filepath):
         upload_folder = os.path.abspath(current_app.config.get('UPLOAD_FOLDER', 'data/raw'))
         filepath = os.path.join(upload_folder, os.path.basename(filepath))
-    
+
     if not os.path.exists(filepath):
         return jsonify({'message': 'File not found on server'}), 404
 
