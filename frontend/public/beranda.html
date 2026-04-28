@@ -10,6 +10,12 @@
         .bg-gradient-custom {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin-custom {
+            animation: spin 1s linear infinite;
+        }
     </style>
 </head>
 <body class="bg-gray-50 font-sans antialiased">
@@ -23,8 +29,6 @@
                 </div>
                 <div class="hidden md:flex space-x-6">
                     <a href="beranda.html" class="text-blue-600 font-medium border-b-2 border-blue-600 pb-1">Beranda</a>
-                    <a href="hasil.html" class="text-gray-600 hover:text-blue-600 transition">Hasil</a>
-                    <a href="tentang.html" class="text-gray-600 hover:text-blue-600 transition">Tentang</a>
                 </div>
                 <div class="md:hidden">
                     <button id="menu-btn" class="text-gray-500 focus:outline-none">
@@ -34,17 +38,15 @@
             </div>
             <div id="mobile-menu" class="hidden md:hidden mt-2 pb-3 space-y-1">
                 <a href="beranda.html" class="block px-3 py-2 rounded-md text-base font-medium text-blue-600 bg-blue-50">Beranda</a>
-                <a href="hasil.html" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">Hasil</a>
-                <a href="tentang.html" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">Tentang</a>
             </div>
         </div>
     </nav>
 
-    <!-- Hero Section (fokus deteksi emosi) -->
+    <!-- Hero Section -->
     <section class="bg-gradient-custom text-white py-16 px-4 relative overflow-hidden">
         <div class="absolute inset-0 opacity-10">
             <i class="fas fa-language text-9xl absolute top-10 left-10"></i>
-            <i class="fas fa-heart text-9xl absolute bottom-10 right-10"></i> <!-- ikon emosi -->
+            <i class="fas fa-heart text-9xl absolute bottom-10 right-10"></i>
         </div>
         <div class="max-w-4xl mx-auto text-center relative">
             <h1 class="text-5xl font-extrabold mb-4 drop-shadow-lg">Klasifikasi Emosi dalam Idiom <span class="text-yellow-300">Bahasa Indonesia</span></h1>
@@ -77,6 +79,13 @@
             </div>
         </div>
 
+        <!-- Tempat Hasil Deteksi (muncul di bawah form) -->
+        <div id="result-container" class="mt-8 max-w-2xl mx-auto hidden">
+            <div class="bg-white rounded-2xl shadow-xl p-6 border-l-8 transition-all" id="result-card">
+                <!-- Konten hasil akan diisi JavaScript -->
+            </div>
+        </div>
+
         <!-- Contoh Kalimat Demo -->
         <div class="mt-12">
             <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
@@ -101,16 +110,16 @@
             </div>
         </div>
 
-        <!-- Informasi Model (fokus emosi) -->
+        <!-- Informasi Model -->
         <div class="mt-12 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-6 text-white shadow-xl">
             <div class="flex items-start space-x-4">
                 <i class="fas fa-robot text-4xl"></i>
                 <div>
-                    <h4 class="font-bold text-xl">Model Deteksi Emosi Hybrid IndoBERT + KNN</h4>
+                    <h4 class="font-bold text-xl">Model Deteksi Emosi Hybrid IndoBERT - KNN + UMAP</h4>
                     <p class="text-purple-100 text-sm mt-1">
                         Sistem kami dilatih pada ribuan kalimat beridiom. Mampu mengidentifikasi 7 emosi dasar: senang, percaya, terkejut, netral, takut, sedih, marah.
                     </p>
-                    <a href="tentang.html" class="inline-block mt-3 bg-white text-purple-700 px-4 py-2 rounded-full text-sm font-semibold hover:bg-purple-100 transition">Pelajari selengkapnya →</a>
+                    <!-- <a href="tentang.html" class="inline-block mt-3 bg-white text-purple-700 px-4 py-2 rounded-full text-sm font-semibold hover:bg-purple-100 transition">Pelajari selengkapnya →</a> -->
                 </div>
             </div>
         </div>
@@ -123,55 +132,294 @@
         </div>
     </footer>
 
-    <!-- JavaScript -->
     <script>
         (function() {
+            // === KONFIGURASI ===
+            // Gunakan dummy data jika backend belum siap (true untuk demo)
+            const USE_DUMMY = true;
+            const API_BASE = "http://localhost:5000/api"; // ganti dengan endpoint API Anda
+
+            // Kamus idiom sederhana untuk dummy
+            const idiomDict = {
+                "angkat kaki": {
+                    meaning: "pergi, meninggalkan",
+                    emotion: "sedih"
+                },
+                "membanting tulang": {
+                    meaning: "bekerja keras",
+                    emotion: "marah"
+                },
+                "naik daun": {
+                    meaning: "menjadi terkenal",
+                    emotion: "senang"
+                },
+                "kabar angin": {
+                    meaning: "berita tidak resmi",
+                    emotion: "terkejut"
+                },
+                "kepala batu": {
+                    meaning: "sulit dinasihati",
+                    emotion: "marah"
+                },
+                "besar kepala": {
+                    meaning: "sombong",
+                    emotion: "marah"
+                },
+                "panjang tangan": {
+                    meaning: "suka mencuri",
+                    emotion: "takut"
+                },
+                "ringan tangan": {
+                    meaning: "suka menolong",
+                    emotion: "senang"
+                },
+                "kecil hati": {
+                    meaning: "rendah diri",
+                    emotion: "sedih"
+                },
+                "lapang dada": {
+                    meaning: "ikhlas, sabar",
+                    emotion: "netral"
+                },
+                "murah hati": {
+                    meaning: "dermawan",
+                    emotion: "senang"
+                },
+                "belum punya hati": {
+                    meaning: "tidak punya perasaan",
+                    emotion: "marah"
+                },
+                "jatuh hati": {
+                    meaning: "jatuh cinta",
+                    emotion: "senang"
+                },
+                "berat hati": {
+                    meaning: "enggan",
+                    emotion: "sedih"
+                },
+                "lepas tangan": {
+                    meaning: "tidak mau bertanggung jawab",
+                    emotion: "takut"
+                }
+            };
+
+            // DOM Elements
             const menuBtn = document.getElementById('menu-btn');
             const mobileMenu = document.getElementById('mobile-menu');
+            const textarea = document.getElementById('single-text');
+            const wordCount = document.getElementById('word-count');
+            const analyzeBtn = document.getElementById('analyze-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultCard = document.getElementById('result-card');
+
+            // Helper: hitung kata
+            function updateWordCount() {
+                if (!textarea) return;
+                const words = textarea.value.trim().split(/\s+/).filter(w => w.length > 0);
+                const count = words.length;
+                wordCount.textContent = `${count}/20 kata`;
+                if (count > 20) {
+                    wordCount.classList.add('text-red-500', 'font-bold');
+                    wordCount.classList.remove('text-gray-500');
+                } else {
+                    wordCount.classList.remove('text-red-500', 'font-bold');
+                    wordCount.classList.add('text-gray-500');
+                }
+            }
+
+            // Event listener input
+            if (textarea && wordCount) {
+                textarea.addEventListener('input', updateWordCount);
+            }
+
+            // Mobile menu toggle
             if (menuBtn && mobileMenu) {
                 menuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
             }
 
-            const textarea = document.getElementById('single-text');
-            const wordCount = document.getElementById('word-count');
-            if (textarea && wordCount) {
-                textarea.addEventListener('input', function() {
-                    const words = this.value.trim().split(/\s+/).filter(w => w.length > 0);
-                    const count = words.length;
-                    wordCount.textContent = `${count}/20 kata`;
-                    if (count > 20) {
-                        wordCount.classList.add('text-red-500', 'font-bold');
-                        wordCount.classList.remove('text-gray-500');
-                    } else {
-                        wordCount.classList.remove('text-red-500', 'font-bold');
-                        wordCount.classList.add('text-gray-500');
-                    }
-                });
-            }
-
+            // Contoh kalimat
             const exampleCards = document.querySelectorAll('.example-card');
             exampleCards.forEach(card => {
                 card.addEventListener('click', () => {
                     const text = card.getAttribute('data-text');
                     if (textarea) {
                         textarea.value = text;
-                        textarea.dispatchEvent(new Event('input'));
+                        updateWordCount();
                         textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
                 });
             });
 
-            const analyzeBtn = document.getElementById('analyze-btn');
+            // Fungsi ekstraksi idiom dari kalimat (sederhana, cek kata kunci)
+            function extractIdiom(text) {
+                const lowerText = text.toLowerCase();
+                for (const [idiom, data] of Object.entries(idiomDict)) {
+                    if (lowerText.includes(idiom.toLowerCase())) {
+                        return { idiom, meaning: data.meaning, emotion: data.emotion };
+                    }
+                }
+                return null;
+            }
+
+            // Fungsi prediksi dummy (berdasarkan idiom dictionary)
+            async function dummyPredict(text) {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        const detected = extractIdiom(text);
+                        if (detected) {
+                            resolve({
+                                idiom_terdeteksi: true,
+                                idiom_text: detected.idiom,
+                                idiom_meaning: detected.meaning,
+                                emosi: detected.emotion,
+                                confidence: 0.95
+                            });
+                        } else {
+                            resolve({
+                                idiom_terdeteksi: false,
+                                idiom_text: null,
+                                idiom_meaning: null,
+                                emosi: "netral",
+                                confidence: 0.65
+                            });
+                        }
+                    }, 800);
+                });
+            }
+
+            // Fungsi panggil API backend
+            async function apiPredict(text) {
+                const response = await fetch(`${API_BASE}/predict`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text })
+                });
+                if (!response.ok) throw new Error('Gagal menghubungi server');
+                return await response.json();
+            }
+
+            // Fungsi utama prediksi
+            async function predict(text) {
+                if (USE_DUMMY) {
+                    return await dummyPredict(text);
+                } else {
+                    return await apiPredict(text);
+                }
+            }
+
+            // Tampilkan hasil
+            function displayResult(data) {
+                // Peta warna emosi
+                const emotionColors = {
+                    'senang': 'border-green-500 bg-green-100 text-green-800',
+                    'percaya': 'border-blue-500 bg-blue-100 text-blue-800',
+                    'terkejut': 'border-yellow-500 bg-yellow-100 text-yellow-800',
+                    'netral': 'border-gray-500 bg-gray-100 text-gray-800',
+                    'takut': 'border-purple-500 bg-purple-100 text-purple-800',
+                    'sedih': 'border-indigo-500 bg-indigo-100 text-indigo-800',
+                    'marah': 'border-red-500 bg-red-100 text-red-800'
+                };
+                const emotion = data.emosi.toLowerCase();
+                const emotionClass = emotionColors[emotion] || 'border-blue-500 bg-blue-100 text-blue-800';
+                const borderColor = emotion.split(' ')[0]; // ambil warna dari class
+
+                // Buat HTML hasil
+                let html = `
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-12 h-12 rounded-full ${emotionClass} flex items-center justify-center">
+                            <i class="fas fa-smile text-2xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Emosi Terdeteksi</p>
+                            <p class="text-2xl font-bold capitalize">${data.emosi}</p>
+                        </div>
+                    </div>
+                `;
+
+                if (data.idiom_terdeteksi && data.idiom_text) {
+                    html += `
+                        <div class="border-t pt-3 mt-2">
+                            <p class="text-sm text-gray-500">Idiom yang terdeteksi</p>
+                            <p class="font-semibold text-gray-800 text-lg">“${data.idiom_text}”</p>
+                            <p class="text-gray-600 mt-1"><span class="font-medium">Makna:</span> ${data.idiom_meaning}</p>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="border-t pt-3 mt-2">
+                            <p class="text-sm text-gray-500">Tidak ditemukan idiom dalam kalimat.</p>
+                        </div>
+                    `;
+                }
+
+                if (data.confidence) {
+                    html += `
+                        <div class="mt-3 text-xs text-gray-400">
+                            Confidence: ${(data.confidence * 100).toFixed(1)}%
+                        </div>
+                    `;
+                }
+
+                resultCard.innerHTML = html;
+                // Ubah border kiri sesuai emosi
+                let borderLeft = '';
+                switch(emotion) {
+                    case 'senang': borderLeft = 'border-green-500'; break;
+                    case 'percaya': borderLeft = 'border-blue-500'; break;
+                    case 'terkejut': borderLeft = 'border-yellow-500'; break;
+                    case 'netral': borderLeft = 'border-gray-500'; break;
+                    case 'takut': borderLeft = 'border-purple-500'; break;
+                    case 'sedih': borderLeft = 'border-indigo-500'; break;
+                    case 'marah': borderLeft = 'border-red-500'; break;
+                    default: borderLeft = 'border-blue-500';
+                }
+                resultCard.className = `bg-white rounded-2xl shadow-xl p-6 border-l-8 ${borderLeft} transition-all`;
+                resultContainer.classList.remove('hidden');
+                // Scroll ke hasil
+                resultContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            // Loading
+            function showLoading() {
+                resultCard.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-6">
+                        <div class="animate-spin-custom rounded-full h-10 w-10 border-b-2 border-blue-600 mb-3"></div>
+                        <p class="text-gray-600">Menganalisis kalimat...</p>
+                    </div>
+                `;
+                resultContainer.classList.remove('hidden');
+            }
+
+            function showError(message) {
+                resultCard.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-exclamation-triangle text-red-500 text-3xl mb-2"></i>
+                        <p class="text-red-600">${message}</p>
+                    </div>
+                `;
+                resultContainer.classList.remove('hidden');
+            }
+
+            // Event tombol deteksi
             if (analyzeBtn) {
-                analyzeBtn.addEventListener('click', () => {
-                    if (!textarea) return;
-                    const words = textarea.value.trim().split(/\s+/).filter(w => w.length > 0);
+                analyzeBtn.addEventListener('click', async () => {
+                    const text = textarea.value.trim();
+                    const words = text.split(/\s+/).filter(w => w.length > 0);
                     if (words.length === 0) {
                         alert('Silakan masukkan kalimat.');
-                    } else if (words.length > 20) {
+                        return;
+                    }
+                    if (words.length > 20) {
                         alert('Kalimat melebihi batas 20 kata!');
-                    } else {
-                        window.location.href = 'hasil.html';
+                        return;
+                    }
+
+                    showLoading();
+                    try {
+                        const result = await predict(text);
+                        displayResult(result);
+                    } catch (err) {
+                        showError(err.message);
                     }
                 });
             }

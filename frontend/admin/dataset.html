@@ -345,6 +345,74 @@
       // Preview file handling
       let selectedFile = null;
 
+      // === DATA DUMMY ===
+      const dummyDatasets = [
+        {
+          id: 1,
+          dataset_name: "Idiom Data April 2026",
+          original_filename: "idiom_april.csv",
+          filename: "idiom_april.csv",
+          rows: 5421,
+          uploaded_at: "2026-04-15T10:30:00.000Z",
+        },
+        {
+          id: 2,
+          dataset_name: "Mixed Idiom Dataset",
+          original_filename: "mixed_idioms.xlsx",
+          filename: "mixed_idioms.xlsx",
+          rows: 3280,
+          uploaded_at: "2026-04-10T14:20:00.000Z",
+        },
+        {
+          id: 3,
+          dataset_name: "Formal Idiom Corpus",
+          original_filename: "formal_corpus.csv",
+          filename: "formal_corpus.csv",
+          rows: 1875,
+          uploaded_at: "2026-04-05T09:15:00.000Z",
+        },
+        {
+          id: 4,
+          dataset_name: "Colloquial Expression",
+          original_filename: "colloquial.csv",
+          filename: "colloquial.csv",
+          rows: 432,
+          uploaded_at: "2026-03-28T11:45:00.000Z",
+        },
+        {
+          id: 5,
+          dataset_name: "Emotion Labeled Data",
+          original_filename: "emotion_labels.csv",
+          filename: "emotion_labels.csv",
+          rows: 1250,
+          uploaded_at: "2026-03-20T16:00:00.000Z",
+        },
+        {
+          id: 6,
+          dataset_name: "Idiom Sample",
+          original_filename: "sample_idioms.csv",
+          filename: "sample_idioms.csv",
+          rows: 98,
+          uploaded_at: "2026-03-15T08:30:00.000Z",
+        },
+        {
+          id: 7,
+          dataset_name: "Scraped Idioms",
+          original_filename: "scraped_data.xlsx",
+          filename: "scraped_data.xlsx",
+          rows: 765,
+          uploaded_at: "2026-03-10T13:00:00.000Z",
+        },
+        {
+          id: 8,
+          dataset_name: "News Idiom Corpus",
+          original_filename: "news_corpus.csv",
+          filename: "news_corpus.csv",
+          rows: 2110,
+          uploaded_at: "2026-03-01T10:20:00.000Z",
+        },
+      ];
+
       // === API helper ===
       async function apiFetch(endpoint, options = {}) {
         const headers = {
@@ -363,18 +431,25 @@
         return response;
       }
 
-      // === Load datasets from server ===
+      // === Load datasets from server (fallback to dummy) ===
       async function loadDatasets() {
         try {
           const response = await apiFetch("/datasets/");
-          if (!response) return;
+          if (!response) throw new Error("No response");
           if (!response.ok) throw new Error("Failed to fetch datasets");
           const datasets = await response.json();
-          allDatasets = datasets;
+          if (datasets && datasets.length > 0) {
+            allDatasets = datasets;
+          } else {
+            // Jika API mengembalikan array kosong, gunakan dummy
+            allDatasets = [...dummyDatasets];
+          }
           applyFilter(); // apply filter after load
         } catch (error) {
-          console.error(error);
-          alert("Failed to load dataset list");
+          console.error("Error loading datasets, using dummy data:", error);
+          // Jika gagal koneksi atau error, gunakan dummy
+          allDatasets = [...dummyDatasets];
+          applyFilter();
         }
       }
 
@@ -424,6 +499,15 @@
 
       // === Rename dataset (custom name) ===
       async function renameDataset(id, newName) {
+        // Untuk dummy data, kita hanya ubah lokal (tidak sync ke server)
+        const ds = allDatasets.find(d => d.id === id);
+        if (ds && ds.id <= dummyDatasets.length) {
+          // Ini dummy, update lokal saja
+          ds.dataset_name = newName;
+          await loadDatasets(); // refresh tabel (tetap pakai dummy)
+          return true;
+        }
+        // Jika bukan dummy (data asli dari server), lakukan API call
         try {
           const response = await apiFetch(`/datasets/${id}`, {
             method: "PUT",
@@ -481,6 +565,12 @@
 
       // === Download dataset ===
       async function downloadDataset(id, filename) {
+        // Untuk dummy, beri pesan bahwa download tidak tersedia untuk data demo
+        const ds = allDatasets.find(d => d.id === id);
+        if (ds && ds.id <= dummyDatasets.length) {
+          alert("Download is not available for demo data. Please upload a real dataset.");
+          return;
+        }
         try {
           const response = await fetch(`${API_BASE}/datasets/${id}/download`, {
             method: "GET",
@@ -747,6 +837,17 @@
 
       // === Delete and Extract idioms ===
       async function deleteDataset(id) {
+        // Untuk dummy data, beri peringatan dan hapus dari array lokal (jika dummy)
+        const ds = allDatasets.find(d => d.id === id);
+        if (ds && ds.id <= dummyDatasets.length) {
+          if (confirm("Delete this demo dataset? (This action is local only)")) {
+            const idx = allDatasets.findIndex(d => d.id === id);
+            if (idx !== -1) allDatasets.splice(idx, 1);
+            applyFilter();
+            document.getElementById("chartContainer").classList.add("hidden");
+          }
+          return;
+        }
         try {
           const response = await apiFetch(`/datasets/${id}`, {
             method: "DELETE",
@@ -767,6 +868,12 @@
       }
 
       async function extractIdiomsFromDataset(datasetId) {
+        // Untuk dummy, beri pesan
+        const ds = allDatasets.find(d => d.id === datasetId);
+        if (ds && ds.id <= dummyDatasets.length) {
+          alert("Extract idioms is not available for demo data.");
+          return;
+        }
         try {
           const response = await apiFetch(
             `/datasets/${datasetId}/extract-idioms`,
@@ -914,7 +1021,6 @@
       toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
 
       // === BUKA DROPDOWN DATA COLLECTION SECARA OTOMATIS ===
-      // Karena halaman Dataset berada di dalam menu Data Collection, kita pastikan dropdown terbuka
       if (dataCollectionMenu && dataCollectionIcon) {
         dataCollectionMenu.classList.remove("hidden");
         dataCollectionIcon.classList.add("rotate-180");
