@@ -15,7 +15,6 @@
             position: relative;
             overflow-x: hidden;
         }
-        /* Background decoration */
         body::before {
             content: '';
             position: fixed;
@@ -34,7 +33,6 @@
         .bg-gradient-custom {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        /* Glassmorphism cards */
         .glass-card {
             background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(12px);
@@ -42,7 +40,6 @@
             border: 1px solid rgba(255, 255, 255, 0.5);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.3) inset;
         }
-        /* Hero floating shapes */
         .floating-shape {
             position: absolute;
             border-radius: 50%;
@@ -54,7 +51,6 @@
             0%, 100% { transform: translateY(0px) scale(1); }
             50% { transform: translateY(-30px) scale(1.1); }
         }
-        /* Gradient border for example cards */
         .example-card {
             position: relative;
             background: linear-gradient(135deg, #ffffff, #f8fafc);
@@ -78,7 +74,6 @@
         }
         .example-card > * { position: relative; z-index: 1; }
 
-        /* Chart bar styling */
         .chart-container {
             background: rgba(255,255,255,0.6);
             backdrop-filter: blur(8px);
@@ -104,7 +99,6 @@
             background: rgba(255,255,255,0.5);
             border-radius: 12px;
         }
-        /* Pulse button */
         .pulse-btn {
             animation: pulse 2s infinite;
         }
@@ -113,7 +107,6 @@
             70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
             100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
         }
-        /* Smooth reveal animation for result */
         .result-reveal {
             animation: slideUpFade 0.7s ease-out;
         }
@@ -121,16 +114,22 @@
             from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        /* Table hover */
         tbody tr:hover {
             background-color: rgba(99, 102, 241, 0.05);
             transform: scale(1.01);
         }
         .recommendation-badge {
             background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 800;
+        }
+
+        /* Tambahan untuk mendukung bg-clip-text di Tailwind via class */
+        .text-clip-standard {
+            background-clip: text;
+            -webkit-background-clip: text;
         }
     </style>
 </head>
@@ -141,12 +140,12 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center space-x-2">
-                    <span class="font-extrabold text-3xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent drop-shadow-sm">
+                    <span class="font-extrabold text-3xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-clip-standard text-transparent drop-shadow-sm">
                         IdiomSense ✨
                     </span>
                 </div>
                 <div class="hidden md:flex space-x-8">
-                    <a href="beranda.html" class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 font-semibold border-b-2 border-blue-600 pb-1">Home</a>
+                    <a href="beranda.html" class="text-transparent bg-gradient-to-r from-blue-600 to-purple-600 text-clip-standard font-semibold border-b-2 border-blue-600 pb-1">Home</a>
                 </div>
                 <div class="md:hidden">
                     <button id="menu-btn" class="text-gray-700 focus:outline-none">
@@ -167,7 +166,7 @@
         <div class="floating-shape w-64 h-64 top-40 right-10 opacity-25 bg-blue-300" style="animation-delay: 4s;"></div>
         <div class="max-w-4xl mx-auto text-center relative z-10">
             <h1 class="text-5xl md:text-6xl font-extrabold mb-6 leading-tight drop-shadow-2xl">
-                Emotion in <span class="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-amber-400">Indonesian Idioms</span>
+                Emotion in <span class="text-transparent bg-gradient-to-r from-yellow-200 to-amber-400 text-clip-standard">Indonesian Idioms</span>
             </h1>
             <p class="text-xl text-blue-100 max-w-2xl mx-auto opacity-90">
                 Uncover feelings behind everyday phrases. Type an idiom sentence and let AI decode the emotion.
@@ -241,7 +240,6 @@
 
                 <!-- Horizontal bar chart with glow -->
                 <div class="flex flex-col md:flex-row justify-center items-end gap-12 md:gap-24 mb-10 bg-white/40 rounded-2xl p-8">
-                    <!-- Naive Bayes + Lexicon -->
                     <div class="flex flex-col items-center">
                         <div class="text-lg font-bold text-blue-700 mb-2" id="acc-nb-label">0%</div>
                         <div class="bg-gray-200/60 w-20 h-48 rounded-2xl relative overflow-hidden shadow-inner">
@@ -249,7 +247,6 @@
                         </div>
                         <p class="mt-4 text-sm font-semibold text-gray-700 text-center leading-tight">Naive Bayes<br>+ Lexicon</p>
                     </div>
-                    <!-- IndoBERT + KNN + UMAP -->
                     <div class="flex flex-col items-center">
                         <div class="text-lg font-bold text-purple-700 mb-2" id="acc-bert-label">0%</div>
                         <div class="bg-gray-200/60 w-20 h-48 rounded-2xl relative overflow-hidden shadow-inner">
@@ -338,7 +335,7 @@
                             <span class="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm">😊 Happy</span>
                             <span class="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm">😢 Sad</span>
                             <span class="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm">😠 Angry</span>
-                            <span class="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm">😨 Fear</span>
+                            <span class="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm">😨 Scared</span>
                             <span class="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm">😲 Surprise</span>
                             <span class="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm">🤝 Trust</span>
                             <span class="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm">😐 Neutral</span>
@@ -356,10 +353,9 @@
         </div>
     </footer>
 
-    <!-- JavaScript (logic sama, hanya tampilan yang dipercantik) -->
+    <!-- JavaScript -->
     <script>
         (function() {
-            // Mobile menu
             const menuBtn = document.getElementById('menu-btn');
             const mobileMenu = document.getElementById('mobile-menu');
             if (menuBtn && mobileMenu) {
@@ -379,7 +375,6 @@
                 });
             }
 
-            // Example cards
             document.querySelectorAll('.example-card').forEach(card => {
                 card.addEventListener('click', () => {
                     const text = card.getAttribute('data-text');
@@ -392,7 +387,6 @@
                 });
             });
 
-            // Idiom dictionary
             const idiomMap = {
                 'angkat kaki': { emotion: 'Sadness 😢', meaning: 'Pergi meninggalkan' },
                 'membanting tulang': { emotion: 'Anger 😠', meaning: 'Bekerja keras' },
@@ -424,8 +418,8 @@
                     else if (lowerText.includes('takut')) detectedEmotion = 'Fear 😨';
                     else if (lowerText.includes('terkejut')) detectedEmotion = 'Surprise 😲';
                 }
-                let accNB = 96;
-                let accBERT = 97;
+                let accNB = 92.0;
+                let accBERT = 94.2;
                 return {
                     idiom: foundIdiom || 'No idiom detected',
                     emotion: detectedEmotion,
@@ -451,7 +445,6 @@
                 const section = document.getElementById('result-section');
                 section.classList.remove('hidden');
                 section.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                // Re-trigger animation
                 section.classList.remove('result-reveal');
                 void section.offsetWidth;
                 section.classList.add('result-reveal');
