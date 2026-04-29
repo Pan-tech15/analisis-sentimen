@@ -18,7 +18,7 @@ stop_words = set([
     'ya', 'wah', 'weh', 'sih', 'dong', 'deh', 'kok', 'lho'
 ])
 
-def case_folding(text):
+def case_folding(text): #mengubah seluruh huruf ke lowercase
     return text.lower()
 
 def normalize_text(text):
@@ -43,16 +43,16 @@ def normalize_text(text):
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
-def tokenize(text):
+def tokenize(text): #memecah teks bersih menjadi token-token per kata individu
     return text.split()
 
-def remove_stopwords(tokens):
+def remove_stopwords(tokens): #menghilangkan kata-kata umum
     return [token for token in tokens if token not in stop_words]
 
-def stemming(tokens):
+def stemming(tokens): #mengubah setiap kata menjadi bentuk kata dasar
     return [stemmer.stem(token) for token in tokens]
 
-def clean_whitespace(text):
+def clean_whitespace(text): #menghapus spasi ganda atau berlebihan
     return ' '.join(text.split())
 
 def preprocess_text(text, do_case_folding=True, do_normalize=True, do_stopword=True, do_stemming=True):

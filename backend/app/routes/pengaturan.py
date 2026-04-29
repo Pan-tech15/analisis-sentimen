@@ -91,15 +91,3 @@ def delete_config(config_id):
     db.session.delete(config)
     db.session.commit()
     return jsonify({'message': 'Konfigurasi berhasil dihapus'}), 200
-
-# -------------------------------------------------------------------
-# CATATAN UNTUK KELOMPOK LEXICON+NAIVEBAYES:
-# -------------------------------------------------------------------
-# 1. Pastikan model `ModelConfig` sudah mencakup field `params` (JSON).
-# 2. Di dalam `validate_params`, tambahkan validasi untuk struktur
-#    parameter Lexicon+NaiveBayes sesuai kebutuhan kelompok Anda.
-# 3. Endpoint di atas bersifat umum, tidak bergantung pada algoritma.
-#    Semua parameter disimpan mentah di kolom `params`.
-# 4. Saat akan melakukan pelatihan (di halaman Latih), backend akan
-#    membaca `params` dan menjalankan pipeline yang sesuai.
-# -------------------------------------------------------------------
