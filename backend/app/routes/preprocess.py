@@ -46,7 +46,7 @@ def start_preprocessing():
 
     preprocessing = Preprocessing(
         dataset_id=dataset_id,
-        preprocessed_filepath="",  # nanti diisi setelah selesai
+        preprocessed_filepath="",
         row_count=0,
         name=default_name,
         status='pending',

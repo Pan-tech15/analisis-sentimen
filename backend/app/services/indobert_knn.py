@@ -15,7 +15,7 @@ from torch.optim import AdamW
 from transformers import AutoTokenizer, AutoModel, get_linear_schedule_with_warmup
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import StratifiedKFold, train_test_split
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix, matthews_corrcoef, roc_auc_score
 from sklearn.preprocessing import LabelEncoder
 import umap
 
@@ -465,6 +465,11 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                 y_pred = np.argmax(final_scores, axis=1)
                 acc = accuracy_score(y_test, y_pred)
                 f1 = f1_score(y_test, y_pred, average='weighted')
+                macro_precision = precision_score(y_test, y_pred, average='macro', zero_division=0)
+                macro_recall = recall_score(y_test, y_pred, average='macro', zero_division=0)
+                macro_f1 = f1_score(y_test, y_pred, average='macro')
+                mcc = matthews_corrcoef(y_test, y_pred)
+                roc_auc = roc_auc_score(y_test, final_scores, multi_class='ovr', average='weighted')
                 precision = precision_score(y_test, y_pred, average='weighted', zero_division=0)
                 recall = recall_score(y_test, y_pred, average='weighted', zero_division=0)
                 cm = confusion_matrix(y_test, y_pred).tolist()
@@ -477,9 +482,16 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                     'precision': round(precision, 4),
                     'recall': round(recall, 4),
                     'confusion_matrix': cm,
+                    'macro_precision': round(macro_precision, 4),
+                    'macro_recall': round(macro_recall, 4),
+                    'macro_f1_score': round(macro_f1, 4),
+                    'macro_accuracy': round(acc, 4),         # akurasi sama untuk weighted/macro
+                    'mcc': round(mcc, 4),
+                    'roc_auc': round(roc_auc, 4),
                     'class_labels': le.classes_.tolist(),
                     'hybrid_method': hybrid_method,
                     'use_umap': use_umap,
+                    'hybrid_alpha': hybrid_alpha,
                     'finetuned': do_finetune,
                     'epoch_metrics': epoch_metrics_list
                 }

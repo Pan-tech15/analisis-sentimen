@@ -192,7 +192,7 @@
             id="algoSelect"
             class="w-full md:w-64 border-2 border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all bg-white hover:border-blue-300"
           >
-            <option value="IndoBERT-KNN+UMAP">🤖 IndoBERT‑KNN+UMAP</option>
+            <option value="IndoBERT-KNN">🤖 IndoBERT‑KNN</option>
             <option value="Lexicon-NB">📚 Naive Bayes‑Lexicon</option>
           </select>
         </div>
@@ -434,164 +434,119 @@
     </div>
 
     <script>
+      const API_BASE = "http://localhost:5000"; // ganti dengan port backend Anda
       (function () {
-        // Dummy data with all metrics
-        const dummyTraining = [
-          {
-            id: 1,
-            dataset_filename: "dataset_april.csv",
-            algorithm: "Lexicon‑NB",
-            created_at: "2026-04-20T09:15:00",
-            completed_at: "2026-04-20T09:25:00",
-            status: "completed",
-            metrics: {
-              accuracy: 0.946,
-              precision: 0.945,
-              recall: 0.944,
-              f1_score: 0.944,
-              macro_accuracy: 0.93,
-              macro_precision: 0.928,
-              macro_recall: 0.927,
-              macro_f1_score: 0.927,
-              mcc: 0.928,
-              roc_auc: 0.96,
-            },
-            model_path: "models/lexicon_nb_a.pkl",
-          },
-          {
-            id: 2,
-            dataset_filename: "dataset_april.csv",
-            algorithm: "Lexicon‑NB",
-            created_at: "2026-04-21T14:30:00",
-            completed_at: "2026-04-21T14:45:00",
-            status: "completed",
-            metrics: {
-              accuracy: 0.952,
-              precision: 0.951,
-              recall: 0.95,
-              f1_score: 0.95,
-              macro_accuracy: 0.94,
-              macro_precision: 0.938,
-              macro_recall: 0.937,
-              macro_f1_score: 0.937,
-              mcc: 0.938,
-              roc_auc: 0.97,
-            },
-            model_path: "models/lexicon_nb_b.pkl",
-          },
-          {
-            id: 3,
-            dataset_filename: "dataset_maret.csv",
-            algorithm: "Lexicon‑NB",
-            created_at: "2026-04-22T08:00:00",
-            completed_at: "2026-04-22T08:12:00",
-            status: "completed",
-            metrics: {
-              accuracy: 0.938,
-              precision: 0.937,
-              recall: 0.936,
-              f1_score: 0.936,
-              macro_accuracy: 0.92,
-              macro_precision: 0.918,
-              macro_recall: 0.917,
-              macro_f1_score: 0.917,
-              mcc: 0.918,
-              roc_auc: 0.95,
-            },
-            model_path: null,
-          },
-          {
-            id: 4,
-            dataset_filename: "dataset_april.csv",
-            algorithm: "Lexicon‑NB",
-            created_at: "2026-04-23T11:20:00",
-            completed_at: null,
-            status: "running",
-            metrics: {
-              accuracy: 0.88,
-              precision: 0.87,
-              recall: 0.86,
-              f1_score: 0.865,
-              macro_accuracy: 0.85,
-              macro_precision: 0.84,
-              macro_recall: 0.83,
-              macro_f1_score: 0.835,
-              mcc: 0.83,
-              roc_auc: 0.9,
-            },
-            model_path: null,
-          },
-        ];
+        const algoSelect = document.getElementById("algoSelect");
+        let chartInstanceWeighted = null;
+        let chartInstanceMacro = null;
+        Chart.register(ChartDataLabels);
 
-        const dummyTesting = [
-          {
-            id: 10,
-            dataset_filename: "uji_alpha.csv",
-            algorithm: "Lexicon‑NB",
-            created_at: "2026-04-21T16:00:00",
-            completed_at: "2026-04-21T16:05:00",
-            status: "completed",
-            metrics: {
-              accuracy: 0.935,
-              precision: 0.934,
-              recall: 0.933,
-              f1_score: 0.933,
-              macro_accuracy: 0.92,
-              macro_precision: 0.918,
-              macro_recall: 0.917,
-              macro_f1_score: 0.917,
-              mcc: 0.918,
-              roc_auc: 0.94,
-            },
-            model_path: "models/lexicon_nb_test1.pkl",
-          },
-          {
-            id: 11,
-            dataset_filename: "uji_beta.csv",
-            algorithm: "Lexicon‑NB",
-            created_at: "2026-04-22T09:30:00",
-            completed_at: "2026-04-22T09:35:00",
-            status: "completed",
-            metrics: {
-              accuracy: 0.948,
-              precision: 0.947,
-              recall: 0.946,
-              f1_score: 0.946,
-              macro_accuracy: 0.93,
-              macro_precision: 0.928,
-              macro_recall: 0.927,
-              macro_f1_score: 0.927,
-              mcc: 0.928,
-              roc_auc: 0.96,
-            },
-            model_path: "models/lexicon_nb_test2.pkl",
-          },
-          {
-            id: 12,
-            dataset_filename: "uji_gamma.csv",
-            algorithm: "Lexicon‑NB",
-            created_at: "2026-04-23T15:00:00",
-            completed_at: "2026-04-23T15:04:00",
-            status: "completed",
-            metrics: {
-              accuracy: 0.89,
-              precision: 0.88,
-              recall: 0.87,
-              f1_score: 0.875,
-              macro_accuracy: 0.86,
-              macro_precision: 0.85,
-              macro_recall: 0.84,
-              macro_f1_score: 0.845,
-              mcc: 0.84,
-              roc_auc: 0.91,
-            },
-            model_path: null,
-          },
-        ];
+        // ==================== API FETCH & MAPPING ====================
+        async function fetchData() {
+          const selectedAlgo = algoSelect.value; // sekarang "IndoBERT-KNN" atau "Lexicon-NB"
 
+          try {
+            // Fetch training history
+            const trainRes = await fetch(`${API_BASE}/api/training/history`);
+            if (!trainRes.ok) throw new Error("Gagal mengambil data training");
+            let trainings = await trainRes.json();
+            console.log("Training data from API:", trainings);
+
+            // Fetch testing history
+            const testRes = await fetch(`${API_BASE}/api/testing/history`);
+            if (!testRes.ok) throw new Error("Gagal mengambil data testing");
+            let tests = await testRes.json();
+            console.log("Testing data from API:", tests);
+
+            // Filter hanya yang status completed dan sesuai algoritma
+            trainings = trainings.filter(
+              (t) => t.status === "completed" && t.algorithm === selectedAlgo,
+            );
+            tests = tests.filter(
+              (t) => t.status === "completed" && t.algorithm === selectedAlgo,
+            );
+
+            // Mapping ke format tabel
+            tables.training.data = trainings.map(mapTrainingToTable);
+            tables.testing.data = tests.map(mapTestingToTable);
+
+            // Reset pencarian & render
+            filterTableData("training");
+            filterTableData("testing");
+            updateComparisonAndChart();
+          } catch (error) {
+            console.error("Fetch error:", error);
+            const errorMsg = `<tr><td colspan="14" class="text-center py-6 text-red-400"><i class="fas fa-exclamation-triangle mr-2"></i>Gagal memuat data: ${error.message}</td></tr>`;
+            document.getElementById("trainingTableBody").innerHTML = errorMsg;
+            document.getElementById("testingTableBody").innerHTML = errorMsg;
+          }
+        }
+
+        function mapTrainingToTable(item) {
+          const m = item.metrics || {};
+          return {
+            id: item.id,
+            dataset_filename: item.dataset_filename,
+            algorithm: item.algorithm,
+            created_at: item.created_at,
+            completed_at: item.completed_at,
+            status: item.status,
+            metrics: {
+              accuracy: m.accuracy,
+              precision: m.precision,
+              recall: m.recall,
+              f1_score: m.f1_score,
+              macro_accuracy: m.macro_accuracy ?? m.accuracy,
+              macro_precision: m.macro_precision,
+              macro_recall: m.macro_recall,
+              macro_f1_score: m.macro_f1_score,
+              mcc: m.mcc,
+              roc_auc: m.roc_auc,
+            },
+            model_path: item.model_path,
+            hybrid_method: m.hybrid_method,
+            use_umap: m.use_umap,
+            finetuned: m.finetuned,
+            epoch_metrics: m.epoch_metrics,
+          };
+        }
+
+        function mapTestingToTable(item) {
+          const m = item.metrics || {};
+          return {
+            id: item.id,
+            dataset_filename: item.dataset_filename,
+            algorithm: item.algorithm,
+            created_at: item.tested_at,
+            completed_at: item.tested_at,
+            status: item.status,
+            metrics: {
+              accuracy: m.accuracy ?? item.accuracy,
+              precision: m.precision ?? item.precision,
+              recall: m.recall ?? item.recall,
+              f1_score: m.f1_score ?? item.f1_score,
+              macro_accuracy: m.macro_accuracy,
+              macro_precision: m.macro_precision,
+              macro_recall: m.macro_recall,
+              macro_f1_score: m.macro_f1_score,
+              mcc: m.mcc,
+              roc_auc: m.roc_auc,
+            },
+            model_path: item.model_path || item.training?.model_path,
+            hybrid_method: null,
+            use_umap: null,
+            finetuned: null,
+          };
+        }
+
+        function formatMetric(val, digits = 2) {
+          return val != null ? (val * 100).toFixed(digits) + "%" : "-";
+        }
+
+        // ==================== INISIALISASI ====================
         const tables = {
           training: {
-            data: [...dummyTraining],
+            data: [],
             filtered: [],
             currentPage: 1,
             rowsPerPage: 5,
@@ -600,7 +555,7 @@
             searchInput: document.getElementById("trainingSearch"),
           },
           testing: {
-            data: [...dummyTesting],
+            data: [],
             filtered: [],
             currentPage: 1,
             rowsPerPage: 5,
@@ -609,15 +564,6 @@
             searchInput: document.getElementById("testingSearch"),
           },
         };
-
-        const algoSelect = document.getElementById("algoSelect");
-        let chartInstanceWeighted = null;
-        let chartInstanceMacro = null;
-        Chart.register(ChartDataLabels);
-
-        function formatMetric(val, digits = 2) {
-          return val != null ? (val * 100).toFixed(digits) + "%" : "-";
-        }
 
         function filterTableData(tableKey) {
           const table = tables[tableKey];
@@ -669,10 +615,35 @@
             const m = item.metrics || {};
             const row = tbody.insertRow();
             row.className = index % 2 === 0 ? "bg-white" : "bg-gray-50";
+            // Kolom 0: Name
             row.insertCell(0).innerHTML =
               `<span class="font-medium text-gray-700">${item.dataset_filename || "-"}</span>`;
-            row.insertCell(1).innerHTML =
-              `<span class="text-gray-600">${item.algorithm || "-"}</span>`;
+
+            // Kolom 1: Model (DENGAN BADGE disini)
+            let algoHtml =
+              '<span class="text-gray-600">' +
+              (item.algorithm || "-") +
+              "</span>";
+            if (item.use_umap) {
+              algoHtml +=
+                ' <span class="inline-block ml-1 px-1.5 py-0.5 text-xs font-semibold bg-purple-100 text-purple-800 rounded-full">UMAP</span>';
+            }
+            if (item.finetuned) {
+              algoHtml +=
+                ' <span class="inline-block ml-1 px-1.5 py-0.5 text-xs font-semibold bg-green-100 text-green-800 rounded-full">FT</span>';
+            }
+            if (item.hybrid_method && item.hybrid_method !== "none") {
+              const hybridLabel =
+                item.hybrid_method.charAt(0).toUpperCase() +
+                item.hybrid_method.slice(1);
+              algoHtml +=
+                ' <span class="inline-block ml-1 px-1.5 py-0.5 text-xs font-semibold bg-yellow-100 text-yellow-800 rounded-full">' +
+                hybridLabel +
+                "</span>";
+            }
+            row.insertCell(1).innerHTML = algoHtml;
+
+            // Kolom 2: Accuracy (W)  -- PERHATIKAN indeks sudah benar sesuai urutan header
             row.insertCell(2).innerHTML =
               `<span class="font-semibold text-blue-600">${formatMetric(m.accuracy)}</span>`;
             row.insertCell(3).innerHTML =
@@ -778,10 +749,28 @@
               '<span class="font-medium text-gray-700">' +
               (item.dataset_filename || "-") +
               "</span>";
-            row.insertCell(2).innerHTML =
+            // Kolom model dengan badge (sama seperti di Training/Testing)
+            let algoHtml =
               '<span class="text-gray-600">' +
               (item.algorithm || "-") +
               "</span>";
+            if (item.use_umap)
+              algoHtml +=
+                ' <span class="inline-block ml-1 px-1.5 py-0.5 text-xs font-semibold bg-purple-100 text-purple-800 rounded-full">UMAP</span>';
+            if (item.finetuned)
+              algoHtml +=
+                ' <span class="inline-block ml-1 px-1.5 py-0.5 text-xs font-semibold bg-green-100 text-green-800 rounded-full">FT</span>';
+            if (item.hybrid_method && item.hybrid_method !== "none") {
+              const hybridLabel =
+                item.hybrid_method.charAt(0).toUpperCase() +
+                item.hybrid_method.slice(1);
+              algoHtml +=
+                ' <span class="inline-block ml-1 px-1.5 py-0.5 text-xs font-semibold bg-yellow-100 text-yellow-800 rounded-full">' +
+                hybridLabel +
+                "</span>";
+            }
+            row.insertCell(2).innerHTML = algoHtml;
+            // Lanjutkan dengan metrik
             row.insertCell(3).innerHTML =
               `<span class="font-semibold text-blue-600">${formatMetric(m.accuracy)}</span>`;
             row.insertCell(4).innerHTML =
@@ -824,7 +813,7 @@
               '<tr><td colspan="15" class="text-center py-6 text-gray-400"><i class="fas fa-inbox text-2xl block mb-2"></i>No data available for comparison.</td></tr>';
           }
 
-          // Weighted Chart
+          // Weighted Chart (kode tetap sama)
           const ctxWeighted = document
             .getElementById("comparisonChartWeighted")
             .getContext("2d");
@@ -905,7 +894,7 @@
             },
           });
 
-          // Macro Chart
+          // Macro Chart (kode tetap sama)
           const ctxMacro = document
             .getElementById("comparisonChartMacro")
             .getContext("2d");
@@ -987,20 +976,7 @@
           });
         }
 
-        function initAll() {
-          filterTableData("training");
-          filterTableData("testing");
-          updateComparisonAndChart();
-        }
-
-        function debounce(func, delay) {
-          let timer;
-          return function (...args) {
-            clearTimeout(timer);
-            timer = setTimeout(() => func.apply(this, args), delay);
-          };
-        }
-
+        // Pencarian
         tables.training.searchInput.addEventListener(
           "input",
           debounce(() => {
@@ -1016,8 +992,13 @@
           }, 300),
         );
 
-        algoSelect.addEventListener("change", initAll);
+        // Ganti algoritma
+        algoSelect.addEventListener("change", fetchData);
 
+        // PENTING: Panggil fetchData saat halaman pertama kali dibuka
+        fetchData();
+
+        // Toggle dropdown (tetap)
         function toggleDropdown(btn, menu, icon) {
           btn.addEventListener("click", () => {
             menu.classList.toggle("hidden");
@@ -1035,7 +1016,13 @@
           dataCollectionIcon,
         );
 
-        initAll();
+        function debounce(func, delay) {
+          let timer;
+          return function (...args) {
+            clearTimeout(timer);
+            timer = setTimeout(() => func.apply(this, args), delay);
+          };
+        }
       })();
     </script>
   </body>
