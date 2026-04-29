@@ -303,7 +303,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div class="example-card p-6 rounded-2xl cursor-pointer" data-text="Dia angkat kaki dari kantor karena bosan.">
                     <p class="text-gray-800 font-medium">“Dia <span class="bg-blue-200 text-blue-800 px-2 py-0.5 rounded-full">angkat kaki</span> dari kantor...”</p>
-                    <span class="inline-block mt-4 text-xs bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-1.5 rounded-full shadow">Angry / Sad</span>
+                    <span class="inline-block mt-4 text-xs bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-1.5 rounded-full shadow">Sad</span>
                 </div>
                 <div class="example-card p-6 rounded-2xl cursor-pointer" data-text="Aku kesal sekali hari ini, rasanya ingin membanting tulang.">
                     <p class="text-gray-800 font-medium">“...ingin <span class="bg-green-200 text-green-800 px-2 py-0.5 rounded-full">membanting tulang</span>”</p>
@@ -311,7 +311,7 @@
                 </div>
                 <div class="example-card p-6 rounded-2xl cursor-pointer" data-text="Presentasinya sukses besar, dia benar-benar naik daun.">
                     <p class="text-gray-800 font-medium">“...dia <span class="bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded-full">naik daun</span>”</p>
-                    <span class="inline-block mt-4 text-xs bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 py-1.5 rounded-full shadow">Happiness</span>
+                    <span class="inline-block mt-4 text-xs bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 py-1.5 rounded-full shadow">Happy</span>
                 </div>
             </div>
         </div>
@@ -388,14 +388,14 @@
             });
 
             const idiomMap = {
-                'angkat kaki': { emotion: 'Sadness 😢', meaning: 'Pergi meninggalkan' },
+                'angkat kaki': { emotion: 'Sad 😢', meaning: 'Pergi meninggalkan' },
                 'membanting tulang': { emotion: 'Anger 😠', meaning: 'Bekerja keras' },
-                'naik daun': { emotion: 'Happiness 😊', meaning: 'Menjadi terkenal' },
+                'naik daun': { emotion: 'Happy 😊', meaning: 'Menjadi terkenal' },
                 'buah tangan': { emotion: 'Neutral 😐', meaning: 'Oleh-oleh' },
                 'panjang tangan': { emotion: 'Anger 😠', meaning: 'Suka mencuri' },
-                'ringan tangan': { emotion: 'Happiness 😊', meaning: 'Suka membantu' },
+                'ringan tangan': { emotion: 'Happy 😊', meaning: 'Suka membantu' },
                 'besar kepala': { emotion: 'Anger 😠', meaning: 'Sombong' },
-                'kecil hati': { emotion: 'Sadness 😢', meaning: 'Mudah tersinggung' },
+                'kecil hati': { emotion: 'Sad 😢', meaning: 'Mudah tersinggung' },
             };
 
             function analyzeText(text) {
@@ -412,10 +412,10 @@
                     }
                 }
                 if (!foundIdiom) {
-                    if (lowerText.includes('bahagia') || lowerText.includes('senang')) detectedEmotion = 'Happiness 😊';
-                    else if (lowerText.includes('sedih') || lowerText.includes('kecewa')) detectedEmotion = 'Sadness 😢';
+                    if (lowerText.includes('bahagia') || lowerText.includes('senang')) detectedEmotion = 'Happy 😊';
+                    else if (lowerText.includes('sedih') || lowerText.includes('kecewa')) detectedEmotion = 'Sad 😢';
                     else if (lowerText.includes('marah') || lowerText.includes('kesal')) detectedEmotion = 'Anger 😠';
-                    else if (lowerText.includes('takut')) detectedEmotion = 'Fear 😨';
+                    else if (lowerText.includes('takut')) detectedEmotion = 'scared 😨';
                     else if (lowerText.includes('terkejut')) detectedEmotion = 'Surprise 😲';
                 }
                 let accNB = 92.0;
