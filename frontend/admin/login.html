@@ -29,7 +29,7 @@
             <div class="text-center md:text-left">
               <h1 class="text-4xl md:text-5xl font-bold mb-4">IdiomSense</h1>
               <p class="text-blue-100 text-lg mb-6">
-                Deteksi Emosi dalam Kalimat Idiom<br />Bahasa Indonesia
+                Detecting Emotions in Idiomatic Sentencesm<br />Indonesia
               </p>
               <div class="mt-8 hidden md:block">
                 <i class="fas fa-smile text-5xl opacity-50"></i>
@@ -44,13 +44,13 @@
           >
             <div class="w-full max-w-md">
               <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">
-                Masuk Admin
+                Admin Login
               </h2>
 
               <form id="loginForm" class="space-y-5">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1"
-                    >Nama Pengguna</label
+                    >Username</label
                   >
                   <input
                     type="text"
@@ -62,7 +62,7 @@
 
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1"
-                    >Kata Sandi</label
+                    >Password</label
                   >
                   <input
                     type="password"
@@ -76,7 +76,7 @@
                   type="submit"
                   class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-2 rounded-lg hover:from-blue-600 hover:to-purple-700 transition duration-200"
                 >
-                  Masuk
+                  Enter
                 </button>
               </form>
 
@@ -102,7 +102,7 @@
 
           // Disable button saat proses
           submitBtn.disabled = true;
-          submitBtn.innerText = "Memproses...";
+          submitBtn.innerText = "Loading...";
           errorDiv.classList.add("hidden");
 
           try {
@@ -137,7 +137,7 @@
             errorDiv.classList.remove("hidden");
           } finally {
             submitBtn.disabled = false;
-            submitBtn.innerText = "Masuk";
+            submitBtn.innerText = "Enter";
           }
         });
     </script>
