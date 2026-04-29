@@ -28,9 +28,6 @@
         cursor: pointer;
         background: white;
       }
-       #epochFoldSection {
-    display: none !important;
-  }
     </style>
   </head>
   <body class="bg-gray-100 font-sans antialiased">
@@ -132,7 +129,8 @@
           class="mb-8 p-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500 rounded-xl shadow-lg text-white"
         >
           <h1 class="text-3xl font-bold flex items-center">
-            <i class="fas fa-chart-bar mr-3"></i> Validation of Training Data Results
+            <i class="fas fa-chart-bar mr-3"></i> Validation of Training Data
+            Results
           </h1>
           <p class="text-blue-100 mt-1">
             Evaluate model performance on training data
@@ -283,7 +281,9 @@
                 <tr>
                   <th class="px-4 py-2 border border-blue-400">Fold</th>
                   <th class="px-4 py-2 border border-blue-400">Accuracy (%)</th>
-                  <th class="px-4 py-2 border border-blue-400">Precision (%)</th>
+                  <th class="px-4 py-2 border border-blue-400">
+                    Precision (%)
+                  </th>
                   <th class="px-4 py-2 border border-blue-400">Recall (%)</th>
                   <th class="px-4 py-2 border border-blue-400">F1-Score (%)</th>
                   <th class="px-4 py-2 border border-blue-400">MCC</th>
@@ -294,7 +294,8 @@
             </table>
           </div>
           <p class="text-xs text-gray-500 mt-3">
-            *The mean and standard deviation values ​​were calculated from cross-validation.
+            *The mean and standard deviation values ​​were calculated from
+            cross-validation.
           </p>
         </div>
 

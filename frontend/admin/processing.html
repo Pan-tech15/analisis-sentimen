@@ -107,13 +107,20 @@
         background: #c1c1c1;
         border-radius: 10px;
       }
-      /* Tabel di pop-up model selection */
       .model-select-row {
         cursor: pointer;
         transition: background 0.15s;
       }
       .model-select-row:hover {
         background: #eef2ff;
+      }
+      .batch-progress {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        margin-top: 0.75rem;
+        display: none;
       }
     </style>
   </head>
@@ -293,38 +300,39 @@
           </div>
 
           <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Select Algorithm</label
-              >
-              <select
-                id="tuningAlgo"
-                class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-400"
-              >
-                <option value="indobert">IndoBERT‑KNN+UMAP</option>
-                <option value="lexicon">Naive Bayes‑Lexicon</option>
-              </select>
-            </div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Select Algorithm</label
+            >
+            <select
+              id="tuningAlgo"
+              class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-400"
+            >
+              <option value="indobert">IndoBERT‑KNN+UMAP</option>
+              <option value="lexicon">Naive Bayes‑Lexicon</option>
+            </select>
+          </div>
 
           <!-- Section: Model Configuration -->
-          <div class="mb-6 bg-white p-6 rounded-xl shadow-md border border-gray-200">
-            
-            <!-- Judul Section -->
-            <h2 class="text-sm font-semibold text-gray-800 mb-4 flex items-center">
+          <div
+            class="mb-6 mt-6 bg-white p-6 rounded-xl shadow-md border border-gray-200"
+          >
+            <h2
+              class="text-sm font-semibold text-gray-800 mb-4 flex items-center"
+            >
               <i class="fas fa-cube text-blue-600 mr-2"></i>
               Select Model
             </h2>
 
-            <!-- GRID TAMBAHAN DI SINI -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
               <!-- Pilihan Model -->
-              <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div
+                class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200"
+              >
                 <label class="block text-sm font-medium text-gray-700 mb-3">
                   Choose Model Type
                 </label>
 
                 <div class="flex flex-wrap items-center gap-4">
-                  
                   <label class="inline-flex items-center cursor-pointer">
                     <input
                       type="radio"
@@ -365,7 +373,8 @@
 
                 <p class="text-xs text-gray-500 mt-3" id="modelChoiceHint">
                   <i class="fas fa-info-circle mr-1"></i>
-                  The parameters will be reset to their defaults. You can configure them yourself.
+                  The parameters will be reset to their defaults. You can
+                  configure them yourself.
                 </p>
               </div>
 
@@ -384,11 +393,10 @@
                   Give a unique name for this model configuration.
                 </p>
               </div>
-
             </div>
           </div>
 
-          <!-- Select Ratio & Algorithm -->
+          <!-- Select Ratio -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1"
@@ -405,14 +413,13 @@
 
           <!-- Dynamic Parameter Form -->
           <div id="tuningContent">
-            <!-- IndoBERT form (default) -->
+            <!-- IndoBERT form -->
             <div id="indobertTuning">
               <div class="border-t pt-4 mt-2">
                 <h3 class="font-medium text-gray-800 mb-4">
                   Parameter Configuration
                 </h3>
-
-                <!-- A. Parameter Umum (hanya epoch-based) -->
+                <!-- A. General -->
                 <fieldset
                   class="mb-6 border border-gray-300 rounded-xl p-5 bg-blue-50 shadow-sm"
                 >
@@ -432,8 +439,7 @@
                           data-tooltip="Number of epochs without improvement before stopping."
                           >ⓘ</span
                         ></label
-                      >
-                      <input
+                      ><input
                         type="number"
                         id="earlyStoppingPatience"
                         value="2"
@@ -449,11 +455,10 @@
                         <span
                           class="info-icon"
                           data-param-key="randomState"
-                          data-tooltip="Seed for reproducibility of results."
+                          data-tooltip="Seed for reproducibility."
                           >ⓘ</span
                         ></label
-                      >
-                      <input
+                      ><input
                         type="number"
                         id="randomState"
                         value="42"
@@ -462,9 +467,8 @@
                     </div>
                   </div>
                   <p class="text-xs text-gray-500 mt-2">
-                    <i class="fas fa-info-circle mr-1"></i> Validation using the
-                    Epoch‑based approach (single split data
-                    training/validation).
+                    <i class="fas fa-info-circle mr-1"></i> Validation using
+                    Epoch‑based approach.
                   </p>
                 </fieldset>
 
@@ -477,10 +481,6 @@
                   >
                     B. Input Layer
                   </legend>
-                  <p class="text-xs text-gray-500 mb-4">
-                    Manages the token representation and form of data entering
-                    the model.
-                  </p>
                   <div
                     class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
                   >
@@ -491,7 +491,7 @@
                         <span
                           class="info-icon"
                           data-param-key="maxSeqLength"
-                          data-tooltip="Maximum length of tokens processed."
+                          data-tooltip="Maximum length of tokens."
                           >ⓘ</span
                         ></label
                       >
@@ -512,7 +512,7 @@
                         <span
                           class="info-icon"
                           data-param-key="padding"
-                          data-tooltip="Input length standardization strategy."
+                          data-tooltip="Padding strategy."
                           >ⓘ</span
                         ></label
                       >
@@ -531,7 +531,7 @@
                         <span
                           class="info-icon"
                           data-param-key="truncation"
-                          data-tooltip="Cut text if it exceeds Max Sequence Length"
+                          data-tooltip="Truncate if exceeds length."
                           >ⓘ</span
                         ></label
                       >
@@ -543,16 +543,10 @@
                         <option value="False">False</option>
                       </select>
                     </div>
-                    <div class="sm:col-span-2 lg:col-span-3">
-                      <p class="text-xs text-gray-500">
-                        <i class="fas fa-info-circle mr-1"></i> IndoBERT's
-                        built-in WordPiece tokenizer is used automatically.
-                      </p>
-                    </div>
                   </div>
                 </fieldset>
 
-                <!-- C. Hidden Layer (Encoder & Fine‑Tuning) -->
+                <!-- C. Hidden Layer (Fine‑Tuning) -->
                 <fieldset
                   class="mb-6 border border-gray-300 rounded-xl p-5 bg-purple-50 shadow-sm"
                 >
@@ -561,10 +555,6 @@
                   >
                     C. Hidden Layer (Encoder & Fine‑Tuning)
                   </legend>
-                  <p class="text-xs text-gray-500 mb-4">
-                    12-layer transformer architecture with 12 attention heads.
-                    Additional training (fine-tuning) can be enabled.
-                  </p>
                   <div
                     class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
                   >
@@ -590,8 +580,6 @@
                       </select>
                     </div>
                   </div>
-
-                  <!-- Fine‑Tuning -->
                   <div class="mt-4 border-t pt-4">
                     <div class="flex items-center gap-2 mb-3">
                       <span class="text-sm font-semibold text-gray-700"
@@ -608,7 +596,7 @@
                           <span
                             class="info-icon"
                             data-param-key="enableFinetune"
-                            data-tooltip="Enable additional training on the model."
+                            data-tooltip="Enable additional training."
                             >ⓘ</span
                           ></span
                         >
@@ -625,7 +613,7 @@
                           <span
                             class="info-icon"
                             data-param-key="ftEpoch"
-                            data-tooltip="Jumlah iterasi pelatihan penuh."
+                            data-tooltip="Number of full training iterations."
                             >ⓘ</span
                           ></label
                         ><input
@@ -634,7 +622,7 @@
                           value="3"
                           min="1"
                           max="50"
-                          class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
+                          class="w-full border border-gray-300 rounded-lg p-2"
                         />
                       </div>
                       <div>
@@ -644,12 +632,12 @@
                           <span
                             class="info-icon"
                             data-param-key="ftLearningRate"
-                            data-tooltip="Kecepatan pembelajaran model."
+                            data-tooltip="Learning rate."
                             >ⓘ</span
                           ></label
                         ><select
                           id="ftLearningRate"
-                          class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
+                          class="w-full border border-gray-300 rounded-lg p-2"
                         >
                           <option value="5e-6">5e‑6</option>
                           <option value="1e-5">1e‑5</option>
@@ -666,12 +654,12 @@
                           <span
                             class="info-icon"
                             data-param-key="ftOptimizer"
-                            data-tooltip="Algoritma optimasi."
+                            data-tooltip="Optimization algorithm."
                             >ⓘ</span
                           ></label
                         ><select
                           id="ftOptimizer"
-                          class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
+                          class="w-full border border-gray-300 rounded-lg p-2"
                         >
                           <option value="AdamW" selected>AdamW</option>
                           <option value="Adam">Adam</option>
@@ -685,7 +673,7 @@
                           <span
                             class="info-icon"
                             data-param-key="ftWeightDecay"
-                            data-tooltip="Regularisasi bobot."
+                            data-tooltip="Weight regularization."
                             >ⓘ</span
                           ></label
                         ><input
@@ -694,7 +682,7 @@
                           value="0.01"
                           step="0.001"
                           min="0"
-                          class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
+                          class="w-full border border-gray-300 rounded-lg p-2"
                         />
                       </div>
                       <div>
@@ -704,7 +692,7 @@
                           <span
                             class="info-icon"
                             data-param-key="ftWarmupRatio"
-                            data-tooltip="Proporsi langkah pemanasan."
+                            data-tooltip="Warmup steps proportion."
                             >ⓘ</span
                           ></label
                         ><input
@@ -714,7 +702,7 @@
                           step="0.01"
                           min="0"
                           max="1"
-                          class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
+                          class="w-full border border-gray-300 rounded-lg p-2"
                         />
                       </div>
                       <div>
@@ -724,7 +712,7 @@
                           <span
                             class="info-icon"
                             data-param-key="ftFreezeLayers"
-                            data-tooltip="Jumlah layer yang dibekukan."
+                            data-tooltip="Number of frozen layers."
                             >ⓘ</span
                           ></label
                         ><input
@@ -733,7 +721,7 @@
                           value="9"
                           min="0"
                           max="12"
-                          class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
+                          class="w-full border border-gray-300 rounded-lg p-2"
                         />
                       </div>
                       <div>
@@ -743,7 +731,7 @@
                           <span
                             class="info-icon"
                             data-param-key="ftGradAccum"
-                            data-tooltip="Akumulasi gradien."
+                            data-tooltip="Gradient accumulation steps."
                             >ⓘ</span
                           ></label
                         ><input
@@ -751,7 +739,7 @@
                           id="ftGradAccum"
                           value="1"
                           min="1"
-                          class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
+                          class="w-full border border-gray-300 rounded-lg p-2"
                         />
                       </div>
                       <div>
@@ -761,7 +749,7 @@
                           <span
                             class="info-icon"
                             data-param-key="ftMaxGradNorm"
-                            data-tooltip="Batas maksimum gradien."
+                            data-tooltip="Maximum gradient norm."
                             >ⓘ</span
                           ></label
                         ><input
@@ -770,14 +758,14 @@
                           value="1.0"
                           step="0.1"
                           min="0.1"
-                          class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-300"
+                          class="w-full border border-gray-300 rounded-lg p-2"
                         />
                       </div>
                     </div>
                   </div>
                 </fieldset>
 
-                <!-- D. Output Layer (Classification Head) -->
+                <!-- D. Output Layer -->
                 <fieldset
                   class="mb-6 border border-gray-300 rounded-xl p-5 bg-pink-50 shadow-sm"
                 >
@@ -786,27 +774,22 @@
                   >
                     D. Output Layer (Classification Head)
                   </legend>
-                  <p class="text-xs text-gray-500 mb-4">
-                    Transforming contextual vectors into emotion class
-                    probabilities.
-                  </p>
                   <div
                     class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
                   >
                     <div>
                       <label
                         class="block text-sm font-medium text-gray-700 mb-1"
-                        >Pooling Strategy
+                        >Pooling
                         <span
                           class="info-icon"
                           data-param-key="pooling"
                           data-tooltip="How to combine token vectors."
                           >ⓘ</span
                         ></label
-                      >
-                      <select
+                      ><select
                         id="pooling"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-300"
+                        class="w-full border border-gray-300 rounded-lg p-2"
                       >
                         <option value="CLS">CLS</option>
                         <option value="MEAN" selected>MEAN</option>
@@ -820,45 +803,37 @@
                         <span
                           class="info-icon"
                           data-param-key="ftDropout"
-                          data-tooltip="Dropout in the classification layer."
+                          data-tooltip="Dropout in classification layer."
                           >ⓘ</span
                         ></label
-                      >
-                      <input
+                      ><input
                         type="number"
                         id="ftDropout"
                         value="0.1"
                         step="0.05"
                         min="0"
                         max="0.5"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-300"
+                        class="w-full border border-gray-300 rounded-lg p-2"
                       />
                     </div>
                     <div>
                       <label
                         class="block text-sm font-medium text-gray-700 mb-1"
-                        >Target Embedding Dimension
+                        >Target Dim
                         <span
                           class="info-icon"
                           data-param-key="targetDim"
-                          data-tooltip="Final dimensions of the feature vector for KNN."
+                          data-tooltip="Final feature vector dimension."
                           >ⓘ</span
                         ></label
-                      >
-                      <input
+                      ><input
                         type="number"
                         id="targetDim"
                         value="768"
                         min="2"
                         max="768"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-300"
+                        class="w-full border border-gray-300 rounded-lg p-2"
                       />
-                    </div>
-                    <div class="sm:col-span-2 lg:col-span-3">
-                      <p class="text-xs text-gray-500">
-                        <i class="fas fa-info-circle mr-1"></i> The number of
-                        classes (8) and Softmax are determined automatically.
-                      </p>
                     </div>
                   </div>
                 </fieldset>
@@ -871,7 +846,7 @@
                     class="font-semibold text-gray-800 px-3 py-1 bg-orange-100 rounded-full text-sm flex items-center gap-2"
                   >
                     UMAP
-                    <label class="inline-flex items-center ml-2 cursor-pointer">
+                    <label class="inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
                         id="enableUMAP"
@@ -882,7 +857,7 @@
                         <span
                           class="info-icon"
                           data-param-key="enableUMAP"
-                          data-tooltip="Enable dimension reduction."
+                          data-tooltip="Enable UMAP dimension reduction."
                           >ⓘ</span
                         ></span
                       >
@@ -899,7 +874,7 @@
                         <span
                           class="info-icon"
                           data-param-key="umapNComponents"
-                          data-tooltip="UMAP output dimensions."
+                          data-tooltip="Number of UMAP components."
                           >ⓘ</span
                         ></label
                       ><input
@@ -908,7 +883,7 @@
                         value="5"
                         min="2"
                         max="100"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-orange-300"
+                        class="w-full border border-gray-300 rounded-lg p-2"
                       />
                     </div>
                     <div>
@@ -918,7 +893,7 @@
                         <span
                           class="info-icon"
                           data-param-key="umapNNeighbors"
-                          data-tooltip="Local environmental measures."
+                          data-tooltip="Number of neighbors."
                           >ⓘ</span
                         ></label
                       ><input
@@ -927,7 +902,7 @@
                         value="30"
                         min="2"
                         max="200"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-orange-300"
+                        class="w-full border border-gray-300 rounded-lg p-2"
                       />
                     </div>
                     <div>
@@ -947,7 +922,7 @@
                         step="0.01"
                         min="0"
                         max="1"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-orange-300"
+                        class="w-full border border-gray-300 rounded-lg p-2"
                       />
                     </div>
                     <div>
@@ -957,12 +932,12 @@
                         <span
                           class="info-icon"
                           data-param-key="umapMetric"
-                          data-tooltip="Distance measurement method."
+                          data-tooltip="Distance metric."
                           >ⓘ</span
                         ></label
                       ><select
                         id="umapMetric"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-orange-300"
+                        class="w-full border border-gray-300 rounded-lg p-2"
                       >
                         <option value="cosine" selected>cosine</option>
                         <option value="euclidean">euclidean</option>
@@ -983,7 +958,7 @@
                         type="number"
                         id="umapRandomState"
                         value="42"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-orange-300"
+                        class="w-full border border-gray-300 rounded-lg p-2"
                       />
                     </div>
                   </div>
@@ -1008,7 +983,7 @@
                         <span
                           class="info-icon"
                           data-param-key="knnK"
-                          data-tooltip="Number of nearest neighbors."
+                          data-tooltip="Number of neighbors."
                           >ⓘ</span
                         ></label
                       ><input
@@ -1017,22 +992,22 @@
                         value="7"
                         min="1"
                         max="50"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-300"
+                        class="w-full border border-gray-300 rounded-lg p-2"
                       />
                     </div>
                     <div>
                       <label
                         class="block text-sm font-medium text-gray-700 mb-1"
-                        >Metrik Jarak
+                        >Metric
                         <span
                           class="info-icon"
                           data-param-key="knnMetric"
-                          data-tooltip="How to measure vector similarity."
+                          data-tooltip="Distance metric."
                           >ⓘ</span
                         ></label
                       ><select
                         id="knnMetric"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-300"
+                        class="w-full border border-gray-300 rounded-lg p-2"
                       >
                         <option value="cosine" selected>cosine</option>
                         <option value="euclidean">euclidean</option>
@@ -1046,12 +1021,12 @@
                         <span
                           class="info-icon"
                           data-param-key="knnWeights"
-                          data-tooltip="Neighbor's voice weight."
+                          data-tooltip="Neighbor weight."
                           >ⓘ</span
                         ></label
                       ><select
                         id="knnWeights"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-300"
+                        class="w-full border border-gray-300 rounded-lg p-2"
                       >
                         <option value="uniform">uniform</option>
                         <option value="distance" selected>distance</option>
@@ -1064,12 +1039,12 @@
                         <span
                           class="info-icon"
                           data-param-key="knnAlgorithm"
-                          data-tooltip="Neighbor search algorithm."
+                          data-tooltip="Search algorithm."
                           >ⓘ</span
                         ></label
                       ><select
                         id="knnAlgorithm"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-300"
+                        class="w-full border border-gray-300 rounded-lg p-2"
                       >
                         <option value="auto" selected>auto</option>
                         <option value="ball_tree">ball_tree</option>
@@ -1092,7 +1067,7 @@
                         id="knnLeafSize"
                         value="30"
                         min="1"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-300"
+                        class="w-full border border-gray-300 rounded-lg p-2"
                       />
                     </div>
                     <div>
@@ -1102,7 +1077,7 @@
                         <span
                           class="info-icon"
                           data-param-key="knnP"
-                          data-tooltip="Minkowski metric parameters."
+                          data-tooltip="Minkowski parameter."
                           >ⓘ</span
                         ></label
                       ><input
@@ -1111,7 +1086,7 @@
                         value="2"
                         min="1"
                         max="10"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-300"
+                        class="w-full border border-gray-300 rounded-lg p-2"
                       />
                     </div>
                     <div class="sm:col-span-2 lg:col-span-3">
@@ -1121,12 +1096,13 @@
                         <span
                           class="info-icon"
                           data-param-key="hybridMethod"
-                          data-tooltip="KNN probability adjustment method."
+                          data-tooltip="KNN probability adjustment."
                           >ⓘ</span
                         ></label
-                      ><select
+                      >
+                      <select
                         id="hybridMethod"
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-pink-300"
+                        class="w-full border border-gray-300 rounded-lg p-2"
                       >
                         <option value="none">KNN Murni</option>
                         <option value="confidence">Confidence‑based</option>
@@ -1136,25 +1112,36 @@
                   </div>
                 </fieldset>
 
-                <div class="flex justify-end mt-6">
+                <div class="flex justify-end mt-6 gap-2">
                   <button
-                    id="startTrainingBtn"
+                    id="findBestRatioBtn"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg font-medium shadow-md transition flex items-center space-x-2"
+                  >
+                    <i class="fas fa-search"></i><span>Find Best Ratio</span>
+                  </button>
+                  <button
+                    id="startTrainingBtnIndo"
                     class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium shadow-md transition flex items-center space-x-2"
                   >
                     <i class="fas fa-play"></i><span>Start Training</span>
                   </button>
                 </div>
+                <!-- Batch progress indicator -->
+                <div id="batchProgressIndo" class="batch-progress">
+                  <span class="text-sm text-gray-700"
+                    ><i class="fas fa-spinner fa-pulse mr-2"></i
+                    ><span id="batchProgressTextIndo"></span
+                  ></span>
+                </div>
               </div>
             </div>
 
-            <!-- Lexicon-NB content -->
+            <!-- Lexicon-NB form -->
             <div id="lexiconTuning" class="hidden">
               <div class="border-t pt-4">
                 <h3 class="font-medium text-gray-800 mb-4">
                   Parameter Configuration - Lexicon+NB
                 </h3>
-
-                <!-- Urutan Ranking Emosi -->
                 <div class="mb-6 p-4 bg-gray-50 rounded-lg">
                   <label
                     class="text-sm font-medium text-gray-700 mb-3 flex items-center"
@@ -1163,7 +1150,7 @@
                     <span
                       class="info-icon"
                       data-param-key="emotionRanking"
-                      data-tooltip="Priority order of 7 emotions. 1 = most dominant."
+                      data-tooltip="Priority order of 7 emotions."
                       >ⓘ</span
                     >
                   </label>
@@ -1172,19 +1159,17 @@
                     id="emotionRankingContainer"
                   ></div>
                 </div>
-
-                <!-- Parameter Dasar -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-sm text-gray-600">
-                      Alpha
+                    <label class="block text-sm text-gray-600"
+                      >Alpha
                       <span
                         class="info-icon"
                         data-param-key="lexiconAlpha"
-                        data-tooltip="Laplace smoothing parameters for Naive Bayes."
+                        data-tooltip="Laplace smoothing."
                         >ⓘ</span
-                      >
-                    </label>
+                      ></label
+                    >
                     <input
                       type="text"
                       id="lexiconAlpha"
@@ -1193,15 +1178,15 @@
                     />
                   </div>
                   <div>
-                    <label class="block text-sm text-gray-600">
-                      Model Type
+                    <label class="block text-sm text-gray-600"
+                      >Model Type
                       <span
                         class="info-icon"
                         data-param-key="lexiconModelType"
-                        data-tooltip="Naive Bayes Variants (Multinomial or Bernoulli)."
+                        data-tooltip="Naive Bayes variant."
                         >ⓘ</span
-                      >
-                    </label>
+                      ></label
+                    >
                     <select
                       id="lexiconModelType"
                       class="w-full border rounded p-2 mt-1"
@@ -1211,15 +1196,15 @@
                     </select>
                   </div>
                   <div>
-                    <label class="block text-sm text-gray-600">
-                      Vectorizer
+                    <label class="block text-sm text-gray-600"
+                      >Vectorizer
                       <span
                         class="info-icon"
                         data-param-key="lexiconVectorizer"
-                        data-tooltip="How to convert text to vector (Count or TF‑IDF)."
+                        data-tooltip="Text to vector."
                         >ⓘ</span
-                      >
-                    </label>
+                      ></label
+                    >
                     <select
                       id="lexiconVectorizer"
                       class="w-full border rounded p-2 mt-1"
@@ -1229,8 +1214,6 @@
                     </select>
                   </div>
                 </div>
-
-                <!-- Hybrid Fusion -->
                 <div class="mt-4 p-4 bg-gray-50 rounded-lg">
                   <label
                     class="text-sm font-medium text-gray-700 mb-3 flex items-center"
@@ -1239,7 +1222,7 @@
                     <span
                       class="info-icon"
                       data-param-key="fusionMethodSelect"
-                      data-tooltip="Method of combining NB probability with Lexicon scores."
+                      data-tooltip="Method to combine NB and Lexicon."
                       >ⓘ</span
                     >
                   </label>
@@ -1258,15 +1241,7 @@
                       </select>
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600"
-                        >Formula
-                        <span
-                          class="info-icon"
-                          data-param-key="fusionFormulaInput"
-                          data-tooltip="Formula that corresponds to Fusion Method."
-                          >ⓘ</span
-                        >
-                      </label>
+                      <label class="block text-sm text-gray-600">Formula</label>
                       <input
                         type="text"
                         id="fusionFormulaInput"
@@ -1276,14 +1251,25 @@
                     </div>
                   </div>
                 </div>
-
-                <div class="flex justify-end mt-6">
+                <div class="flex justify-end mt-6 gap-2">
                   <button
-                    id="startTrainingBtnNB"
+                    id="findBestRatioBtnNB"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg font-medium shadow-md transition flex items-center space-x-2"
+                  >
+                    <i class="fas fa-search"></i><span>Find Best Ratio</span>
+                  </button>
+                  <button
+                    id="startTrainingBtnLex"
                     class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium shadow-md transition flex items-center space-x-2"
                   >
                     <i class="fas fa-play"></i><span>Start Training</span>
                   </button>
+                </div>
+                <div id="batchProgressLex" class="batch-progress">
+                  <span class="text-sm text-gray-700"
+                    ><i class="fas fa-spinner fa-pulse mr-2"></i
+                    ><span id="batchProgressTextLex"></span
+                  ></span>
                 </div>
               </div>
             </div>
@@ -1353,9 +1339,7 @@
               <thead class="bg-blue-500 text-white">
                 <tr>
                   <th class="px-4 py-2 border border-blue-400">Rasio</th>
-                  <th class="px-4 py-2 border border-blue-400">
-                    Dataset Name
-                  </th>
+                  <th class="px-4 py-2 border border-blue-400">Dataset Name</th>
                   <th class="px-4 py-2 border border-blue-400">Model</th>
                   <th class="px-4 py-2 border border-blue-400">Accuracy</th>
                   <th class="px-4 py-2 border border-blue-400">Date</th>
@@ -1435,7 +1419,9 @@
         </div>
         <div class="overflow-y-auto p-6 custom-scroll">
           <p class="text-sm text-gray-600 mb-4" id="popupAlgoLabel">
-            Showing the model for the algorithm:<strong id="popupAlgoName">IndoBERT-KNN</strong>
+            Showing the model for the algorithm:<strong id="popupAlgoName"
+              >IndoBERT-KNN</strong
+            >
           </p>
           <div class="overflow-x-auto">
             <table class="min-w-full border border-gray-200">
@@ -1452,7 +1438,8 @@
             </table>
           </div>
           <p id="noModelMessage" class="text-center text-gray-500 py-8 hidden">
-            <i class="fas fa-info-circle mr-1"></i> There are no saved models for this algorithm yet.
+            <i class="fas fa-info-circle mr-1"></i> There are no saved models
+            for this algorithm yet.
           </p>
         </div>
       </div>
@@ -1464,11 +1451,20 @@
       let trainingHistory = [];
       let currentTrainingPage = 1;
       const rowsPerTrainingPage = 5;
+
+      // Variabel untuk split ratio (tambahkan)
+      let splitRatios = [];
+      let currentSplitPage = 1;
+      const rowsPerSplitPage = 5;
+      let editingSplitId = null;
+
       const targetDimInput = document.getElementById("targetDim");
       const umapNComponentsInput = document.getElementById("umapNComponents");
       let trainingParamsStore = {};
 
-      // ==================== DEFAULT PARAMETERS ====================
+      let selectedExistingConfigId = null;
+
+      // ==================== DEFAULT PARAMETERS (sama seperti sebelumnya) ====================
       const defaultIndobertParams = {
         earlyStoppingPatience: 2,
         randomState: 42,
@@ -1519,7 +1515,6 @@
         },
       };
 
-      // ==================== EMOSI & FUSION ====================
       const emotionLabels = [
         "happy",
         "Believe",
@@ -1574,73 +1569,6 @@
             break;
         }
         formulaInput.value = formula;
-      }
-
-      // ==================== SPLIT RATIO DATA (via API) ====================
-      let splitRatios = [];
-      let currentSplitPage = 1;
-      const rowsPerSplitPage = 5;
-      let editingSplitId = null;
-
-      function renderPaginationControls(
-        containerId,
-        currentPage,
-        totalPages,
-        onPageChange,
-      ) {
-        const container = document.getElementById(containerId);
-        if (!container) return;
-        container.innerHTML = "";
-        if (totalPages <= 1) return;
-
-        const wrapper = document.createElement("div");
-        wrapper.className = "flex items-center space-x-2";
-
-        const prevBtn = document.createElement("button");
-        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
-        prevBtn.className = `px-3 py-1 rounded border ${currentPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
-        prevBtn.disabled = currentPage === 1;
-        prevBtn.onclick = () => {
-          if (currentPage > 1) onPageChange(currentPage - 1);
-        };
-        wrapper.appendChild(prevBtn);
-
-        const pageInfo = document.createElement("span");
-        pageInfo.className = "text-gray-700";
-        pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
-        wrapper.appendChild(pageInfo);
-
-        const pageInput = document.createElement("input");
-        pageInput.type = "number";
-        pageInput.min = 1;
-        pageInput.max = totalPages;
-        pageInput.value = currentPage;
-        pageInput.className = "w-16 border rounded px-2 py-1 text-center";
-        wrapper.appendChild(pageInput);
-
-        const goBtn = document.createElement("button");
-        goBtn.innerText = "Go";
-        goBtn.className =
-          "px-3 py-1 rounded border bg-blue-500 text-white hover:bg-blue-600";
-        goBtn.onclick = () => {
-          let newPage = parseInt(pageInput.value);
-          if (isNaN(newPage)) newPage = 1;
-          if (newPage < 1) newPage = 1;
-          if (newPage > totalPages) newPage = totalPages;
-          onPageChange(newPage);
-        };
-        wrapper.appendChild(goBtn);
-
-        const nextBtn = document.createElement("button");
-        nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
-        nextBtn.className = `px-3 py-1 rounded border ${currentPage === totalPages ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
-        nextBtn.disabled = currentPage === totalPages;
-        nextBtn.onclick = () => {
-          if (currentPage < totalPages) onPageChange(currentPage + 1);
-        };
-        wrapper.appendChild(nextBtn);
-
-        container.appendChild(wrapper);
       }
 
       // ==================== INFO TOOLTIP ====================
@@ -1887,6 +1815,15 @@
         if (e.target === detailModal) detailModal.classList.remove("show");
       });
 
+      // ==================== API HELPERS ====================
+      function getHeaders() {
+        const token = localStorage.getItem("access_token");
+        return {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        };
+      }
+
       // ==================== SPLIT RATIOS ====================
       function getHeaders() {
         const token = localStorage.getItem("access_token");
@@ -2052,6 +1989,57 @@
         renderSplitTable();
       }
 
+      function renderPaginationControls(
+        containerId,
+        currentPage,
+        totalPages,
+        onPageChange,
+      ) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = "";
+        if (totalPages <= 1) return;
+
+        const createButton = (label, page, disabled = false) => {
+          const btn = document.createElement("button");
+          btn.textContent = label;
+          btn.className =
+            "px-3 py-1 border rounded mx-1 " +
+            (disabled
+              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+              : "bg-white hover:bg-blue-50 text-blue-600");
+          btn.disabled = disabled;
+          if (!disabled) {
+            btn.addEventListener("click", () => onPageChange(page));
+          }
+          return btn;
+        };
+
+        // Previous button
+        container.appendChild(
+          createButton("«", currentPage - 1, currentPage === 1),
+        );
+
+        // Halaman angka
+        for (let i = 1; i <= totalPages; i++) {
+          const pageBtn = createButton(i.toString(), i, false);
+          if (i === currentPage) {
+            pageBtn.classList.add("bg-blue-600", "text-white");
+            pageBtn.classList.remove(
+              "bg-white",
+              "hover:bg-blue-50",
+              "text-blue-600",
+            );
+          }
+          container.appendChild(pageBtn);
+        }
+
+        // Next button
+        container.appendChild(
+          createButton("»", currentPage + 1, currentPage === totalPages),
+        );
+      }
+
       async function deleteSplitRatio(id) {
         try {
           const res = await fetch(`${API_BASE}/api/split-ratios/${id}`, {
@@ -2181,7 +2169,8 @@
               m.metrics?.accuracy != null
                 ? (m.metrics.accuracy * 100).toFixed(2) + "%"
                 : "-";
-            const name = m.config_name || m.dataset_filename || "Model #" + m.id;
+            const name =
+              m.config_name || m.dataset_filename || "Model #" + m.id;
             const dataset = m.dataset_filename || "-";
             const date = m.created_at
               ? new Date(m.created_at).toLocaleString("id-ID", {
@@ -2232,7 +2221,7 @@
         } else if (algorithm === "Lexicon-NB") {
           fillLexiconParams(params);
         }
-
+        selectedExistingConfigId = model.id;
         // Tutup pop-up
         closeModelSelectPopup();
       }
@@ -2320,7 +2309,8 @@
         }
         // Target dim
         if (params.indobert?.targetDim != null) {
-          document.getElementById("targetDim").value = params.indobert.targetDim;
+          document.getElementById("targetDim").value =
+            params.indobert.targetDim;
         } else if (params.umap?.nComponents != null && params.umap?.enabled) {
           document.getElementById("targetDim").value = params.umap.nComponents;
         }
@@ -2328,8 +2318,7 @@
         if (params.knn) {
           const kn = params.knn;
           if (kn.k != null) document.getElementById("knnK").value = kn.k;
-          if (kn.metric)
-            document.getElementById("knnMetric").value = kn.metric;
+          if (kn.metric) document.getElementById("knnMetric").value = kn.metric;
           if (kn.weights)
             document.getElementById("knnWeights").value = kn.weights;
           if (kn.algorithm)
@@ -2467,9 +2456,7 @@
         );
         rankSelects.forEach((sel) => {
           const emotion = sel.getAttribute("data-emotion");
-          if (
-            defaultLexiconParams.emotionRankings[emotion] != null
-          ) {
+          if (defaultLexiconParams.emotionRankings[emotion] != null) {
             sel.value = defaultLexiconParams.emotionRankings[emotion];
           }
         });
@@ -2747,7 +2734,9 @@
           alert("Please select a dataset first.");
           return;
         }
-        const modelNameInput = document.getElementById("modelNameInput").value.trim();
+        const modelNameInput = document
+          .getElementById("modelNameInput")
+          .value.trim();
         if (!modelNameInput) {
           alert("Please enter a model name.");
           return;
@@ -2901,23 +2890,34 @@
         }
 
         try {
-          const configRes = await fetch(`${API_BASE}/api/processing/configs`, {
-            method: "POST",
-            headers: getHeaders(),
-            body: JSON.stringify({
-              name: modelNameInput,
-              algorithm:
-                algorithm === "indobert" ? "IndoBERT-KNN" : "Lexicon-NB",
-              params: params,
-            }),
-          });
-          if (!configRes.ok) {
-            const err = await configRes.json();
-            alert("Gagal menyimpan konfigurasi: " + (err.error || "Unknown"));
-            return;
+          let configId;
+
+          if (selectedExistingConfigId) {
+            // Gunakan konfigurasi yang sudah dipilih (Use Existing Model)
+            configId = selectedExistingConfigId;
+          } else {
+            // Buat konfigurasi baru
+            const configRes = await fetch(
+              `${API_BASE}/api/processing/configs`,
+              {
+                method: "POST",
+                headers: getHeaders(),
+                body: JSON.stringify({
+                  name: modelNameInput,
+                  algorithm:
+                    algorithm === "indobert" ? "IndoBERT-KNN" : "Lexicon-NB",
+                  params: params,
+                }),
+              },
+            );
+            if (!configRes.ok) {
+              const err = await configRes.json();
+              alert("Gagal menyimpan konfigurasi: " + (err.error || "Unknown"));
+              return;
+            }
+            const configData = await configRes.json();
+            configId = configData.id;
           }
-          const configData = await configRes.json();
-          const configId = configData.id;
 
           const trainRes = await fetch(`${API_BASE}/api/training/start`, {
             method: "POST",
@@ -2963,10 +2963,10 @@
 
       // ==================== EVENT LISTENERS ====================
       document
-        .getElementById("startTrainingBtn")
+        .getElementById("startTrainingBtnIndo")
         .addEventListener("click", onStartTraining);
       document
-        .getElementById("startTrainingBtnNB")
+        .getElementById("startTrainingBtnLex")
         .addEventListener("click", onStartTraining);
       document
         .getElementById("closeResultBtn")
@@ -3001,7 +3001,10 @@
         .getElementById("modelChoiceNew")
         .addEventListener("change", function () {
           if (this.checked) {
-            document.getElementById("btnSelectExistingModel").classList.add("hidden");
+            selectedExistingConfigId = null;
+            document
+              .getElementById("btnSelectExistingModel")
+              .classList.add("hidden");
             document.getElementById("modelChoiceHint").innerHTML =
               '<i class="fas fa-info-circle mr-1"></i> Parameter akan di-reset ke default. Anda bisa mengaturnya sendiri.';
             document.getElementById("modelNameInput").value = "";
@@ -3015,7 +3018,9 @@
         .getElementById("modelChoiceExisting")
         .addEventListener("change", function () {
           if (this.checked) {
-            document.getElementById("btnSelectExistingModel").classList.remove("hidden");
+            document
+              .getElementById("btnSelectExistingModel")
+              .classList.remove("hidden");
             document.getElementById("modelChoiceHint").innerHTML =
               '<i class="fas fa-info-circle mr-1"></i> Click the "Select Model" button to choose from existing models.';
           }
