@@ -28,6 +28,9 @@
         cursor: pointer;
         background: white;
       }
+      #stabilitySection {
+        display: none !important;
+      }
     </style>
   </head>
   <body class="bg-gray-100 font-sans antialiased">
@@ -217,7 +220,7 @@
           </div>
         </div>
 
-        <!-- SECTION: Tabel Evaluasi per Epoch / per Fold -->
+        <!-- SECTION: Tabel Evaluation per Epoch Epoch / per Fold -->
         <div
           id="epochFoldSection"
           class="bg-white p-6 rounded-xl shadow-md mb-6 hidden"
@@ -227,7 +230,7 @@
             class="font-semibold text-gray-700 mb-4 flex items-center"
           >
             <i class="fas fa-chart-line mr-2 text-blue-600"></i>
-            Evaluasi per Epoch
+            Evaluation per Epoch
           </h2>
           <div class="overflow-x-auto">
             <table class="min-w-full border border-gray-200">
@@ -630,7 +633,7 @@
               items = m.epoch_metrics;
               isEpoch = true;
               titleEl.innerHTML =
-                '<i class="fas fa-chart-line mr-2 text-blue-600"></i> Evaluasi per Epoch';
+                '<i class="fas fa-chart-line mr-2 text-blue-600"></i> Evaluation per Epoch Epoch';
             } else if (
               m.fold_metrics &&
               Array.isArray(m.fold_metrics) &&
@@ -639,7 +642,7 @@
               items = m.fold_metrics;
               isEpoch = false;
               titleEl.innerHTML =
-                '<i class="fas fa-chart-line mr-2 text-blue-600"></i> Evaluasi per Fold (Cross-Validation)';
+                '<i class="fas fa-chart-line mr-2 text-blue-600"></i> Evaluation per Epoch Fold (Cross-Validation)';
             } else {
               section.classList.add("hidden");
               return;
@@ -700,7 +703,7 @@
             const avgRow = tbody.insertRow();
             avgRow.classList.add("bg-gray-100", "font-semibold");
             avgRow.innerHTML = `
-              <td class="px-4 py-2 border border-gray-200 font-medium">Rata-rata</td>
+              <td class="px-4 py-2 border border-gray-200 font-medium">Average</td>
               <td class="px-4 py-2 border border-gray-200 text-center">${avgAcc}%</td>
               <td class="px-4 py-2 border border-gray-200 text-center">${avgPrec}%</td>
               <td class="px-4 py-2 border border-gray-200 text-center">${avgRec}%</td>
