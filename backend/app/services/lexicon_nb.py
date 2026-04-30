@@ -169,7 +169,7 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
 
             df['label'] = df.apply(determine_label, axis=1)
 
-            # Hapus data yang tidak memiliki label (seharusnya tidak ada karena penanganan di atas)
+            # Hapus data yang tidak memiliki label 
             before = len(df)
             df = df[df['label'].notna()].reset_index(drop=True)
             log(f"Data setelah pembersihan label: {len(df)} baris (dari {before})", training_id)
@@ -215,7 +215,7 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
 
             # ========== SIMPAN HOLD-OUT SET (DATA UJI) ==========
             original_texts = df['kalimat'].tolist()
-            original_labels = df['label'].tolist()   # sekarang termasuk 'non_idiom'
+            original_labels = df['label'].tolist()   
 
             # Split data menjadi training (80%) dan hold-out (20%) dengan stratifikasi penuh
             train_texts, holdout_texts, train_labels, holdout_labels = train_test_split(
@@ -293,7 +293,7 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
             log(f"Lexicon scores shape: {lexicon_scores.shape}", training_id)
 
             # ------------------------------------------------------------
-            # PERCABANGAN: PERCENTAGE SPLIT vs CROSS-VALIDATION
+            #  CROSS-VALIDATION
             # ------------------------------------------------------------
             if split_type == 'crossval':
                 # ===== TRUE K-FOLD CROSS VALIDATION =====
@@ -385,14 +385,14 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                     'f1_score': round(avg_f1, 4),
                     'precision': round(avg_prec, 4),
                     'recall': round(avg_rec, 4),
-                    'confusion_matrix': cm_all.tolist(),  # ← gunakan matrix gabungan
+                    'confusion_matrix': cm_all.tolist(),  
                     'class_labels': classes,
                     'fold_metrics': fold_metrics,
                     'holdout_path': holdout_path
                 }
 
             else:
-                # ===== PERCENTAGE SPLIT (TETAP SEPERTI SEBELUMNYA) =====
+                # ===== PERCENTAGE SPLIT =====
                 log(f"Menggunakan percentage split berbasis fold: test_ratio={test_ratio}, n_folds={n_folds}", training_id)
                 n_test_folds = int(round(test_ratio * n_folds))
                 if n_test_folds < 1:
@@ -471,10 +471,10 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                 'model': model,
                 'vectorizer': vectorizer,
                 'label_encoder': le,
-                'dict_lexicon': dict_lexicon,           # ← tambahkan
-                'class_word_counts': class_word_counts, # ← tambahkan
-                'class_doc_counts': class_doc_counts,   # ← tambahkan
-                'vocab_size': vocab_size,               # ← tambahkan
+                'dict_lexicon': dict_lexicon,          
+                'class_word_counts': class_word_counts, 
+                'class_doc_counts': class_doc_counts,   
+                'vocab_size': vocab_size,               
                 'classes': classes,
                 'config': params
             }

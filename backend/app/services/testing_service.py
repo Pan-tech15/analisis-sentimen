@@ -171,7 +171,7 @@ def predict_lexicon_proba(texts, artifacts):
     else:
         lexicon_scores = np.zeros_like(proba_nb)
 
-    # Fusion (sama seperti di fungsi predict_lexicon)
+    # Fusion 
     if fusion_method == 'sum':
         final_scores = proba_nb + lexicon_scores
     elif fusion_method == 'weighted':
