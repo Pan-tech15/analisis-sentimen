@@ -469,7 +469,7 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                 macro_recall = recall_score(y_test, y_pred, average='macro', zero_division=0)
                 macro_f1 = f1_score(y_test, y_pred, average='macro')
                 mcc = matthews_corrcoef(y_test, y_pred)
-                roc_auc = roc_auc_score(y_test, final_scores, multi_class='ovr', average='weighted')
+                roc_auc = roc_auc_score(y_test, proba_knn, multi_class='ovr', average='weighted')
                 precision = precision_score(y_test, y_pred, average='weighted', zero_division=0)
                 recall = recall_score(y_test, y_pred, average='weighted', zero_division=0)
                 cm = confusion_matrix(y_test, y_pred).tolist()
