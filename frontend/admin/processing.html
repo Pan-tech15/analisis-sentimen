@@ -1444,6 +1444,89 @@
         </div>
       </div>
     </div>
+    <!-- AKHIR modelSelectPopup -->
+
+    <!-- POP-UP: Best Ratio Results (sekarang di luar, berdiri sendiri) -->
+    <div
+      id="bestRatioModal"
+      class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-[4000] modal-backdrop"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[85vh] overflow-hidden relative transform transition-all modal-container"
+      >
+        <div
+          class="sticky top-0 bg-gradient-to-r from-indigo-600 to-purple-600 border-b px-6 py-4 flex justify-between items-center rounded-t-2xl text-white"
+        >
+          <h2 class="text-xl font-bold flex items-center">
+            <i class="fas fa-chart-bar mr-2"></i> Best Ratio Results
+          </h2>
+          <button
+            id="closeBestRatioModal"
+            class="text-white hover:text-gray-200"
+          >
+            <i class="fas fa-times text-2xl"></i>
+          </button>
+        </div>
+        <div class="overflow-y-auto p-6 custom-scroll">
+          <p id="bestRatioSummary" class="text-sm text-gray-600 mb-4"></p>
+          <div class="overflow-x-auto">
+            <table class="min-w-full border border-gray-200">
+              <thead class="bg-indigo-500 text-white">
+                <tr>
+                  <th class="px-4 py-2 border border-indigo-400">
+                    Ratio (Train:Test)
+                  </th>
+                  <th class="px-4 py-2 border border-indigo-400">Accuracy</th>
+                  <th class="px-4 py-2 border border-indigo-400">F1 Score</th>
+                  <th class="px-4 py-2 border border-indigo-400">Duration</th>
+                  <th class="px-4 py-2 border border-indigo-400">Status</th>
+                </tr>
+              </thead>
+              <tbody id="bestRatioTableBody"></tbody>
+            </table>
+          </div>
+          <div class="mt-4 flex justify-end">
+            <button
+              id="applyBestRatioBtn"
+              class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg font-medium shadow-md transition flex items-center space-x-2"
+            >
+              <i class="fas fa-check"></i> <span>Apply Best Ratio</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Confirmation Modal -->
+      <div
+        id="confirmModal"
+        class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-[5000] modal-backdrop"
+      >
+        <div
+          class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all modal-container"
+        >
+          <div class="bg-yellow-500 px-6 py-4 flex items-center space-x-3">
+            <i class="fas fa-exclamation-triangle text-white text-2xl"></i>
+            <h3 class="text-xl font-bold text-white">Warning</h3>
+          </div>
+          <div class="p-6">
+            <p id="confirmModalMessage" class="text-gray-700 text-sm"></p>
+            <div class="mt-6 flex justify-end space-x-3">
+              <button
+                id="confirmModalCancel"
+                class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+              >
+                Cancel
+              </button>
+              <button
+                id="confirmModalOk"
+                class="px-4 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 transition"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script>
       // ==================== CONFIGURATION ====================
@@ -1452,7 +1535,6 @@
       let currentTrainingPage = 1;
       const rowsPerTrainingPage = 5;
 
-      // Variabel untuk split ratio (tambahkan)
       let splitRatios = [];
       let currentSplitPage = 1;
       const rowsPerSplitPage = 5;
@@ -1463,6 +1545,9 @@
       let trainingParamsStore = {};
 
       let selectedExistingConfigId = null;
+
+      let bestRatioResults = [];
+      let bestRatioRunning = false;
 
       // ==================== DEFAULT PARAMETERS (sama seperti sebelumnya) ====================
       const defaultIndobertParams = {
@@ -1517,13 +1602,46 @@
 
       const emotionLabels = [
         "happy",
-        "Trust",
-        "Surprised",
-        "Neutral",
-        "Sad",
+        "trust",
+        "surprised",
+        "neutral",
+        "sad",
         "scared",
-        "Angry",
+        "angry",
       ];
+
+      function showConfirmModal(message) {
+        return new Promise((resolve) => {
+          const modal = document.getElementById("confirmModal");
+          const msgEl = document.getElementById("confirmModalMessage");
+          const okBtn = document.getElementById("confirmModalOk");
+          const cancelBtn = document.getElementById("confirmModalCancel");
+
+          msgEl.textContent = message;
+          modal.classList.remove("hidden");
+          const container = modal.querySelector(".modal-container");
+          setTimeout(() => container.classList.add("show"), 10);
+
+          function cleanup() {
+            container.classList.remove("show");
+            setTimeout(() => modal.classList.add("hidden"), 200);
+            okBtn.removeEventListener("click", onOk);
+            cancelBtn.removeEventListener("click", onCancel);
+          }
+
+          function onOk() {
+            cleanup();
+            resolve(true);
+          }
+          function onCancel() {
+            cleanup();
+            resolve(false);
+          }
+
+          okBtn.addEventListener("click", onOk);
+          cancelBtn.addEventListener("click", onCancel);
+        });
+      }
 
       function createEmotionRankingDropdowns() {
         const container = document.getElementById("emotionRankingContainer");
@@ -1549,6 +1667,42 @@
           div.appendChild(select);
           container.appendChild(div);
         });
+      }
+
+      function showBestRatioModal() {
+        const tbody = document.getElementById("bestRatioTableBody");
+        tbody.innerHTML = "";
+        let bestEntry = null;
+        let maxAcc = -1;
+
+        bestRatioResults.forEach((r) => {
+          const row = tbody.insertRow();
+          row.insertCell(0).textContent = r.ratio;
+          row.insertCell(1).textContent =
+            r.accuracy != null ? (r.accuracy * 100).toFixed(2) + "%" : "-";
+          row.insertCell(2).textContent =
+            r.f1 != null ? (r.f1 * 100).toFixed(2) + "%" : "-";
+          row.insertCell(3).textContent = r.duration;
+          row.insertCell(4).textContent = r.status;
+          for (let c of row.cells)
+            c.classList.add("border", "border-gray-200", "px-4", "py-2");
+
+          if (r.accuracy != null && r.accuracy > maxAcc) {
+            maxAcc = r.accuracy;
+            bestEntry = r;
+          }
+        });
+
+        document.getElementById("bestRatioSummary").textContent =
+          `Best ratio: ${bestEntry ? bestEntry.ratio : "N/A"} with accuracy ${bestEntry ? (bestEntry.accuracy * 100).toFixed(2) + "%" : "-"}`;
+
+        const modal = document.getElementById("bestRatioModal");
+        modal.classList.remove("hidden");
+        const container = modal.querySelector(".modal-container");
+        setTimeout(() => container.classList.add("show"), 10);
+
+        // Simpan bestEntry untuk digunakan tombol Apply
+        modal._bestEntry = bestEntry;
       }
 
       function updateFusionFormula() {
@@ -1645,153 +1799,355 @@
 
       // Detail parameter (tetap sama)
       const PARAM_DETAILS = {
+        // ==================== INDOBERT-KNN ====================
         maxSeqLength: {
           title: "Max Sequence Length",
-          html: `<p><b>Definition:</b> The maximum number of tokens (word pieces) that the model processes for each sentence.</p><p><b>Value range:</b> 64, 128, 256, 512 tokens.</p><p><b>Recommendation:</b> <b>128</b> is sufficient and efficient.</p>`,
+          html: `
+      <p><b>Definition:</b> The maximum number of tokens (word pieces) that the model can process for one sentence. Every text is split into small units called tokens. If a sentence has more tokens than this limit, it will be cut off (if truncation is enabled). Shorter sentences are padded to match this length.</p>
+      <p><b>Value range:</b> 64, 128, 256, 512 tokens.</p>
+      <p><b>Recommendation:</b> <b>128</b> is a good balance – it covers most Indonesian sentences without wasting memory or slowing down training. Use 256 or 512 only if your sentences are very long (e.g., paragraphs). Larger values increase memory usage and training time but may capture more context.</p>
+    `,
         },
         padding: {
           title: "Padding",
-          html: `<p><b>Definition:</b> Strategy to equalise the length of all inputs in a batch.</p><p><b>Options:</b> max_length, longest.</p>`,
+          html: `
+      <p><b>Definition:</b> The strategy to make all sentences in a batch have the same length by adding special empty tokens. Deep learning models require fixed‑size inputs, so padding fills shorter sentences with zeros.</p>
+      <p><b>Options:</b>
+        <ul>
+          <li><b>max_length</b> – pad/truncate exactly to <i>Max Sequence Length</i>.</li>
+          <li><b>longest</b> – pad each batch to the length of the longest sentence in that batch (up to <i>Max Sequence Length</i>).</li>
+        </ul>
+      </p>
+      <p><b>Recommendation:</b> <b>max_length</b> is simpler and ensures consistency across batches. Use <i>longest</i> if you want to save memory with highly variable sentence lengths.</p>
+    `,
         },
         truncation: {
           title: "Truncation",
-          html: `<p><b>Definition:</b> Determines whether sentences longer than Max Sequence Length will be truncated.</p>`,
+          html: `
+      <p><b>Definition:</b> Whether to cut off sentences that are longer than <i>Max Sequence Length</i>. If <b>True</b>, any token beyond the limit is discarded. If <b>False</b>, long sentences may cause an error or be skipped.</p>
+      <p><b>Options:</b> True / False</p>
+      <p><b>Recommendation:</b> Always set to <b>True</b> – real‑world text often exceeds the limit, and truncation prevents crashes.</p>
+    `,
         },
         batchSizeParam: {
           title: "Batch Size",
-          html: `<p><b>Definition:</b> Number of data samples processed together.</p><p><b>Recommendation:</b> 16 or 32.</p>`,
+          html: `
+      <p><b>Definition:</b> The number of sentences processed together in one step before the model updates its internal weights. Instead of training on one sentence at a time, the model averages the learning signal over a <i>batch</i>. Larger batches give more stable gradients but use more memory.</p>
+      <p><b>Value range:</b> 8, 16, 32, 64 (powers of 2 are typical).</p>
+      <p><b>Recommendation:</b> <b>16</b> for most hardware; try <b>32</b> if you have a GPU with enough memory. Reduce to <b>8</b> if you get out‑of‑memory errors. Larger batches speed up training but may require a lower learning rate. Too large a batch can harm generalization.</p>
+    `,
         },
         earlyStoppingPatience: {
           title: "Early Stopping Patience",
-          html: `<p><b>Definition:</b> Number of epochs without improvement before stopping.</p>`,
+          html: `
+      <p><b>Definition:</b> The number of training epochs to wait without improvement on the validation set before automatically stopping the training. This prevents overfitting and saves time.</p>
+      <p><b>Value range:</b> 1 – 10 (integer).</p>
+      <p><b>Recommendation:</b> Start with <b>2</b> or <b>3</b>. A smaller patience stops early and avoids overfitting; a larger patience gives the model more chances to improve (especially useful when the learning rate is small).</p>
+    `,
         },
         randomState: {
           title: "Random State",
-          html: `<p><b>Definition:</b> Fixed number for reproducible experiments.</p>`,
+          html: `
+      <p><b>Definition:</b> A fixed number used to initialize all random processes (shuffling data, initializing weights, UMAP). Setting a specific <i>random state</i> guarantees that you get the same output every time you run with the same settings.</p>
+      <p><b>Value range:</b> Any integer (common choices: 42, 0, 123).</p>
+      <p><b>Recommendation:</b> Keep the default <b>42</b> unless you deliberately want to test different random initializations.</p>
+    `,
         },
         pooling: {
           title: "Pooling Strategy",
-          html: `<p><b>Definition:</b> How token vectors are combined.</p><p><b>Options:</b> CLS, MEAN, MAX.</p>`,
+          html: `
+      <p><b>Definition:</b> The method used to combine the many token vectors produced by IndoBERT into a single fixed‑size vector representing the whole sentence.</p>
+      <p><b>Options:</b>
+        <ul>
+          <li><b>CLS</b> – uses the special [CLS] token’s output (common in classification).</li>
+          <li><b>MEAN</b> – averages all token vectors. Robust and widely used.</li>
+          <li><b>MAX</b> – takes the maximum value across tokens for each dimension.</li>
+        </ul>
+      </p>
+      <p><b>Recommendation:</b> <b>MEAN</b> often works best for semantic tasks. <i>CLS</i> is a classic choice; <i>MAX</i> is rare.</p>
+    `,
         },
         ftDropout: {
           title: "Classifier Dropout",
-          html: `<p><b>Definition:</b> Percentage of neurons dropped during training.</p>`,
+          html: `
+      <p><b>Definition:</b> The fraction of neurons in the classification head that are randomly turned off during each training step. Dropout prevents the model from relying too much on any single neuron, which reduces overfitting. A value of 0.1 means 10% of the neurons are dropped.</p>
+      <p><b>Value range:</b> 0.0 – 0.5 (common). Higher values give stronger regularization.</p>
+      <p><b>Recommendation:</b> <b>0.1</b> is a safe starting point. If the model overfits (validation accuracy much lower than training accuracy), try 0.2 or 0.3.</p>
+    `,
         },
         enableFinetune: {
           title: "Fine‑Tuning (Enable)",
-          html: `<p><b>Definition:</b> Activates additional training of IndoBERT.</p>`,
+          html: `
+      <p><b>Definition:</b> A switch that activates additional training of the IndoBERT encoder on your specific dataset. By default, IndoBERT provides general language features. When <b>enabled</b>, the entire network (or some of its layers) is further trained on your data, adapting the model to your domain and task.</p>
+      <p><b>Options:</b> Enabled / Disabled</p>
+      <p><b>Recommendation:</b> <b>Enable</b> it for the best accuracy, but be aware it increases training time and may require careful tuning of the fine‑tuning parameters below. Disable only for a quick baseline test.</p>
+    `,
         },
         ftEpoch: {
           title: "Epoch (Fine‑Tuning)",
-          html: `<p><b>Definition:</b> Number of times the model sees the entire dataset.</p>`,
+          html: `
+      <p><b>Definition:</b> The number of complete passes through the entire training dataset during fine‑tuning. Each epoch the model sees every training example once. More epochs allow the model to learn better, but too many can cause overfitting.</p>
+      <p><b>Value range:</b> 1 – 50 (integer).</p>
+      <p><b>Recommendation:</b> <b>3 – 5</b> epochs are usually enough for fine‑tuning a pre‑trained model. Increase if the dataset is large, but employ <i>Early Stopping</i> to avoid wasted computation.</p>
+    `,
         },
         ftLearningRate: {
           title: "Learning Rate (Fine‑Tuning)",
-          html: `<p><b>Definition:</b> Step size for weight updates.</p>`,
+          html: `
+      <p><b>Definition:</b> The step size the optimizer takes when updating the model’s weights. A smaller learning rate means smaller, more careful adjustments. After each batch, the model calculates how wrong its predictions were (the gradient). The learning rate scales this gradient before the weights are updated.</p>
+      <p><b>Value range:</b> Typically between <b>1e‑6</b> (0.000001) and <b>5e‑4</b> (0.0005). The dropdown offers common values.</p>
+      <p><b>Recommendation:</b> <b>2e‑5 (0.00002)</b> is a standard and safe choice for fine‑tuning transformer models. If training is unstable, try lower (1e‑5). If it learns too slowly, try 3e‑5 or 5e‑5.</p>
+    `,
         },
         ftOptimizer: {
           title: "Optimizer",
-          html: `<p><b>Definition:</b> Algorithm for weight updates.</p>`,
+          html: `
+      <p><b>Definition:</b> The algorithm that decides exactly how the weights are updated using the gradients.</p>
+      <p><b>Options:</b>
+        <ul>
+          <li><b>AdamW</b> – a modern variant of Adam with proper weight decay. Preferred for transformer fine‑tuning.</li>
+          <li><b>Adam</b> – widely used, works well but can overfit if weight decay is not set separately.</li>
+          <li><b>SGD</b> – classic stochastic gradient descent; rarely used with transformers, needs careful tuning.</li>
+        </ul>
+      </p>
+      <p><b>Recommendation:</b> Stick with <b>AdamW</b> – it’s the industry standard for BERT‑like models.</p>
+    `,
         },
         ftWeightDecay: {
           title: "Weight Decay",
-          html: `<p><b>Definition:</b> Penalty to keep weights small.</p>`,
+          html: `
+      <p><b>Definition:</b> A penalty added to the loss function that encourages the model to keep its weights small, which helps reduce overfitting. Large weights can cause the model to memorize noise in the training data.</p>
+      <p><b>Value range:</b> 0.0 – 0.1 (commonly 0.01). Higher values regularize stronger.</p>
+      <p><b>Recommendation:</b> <b>0.01</b> is standard. If overfitting is severe, increase to 0.1; if underfitting, decrease to 0.001.</p>
+    `,
         },
         ftWarmupRatio: {
           title: "Warmup Ratio",
-          html: `<p><b>Definition:</b> Proportion of steps for learning rate warmup.</p>`,
+          html: `
+      <p><b>Definition:</b> The fraction of total training steps used to gradually increase the learning rate from zero to the target value. During warmup, the model makes only small adjustments, avoiding destructive large updates at the very beginning. After warmup, the learning rate follows a normal decay schedule.</p>
+      <p><b>Value range:</b> 0.0 – 1.0 (a ratio of total steps). Typical: 0.0 – 0.2.</p>
+      <p><b>Recommendation:</b> <b>0.1</b> (10% of total steps) is a safe default for fine‑tuning transformers.</p>
+    `,
         },
         ftFreezeLayers: {
           title: "Freeze Layers",
-          html: `<p><b>Definition:</b> Number of first layers frozen during fine-tuning.</p>`,
+          html: `
+      <p><b>Definition:</b> The number of IndoBERT’s bottom layers whose weights are <i>not</i> updated during fine‑tuning. The early layers capture general language features (e.g., grammar). Freezing them preserves this general knowledge and reduces the number of trainable parameters, speeding up training and preventing overfitting on small datasets.</p>
+      <p><b>Value range:</b> 0 – 12 (IndoBERT‑base has 12 transformer layers).</p>
+      <p><b>Recommendation:</b> <b>9</b> (freeze the first 9 layers, fine‑tune the top 3) is a good starting point for small sentiment datasets. If you have a large dataset (>10k samples), you can unfreeze more (e.g., freeze 0 layers for full fine‑tuning).</p>
+    `,
         },
         ftGradAccum: {
           title: "Gradient Accumulation",
-          html: `<p><b>Definition:</b> Batches accumulated before weight update.</p>`,
+          html: `
+      <p><b>Definition:</b> The number of mini‑batches to process before performing a single weight update. Effectively simulates a larger batch size without needing more GPU memory. Suppose your GPU can only handle a batch size of 8, but you want the effect of a batch of 32. Set <b>Gradient Accumulation = 4</b>. The model processes 4 batches of size 8, accumulating the gradients, and then updates the weights once.</p>
+      <p><b>Value range:</b> 1 – 8 (integer). 1 means no accumulation.</p>
+      <p><b>Recommendation:</b> Keep <b>1</b> unless you need a larger effective batch. Increase if training is unstable or you want a “bigger batch” effect on limited hardware.</p>
+    `,
         },
         ftMaxGradNorm: {
           title: "Max Grad Norm",
-          html: `<p><b>Definition:</b> Maximum gradient norm for clipping.</p>`,
+          html: `
+      <p><b>Definition:</b> The maximum allowed length of the gradient vector. If the gradient becomes larger, it is scaled down to this value. Gradients can sometimes explode, causing very large weight updates that ruin training. Gradient clipping limits the size of those updates, improving stability.</p>
+      <p><b>Value range:</b> 0.5 – 5.0 (common).</p>
+      <p><b>Recommendation:</b> <b>1.0</b> is a universal starting point. If training becomes very erratic, you can try 0.5.</p>
+    `,
         },
         enableUMAP: {
           title: "UMAP (Enable)",
-          html: `<p><b>Definition:</b> Activates UMAP dimensionality reduction.</p>`,
+          html: `
+      <p><b>Definition:</b> Whether to apply UMAP (Uniform Manifold Approximation and Projection) to reduce the dimensionality of the sentence vectors before feeding them into KNN. IndoBERT outputs vectors of size 768 (or similar). UMAP compresses this high‑dimensional space into fewer dimensions while trying to preserve the local and global structure. This can help KNN work faster and sometimes better, especially if the original embedding contains noise.</p>
+      <p><b>Options:</b> Enabled / Disabled</p>
+      <p><b>Recommendation:</b> Consider enabling if your dataset is moderate (a few thousand examples) and you see poor KNN performance. It makes the KNN step much faster. For very small datasets (<500), it may not be necessary.</p>
+    `,
         },
         umapNComponents: {
           title: "n_components (UMAP)",
-          html: `<p><b>Definition:</b> Number of dimensions in UMAP output.</p>`,
+          html: `
+      <p><b>Definition:</b> The number of dimensions in the reduced space produced by UMAP. A small value (e.g., 5) captures only major patterns; a larger value (e.g., 50) preserves more fine‑grained information but increases KNN computation time.</p>
+      <p><b>Value range:</b> 2 – 100. Must be less than the original dimension (usually ≤ 768).</p>
+      <p><b>Recommendation:</b> Start with <b>5 – 10</b>. If you lose too much accuracy, raise to 20–50. Keep it below 100 to avoid slow KNN.</p>
+    `,
         },
         umapNNeighbors: {
           title: "n_neighbors (UMAP)",
-          html: `<p><b>Definition:</b> Number of neighbor points for local structure.</p>`,
+          html: `
+      <p><b>Definition:</b> The size of the local neighborhood considered by UMAP. Larger values produce more global structure; smaller values focus on fine local detail. A low number (e.g., 5) means UMAP will try to preserve very close neighbor relationships, which may unravel the global shape. A high number (e.g., 50) forces a broader view, potentially merging distinct clusters.</p>
+      <p><b>Value range:</b> 2 – 200.</p>
+      <p><b>Recommendation:</b> <b>15 – 30</b> is a balanced range. For small datasets (<1k samples), use 10–15; for larger ones, 30–50 is acceptable.</p>
+    `,
         },
         umapMinDist: {
           title: "min_dist (UMAP)",
-          html: `<p><b>Definition:</b> Minimum distance between points in output.</p>`,
+          html: `
+      <p><b>Definition:</b> The minimum distance between points in the low‑dimensional space. Controls how clumped the points are. A very small value (0.0) allows points to be packed tightly; structures like clusters may be more visible. A larger value (0.5) forces points to spread out, which can help separate classes visually but may hide dense clusters.</p>
+      <p><b>Value range:</b> 0.0 – 1.0.</p>
+      <p><b>Recommendation:</b> <b>0.1</b> works well for most cases. If KNN performance suffers because classes overlap too much, try 0.05.</p>
+    `,
         },
         umapMetric: {
           title: "metric (UMAP)",
-          html: `<p><b>Definition:</b> Distance measurement method.</p>`,
+          html: `
+      <p><b>Definition:</b> The distance measure used by UMAP to compare the similarity of two vectors.</p>
+      <p><b>Options:</b> <b>cosine</b> (angle‑based, often best for text), <b>euclidean</b> (straight‑line distance), <b>manhattan</b> (grid‑like distance).</p>
+      <p><b>Recommendation:</b> <b>cosine</b> is recommended for BERT embeddings because they are often compared by direction, not magnitude.</p>
+    `,
         },
         umapRandomState: {
           title: "random_state (UMAP)",
-          html: `<p><b>Definition:</b> Seed for UMAP reproducibility.</p>`,
+          html: `
+      <p><b>Definition:</b> The seed that controls the random initial placement of points in UMAP, allowing reproducible results.</p>
+      <p><b>Value range:</b> Any integer.</p>
+      <p><b>Recommendation:</b> Use the same <b>42</b> as the main Random State to keep everything deterministic.</p>
+    `,
         },
         knnK: {
           title: "k (n_neighbors) KNN",
-          html: `<p><b>Definition:</b> Number of nearest neighbors.</p>`,
+          html: `
+      <p><b>Definition:</b> The number of nearest neighbors considered when KNN makes a prediction. Given a new sentence, KNN finds the <i>k</i> most similar sentences in the training set and predicts the emotion by majority vote (or weighted vote).</p>
+      <p><b>Value range:</b> 1 – 50 (odd numbers preferred to avoid ties).</p>
+      <p><b>Recommendation:</b> Start with <b>5 – 15</b>. A very small <i>k</i> (e.g., 1) makes the model sensitive to noise; a very large <i>k</i> may blur class boundaries. Use <b>7</b> as a default.</p>
+    `,
         },
         knnMetric: {
           title: "Distance Metric (KNN)",
-          html: `<p><b>Definition:</b> How similarity is measured.</p>`,
+          html: `
+      <p><b>Definition:</b> How KNN measures “closeness” between two vectors.</p>
+      <p><b>Options:</b> <b>cosine</b>, <b>euclidean</b>, <b>manhattan</b>.</p>
+      <p><b>Recommendation:</b> <b>cosine</b> is strongly recommended for textual embeddings as it focuses on direction rather than absolute length.</p>
+    `,
         },
         knnWeights: {
           title: "Weights (KNN)",
-          html: `<p><b>Definition:</b> How neighbor votes are weighted.</p>`,
+          html: `
+      <p><b>Definition:</b> How much influence each neighbor’s vote has.</p>
+      <p><b>Options:</b>
+        <ul>
+          <li><b>uniform</b> – all <i>k</i> neighbors count equally.</li>
+          <li><b>distance</b> – closer neighbors get more weight (inversely proportional to distance).</li>
+        </ul>
+      </p>
+      <p><b>Recommendation:</b> <b>distance</b> usually gives better results because it reduces the impact of distant outliers.</p>
+    `,
         },
         knnAlgorithm: {
           title: "Algorithm (KNN)",
-          html: `<p><b>Definition:</b> Algorithm for nearest neighbor search.</p>`,
+          html: `
+      <p><b>Definition:</b> The method used internally to find the nearest neighbors quickly.</p>
+      <p><b>Options:</b> <b>auto</b> (chooses the best algorithm for your data size), <b>ball_tree</b>, <b>kd_tree</b>, <b>brute</b>.</p>
+      <p><b>Recommendation:</b> Leave as <b>auto</b> – the library will select an efficient algorithm automatically.</p>
+    `,
         },
         knnLeafSize: {
           title: "Leaf Size (KNN)",
-          html: `<p><b>Definition:</b> Leaf size for tree-based algorithms.</p>`,
+          html: `
+      <p><b>Definition:</b> The number of points at which a node in the tree‑based algorithms (kd_tree or ball_tree) stops splitting. Only relevant if algorithm is tree‑based.</p>
+      <p><b>Value range:</b> 1 – 100 (integer).</p>
+      <p><b>Recommendation:</b> The default <b>30</b> works fine. Adjust only if you notice performance issues with very large datasets; larger leaf sizes slightly speed up queries but reduce tree quality.</p>
+    `,
         },
         knnP: {
           title: "p (Minkowski) KNN",
-          html: `<p><b>Definition:</b> Minkowski metric parameter.</p>`,
+          html: `
+      <p><b>Definition:</b> The power parameter for the Minkowski distance metric. Only relevant when <i>knnMetric</i> is set to 'minkowski'.</p>
+      <p><b>Value range:</b> <b>1</b> (Manhattan distance), <b>2</b> (Euclidean distance).</p>
+      <p><b>Recommendation:</b> Since you are using cosine/euclidean directly, this parameter usually has no effect. Keep default <b>2</b>.</p>
+    `,
         },
         hybridMethod: {
           title: "Confidence Adjustment (Hybrid)",
-          html: `<p><b>Definition:</b> Method for correcting KNN probabilities.</p>`,
+          html: `
+      <p><b>Definition:</b> A method to refine KNN’s probability estimates by incorporating the distance‑based confidence of the nearest neighbors.</p>
+      <p><b>Options:</b>
+        <ul>
+          <li><b>KNN Murni (none)</b> – raw KNN probabilities are used as‑is.</li>
+          <li><b>Confidence‑based</b> – multiplies the KNN probability by a confidence score derived from the average distance to the neighbors. Closer neighbors → higher confidence.</li>
+          <li><b>Weighted Average</b> – combines KNN probability and confidence with a weighted average (alpha factor).</li>
+        </ul>
+      </p>
+      <p><b>Recommendation:</b> Start with <b>KNN Murni</b> to establish a baseline. Experiment with <i>Confidence‑based</i> if you suspect some neighbors are uncertain.</p>
+    `,
         },
         targetDim: {
           title: "Target Embedding Dimension",
-          html: `<p><b>Definition:</b> Final dimension of feature vector for KNN.</p>`,
+          html: `
+      <p><b>Definition:</b> The final size of the feature vector that will be passed to KNN. This influences how much information from IndoBERT is retained.</p>
+      <p><b>How it works:</b> IndoBERT’s pooled output is a vector of size 768 (or the dimension after UMAP). <i>Target Dim</i> can be the same as the pooled output or a smaller number you wish to project to. Here it often matches the UMAP output dimension when UMAP is enabled.</p>
+      <p><b>Value range:</b> 2 – 768.</p>
+      <p><b>Recommendation:</b> Keep <b>768</b> unless you have a specific reason to reduce it. When UMAP is enabled, set it equal to <i>n_components</i>.</p>
+    `,
         },
+
+        // ==================== LEXICON-NB ====================
         lexiconAlpha: {
           title: "Alpha (Laplace Smoothing)",
-          html: `<p><b>Definition:</b> Laplace smoothing parameter for Naive Bayes.</p>`,
+          html: `
+      <p><b>Definition:</b> The Laplace (additive) smoothing parameter for the Naive Bayes classifier. It prevents zero probabilities when a word never appears in a particular class. The algorithm adds <i>alpha</i> to each word count so that no probability becomes zero.</p>
+      <p><b>Value range:</b> 0.0 – 2.0 (common). A value of 1.0 is classic Laplace smoothing; smaller values (e.g., 0.1) give less smoothing, larger values (e.g., 1.5) smooth more aggressively.</p>
+      <p><b>Recommendation:</b> Start with <b>1.0</b>. If the model seems underconfident or overconfident on rare words, adjust slightly. For very large vocabularies, a slightly lower alpha (0.5) may work better.</p>
+    `,
         },
         lexiconModelType: {
           title: "Model Type (Naive Bayes)",
-          html: `<p><b>Definition:</b> Variant of Naive Bayes.</p>`,
+          html: `
+      <p><b>Definition:</b> The variant of the Naive Bayes algorithm used for classification.</p>
+      <p><b>Options:</b>
+        <ul>
+          <li><b>MultinomialNB</b> – suitable for discrete features (e.g., word counts). It models the probability of a word’s frequency given the class. Best for text classification with count vectors.</li>
+          <li><b>BernoulliNB</b> – designed for binary features (word present/absent). It may work better on short texts or when word frequency is less important than word presence.</li>
+        </ul>
+      </p>
+      <p><b>Recommendation:</b> Use <b>MultinomialNB</b> for most text datasets. Try <b>BernoulliNB</b> if your texts are very short (e.g., tweets, titles) and word repetition is not informative.</p>
+    `,
         },
         lexiconVectorizer: {
           title: "Vectorizer",
-          html: `<p><b>Definition:</b> Method to convert text to numeric vector.</p>`,
+          html: `
+      <p><b>Definition:</b> The method used to convert the raw text into numerical vectors that the Naive Bayes model can understand.</p>
+      <p><b>Options:</b>
+        <ul>
+          <li><b>CountVectorizer</b> – builds a vocabulary of known words and counts how many times each word appears in a sentence. Simple and effective.</li>
+          <li><b>TfidfVectorizer</b> – similar to CountVectorizer, but weights words by their importance: common words across all documents are downscaled, while rare but discriminative words are boosted.</li>
+        </ul>
+      </p>
+      <p><b>Recommendation:</b> <b>TfidfVectorizer</b> often outperforms CountVectorizer because it reduces the impact of stop words and very frequent terms. Use <b>CountVectorizer</b> for a quick baseline or when word presence is the only signal.</p>
+    `,
         },
         emotionRanking: {
           title: "Emotion Ranking Order",
-          html: `<p><b>Definition:</b> Priority order of 7 emotions.</p>`,
+          html: `
+      <p><b>Definition:</b> The priority order of the seven basic emotions used by the lexicon‑based part of the system. When multiple emotions are detected, the one with the lowest rank number (highest priority) is selected first. Each emotion must have a unique rank from 1 (most preferred) to 7 (least preferred).</p>
+      <p><b>How it works:</b> The lexicon scorer returns scores for all emotions. If there is a tie, the ranking decides which emotion wins.</p>
+      <p><b>Recommendation:</b> The default order follows typical sentiment analysis conventions. Adjust only if you have domain knowledge that some emotion should be preferred in ambiguous cases.</p>
+    `,
         },
         fusionMethodSelect: {
           title: "Fusion Method",
-          html: `<p><b>Definition:</b> Method for combining NB and Lexicon scores.</p>`,
+          html: `
+      <p><b>Definition:</b> The method used to combine the predictions from the Naive Bayes model and the Lexicon‑based scorer into a single final prediction.</p>
+      <p><b>Options:</b>
+        <ul>
+          <li><b>Product</b> – multiplies the Naive Bayes probability by (1 + lexicon score). The lexicon acts as a booster.</li>
+          <li><b>Sum</b> – simply adds the Naive Bayes probability and the lexicon score. Both have equal influence.</li>
+          <li><b>Weighted Average</b> – takes a weighted combination: α * P(NB) + (1‑α) * S(lexicon). The weight α controls the balance.</li>
+        </ul>
+      </p>
+      <p><b>Recommendation:</b> Start with <b>Product</b> as a robust baseline. <b>Weighted Average</b> gives you the most control if you find that one source is more reliable, but you need to tune the weight.</p>
+    `,
         },
         fusionFormulaInput: {
           title: "Fusion Formula",
-          html: `<p><b>Definition:</b> Formula for the selected fusion method.</p>`,
+          html: `
+      <p><b>Definition:</b> The mathematical formula corresponding to the selected fusion method. This field is read‑only and shows you exactly how the two scores are combined.</p>
+      <p><b>Formulas:</b>
+        <ul>
+          <li><b>Product:</b> P_final = P_NB × (1 + S_lexicon)</li>
+          <li><b>Sum:</b> P_final = P_NB + S_lexicon</li>
+          <li><b>Weighted Average:</b> P_final = α · P_NB + (1 − α) · S_lexicon</li>
+        </ul>
+      </p>
+      <p><b>Note:</b> α (alpha) is configured in the hybrid/weighted parameter if weighted average is selected.</p>
+    `,
         },
       };
 
@@ -1815,7 +2171,7 @@
         if (e.target === detailModal) detailModal.classList.remove("show");
       });
 
-      // ==================== API HELPERS ====================
+      // ==================== SPLIT RATIOS ====================
       function getHeaders() {
         const token = localStorage.getItem("access_token");
         return {
@@ -1824,13 +2180,20 @@
         };
       }
 
-      // ==================== SPLIT RATIOS ====================
-      function getHeaders() {
-        const token = localStorage.getItem("access_token");
-        return {
-          "Content-Type": "application/json",
-          Authorization: token ? `Bearer ${token}` : "",
-        };
+      async function fetchConfigById(configId) {
+        try {
+          const res = await fetch(
+            `${API_BASE}/api/processing/configs/${configId}`,
+            {
+              headers: getHeaders(),
+            },
+          );
+          if (!res.ok) throw new Error("Config not found");
+          return await res.json();
+        } catch (err) {
+          console.error(err);
+          return null;
+        }
       }
 
       async function loadSplitRatios() {
@@ -2199,6 +2562,32 @@
         }
       }
 
+      function lockAllParameterInputs(lock) {
+        const tuningDiv = document.getElementById("tuningContent");
+        if (!tuningDiv) return;
+        const inputs = tuningDiv.querySelectorAll("input, select, textarea");
+        inputs.forEach((el) => {
+          // Jangan kunci radio model choice & tombol-tombol utama
+          if (
+            el.closest("#modelChoiceNew") ||
+            el.closest("#modelChoiceExisting") ||
+            el.closest("#btnSelectExistingModel") ||
+            el.closest("#startTrainingBtnIndo") ||
+            el.closest("#startTrainingBtnLex") ||
+            el.closest("#findBestRatioBtn") ||
+            el.closest("#findBestRatioBtnNB")
+          ) {
+            return;
+          }
+          el.disabled = lock;
+        });
+        // Juga tangani checkbox enable/disable yang memiliki event khusus
+        const enableFinetune = document.getElementById("enableFinetune");
+        const enableUMAP = document.getElementById("enableUMAP");
+        if (enableFinetune) enableFinetune.disabled = lock;
+        if (enableUMAP) enableUMAP.disabled = lock;
+      }
+
       function closeModelSelectPopup() {
         const popup = document.getElementById("modelSelectPopup");
         const container = popup.querySelector(".modal-container");
@@ -2206,23 +2595,30 @@
         setTimeout(() => popup.classList.add("hidden"), 200);
       }
 
-      function selectExistingModel(model) {
-        // Isi nama model
-        const modelName =
-          model.config_name || model.dataset_filename || "Model #" + model.id;
-        document.getElementById("modelNameInput").value = modelName;
-
-        // Ambil parameter
-        const params = model.params || trainingParamsStore[model.id] || {};
-        const algorithm = model.algorithm || getCurrentAlgoName();
-
-        if (algorithm === "IndoBERT-KNN") {
-          fillIndobertParams(params);
-        } else if (algorithm === "Lexicon-NB") {
-          fillLexiconParams(params);
+      async function selectExistingModel(model) {
+        const configId = model.model_config_id;
+        if (!configId) {
+          alert("Config ID tidak ditemukan pada model ini.");
+          return;
         }
-        selectedExistingConfigId = model.id;
-        // Tutup pop-up
+        const config = await fetchConfigById(configId);
+        if (!config) {
+          alert("Gagal memuat detail konfigurasi.");
+          return;
+        }
+
+        // Isi nama
+        document.getElementById("modelNameInput").value = config.name;
+
+        // Isi parameter
+        if (config.algorithm === "IndoBERT-KNN") {
+          fillIndobertParams(config.params);
+        } else if (config.algorithm === "Lexicon-NB") {
+          fillLexiconParams(config.params);
+        }
+
+        selectedExistingConfigId = config.id;
+
         closeModelSelectPopup();
       }
 
@@ -2605,11 +3001,17 @@
         container.dataset.bestId = best.id;
       }
 
-      function showParamModal(id) {
-        const model = trainingHistory.find((m) => m.id == id);
-        const params = model?.params || trainingParamsStore[id] || {};
+      async function showParamModal(id) {
+        const training = trainingHistory.find((m) => m.id == id);
+        if (!training) return;
+        const configId = training.model_config_id;
+        let params = {};
+        if (configId) {
+          const config = await fetchConfigById(configId);
+          if (config) params = config.params || {};
+        }
         const content = document.getElementById("paramModalContent");
-        let paramsHtml = `<div class="space-y-2"><p class="font-semibold">Model: ${model?.algorithm || "Tidak diketahui"}</p>`;
+        let paramsHtml = `<div class="space-y-2"><p class="font-semibold">Model: ${training.algorithm || "Tidak diketahui"}</p>`;
         if (Object.keys(params).length === 0) {
           paramsHtml +=
             '<p class="text-gray-500">Parameter lengkap tidak tersedia.</p>';
@@ -2742,20 +3144,282 @@
           return;
         }
         const algorithm = document.getElementById("tuningAlgo").value;
+        const algoName =
+          algorithm === "indobert" ? "IndoBERT-KNN" : "Lexicon-NB";
         const ratioSelect = document.getElementById("ratioSelect");
-        const ratioValue = ratioSelect.value;
-        if (!ratioValue) {
+        if (!ratioSelect.value) {
           alert("Please select a split ratio.");
           return;
         }
-        const [trainPct, testPct] = ratioValue.split("-").map(Number);
 
-        let params = {};
+        // Validasi jika existing model dipilih
+        const modelChoiceExisting = document.getElementById(
+          "modelChoiceExisting",
+        ).checked;
+        if (modelChoiceExisting && !selectedExistingConfigId) {
+          alert(
+            "Silakan pilih model terlebih dahulu dengan mengklik tombol 'Select Model'.",
+          );
+          return;
+        }
+
+        // Kumpulkan parameter dari form
+        const currentParams = buildParamsFromForm(algorithm);
+
+        try {
+          let configId;
+
+          if (selectedExistingConfig) {
+            const currentName = modelNameInput;
+            const isNameSame = currentName === selectedExistingConfig.name;
+            const isParamsSame =
+              JSON.stringify(currentParams) ===
+              JSON.stringify(selectedExistingConfig.params);
+
+            if (isNameSame && isParamsSame) {
+              // Tidak ada perubahan -> gunakan ID konfigurasi existing
+              configId = selectedExistingConfig.id;
+            } else {
+              // Ada perubahan -> buat konfigurasi baru
+              const configRes = await fetch(
+                `${API_BASE}/api/processing/configs`,
+                {
+                  method: "POST",
+                  headers: getHeaders(),
+                  body: JSON.stringify({
+                    name: currentName,
+                    algorithm: algoName,
+                    params: currentParams,
+                  }),
+                },
+              );
+              if (!configRes.ok) {
+                const err = await configRes.json();
+                alert(
+                  "Gagal menyimpan konfigurasi: " + (err.error || "Unknown"),
+                );
+                return;
+              }
+              const configData = await configRes.json();
+              configId = configData.id;
+            }
+          } else {
+            // Tidak ada konfigurasi existing -> buat baru
+            const configRes = await fetch(
+              `${API_BASE}/api/processing/configs`,
+              {
+                method: "POST",
+                headers: getHeaders(),
+                body: JSON.stringify({
+                  name: modelNameInput,
+                  algorithm: algoName,
+                  params: currentParams,
+                }),
+              },
+            );
+            if (!configRes.ok) {
+              const err = await configRes.json();
+              alert("Gagal menyimpan konfigurasi: " + (err.error || "Unknown"));
+              return;
+            }
+            const configData = await configRes.json();
+            configId = configData.id;
+          }
+
+          // Jalankan training
+          const trainRes = await fetch(`${API_BASE}/api/training/start`, {
+            method: "POST",
+            headers: getHeaders(),
+            body: JSON.stringify({
+              config_id: configId,
+              dataset_path: dataset,
+            }),
+          });
+          if (!trainRes.ok) {
+            const err = await trainRes.json();
+            alert("Gagal memulai training: " + (err.error || "Unknown"));
+            return;
+          }
+          const trainData = await trainRes.json();
+          startTrainingPolling(trainData.id);
+        } catch (err) {
+          console.error(err);
+          alert("Terjadi kesalahan jaringan");
+        }
+      }
+
+      async function startFindBestRatio(algorithm) {
+        const dataset = document.getElementById("datasetSelect").value;
+        if (!dataset) {
+          alert("Please select a dataset first.");
+          return;
+        }
+        const modelNameBase = document
+          .getElementById("modelNameInput")
+          .value.trim();
+        if (!modelNameBase) {
+          alert("Please enter a model name (will be used as prefix).");
+          return;
+        }
+
+        // Cek apakah Fine-Tuning atau UMAP menyala
+        const ftEnabled = document.getElementById("enableFinetune").checked;
+        const umapEnabled = document.getElementById("enableUMAP").checked;
+        if (ftEnabled || umapEnabled) {
+          const msg =
+            "Fine-Tuning dan/atau UMAP masih aktif. Proses Find Best Ratio akan sangat lama. " +
+            "Disarankan untuk menonaktifkannya. Lanjutkan? (Fine-Tuning & UMAP akan dinonaktifkan otomatis)";
+          const userConfirmed = await showConfirmModal(msg);
+          if (!userConfirmed) {
+            bestRatioRunning = false;
+            return;
+          }
+        }
+
+        bestRatioRunning = true;
+        bestRatioResults = [];
+
+        // Ambil daftar rasio tersedia, urutkan berdasarkan train (asc)
+        const ratios = [...splitRatios].sort((a, b) => a.train - b.train);
+        if (ratios.length === 0) {
+          alert(
+            "Tidak ada split ratio yang tersimpan. Tambahkan minimal satu ratio terlebih dahulu.",
+          );
+          bestRatioRunning = false;
+          return;
+        }
+
+        // Tampilkan progress bar batch
+        document.getElementById("batchProgressIndo").style.display = "block";
+        const progressText = document.getElementById("batchProgressTextIndo");
+        progressText.textContent = "Preparing Best Ratio search...";
+
+        // Simpan parameter saat ini dari form (kecuali finetune & umap akan kita override)
+        const baseParams = buildParamsFromForm(algorithm);
+
+        // Override finetune dan umap ke disabled
+        baseParams.finetune = { enabled: false };
+        baseParams.umap = { enabled: false };
+
+        const algoName =
+          algorithm === "indobert" ? "IndoBERT-KNN" : "Lexicon-NB";
+
+        for (let i = 0; i < ratios.length; i++) {
+          const ratio = ratios[i];
+          progressText.textContent = `Training ratio ${ratio.train}:${ratio.test} (${i + 1}/${ratios.length})...`;
+
+          // Buat params dengan split sesuai ratio ini
+          const params = JSON.parse(JSON.stringify(baseParams));
+          if (algorithm === "indobert") {
+            params.split.train = ratio.train;
+            params.split.test = ratio.test;
+          } else {
+            params.split.train = ratio.train;
+            params.split.test = ratio.test;
+          }
+
+          const configName = `${modelNameBase}_bestratio_${ratio.train}-${ratio.test}`;
+
+          try {
+            // Buat konfigurasi baru
+            const configRes = await fetch(
+              `${API_BASE}/api/processing/configs`,
+              {
+                method: "POST",
+                headers: getHeaders(),
+                body: JSON.stringify({
+                  name: configName,
+                  algorithm: algoName,
+                  params: params,
+                }),
+              },
+            );
+            if (!configRes.ok) {
+              const err = await configRes.json();
+              console.error("Create config failed:", err);
+              bestRatioResults.push({
+                ratio: `${ratio.train}:${ratio.test}`,
+                train: ratio.train,
+                test: ratio.test,
+                accuracy: null,
+                f1: null,
+                duration: "Gagal",
+                status: "failed",
+              });
+              continue;
+            }
+            const configData = await configRes.json();
+            const configId = configData.id;
+
+            // Jalankan training
+            const trainRes = await fetch(`${API_BASE}/api/training/start`, {
+              method: "POST",
+              headers: getHeaders(),
+              body: JSON.stringify({
+                config_id: configId,
+                dataset_path: dataset,
+              }),
+            });
+            if (!trainRes.ok) {
+              const err = await trainRes.json();
+              console.error("Start training failed:", err);
+              bestRatioResults.push({
+                ratio: `${ratio.train}:${ratio.test}`,
+                train: ratio.train,
+                test: ratio.test,
+                accuracy: null,
+                f1: null,
+                duration: "Gagal",
+                status: "failed",
+              });
+              continue;
+            }
+            const trainData = await trainRes.json();
+            const trainingId = trainData.id;
+
+            // Polling sampai selesai
+            const result = await pollTrainingUntilDone(trainingId);
+            bestRatioResults.push({
+              ratio: `${ratio.train}:${ratio.test}`,
+              train: ratio.train,
+              test: ratio.test,
+              accuracy: result.metrics?.accuracy ?? null,
+              f1: result.metrics?.f1_score ?? null,
+              duration: result.duration || "?",
+              status: result.status,
+            });
+          } catch (error) {
+            console.error("Error during ratio training:", error);
+            bestRatioResults.push({
+              ratio: `${ratio.train}:${ratio.test}`,
+              train: ratio.train,
+              test: ratio.test,
+              accuracy: null,
+              f1: null,
+              duration: "Error",
+              status: "failed",
+            });
+          }
+        }
+
+        bestRatioRunning = false;
+        document.getElementById("batchProgressIndo").style.display = "none";
+        progressText.textContent = "";
+
+        // Tampilkan modal hasil
+        showBestRatioModal();
+      }
+
+      function buildParamsFromForm(algorithm) {
         if (algorithm === "indobert") {
           const general = {
             randomState: parseInt(document.getElementById("randomState").value),
             shuffle: true,
           };
+          const ratioSelect = document.getElementById("ratioSelect");
+          const [trainPct, testPct] = (ratioSelect.value || "80-20")
+            .split("-")
+            .map(Number);
           const splitConfig = {
             type: "percentage",
             train: trainPct,
@@ -2837,7 +3501,7 @@
             method: document.getElementById("hybridMethod").value,
             alpha: 0.7,
           };
-          params = {
+          return {
             general,
             split: splitConfig,
             indobert,
@@ -2847,19 +3511,10 @@
             hybrid,
           };
         } else {
+          // Lexicon-NB
           const rankSelects = document.querySelectorAll(
             "#emotionRankingContainer select.emotion-rank",
           );
-          const rankValues = Array.from(rankSelects).map((s) =>
-            parseInt(s.value),
-          );
-          const unique = new Set(rankValues);
-          if (unique.size !== emotionLabels.length) {
-            alert(
-              "Setiap emosi harus memiliki ranking unik (1-7). Silakan atur kembali.",
-            );
-            return;
-          }
           const emotionRankings = {};
           rankSelects.forEach((sel) => {
             const emotion = sel.getAttribute("data-emotion");
@@ -2869,12 +3524,12 @@
             document.getElementById("fusionMethodSelect").value;
           const fusionFormula =
             document.getElementById("fusionFormulaInput").value;
-          params = {
+          return {
             general: { randomState: 42 },
             split: {
               type: "crossval",
-              train: trainPct,
-              test: testPct,
+              train: 80,
+              test: 20,
               crossval: { folds: 10 },
             },
             naivebayes: {
@@ -2888,56 +3543,49 @@
             fusion: { method: fusionMethod, formula: fusionFormula },
           };
         }
+      }
 
-        try {
-          let configId;
-
-          if (selectedExistingConfigId) {
-            // Gunakan konfigurasi yang sudah dipilih (Use Existing Model)
-            configId = selectedExistingConfigId;
-          } else {
-            // Buat konfigurasi baru
-            const configRes = await fetch(
-              `${API_BASE}/api/processing/configs`,
-              {
-                method: "POST",
-                headers: getHeaders(),
-                body: JSON.stringify({
-                  name: modelNameInput,
-                  algorithm:
-                    algorithm === "indobert" ? "IndoBERT-KNN" : "Lexicon-NB",
-                  params: params,
-                }),
-              },
-            );
-            if (!configRes.ok) {
-              const err = await configRes.json();
-              alert("Gagal menyimpan konfigurasi: " + (err.error || "Unknown"));
-              return;
+      async function pollTrainingUntilDone(trainingId) {
+        return new Promise((resolve) => {
+          const poll = async () => {
+            try {
+              const res = await fetch(
+                `${API_BASE}/api/training/status/${trainingId}`,
+                {
+                  headers: getHeaders(),
+                },
+              );
+              if (!res.ok) {
+                resolve({ status: "failed", metrics: null, duration: "Error" });
+                return;
+              }
+              const data = await res.json();
+              if (data.status === "completed" || data.status === "failed") {
+                let duration = "?";
+                if (data.created_at) {
+                  const start = new Date(data.created_at);
+                  const end = data.completed_at
+                    ? new Date(data.completed_at)
+                    : new Date();
+                  const diffSec = Math.floor((end - start) / 1000);
+                  const min = Math.floor(diffSec / 60);
+                  const sec = diffSec % 60;
+                  duration = min > 0 ? `${min}m ${sec}s` : `${sec}s`;
+                }
+                resolve({
+                  status: data.status,
+                  metrics: data.metrics,
+                  duration,
+                });
+              } else {
+                setTimeout(poll, 2000);
+              }
+            } catch (err) {
+              resolve({ status: "failed", metrics: null, duration: "Error" });
             }
-            const configData = await configRes.json();
-            configId = configData.id;
-          }
-
-          const trainRes = await fetch(`${API_BASE}/api/training/start`, {
-            method: "POST",
-            headers: getHeaders(),
-            body: JSON.stringify({
-              config_id: configId,
-              dataset_path: dataset,
-            }),
-          });
-          if (!trainRes.ok) {
-            const err = await trainRes.json();
-            alert("Gagal memulai training: " + (err.error || "Unknown"));
-            return;
-          }
-          const trainData = await trainRes.json();
-          startTrainingPolling(trainData.id);
-        } catch (err) {
-          console.error(err);
-          alert("Terjadi kesalahan jaringan");
-        }
+          };
+          poll();
+        });
       }
 
       // ==================== LOAD DATASET ====================
@@ -2962,6 +3610,53 @@
       }
 
       // ==================== EVENT LISTENERS ====================
+      document
+        .getElementById("closeBestRatioModal")
+        .addEventListener("click", closeBestRatioModal);
+      document
+        .getElementById("applyBestRatioBtn")
+        .addEventListener("click", () => {
+          const modal = document.getElementById("bestRatioModal");
+          const bestEntry = modal._bestEntry;
+          if (bestEntry) {
+            const ratioSelect = document.getElementById("ratioSelect");
+            // Cari option yang sesuai
+            const options = ratioSelect.options;
+            for (let i = 0; i < options.length; i++) {
+              if (options[i].value === `${bestEntry.train}-${bestEntry.test}`) {
+                ratioSelect.selectedIndex = i;
+                break;
+              }
+            }
+          }
+          closeBestRatioModal();
+        });
+
+      function closeBestRatioModal() {
+        const modal = document.getElementById("bestRatioModal");
+        const container = modal.querySelector(".modal-container");
+        if (container) container.classList.remove("show");
+        setTimeout(() => modal.classList.add("hidden"), 200);
+      }
+      document
+        .getElementById("findBestRatioBtn")
+        ?.addEventListener("click", () => {
+          if (bestRatioRunning) {
+            alert("Proses Find Best Ratio sedang berjalan.");
+            return;
+          }
+          startFindBestRatio("indobert");
+        });
+      document
+        .getElementById("findBestRatioBtnNB")
+        ?.addEventListener("click", () => {
+          if (bestRatioRunning) {
+            alert("Proses Find Best Ratio sedang berjalan.");
+            return;
+          }
+          startFindBestRatio("lexicon");
+        });
+
       document
         .getElementById("startTrainingBtnIndo")
         .addEventListener("click", onStartTraining);
@@ -3002,18 +3697,20 @@
         .addEventListener("change", function () {
           if (this.checked) {
             selectedExistingConfigId = null;
+            selectedExistingConfig = null; // ← baru
             document
               .getElementById("btnSelectExistingModel")
               .classList.add("hidden");
             document.getElementById("modelChoiceHint").innerHTML =
               '<i class="fas fa-info-circle mr-1"></i> Parameter akan di-reset ke default. Anda bisa mengaturnya sendiri.';
             document.getElementById("modelNameInput").value = "";
-            // Reset parameter ke default sesuai algoritma
+            lockAllParameterInputs(false);
             const algo = document.getElementById("tuningAlgo").value;
             if (algo === "indobert") resetIndobertToDefault();
             else resetLexiconToDefault();
           }
         });
+
       document
         .getElementById("modelChoiceExisting")
         .addEventListener("change", function () {
