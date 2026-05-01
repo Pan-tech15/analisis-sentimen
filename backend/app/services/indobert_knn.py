@@ -5,7 +5,7 @@ import traceback
 import pandas as pd
 import numpy as np
 import joblib
-from datetime import datetime
+from datetime import datetime, timezone
 
 # ML Libraries
 import torch
@@ -631,7 +631,7 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             training.metrics = metrics
             training.metrics['holdout_path'] = holdout_path
             training.metrics['progress_message'] = f"Selesai. Akurasi: {metrics['accuracy']}"
-            training.completed_at = datetime.utcnow()
+            training.completed_at = datetime.now(timezone.utc)
             db.session.commit()
             log(f"Training {training_id} selesai!", training_id)
 

@@ -8,6 +8,7 @@ from app.models.model_config import ModelConfig
 from app.models.training import Training
 from app.services.indobert_knn import train_indobert_knn
 from app.services.lexicon_nb import train_lexicon_nb
+from app.models.preprocessing import Preprocessing
 
 training_bp = Blueprint('training', __name__, url_prefix='/api/training')
 
@@ -52,10 +53,19 @@ def start_training():
     config = ModelConfig.query.get(config_id)
     if not config:
         return jsonify({'error': 'Konfigurasi tidak ditemukan'}), 404
+    
+    dataset_id = None
+    try:
+        preprocessing = Preprocessing.query.filter_by(preprocessed_filepath=dataset_path).first()
+        if preprocessing:
+            dataset_id = preprocessing.dataset_id
+    except:
+        pass
 
     training = Training(
         model_config_id=config_id,
         dataset_filename=os.path.basename(dataset_path),
+        dataset_id=dataset_id,
         status='pending'
     )
     db.session.add(training)

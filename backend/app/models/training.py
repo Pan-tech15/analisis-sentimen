@@ -1,5 +1,5 @@
 from app import db
-from datetime import datetime
+from datetime import datetime, timezone
 
 class Training(db.Model):
     __tablename__ = 'trainings'
@@ -11,13 +11,19 @@ class Training(db.Model):
     progress = db.Column(db.Integer, default=0)
     metrics = db.Column(db.JSON)
     model_path = db.Column(db.String(255))
-    created_at = db.Column(db.DateTime, default=datetime.now)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     completed_at = db.Column(db.DateTime)
+    dataset_id = db.Column(db.Integer, db.ForeignKey('datasets.id'), nullable=True)
+    dataset = db.relationship('Dataset', backref='trainings')
 
     # Gunakan back_populates
     config = db.relationship('ModelConfig', back_populates='trainings', passive_deletes=True)
 
-    def to_dict(self):
+    def to_dict(self):      # ✅ sekarang di dalam kelas
+        dataset_name = None
+        if self.dataset:
+            dataset_name = self.dataset.dataset_name
+
         split_ratio = None
         if self.config and self.config.params:
             split = self.config.params.get('split', {})
@@ -25,12 +31,15 @@ class Training(db.Model):
             test = split.get('test')
             if train is not None and test is not None:
                 split_ratio = f"{train}:{test}"
+
         return {
             'id': self.id,
             'model_config_id': self.model_config_id,
             'config_name': self.config.name if self.config else None,
             'algorithm': self.config.algorithm if self.config else None,
             'dataset_filename': self.dataset_filename,
+            'dataset_name': dataset_name,
+            'dataset_id': self.dataset_id,
             'status': self.status,
             'progress': self.progress,
             'metrics': self.metrics,

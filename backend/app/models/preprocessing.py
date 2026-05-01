@@ -6,6 +6,7 @@ class Preprocessing(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     dataset_id = db.Column(db.Integer, db.ForeignKey('datasets.id'), nullable=False)
+    dataset = db.relationship('Dataset', backref='preprocessings')
     preprocessed_filepath = db.Column(db.String(500), nullable=False)
     row_count = db.Column(db.Integer, default=0)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
