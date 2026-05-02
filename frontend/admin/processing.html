@@ -1518,54 +1518,88 @@
       </div>
     </div>
 
-    <!-- POP-UP: Select an Existing Model -->
+   <!-- POP-UP: Select an Existing Model -->
+<div
+  id="modelSelectPopup"
+  class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-[3000] modal-backdrop"
+>
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[85vh] flex flex-col relative transform transition-all modal-container">
+    <!-- Header -->
     <div
-      id="modelSelectPopup"
-      class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-[3000] modal-backdrop"
+      class="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 border-b px-6 py-4 flex justify-between items-center rounded-t-2xl text-white"
     >
-      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[80vh] flex flex-col relative transform transition-all modal-container">
-        <div
-          class="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 border-b px-6 py-4 flex justify-between items-center rounded-t-2xl text-white"
-        >
-          <h2 class="text-xl font-bold flex items-center">
-            <i class="fas fa-list mr-2"></i> Select an Existing Model
-          </h2>
-          <button
-            id="closeModelSelectPopup"
-            class="text-white hover:text-gray-200"
-          >
-            <i class="fas fa-times text-2xl"></i>
+      <h2 class="text-xl font-bold flex items-center">
+        <i class="fas fa-list mr-2"></i> Select an Existing Model
+      </h2>
+      <button
+        id="closeModelSelectPopup"
+        class="text-white hover:text-gray-200"
+      >
+        <i class="fas fa-times text-2xl"></i>
+      </button>
+    </div>
+
+    <!-- Konten (scroll vertikal) -->
+    <div class="flex-1 min-h-0 overflow-y-auto p-6 custom-scroll">
+      <!-- Filter Section -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Search text</label>
+          <input type="text" id="popupSearchInput" placeholder="Nama model, dataset..."
+                 class="w-full border rounded p-1.5 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">From date</label>
+          <input type="date" id="popupDateFromInput" class="w-full border rounded p-1.5 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">To date</label>
+          <input type="date" id="popupDateToInput" class="w-full border rounded p-1.5 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Min Accuracy (%)</label>
+          <input type="number" id="popupMinAccuracyInput" placeholder="0" min="0" max="100"
+                 class="w-full border rounded p-1.5 text-sm">
+        </div>
+        <div class="flex items-end">
+          <button id="applyPopupFilterBtn"
+                  class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-sm w-full">
+            <i class="fas fa-filter mr-1"></i>Apply Filter
           </button>
         </div>
-        <div class="flex-1 min-h-0 overflow-y-auto p-6 custom-scroll">
-          <p class="text-sm text-gray-600 mb-4" id="popupAlgoLabel">
-            Showing the model for the algorithm:<strong id="popupAlgoName"
-              >IndoBERT-KNN</strong
-            >
-          </p>
-          <div class="overflow-x-auto">
-            <table class="min-w-full border border-gray-200">
-              <thead class="bg-blue-500 text-white">
-                <tr>
-                  <th class="px-4 py-2 border border-blue-400">No</th>
-                  <th class="px-4 py-2 border border-blue-400">Nama Model</th>
-                  <th class="px-4 py-2 border border-blue-400">Accuracy</th>
-                  <th class="px-4 py-2 border border-blue-400">Dataset</th>
-                  <th class="px-4 py-2 border border-blue-400">Date</th>
-                </tr>
-              </thead>
-              <tbody id="modelSelectTableBody"></tbody>
-            </table>
-          </div>
-          <div id="modelSelectPopupPagination" class="flex justify-center mt-4"></div>
-          <p id="noModelMessage" class="text-center text-gray-500 py-8 hidden">
-            <i class="fas fa-info-circle mr-1"></i> There are no saved models
-            for this algorithm yet.
-          </p>
-        </div>
       </div>
+
+      <!-- Label algoritma -->
+      <p class="text-sm text-gray-600 mb-4" id="popupAlgoLabel">
+        Showing the model for the algorithm:<strong id="popupAlgoName">IndoBERT-KNN</strong>
+      </p>
+
+      <!-- Tabel -->
+      <div class="overflow-x-auto">
+        <table class="min-w-full border border-gray-200">
+          <thead class="bg-blue-500 text-white">
+            <tr>
+              <th class="px-4 py-2 border border-blue-400">No</th>
+              <th class="px-4 py-2 border border-blue-400">Nama Model</th>
+              <th class="px-4 py-2 border border-blue-400">Accuracy</th>
+              <th class="px-4 py-2 border border-blue-400">Dataset</th>
+              <th class="px-4 py-2 border border-blue-400">Date</th>
+            </tr>
+          </thead>
+          <tbody id="modelSelectTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div id="modelSelectPopupPagination" class="flex justify-center mt-4"></div>
+      <p id="noModelMessage" class="text-center text-gray-500 py-8 hidden">
+        <i class="fas fa-info-circle mr-1"></i> There are no saved models
+        for this algorithm yet.
+      </p>
     </div>
-    <!-- AKHIR modelSelectPopup -->
+  </div>
+</div>
+<!-- AKHIR modelSelectPopup -->
 
     <!-- POP-UP: Best Ratio Results (sekarang di luar, berdiri sendiri) -->
     <div
@@ -2705,18 +2739,88 @@ document.addEventListener('DOMContentLoaded', function() {
       let currentModelPopupPage = 1;
 const rowsPerModelPopupPage = 10;
 
-      function openModelSelectPopup() {
+  function openModelSelectPopup() {
   updatePopupAlgoLabel();
+  
+  // Reset isian filter
+  document.getElementById('popupSearchInput').value = '';
+  document.getElementById('popupDateFromInput').value = '';
+  document.getElementById('popupDateToInput').value = '';
+  document.getElementById('popupMinAccuracyInput').value = '';
+  
+  // Reset state filter
+  popupFilter = { search: '', dateFrom: '', dateTo: '', minAccuracy: null };
+  
+  // Tampilkan semua model sesuai algoritma
   const algoName = getCurrentAlgoName();
-  const filtered = trainingHistory.filter(m => m.algorithm === algoName);
-  window.popupFilteredModels = filtered;  // simpan global sementara
+  window.popupFilteredModels = trainingHistory.filter(m => m.algorithm === algoName);
   currentModelPopupPage = 1;
   renderModelSelectTable();
+
   const popup = document.getElementById('modelSelectPopup');
   popup.classList.remove('hidden');
   const container = popup.querySelector('.modal-container');
   if (container) setTimeout(() => container.classList.add('show'), 10);
 }
+
+// State filter pop-up
+let popupFilter = {
+  search: '',
+  dateFrom: '',
+  dateTo: '',
+  minAccuracy: null
+};
+
+// Fungsi untuk menjalankan filter
+function applyPopupFilter() {
+  const algo = getCurrentAlgoName();
+  let filtered = trainingHistory.filter(m => m.algorithm === algo);
+
+  const search = popupFilter.search.toLowerCase();
+  if (search) {
+    filtered = filtered.filter(m => {
+      const name = (m.config_name || m.dataset_filename || '').toLowerCase();
+      const dataset = (m.dataset_filename || '').toLowerCase();
+      return name.includes(search) || dataset.includes(search);
+    });
+  }
+
+  if (popupFilter.dateFrom) {
+    const from = new Date(popupFilter.dateFrom);
+    filtered = filtered.filter(m => m.created_at && new Date(m.created_at) >= from);
+  }
+  if (popupFilter.dateTo) {
+    const to = new Date(popupFilter.dateTo);
+    to.setHours(23, 59, 59, 999);
+    filtered = filtered.filter(m => m.created_at && new Date(m.created_at) <= to);
+  }
+
+  if (popupFilter.minAccuracy !== null && !isNaN(popupFilter.minAccuracy)) {
+    filtered = filtered.filter(m => {
+      const acc = m.metrics?.accuracy;
+      return acc != null && (acc * 100) >= popupFilter.minAccuracy;
+    });
+  }
+
+  window.popupFilteredModels = filtered;
+  currentModelPopupPage = 1;
+  renderModelSelectTable();
+}
+
+// Pasang event listener setelah DOM siap
+document.addEventListener('DOMContentLoaded', function() {
+  const applyBtn = document.getElementById('applyPopupFilterBtn');
+  if (applyBtn) {
+    applyBtn.addEventListener('click', function() {
+      popupFilter.search = document.getElementById('popupSearchInput').value.trim();
+      popupFilter.dateFrom = document.getElementById('popupDateFromInput').value;
+      popupFilter.dateTo = document.getElementById('popupDateToInput').value;
+      const minAcc = parseFloat(document.getElementById('popupMinAccuracyInput').value);
+      popupFilter.minAccuracy = isNaN(minAcc) ? null : minAcc;
+      applyPopupFilter();
+    });
+  }
+});
 
 function renderModelSelectTable() {
   const filtered = window.popupFilteredModels || [];
