@@ -334,8 +334,6 @@
                     Dataset/Input
                   </th>
                   <th class="px-4 py-2 border border-blue-400">Model</th>
-                  <th class="px-4 py-2 border border-blue-400">Train Ratio</th>
-                  <th class="px-4 py-2 border border-blue-400">Test Ratio</th>
                   <th class="px-4 py-2 border border-blue-400">Accuracy</th>
                   <th class="px-4 py-2 border border-blue-400">F1-Score</th>
                   <th class="px-4 py-2 border border-blue-400">Date</th>
@@ -561,7 +559,7 @@
           const tbody = document.getElementById("testResultsBody");
           tbody.innerHTML = "";
           if (pageData.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-gray-500">No test results yet. </td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-500">No test results yet. </td></tr>`;
             return;
           }
           pageData.forEach((item) => {
@@ -572,14 +570,10 @@
                 : "-";
             row.insertCell(0).innerHTML = datasetInfo;
             row.insertCell(1).innerHTML = item.algorithm || "-";
-            // Tambahan kolom Train Ratio dan Test Ratio
-            const trainRatioCell = row.insertCell(2);
-            trainRatioCell.innerHTML = item.train_ratio != null ? item.train_ratio : "-";
-            const testRatioCell = row.insertCell(3);
-            testRatioCell.innerHTML = item.test_ratio != null ? item.test_ratio : "-";
-            
-            row.insertCell(4).innerHTML = item.accuracy != null ? item.accuracy.toFixed(3) : "-";
-            row.insertCell(5).innerHTML = item.f1_score != null ? item.f1_score.toFixed(3) : "-";
+            row.insertCell(2).innerHTML =
+              item.accuracy != null ? item.accuracy.toFixed(3) : "-";
+            row.insertCell(3).innerHTML =
+              item.f1_score != null ? item.f1_score.toFixed(3) : "-";
             const d = item.tested_at ? new Date(item.tested_at) : null;
             if (d) {
               const dd = String(d.getDate()).padStart(2, "0");
@@ -587,11 +581,11 @@
               const yy = String(d.getFullYear()).slice(-2);
               const hh = String(d.getHours()).padStart(2, "0");
               const min = String(d.getMinutes()).padStart(2, "0");
-              row.insertCell(6).innerHTML = `${dd}/${mm}/${yy}, ${hh}.${min}`;
+              row.insertCell(4).innerHTML = `${dd}/${mm}/${yy}, ${hh}.${min}`;
             } else {
-              row.insertCell(6).innerHTML = "-";
+              row.insertCell(4).innerHTML = "-";
             }
-            const act = row.insertCell(7);
+            const act = row.insertCell(5);
             act.className = "px-4 py-2 border border-gray-200 text-center";
             act.innerHTML = `<a href="validasi-testing.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2"><i class="fas fa-eye"></i></a>`;
             for (let cell of row.cells)

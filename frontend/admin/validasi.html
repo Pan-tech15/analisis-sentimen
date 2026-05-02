@@ -464,25 +464,43 @@
               container.appendChild(header);
             }
 
+            // ========== MODIFIKASI BAGIAN SPLIT ==========
             const split = params.split || {};
-            addCategoryHeader("🔀 Data Sharing");
-            addItem(
-              "Method",
-              split.type === "crossval"
-                ? `Cross Validation (${split.crossval?.folds || "-"} folds)`
-                : `Percentage Split (${split.train || "-"}:${split.test || "-"})`,
-              "fa-code-branch",
-            );
-            if (split.type === "crossval") {
-              addItem(
-                "Number of folds",
-                split.crossval?.folds || "-",
-                "fa-layer-group",
-              );
-            } else {
-              addItem("Rasio Train", split.train || "-", "fa-chart-pie");
-              addItem("Rasio Test", split.test || "-", "fa-chart-pie");
+            const isCrossVal = split.type === "crossval";
+
+            // Fallback rasio train/test untuk Naive Bayes (atau model lain)
+            let trainVal = split.train;
+            let testVal = split.test;
+
+            if ((trainVal === undefined || trainVal === null) && params.naivebayes) {
+              trainVal = params.naivebayes.train_ratio ||
+                         params.naivebayes.train_size ||
+                         params.naivebayes.train;
             }
+            if ((testVal === undefined || testVal === null) && params.naivebayes) {
+              testVal = params.naivebayes.test_ratio ||
+                        params.naivebayes.test_size ||
+                        params.naivebayes.test;
+            }
+
+            let methodDesc = '';
+            if (isCrossVal) {
+              methodDesc = `Cross Validation (${split.crossval?.folds || '-'} folds)`;
+            } else {
+              methodDesc = `Percentage Split`;
+              if (trainVal && testVal) methodDesc += ` (${trainVal}:${testVal})`;
+            }
+
+            addCategoryHeader("🔀 Data Sharing");
+            addItem("Method", methodDesc, "fa-code-branch");
+
+            if (isCrossVal) {
+              addItem("Number of folds", split.crossval?.folds || '-', "fa-layer-group");
+            } else {
+              addItem("Rasio Train", trainVal || '-', "fa-chart-pie");
+              addItem("Rasio Test", testVal || '-', "fa-chart-pie");
+            }
+            // ========== AKHIR MODIFIKASI ==========
 
             if (params.naivebayes) {
               const nb = params.naivebayes;
