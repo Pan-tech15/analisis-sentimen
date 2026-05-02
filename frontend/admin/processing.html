@@ -3704,10 +3704,18 @@
           return;
         }
 
-        // Tampilkan progress bar batch
-        document.getElementById("batchProgressIndo").style.display = "block";
-        const progressText = document.getElementById("batchProgressTextIndo");
-        progressText.textContent = "Preparing Best Ratio search...";
+        // Tampilkan progress bar batch sesuai algoritma
+        const progressContainer = document.getElementById(
+          algorithm === "indobert" ? "batchProgressIndo" : "batchProgressLex",
+        );
+        const progressText = document.getElementById(
+          algorithm === "indobert"
+            ? "batchProgressTextIndo"
+            : "batchProgressTextLex",
+        );
+        if (progressContainer) progressContainer.style.display = "block";
+        if (progressText)
+          progressText.textContent = "Preparing Best Ratio search...";
 
         // Simpan parameter saat ini dari form (kecuali finetune & umap akan kita override)
         const baseParams = buildParamsFromForm(algorithm);
@@ -3818,8 +3826,8 @@
         }
 
         bestRatioRunning = false;
-        document.getElementById("batchProgressIndo").style.display = "none";
-        progressText.textContent = "";
+        if (progressContainer) progressContainer.style.display = "none";
+        if (progressText) progressText.textContent = "";
 
         // Tampilkan modal hasil
         showBestRatioModal();
@@ -3982,10 +3990,15 @@
                   const end = data.completed_at
                     ? new Date(data.completed_at)
                     : new Date();
-                  const diffSec = Math.floor((end - start) / 1000);
-                  const min = Math.floor(diffSec / 60);
-                  const sec = diffSec % 60;
-                  duration = min > 0 ? `${min}m ${sec}s` : `${sec}s`;
+                  const diffMs = end - start;
+                  const diffSec = Math.floor(diffMs / 1000);
+                  if (diffSec <= 0) {
+                    duration = "<1s";
+                  } else {
+                    const min = Math.floor(diffSec / 60);
+                    const sec = diffSec % 60;
+                    duration = min > 0 ? `${min}m ${sec}s` : `${sec}s`;
+                  }
                 }
                 resolve({
                   status: data.status,

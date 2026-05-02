@@ -57,6 +57,9 @@ def create_app():
     from app.routes.testing import testing_bp        # <-- tambahan
     app.register_blueprint(testing_bp)                # <-- tambahan
 
+    from app.routes.dashboard import dashboard_bp
+    app.register_blueprint(dashboard_bp)
+
     @app.route('/')
     def index():
         return {'message': 'Backend is running'}

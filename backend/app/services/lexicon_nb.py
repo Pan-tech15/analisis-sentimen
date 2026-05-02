@@ -44,14 +44,6 @@ def update_progress(app, training_id, progress, message=None):
             if message:
                 log(message, training_id)
 
-# ------------------ PREPROCESSING ------------------
-def preprocess_text(text):
-    text = str(text).lower()
-    text = re.sub(r'[^\w\s]', ' ', text)
-    text = re.sub(r'\d+', '', text)
-    text = re.sub(r'\s+', ' ', text).strip()
-    return text
-
 # ------------------ BANGUN DICTIONARY LEXICON DARI DATA LATIH ------------------
 def build_dictionary_lexicon(texts, labels, classes):
     lexicon = {c: {} for c in classes}
@@ -215,7 +207,7 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
 
             # ========== SIMPAN HOLD-OUT SET (DATA UJI) ==========
             original_texts = df['kalimat'].tolist()
-            original_labels = df['label'].tolist()   
+            original_labels = df['label'].tolist()
 
             # Split data menjadi training (80%) dan hold-out (20%) dengan stratifikasi penuh
             train_texts, holdout_texts, train_labels, holdout_labels = train_test_split(
@@ -225,7 +217,7 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                 stratify=original_labels
             )
 
-            # Simpan hold-out set ke file CSV
+            # Simpan hold-out set ke file CSV (kalimat mentah)
             holdout_df = pd.DataFrame({
                 'kalimat': holdout_texts,
                 'label': holdout_labels
@@ -237,9 +229,31 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
             holdout_df.to_csv(holdout_path, index=False)
             log(f"Hold-out set disimpan di {holdout_path}", training_id)
 
-            # Mulai dari sini, GUNAKAN HANYA DATA TRAINING
-            texts = [preprocess_text(t) for t in train_texts]
-            labels = train_labels
+            # ========== PREPROCESSING TEKS TRAINING ==========
+            # Gunakan kolom cleaned_kalimat jika tersedia, jika tidak, pakai Sastrawi
+            if 'cleaned_kalimat' in df.columns:
+                # Ambil teks yang sudah bersih dari hasil preprocessing (sudah pakai Sastrawi)
+                # train_texts adalah list, kita perlu cocokkan dengan indeks asli df
+                # Karena train_test_split mengembalikan list, kita bisa menggunakan index dari df yang asli
+                # Untuk mempermudah, kita gunakan train_df kembali dengan index asli (df_index setelah reset)
+                # Cara aman: buat DataFrame sementara dari train_texts, tapi lebih mudah: kita split df langsung
+                # KITA TETAP GUNAKAN CARA SPLIT DF LANGSUNG DI SINI AGAR MUDAH MENGAMBIL cleaned_kalimat
+                train_df = df.loc[df.index.isin(df.index[:len(train_texts)])]   # tidak akurat
+                # Karena di atas kita split list, kita tidak punya indeks asli.
+                # Solusi terbaik: lakukan split ulang pada df untuk mendapatkan train_df
+                # (Jangan khawatir, karena random_state sama, hasil split akan SAMA)
+                log("Kolom 'cleaned_kalimat' ditemukan, mengambil teks yang sudah di-preprocessing.", training_id)
+                train_df, _ = train_test_split(
+                    df, test_size=test_ratio, random_state=random_state, stratify=df['label']
+                )
+                texts = train_df['cleaned_kalimat'].fillna('').astype(str).tolist()
+                labels = train_df['label'].tolist()
+            else:
+                log("Kolom 'cleaned_kalimat' tidak ditemukan, melakukan preprocessing manual dengan Sastrawi.", training_id)
+                from app.utils.preprocessing_utils import preprocess_text as sastrawi_preprocess
+                texts = [sastrawi_preprocess(t) for t in train_texts]
+                labels = train_labels
+
             total_samples = len(texts)
             log(f"Jumlah sampel training: {total_samples}", training_id)
             log(f"Label unik: {set(labels)}", training_id)
