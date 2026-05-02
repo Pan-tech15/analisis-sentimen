@@ -376,6 +376,7 @@
           return response;
         }
 
+        // ------------------- PAGINATION STYLE DATASET -------------------
         function renderPaginationControls(
           containerId,
           currentPage,
@@ -386,20 +387,29 @@
           if (!container) return;
           container.innerHTML = "";
           if (totalPages <= 1) return;
+
           const wrapper = document.createElement("div");
           wrapper.className = "flex items-center space-x-2";
+
+          // Previous button
           const prevBtn = document.createElement("button");
           prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
-          prevBtn.className = `px-3 py-1 rounded border ${currentPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
+          prevBtn.className = `px-3 py-1 rounded border ${
+            currentPage === 1
+              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+              : "bg-white hover:bg-blue-50"
+          }`;
           prevBtn.disabled = currentPage === 1;
           prevBtn.onclick = () => {
             if (currentPage > 1) onPageChange(currentPage - 1);
           };
           wrapper.appendChild(prevBtn);
+
           const pageInfo = document.createElement("span");
           pageInfo.className = "text-gray-700";
           pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
           wrapper.appendChild(pageInfo);
+
           const pageInput = document.createElement("input");
           pageInput.type = "number";
           pageInput.min = 1;
@@ -407,6 +417,7 @@
           pageInput.value = currentPage;
           pageInput.className = "w-16 border rounded px-2 py-1 text-center";
           wrapper.appendChild(pageInput);
+
           const goBtn = document.createElement("button");
           goBtn.innerText = "Go";
           goBtn.className =
@@ -419,17 +430,25 @@
             onPageChange(newPage);
           };
           wrapper.appendChild(goBtn);
+
+          // Next button
           const nextBtn = document.createElement("button");
           nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
-          nextBtn.className = `px-3 py-1 rounded border ${currentPage === totalPages ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
+          nextBtn.className = `px-3 py-1 rounded border ${
+            currentPage === totalPages
+              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+              : "bg-white hover:bg-blue-50"
+          }`;
           nextBtn.disabled = currentPage === totalPages;
           nextBtn.onclick = () => {
             if (currentPage < totalPages) onPageChange(currentPage + 1);
           };
           wrapper.appendChild(nextBtn);
+
           container.appendChild(wrapper);
         }
 
+        // ------------------- MODEL LOADING -------------------
         async function loadTrainedModels() {
           try {
             const res = await apiFetch("/api/training/history");
@@ -513,6 +532,7 @@
           }
         }
 
+        // ------------------- TEST RESULTS -------------------
         async function loadTestResults() {
           try {
             const res = await apiFetch("/api/testing/history");
@@ -521,6 +541,7 @@
             testResults.sort(
               (a, b) => new Date(b.tested_at) - new Date(a.tested_at),
             );
+            currentPage = 1;
             renderTestTable();
             renderTestPagination();
           } catch (err) {
@@ -581,13 +602,14 @@
             (newPage) => {
               currentPage = newPage;
               renderTestTable();
+              renderTestPagination();
             },
           );
         }
 
+        // ------------------- START TESTING -------------------
         async function startTesting() {
           const modelId = document.getElementById("selectedModelId").value;
-          const algorithm = document.getElementById("selectedAlgorithm").value;
           if (!modelId) {
             alert("Please select a trained model.");
             return;
