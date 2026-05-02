@@ -464,43 +464,55 @@
               container.appendChild(header);
             }
 
-            // ========== MODIFIKASI BAGIAN SPLIT ==========
+            // ========== DATA SHARING (PERBAIKAN) ==========
             const split = params.split || {};
             const isCrossVal = split.type === "crossval";
 
-            // Fallback rasio train/test untuk Naive Bayes (atau model lain)
             let trainVal = split.train;
             let testVal = split.test;
 
+            // Fallback ke params.naivebayes jika tidak ada di split
             if ((trainVal === undefined || trainVal === null) && params.naivebayes) {
-              trainVal = params.naivebayes.train_ratio ||
-                         params.naivebayes.train_size ||
-                         params.naivebayes.train;
+              trainVal = params.naivebayes.train_ratio || params.naivebayes.train_size || params.naivebayes.train;
             }
             if ((testVal === undefined || testVal === null) && params.naivebayes) {
-              testVal = params.naivebayes.test_ratio ||
-                        params.naivebayes.test_size ||
-                        params.naivebayes.test;
+              testVal = params.naivebayes.test_ratio || params.naivebayes.test_size || params.naivebayes.test;
             }
 
-            let methodDesc = '';
+            // 🔧 PERBAIKAN: Jika hanya test diketahui, hitung train = 100 - test
+            if ((trainVal === undefined || trainVal === null) && testVal !== undefined && testVal !== null) {
+              const testNum = parseFloat(testVal);
+              if (!isNaN(testNum)) trainVal = String(100 - testNum);
+            }
+            // 🔧 PERBAIKAN: Jika hanya train diketahui, hitung test = 100 - train
+            if ((testVal === undefined || testVal === null) && trainVal !== undefined && trainVal !== null) {
+              const trainNum = parseFloat(trainVal);
+              if (!isNaN(trainNum)) testVal = String(100 - trainNum);
+            }
+
+            const trainDisplay = trainVal !== undefined ? String(trainVal) : "-";
+            const testDisplay = testVal !== undefined ? String(testVal) : "-";
+
+            let methodDesc = "";
             if (isCrossVal) {
-              methodDesc = `Cross Validation (${split.crossval?.folds || '-'} folds)`;
+              methodDesc = `Cross Validation (${split.crossval?.folds || "-"} folds)`;
             } else {
-              methodDesc = `Percentage Split`;
-              if (trainVal && testVal) methodDesc += ` (${trainVal}:${testVal})`;
+              methodDesc = "Percentage Split";
+              if (trainDisplay !== "-" && testDisplay !== "-") {
+                methodDesc += ` (${trainDisplay}:${testDisplay})`;
+              }
             }
 
             addCategoryHeader("🔀 Data Sharing");
             addItem("Method", methodDesc, "fa-code-branch");
 
             if (isCrossVal) {
-              addItem("Number of folds", split.crossval?.folds || '-', "fa-layer-group");
+              addItem("Number of folds", split.crossval?.folds || "-", "fa-layer-group");
             } else {
-              addItem("Rasio Train", trainVal || '-', "fa-chart-pie");
-              addItem("Rasio Test", testVal || '-', "fa-chart-pie");
+              addItem("Rasio Train", trainDisplay, "fa-chart-pie");
+              addItem("Rasio Test", testDisplay, "fa-chart-pie");
             }
-            // ========== AKHIR MODIFIKASI ==========
+            // ========== AKHIR DATA SHARING ==========
 
             if (params.naivebayes) {
               const nb = params.naivebayes;
