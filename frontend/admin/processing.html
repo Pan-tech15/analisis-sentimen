@@ -1226,7 +1226,6 @@
     </button>
   </div>
 </div>
-                </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label class="block text-sm text-gray-600"
@@ -1524,9 +1523,7 @@
       id="modelSelectPopup"
       class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-[3000] modal-backdrop"
     >
-      <div
-        class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden relative transform transition-all modal-container"
-      >
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[80vh] flex flex-col relative transform transition-all modal-container">
         <div
           class="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 border-b px-6 py-4 flex justify-between items-center rounded-t-2xl text-white"
         >
@@ -1540,7 +1537,7 @@
             <i class="fas fa-times text-2xl"></i>
           </button>
         </div>
-        <div class="overflow-y-auto p-6 custom-scroll">
+        <div class="flex-1 min-h-0 overflow-y-auto p-6 custom-scroll">
           <p class="text-sm text-gray-600 mb-4" id="popupAlgoLabel">
             Showing the model for the algorithm:<strong id="popupAlgoName"
               >IndoBERT-KNN</strong
