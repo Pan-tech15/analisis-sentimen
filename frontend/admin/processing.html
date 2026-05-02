@@ -1429,7 +1429,7 @@
                 <tr>
                   <th class="px-4 py-2 border border-blue-400">Rasio</th>
                   <th class="px-4 py-2 border border-blue-400">Dataset</th>
-                  <th class="px-4 py-2 border border-blue-400">Config Name</th>
+                  <th class="px-4 py-2 border border-blue-400">Model Name</th>
                   <th class="px-4 py-2 border border-blue-400">Algorithm</th>
                   <th class="px-4 py-2 border border-blue-400">Accuracy</th>
                   <th class="px-4 py-2 border border-blue-400">Date</th>
@@ -1441,6 +1441,25 @@
             </table>
           </div>
           <div id="trainingPagination" class="flex justify-center mt-4"></div>
+          <div class="mt-2 flex justify-start text-xs text-gray-500 gap-4">
+            <span class="flex items-center gap-1"
+              ><i class="fas fa-eye text-blue-500"></i> Vieww Evaluation</span
+            >
+            <span class="flex items-center gap-1"
+              ><i class="fas fa-download text-green-600"></i> Download
+              Model</span
+            >
+            <span class="flex items-center gap-1"
+              ><i class="fas fa-vial text-purple-500"></i> Testing</span
+            >
+            <span class="flex items-center gap-1"
+              ><i class="fas fa-chevron-down text-gray-600"></i> Quick
+              View</span
+            >
+            <span class="flex items-center gap-1"
+              ><i class="fas fa-trash text-red-500"></i> Hapus</span
+            >
+          </div>
         </div>
 
         <!-- Highest Yielding Model -->
@@ -2374,7 +2393,7 @@
 
       function renderSplitPagination() {
         const totalPages = Math.ceil(splitRatios.length / rowsPerSplitPage);
-        renderPaginationControls(
+        renderSimplePaginationControls(
           "splitPagination",
           currentSplitPage,
           totalPages,
@@ -2449,7 +2468,7 @@
         renderSplitTable();
       }
 
-      function renderPaginationControls(
+      function renderSimplePaginationControls(
         containerId,
         currentPage,
         totalPages,
@@ -2587,9 +2606,9 @@
             lex.classList.remove("hidden");
           }
           updatePopupAlgoLabel();
-          renderBestModel(
-            this.value === "indobert" ? "IndoBERT-KNN" : "Lexicon-NB",
-          );
+          const algo =
+            this.value === "indobert" ? "IndoBERT-KNN" : "Lexicon-NB";
+          renderBestModel(algo);
         });
       document.getElementById("indobertTuning").classList.remove("hidden");
       document.getElementById("lexiconTuning").classList.add("hidden");
@@ -2990,9 +3009,10 @@
           console.error(err);
           trainingHistory = [];
         }
+        console.log("Total training history:", trainingHistory.length);
         renderTrainingTable();
         renderTrainingPagination();
-        renderBestModel();
+        renderBestModel("IndoBERT-KNN");
       }
 
       function renderTrainingTable() {
@@ -3061,10 +3081,6 @@
             else if (acc >= 0.7) badgeClass = "accuracy-medium";
             accCell.innerHTML = `<span class="accuracy-badge ${badgeClass}">${accPercent}%</span>`;
             // Tambahkan metrik mini di bawah akurasi
-            const f1 = item.metrics?.f1_score;
-            if (f1 != null) {
-              accCell.innerHTML += `<div class="text-xs text-gray-500 mt-1">F1: ${(f1 * 100).toFixed(1)}%</div>`;
-            }
           } else {
             accCell.innerHTML = "-";
           }
@@ -3136,10 +3152,7 @@
             const id = btn.dataset.id;
             const t = trainingHistory.find((x) => x.id == id);
             if (t && t.model_path) {
-              window.open(
-                `${API_BASE}/data/models/${t.model_path.split("/").pop()}`,
-                "_blank",
-              );
+              window.open(`${API_BASE}/api/training/${id}/download`, "_blank");
             }
           });
         });
@@ -3236,6 +3249,96 @@
         });
       }
 
+      function renderPaginationControls(
+        containerId,
+        currentPage,
+        totalPages,
+        onPageChange,
+      ) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = "";
+        if (totalPages <= 1) return;
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "flex items-center justify-center space-x-2";
+
+        // Previous button
+        const prevBtn = document.createElement("button");
+        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+        prevBtn.className = `px-3 py-1 rounded border ${currentPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.onclick = () => {
+          if (currentPage > 1) onPageChange(currentPage - 1);
+        };
+        wrapper.appendChild(prevBtn);
+
+        // Halaman angka dengan ellipsis
+        const maxVisible = 5;
+        let pages = [];
+        if (totalPages <= maxVisible + 2) {
+          for (let i = 1; i <= totalPages; i++) pages.push(i);
+        } else {
+          pages.push(1);
+          if (currentPage > 3) pages.push("...");
+          let start = Math.max(2, currentPage - 1);
+          let end = Math.min(totalPages - 1, currentPage + 1);
+          for (let i = start; i <= end; i++) pages.push(i);
+          if (currentPage < totalPages - 2) pages.push("...");
+          pages.push(totalPages);
+        }
+
+        pages.forEach((p) => {
+          if (p === "...") {
+            const span = document.createElement("span");
+            span.className = "px-2";
+            span.innerText = "...";
+            wrapper.appendChild(span);
+          } else {
+            const pageBtn = document.createElement("button");
+            pageBtn.innerText = p;
+            pageBtn.className = `px-3 py-1 rounded border ${p === currentPage ? "bg-blue-600 text-white" : "bg-white hover:bg-blue-50"}`;
+            pageBtn.onclick = () => onPageChange(p);
+            wrapper.appendChild(pageBtn);
+          }
+        });
+
+        // Next button
+        const nextBtn = document.createElement("button");
+        nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        nextBtn.className = `px-3 py-1 rounded border ${currentPage === totalPages ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.onclick = () => {
+          if (currentPage < totalPages) onPageChange(currentPage + 1);
+        };
+        wrapper.appendChild(nextBtn);
+
+        // Input untuk lompat halaman
+        const jumpDiv = document.createElement("div");
+        jumpDiv.className = "flex items-center space-x-1 ml-2";
+        const pageInput = document.createElement("input");
+        pageInput.type = "number";
+        pageInput.min = 1;
+        pageInput.max = totalPages;
+        pageInput.value = currentPage;
+        pageInput.className = "w-16 border rounded px-2 py-1 text-center";
+        const goBtn = document.createElement("button");
+        goBtn.innerText = "Go";
+        goBtn.className =
+          "px-2 py-1 rounded border bg-blue-500 text-white hover:bg-blue-600 text-sm";
+        goBtn.onclick = () => {
+          let newPage = parseInt(pageInput.value);
+          if (isNaN(newPage) || newPage < 1) newPage = 1;
+          if (newPage > totalPages) newPage = totalPages;
+          onPageChange(newPage);
+        };
+        jumpDiv.appendChild(pageInput);
+        jumpDiv.appendChild(goBtn);
+        wrapper.appendChild(jumpDiv);
+
+        container.appendChild(wrapper);
+      }
+
       function renderTrainingPagination() {
         const filtered = getFilteredHistory();
         const totalPages = Math.ceil(filtered.length / rowsPerTrainingPage);
@@ -3246,6 +3349,7 @@
           (newPage) => {
             currentTrainingPage = newPage;
             renderTrainingTable();
+            renderTrainingPagination();
           },
         );
       }
@@ -3254,10 +3358,6 @@
       function renderBestModel(algorithm) {
         const container = document.getElementById("bestModelContainer");
         if (!container) return;
-        if (!algorithm) {
-          const algoSelect = document.getElementById("tuningAlgo").value;
-          algorithm = algoSelect === "indobert" ? "IndoBERT-KNN" : "Lexicon-NB";
-        }
         const filtered = trainingHistory.filter(
           (m) => m.algorithm === algorithm,
         );
@@ -3279,21 +3379,26 @@
         const accPercent = (best.metrics.accuracy * 100).toFixed(2);
         const params = best.params || trainingParamsStore[best.id] || {};
         container.innerHTML = `
-                <div class="border rounded-lg p-4 bg-gradient-to-r from-yellow-50 to-orange-50">
-                  <div class="flex flex-wrap justify-between items-start gap-4">
-                    <div>
-                      <p class="text-sm text-gray-500">Best Model (${algorithm})</p>
-                      <p class="font-bold text-lg text-gray-800">${best.config_name || best.dataset_filename || "-"}</p>
-                      <p class="text-sm text-gray-600">Dataset: ${best.dataset_filename || "-"}</p>
-                      <p class="text-sm text-gray-600">Ratio: ${best.split_ratio || "-"}</p>
-                      <p class="text-xl font-bold text-green-700 mt-1">Accuracy: ${accPercent}%</p>
-                      ${Object.keys(params).length > 0 ? `<button onclick="showParamModal(${best.id})" class="mt-2 bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 text-sm">Lihat Parameter</button>` : ""}
-                    </div>
-                    <a href="validasi.html?id=${best.id}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition inline-flex items-center space-x-2">
-                      <i class="fas fa-chart-bar"></i><span>Lihat Evaluasi</span>
-                    </a>
-                  </div>
-                </div>`;
+  <div class="border rounded-lg p-4 bg-gradient-to-r from-yellow-50 to-orange-50">
+    <div class="flex flex-wrap justify-between items-start gap-4">
+      <div>
+        <p class="text-sm text-gray-500">Best Model (${algorithm})</p>
+        <p class="font-bold text-lg text-gray-800">${best.config_name || best.dataset_filename || "-"}</p>
+        <p class="text-sm text-gray-600">Dataset: ${best.dataset_filename || "-"}</p>
+        <p class="text-sm text-gray-600">Ratio: ${best.split_ratio || "-"}</p>
+        <p class="text-xl font-bold text-green-700 mt-1">Accuracy: ${accPercent}%</p>
+        ${Object.keys(params).length > 0 ? `<button onclick="showParamModal(${best.id})" class="mt-2 bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 text-sm">Lihat Parameter</button>` : ""}
+      </div>
+      <div class="flex items-center space-x-2">
+        <a href="validasi.html?id=${best.id}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition inline-flex items-center space-x-2">
+          <i class="fas fa-chart-bar"></i><span>Lihat Evaluasi</span>
+        </a>
+        <a href="testing.html?id=${best.id}" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition inline-flex items-center space-x-2">
+          <i class="fas fa-vial"></i><span>Testing</span>
+        </a>
+      </div>
+    </div>
+  </div>`;
         container.dataset.bestId = best.id;
       }
 
@@ -4100,6 +4205,8 @@
             document.getElementById("filterMinAccuracy").value,
           );
           historyFilter.minAccuracy = isNaN(minAcc) ? null : minAcc;
+          currentTrainingPage = 1;
+          console.log("Total training history:", trainingHistory.length);
           currentTrainingPage = 1;
           renderTrainingTable();
           renderTrainingPagination();
