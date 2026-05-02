@@ -182,6 +182,10 @@
         margin-top: 0.75rem;
         display: none;
       }
+      .emotion-rank option:disabled {
+  color: #ccc;
+  background-color: #f3f3f3;
+}
     </style>
   </head>
   <body class="bg-gray-100 font-sans antialiased">
@@ -1210,21 +1214,18 @@
                   Parameter Configuration - Lexicon+NB
                 </h3>
                 <div class="mb-6 p-4 bg-gray-50 rounded-lg">
-                  <label
-                    class="text-sm font-medium text-gray-700 mb-3 flex items-center"
-                  >
-                    Emotion Ranking Order (1–7)
-                    <span
-                      class="info-icon"
-                      data-param-key="emotionRanking"
-                      data-tooltip="Priority order of 7 emotions."
-                      >ⓘ</span
-                    >
-                  </label>
-                  <div
-                    class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3"
-                    id="emotionRankingContainer"
-                  ></div>
+  <label class="text-sm font-medium text-gray-700 mb-3 flex items-center">
+    Emotion Ranking Order (1–7)
+    <span class="info-icon" data-param-key="emotionRanking" data-tooltip="Priority order of 7 emotions.">ⓘ</span>
+  </label>
+  <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3" id="emotionRankingContainer"></div>
+  <div class="flex justify-end mt-2">
+    <button id="clearEmotionRankingBtn" type="button"
+            class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm flex items-center gap-1">
+      <i class="fas fa-undo-alt"></i> Clear All
+    </button>
+  </div>
+</div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -1559,6 +1560,7 @@
               <tbody id="modelSelectTableBody"></tbody>
             </table>
           </div>
+          <div id="modelSelectPopupPagination" class="flex justify-center mt-4"></div>
           <p id="noModelMessage" class="text-center text-gray-500 py-8 hidden">
             <i class="fas fa-info-circle mr-1"></i> There are no saved models
             for this algorithm yet.
@@ -1773,31 +1775,80 @@
         });
       }
 
-      function createEmotionRankingDropdowns() {
-        const container = document.getElementById("emotionRankingContainer");
-        if (!container) return;
-        container.innerHTML = "";
-        emotionLabels.forEach((label, idx) => {
-          const div = document.createElement("div");
-          div.className = "flex flex-col items-center";
-          const span = document.createElement("span");
-          span.className = "text-xs text-gray-600 mb-1";
-          span.textContent = label;
-          const select = document.createElement("select");
-          select.className = "emotion-rank border rounded p-1 text-sm w-full";
-          select.setAttribute("data-emotion", label.toLowerCase());
-          for (let i = 1; i <= 7; i++) {
-            const opt = document.createElement("option");
-            opt.value = i;
-            opt.textContent = i;
-            if (i === idx + 1) opt.selected = true;
-            select.appendChild(opt);
-          }
-          div.appendChild(span);
-          div.appendChild(select);
-          container.appendChild(div);
-        });
+     function updateEmotionDropdowns() {
+  const selects = document.querySelectorAll('#emotionRankingContainer select.emotion-rank');
+  const selectedValues = new Set();
+  selects.forEach(sel => {
+    if (sel.value !== '') selectedValues.add(sel.value);
+  });
+
+  selects.forEach(sel => {
+    const currentVal = sel.value;
+    sel.querySelectorAll('option').forEach(opt => {
+      if (opt.value === '') {
+        opt.disabled = false;
+      } else {
+        opt.disabled = (selectedValues.has(opt.value) && opt.value !== currentVal);
       }
+    });
+  });
+}
+
+function clearAllEmotionRankings() {
+  const selects = document.querySelectorAll('#emotionRankingContainer select.emotion-rank');
+  selects.forEach(sel => { sel.value = ''; });
+  updateEmotionDropdowns();
+}
+
+function createEmotionRankingDropdowns() {
+  const container = document.getElementById('emotionRankingContainer');
+  if (!container) return;
+  container.innerHTML = '';
+  emotionLabels.forEach((label, idx) => {
+    const div = document.createElement('div');
+    div.className = 'flex flex-col items-center';
+    const span = document.createElement('span');
+    span.className = 'text-xs text-gray-600 mb-1';
+    span.textContent = label;
+    const select = document.createElement('select');
+    select.className = 'emotion-rank border rounded p-1 text-sm w-full';
+    select.setAttribute('data-emotion', label.toLowerCase());
+
+    // Opsi kosong
+    const emptyOpt = document.createElement('option');
+    emptyOpt.value = '';
+    emptyOpt.textContent = '--';
+    select.appendChild(emptyOpt);
+
+    // Opsi 1–7
+    for (let i = 1; i <= 7; i++) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = i;
+      if (i === defaultLexiconParams.emotionRankings[label]) {
+        opt.selected = true;   // isi default sesuai konfigurasi
+      }
+      select.appendChild(opt);
+    }
+
+    select.addEventListener('change', updateEmotionDropdowns);
+    div.appendChild(span);
+    div.appendChild(select);
+    container.appendChild(div);
+  });
+  updateEmotionDropdowns(); // sinkronisasi awal
+}
+
+// Pasang event untuk tombol Clear All (letakkan di dalam inisialisasi atau di bawah DOM siap)
+document.addEventListener('DOMContentLoaded', function() {
+  // Pasang event untuk tombol Clear All
+  const clearBtn = document.getElementById('clearEmotionRankingBtn');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', clearAllEmotionRankings);
+  }
+  // Buat dropdown ranking emosi
+  createEmotionRankingDropdowns();
+});
 
       function showBestRatioModal() {
         const tbody = document.getElementById("bestRatioTableBody");
@@ -2654,57 +2705,99 @@
         document.getElementById("popupAlgoName").textContent = algoName;
       }
 
+      let currentModelPopupPage = 1;
+const rowsPerModelPopupPage = 10;
+
       function openModelSelectPopup() {
-        updatePopupAlgoLabel();
-        const algoName = getCurrentAlgoName();
-        const filtered = trainingHistory.filter(
-          (m) => m.algorithm === algoName,
-        );
-        const tbody = document.getElementById("modelSelectTableBody");
-        const noMsg = document.getElementById("noModelMessage");
-        tbody.innerHTML = "";
+  updatePopupAlgoLabel();
+  const algoName = getCurrentAlgoName();
+  const filtered = trainingHistory.filter(m => m.algorithm === algoName);
+  window.popupFilteredModels = filtered;  // simpan global sementara
+  currentModelPopupPage = 1;
+  renderModelSelectTable();
+  const popup = document.getElementById('modelSelectPopup');
+  popup.classList.remove('hidden');
+  const container = popup.querySelector('.modal-container');
+  if (container) setTimeout(() => container.classList.add('show'), 10);
+}
 
-        if (filtered.length === 0) {
-          noMsg.classList.remove("hidden");
-        } else {
-          noMsg.classList.add("hidden");
-          filtered.forEach((m, idx) => {
-            const row = document.createElement("tr");
-            row.className =
-              "model-select-row border-b border-gray-200 hover:bg-indigo-50";
-            const acc =
-              m.metrics?.accuracy != null
-                ? (m.metrics.accuracy * 100).toFixed(2) + "%"
-                : "-";
-            const name =
-              m.config_name || m.dataset_filename || "Model #" + m.id;
-            const dataset = m.dataset_filename || "-";
-            const date = m.created_at
-              ? new Date(m.created_at).toLocaleString("id-ID", {
-                  dateStyle: "short",
-                  timeStyle: "short",
-                })
-              : "-";
-            row.innerHTML = `
-                    <td class="px-4 py-3 text-center">${idx + 1}</td>
-                    <td class="px-4 py-3 font-medium text-gray-800">${name}</td>
-                    <td class="px-4 py-3 text-center font-bold text-green-700">${acc}</td>
-                    <td class="px-4 py-3 text-sm text-gray-600">${dataset}</td>
-                    <td class="px-4 py-3 text-sm text-gray-500">${date}</td>`;
-            row.addEventListener("click", () => {
-              selectExistingModel(m);
-            });
-            tbody.appendChild(row);
-          });
-        }
+function renderModelSelectTable() {
+  const filtered = window.popupFilteredModels || [];
+  const totalFiltered = filtered.length;
+  const totalPages = Math.ceil(totalFiltered / rowsPerModelPopupPage) || 1;
+  const start = (currentModelPopupPage - 1) * rowsPerModelPopupPage;
+  const end = start + rowsPerModelPopupPage;
+  const pageData = filtered.slice(start, end);
 
-        const popup = document.getElementById("modelSelectPopup");
-        popup.classList.remove("hidden");
-        const container = popup.querySelector(".modal-container");
-        if (container) {
-          setTimeout(() => container.classList.add("show"), 10);
-        }
-      }
+  const tbody = document.getElementById('modelSelectTableBody');
+  const noMsg = document.getElementById('noModelMessage');
+  tbody.innerHTML = '';
+
+  if (totalFiltered === 0) {
+    noMsg.classList.remove('hidden');
+  } else {
+    noMsg.classList.add('hidden');
+    pageData.forEach((m, idx) => {
+      const row = document.createElement('tr');
+      row.className = 'model-select-row border-b border-gray-200 hover:bg-indigo-50';
+      const acc = m.metrics?.accuracy != null ? (m.metrics.accuracy * 100).toFixed(2) + '%' : '-';
+      const name = m.config_name || m.dataset_filename || 'Model #' + m.id;
+      const dataset = m.dataset_filename || '-';
+      const date = m.created_at ? new Date(m.created_at).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+      row.innerHTML = `
+        <td class="px-4 py-3 text-center">${start + idx + 1}</td>
+        <td class="px-4 py-3 font-medium text-gray-800">${name}</td>
+        <td class="px-4 py-3 text-center font-bold text-green-700">${acc}</td>
+        <td class="px-4 py-3 text-sm text-gray-600">${dataset}</td>
+        <td class="px-4 py-3 text-sm text-gray-500">${date}</td>`;
+      row.addEventListener('click', () => selectExistingModel(m));
+      tbody.appendChild(row);
+    });
+  }
+  renderModelPopupPagination(totalPages);
+}
+
+function renderModelPopupPagination(totalPages) {
+  const container = document.getElementById('modelSelectPopupPagination');
+  if (!container) return;
+  container.innerHTML = '';
+  if (totalPages <= 1) return;
+
+  const prevBtn = document.createElement('button');
+  prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+  prevBtn.className = `px-3 py-1 border rounded ${currentModelPopupPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
+  prevBtn.disabled = currentModelPopupPage === 1;
+  prevBtn.onclick = () => {
+    if (currentModelPopupPage > 1) {
+      currentModelPopupPage--;
+      renderModelSelectTable();
+    }
+  };
+  container.appendChild(prevBtn);
+
+  for (let i = 1; i <= totalPages; i++) {
+    const pageBtn = document.createElement('button');
+    pageBtn.textContent = i;
+    pageBtn.className = `px-3 py-1 border rounded ${i === currentModelPopupPage ? 'bg-blue-600 text-white' : 'bg-white hover:bg-blue-50'}`;
+    pageBtn.onclick = () => {
+      currentModelPopupPage = i;
+      renderModelSelectTable();
+    };
+    container.appendChild(pageBtn);
+  }
+
+  const nextBtn = document.createElement('button');
+  nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+  nextBtn.className = `px-3 py-1 border rounded ${currentModelPopupPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-blue-50'}`;
+  nextBtn.disabled = currentModelPopupPage === totalPages;
+  nextBtn.onclick = () => {
+    if (currentModelPopupPage < totalPages) {
+      currentModelPopupPage++;
+      renderModelSelectTable();
+    }
+  };
+  container.appendChild(nextBtn);
+}
 
       function lockAllParameterInputs(lock) {
         const tuningDiv = document.getElementById("tuningContent");
@@ -3581,6 +3674,15 @@
           return;
         }
 
+         // 🔽 Tambahan validasi ranking emosi untuk Lexicon
+        if (algorithm === 'lexicon') {
+          const ranks = document.querySelectorAll('#emotionRankingContainer select.emotion-rank');
+          const values = Array.from(ranks).map(s => s.value);
+          if (values.some(v => v === '')) {
+            alert('Semua ranking emosi harus diisi (tidak boleh kosong).');
+            return;
+          }
+        }
         // Validasi jika existing model dipilih
         const modelChoiceExisting = document.getElementById(
           "modelChoiceExisting",
