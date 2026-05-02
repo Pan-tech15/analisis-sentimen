@@ -322,13 +322,21 @@
             <canvas id="comparisonBarChart"></canvas>
           </div>
           <p class="text-sm text-gray-500 mt-2 text-center">
-           Comparison of evaluation metrics between the best models IndoBERT‑KNN and Lexicon‑NB (both above 90%)
+            Comparison of evaluation metrics between the best models
+            IndoBERT‑KNN and Lexicon‑NB (both above 90%)
           </p>
         </div>
       </main>
     </div>
 
     <script>
+      // Ambil token dari localStorage (pastikan sudah disimpan saat login)
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        // Redirect ke login jika tidak ada token
+        window.location.href = "login.html";
+      }
+
       // Dropdown toggle
       function toggleDropdown(btn, menu, icon) {
         btn.addEventListener("click", () => {
@@ -341,217 +349,357 @@
       const dataCollectionIcon = document.getElementById("dataCollectionIcon");
       toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
 
-      // Bar Chart (Emotion Distribution)
-      const emotionLabels = [
-        "Happy",
-        "Trust",
-        "Surprise",
-        "Neutral",
-        "Anger",
-        "Sadness",
-        "Fear",
-        "No Idiom",
-      ];
-      const sentenceCounts = [714, 714, 715, 714, 715, 714, 714, 5000];
-      const barColors = [
-        "#10b981",
-        "#3b82f6",
-        "#f59e0b",
-        "#6b7280",
-        "#ef4444",
-        "#8b5cf6",
-        "#ec489a",
-        "#d1d5db",
-      ];
-
-      const ctxBar = document.getElementById("emotionChart").getContext("2d");
-      new Chart(ctxBar, {
-        type: "bar",
-        data: {
-          labels: emotionLabels,
-          datasets: [
-            {
-              label: "Sentence Count",
-              data: sentenceCounts,
-              backgroundColor: barColors,
-              borderRadius: 6,
-            },
-          ],
+      // Fetch data dashboard
+      fetch("/api/dashboard/stats", {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: {
-              position: "top",
-              labels: { boxWidth: 12, font: { size: 16 } },
-            },
-            tooltip: { enabled: true },
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: { display: true, text: "Sentence Count", font: { size: 16 } },
-            },
-            x: { ticks: { font: { size: 16 }, maxRotation: 25 } },
-          },
-        },
-        plugins: [
-          {
-            afterDraw(chart) {
-              const ctx = chart.ctx;
-              chart.data.datasets.forEach((dataset, i) => {
-                const meta = chart.getDatasetMeta(i);
-                if (!meta.hidden) {
-                  meta.data.forEach((element, index) => {
-                    const value = dataset.data[index];
-                    const x = element.x;
-                    const y = element.y - 6;
-                    ctx.save();
-                    ctx.font = "bold 12px 'Segoe UI'";
-                    ctx.fillStyle = "#1f2937";
-                    ctx.textAlign = "center";
-                    ctx.fillText(value, x, y);
-                    ctx.restore();
-                  });
-                }
-              });
-            },
-          },
-        ],
-      });
+      })
+        .then((response) => {
+          if (response.status === 401) {
+            window.location.href = "login.html";
+            throw new Error("Unauthorized");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          // Update stat cards
+          document.querySelector(
+            ".border-l-4.border-blue-500 .text-2xl",
+          ).innerText = data.total_sentences.toLocaleString();
+          document.querySelector(
+            ".border-l-4.border-green-500 .text-2xl",
+          ).innerText = data.total_idioms.toLocaleString();
+          document.querySelector(
+            ".border-l-4.border-purple-500 .text-2xl",
+          ).innerText = data.total_models.toLocaleString();
 
-      // Pie Chart (Idiom vs Non-idiom) – data tetap 5.000 vs 5.000
-      const ctxPie = document.getElementById("idiomPieChart").getContext("2d");
-      new Chart(ctxPie, {
-        type: "pie",
-        data: {
-          labels: ["Idiom", "Non-idiom"],
-          datasets: [
-            {
-              data: [5000, 5000],
-              backgroundColor: ["#3b82f6", "#9ca3af"],
-              borderWidth: 0,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: { position: "bottom", labels: { font: { size: 12 } } },
-            tooltip: {
-              callbacks: {
-                label: (ctx) =>
-                  `${ctx.label}: ${ctx.raw} sentences (${((ctx.raw / 10000) * 100).toFixed(1)}%)`,
-              },
-            },
-          },
-        },
-      });
+          // Update idiom vs non-idiom di pie chart dan ringkasan angka
+          const idiomCount = data.idiom_count;
+          const nonIdiomCount = data.non_idiom_count;
+          const total = idiomCount + nonIdiomCount;
+          const idiomPercent = total
+            ? ((idiomCount / total) * 100).toFixed(1)
+            : 0;
+          const nonIdiomPercent = total
+            ? ((nonIdiomCount / total) * 100).toFixed(1)
+            : 0;
 
-      // Comparison Bar Chart – data Lexicon dinaikkan di atas 90%
-      const indobertMetrics = {
-        accuracy: 94.2,
-        precision: 93.8,
-        recall: 92.5,
-        f1: 93.1,
-      };
-      const lexiconMetrics = {
-        accuracy: 92.0,
-        precision: 91.5,
-        recall: 91.0,
-        f1: 91.2,
-      };
+          // Update teks ringkasan
+          const summaryDiv = document.querySelector(
+            ".bg-gray-50.p-4.rounded-lg",
+          );
+          if (summaryDiv) {
+            summaryDiv.innerHTML = `
+        <p class="text-sm text-gray-600 font-medium">Idiom</p>
+        <p class="text-2xl font-bold text-blue-600">${idiomCount.toLocaleString()}</p>
+        <p class="text-sm text-gray-500">(${idiomPercent}%)</p>
+        <hr class="my-2" />
+        <p class="text-sm text-gray-600 font-medium">Non‑idiom</p>
+        <p class="text-2xl font-bold text-gray-600">${nonIdiomCount.toLocaleString()}</p>
+        <p class="text-sm text-gray-500">(${nonIdiomPercent}%)</p>
+        <hr class="my-2" />
+        <p class="text-sm font-medium text-gray-700">Total</p>
+        <p class="text-xl font-bold">${total.toLocaleString()}</p>
+      `;
+          }
 
-      const ctxComparison = document
-        .getElementById("comparisonBarChart")
-        .getContext("2d");
-      new Chart(ctxComparison, {
-        type: "bar",
-        data: {
-          labels: ["Accuracy", "Precision", "Recall", "F1-Score"],
-          datasets: [
-            {
-              label: "IndoBERT-KNN",
-              data: [
-                indobertMetrics.accuracy,
-                indobertMetrics.precision,
-                indobertMetrics.recall,
-                indobertMetrics.f1,
+          // Update Pie Chart (Idiom vs Non-idiom)
+          const ctxPie = document
+            .getElementById("idiomPieChart")
+            .getContext("2d");
+          new Chart(ctxPie, {
+            type: "pie",
+            data: {
+              labels: ["Idiom", "Non-idiom"],
+              datasets: [
+                {
+                  data: [idiomCount, nonIdiomCount],
+                  backgroundColor: ["#3b82f6", "#9ca3af"],
+                  borderWidth: 0,
+                },
               ],
-              backgroundColor: "#3b82f6",
-              borderRadius: 6,
-              barPercentage: 0.65,
-              categoryPercentage: 0.8,
             },
-            {
-              label: "Lexicon-Naive Bayes",
-              data: [
-                lexiconMetrics.accuracy,
-                lexiconMetrics.precision,
-                lexiconMetrics.recall,
-                lexiconMetrics.f1,
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              plugins: {
+                legend: { position: "bottom", labels: { font: { size: 12 } } },
+                tooltip: {
+                  callbacks: {
+                    label: (ctx) =>
+                      `${ctx.label}: ${ctx.raw} sentences (${((ctx.raw / total) * 100).toFixed(1)}%)`,
+                  },
+                },
+              },
+            },
+          });
+
+          // Update Bar Chart Emotion Distribution
+          const emotionLabels = Object.keys(data.emotion_distribution);
+          const sentenceCounts = emotionLabels.map(
+            (label) => data.emotion_distribution[label],
+          );
+          const barColors = [
+            "#10b981",
+            "#3b82f6",
+            "#f59e0b",
+            "#6b7280",
+            "#ef4444",
+            "#8b5cf6",
+            "#ec489a",
+            "#d1d5db",
+          ];
+
+          const ctxBar = document
+            .getElementById("emotionChart")
+            .getContext("2d");
+          new Chart(ctxBar, {
+            type: "bar",
+            data: {
+              labels: emotionLabels,
+              datasets: [
+                {
+                  label: "Sentence Count",
+                  data: sentenceCounts,
+                  backgroundColor: barColors.slice(0, emotionLabels.length),
+                  borderRadius: 6,
+                },
               ],
-              backgroundColor: "#8b5cf6",
-              borderRadius: 6,
-              barPercentage: 0.65,
-              categoryPercentage: 0.8,
             },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: {
-              position: "top",
-              labels: { font: { size: 16, weight: "bold" } },
-            },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => `${ctx.dataset.label}: ${ctx.raw}%`,
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              plugins: {
+                legend: {
+                  position: "top",
+                  labels: { boxWidth: 12, font: { size: 16 } },
+                },
+                tooltip: { enabled: true },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: "Sentence Count",
+                    font: { size: 16 },
+                  },
+                },
+                x: { ticks: { font: { size: 16 }, maxRotation: 25 } },
               },
             },
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 100,
-              title: {
-                display: true,
-                text: "Percentage (%)",
-                font: { size: 12 },
-              },
-              ticks: { callback: (value) => `${value}%`, stepSize: 20 },
-            },
-            x: { ticks: { font: { size: 16, weight: "500" } } },
-          },
-        },
-        plugins: [
-          {
-            afterDraw(chart) {
-              const ctx = chart.ctx;
-              chart.data.datasets.forEach((dataset, datasetIndex) => {
-                const meta = chart.getDatasetMeta(datasetIndex);
-                if (!meta.hidden) {
-                  meta.data.forEach((element, index) => {
-                    const value = dataset.data[index];
-                    const x = element.x;
-                    const y = element.y - 6;
-                    ctx.save();
-                    ctx.font = "bold 12px 'Segoe UI'";
-                    ctx.fillStyle = "#1f2937";
-                    ctx.textAlign = "center";
-                    ctx.fillText(`${value}%`, x, y);
-                    ctx.restore();
+            plugins: [
+              {
+                afterDraw(chart) {
+                  const ctx = chart.ctx;
+                  chart.data.datasets.forEach((dataset, i) => {
+                    const meta = chart.getDatasetMeta(i);
+                    if (!meta.hidden) {
+                      meta.data.forEach((element, index) => {
+                        const value = dataset.data[index];
+                        const x = element.x;
+                        const y = element.y - 6;
+                        ctx.save();
+                        ctx.font = "bold 12px 'Segoe UI'";
+                        ctx.fillStyle = "#1f2937";
+                        ctx.textAlign = "center";
+                        ctx.fillText(value, x, y);
+                        ctx.restore();
+                      });
+                    }
                   });
-                }
-              });
+                },
+              },
+            ],
+          });
+
+          // Update Best Models Cards
+          const indobert = data.best_models["IndoBERT-KNN"];
+          const lexicon = data.best_models["Lexicon-NB"];
+
+          const indobertCard = document.querySelector(
+            ".border-t-4.border-blue-500",
+          );
+          const lexiconCard = document.querySelector(
+            ".border-t-4.border-purple-500",
+          );
+
+          if (indobert) {
+            indobertCard.querySelector(
+              ".grid-cols-4 .text-green-600",
+            ).innerText = `${(indobert.accuracy * 100).toFixed(1)}%`;
+            indobertCard.querySelector(
+              ".grid-cols-4 .text-blue-600",
+            ).innerText = `${(indobert.precision * 100).toFixed(1)}%`;
+            indobertCard.querySelector(
+              ".grid-cols-4 .text-purple-600",
+            ).innerText = `${(indobert.recall * 100).toFixed(1)}%`;
+            indobertCard.querySelector(
+              ".grid-cols-4 .text-orange-600",
+            ).innerText = `${(indobert.f1_score * 100).toFixed(1)}%`;
+            const timeSpan = indobertCard.querySelector(
+              ".border-t .flex.justify-between span:first-child",
+            );
+            if (timeSpan && indobert.created_at) {
+              const createdDate = new Date(indobert.created_at);
+              timeSpan.innerHTML = `<i class="far fa-clock mr-1"></i>${createdDate.toLocaleDateString()}`;
+            }
+            const durationSpan = indobertCard.querySelector(
+              ".border-t .flex.justify-between span:last-child",
+            );
+            if (durationSpan && indobert.duration) {
+              durationSpan.innerHTML = `<i class="fas fa-tachometer-alt mr-1"></i>${indobert.duration}`;
+            }
+          } else {
+            // Tampilkan pesan "Belum ada model"
+            indobertCard.innerHTML =
+              '<div class="p-4 text-center text-gray-500">Belum ada model IndoBERT-KNN yang terlatih</div>';
+          }
+
+          if (lexicon) {
+            lexiconCard.querySelector(
+              ".grid-cols-4 .text-green-600",
+            ).innerText = `${(lexicon.accuracy * 100).toFixed(1)}%`;
+            lexiconCard.querySelector(
+              ".grid-cols-4 .text-indigo-600",
+            ).innerText = `${(lexicon.precision * 100).toFixed(1)}%`;
+            lexiconCard.querySelector(".grid-cols-4 .text-pink-600").innerText =
+              `${(lexicon.recall * 100).toFixed(1)}%`;
+            lexiconCard.querySelector(".grid-cols-4 .text-teal-600").innerText =
+              `${(lexicon.f1_score * 100).toFixed(1)}%`;
+            const timeSpan = lexiconCard.querySelector(
+              ".border-t .flex.justify-between span:first-child",
+            );
+            if (timeSpan && lexicon.created_at) {
+              const createdDate = new Date(lexicon.created_at);
+              timeSpan.innerHTML = `<i class="far fa-clock mr-1"></i>${createdDate.toLocaleDateString()}`;
+            }
+            const durationSpan = lexiconCard.querySelector(
+              ".border-t .flex.justify-between span:last-child",
+            );
+            if (durationSpan && lexicon.duration) {
+              durationSpan.innerHTML = `<i class="fas fa-tachometer-alt mr-1"></i>${lexicon.duration}`;
+            }
+          } else {
+            lexiconCard.innerHTML =
+              '<div class="p-4 text-center text-gray-500">Belum ada model Lexicon-NB yang terlatih</div>';
+          }
+
+          // Update Comparison Chart (bar chart) dengan data dari best models
+          const comparisonLabels = [
+            "Accuracy",
+            "Precision",
+            "Recall",
+            "F1-Score",
+          ];
+          const indobertMetrics = indobert
+            ? [
+                indobert.accuracy * 100,
+                indobert.precision * 100,
+                indobert.recall * 100,
+                indobert.f1_score * 100,
+              ]
+            : [0, 0, 0, 0];
+          const lexiconMetrics = lexicon
+            ? [
+                lexicon.accuracy * 100,
+                lexicon.precision * 100,
+                lexicon.recall * 100,
+                lexicon.f1_score * 100,
+              ]
+            : [0, 0, 0, 0];
+
+          const ctxComparison = document
+            .getElementById("comparisonBarChart")
+            .getContext("2d");
+          new Chart(ctxComparison, {
+            type: "bar",
+            data: {
+              labels: comparisonLabels,
+              datasets: [
+                {
+                  label: "IndoBERT-KNN",
+                  data: indobertMetrics,
+                  backgroundColor: "#3b82f6",
+                  borderRadius: 6,
+                  barPercentage: 0.65,
+                  categoryPercentage: 0.8,
+                },
+                {
+                  label: "Lexicon-Naive Bayes",
+                  data: lexiconMetrics,
+                  backgroundColor: "#8b5cf6",
+                  borderRadius: 6,
+                  barPercentage: 0.65,
+                  categoryPercentage: 0.8,
+                },
+              ],
             },
-          },
-        ],
-      });
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              plugins: {
+                legend: {
+                  position: "top",
+                  labels: { font: { size: 16, weight: "bold" } },
+                },
+                tooltip: {
+                  callbacks: {
+                    label: (ctx) => `${ctx.dataset.label}: ${ctx.raw}%`,
+                  },
+                },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  max: 100,
+                  title: {
+                    display: true,
+                    text: "Percentage (%)",
+                    font: { size: 12 },
+                  },
+                  ticks: { callback: (value) => `${value}%`, stepSize: 20 },
+                },
+                x: { ticks: { font: { size: 16, weight: "500" } } },
+              },
+            },
+            plugins: [
+              {
+                afterDraw(chart) {
+                  const ctx = chart.ctx;
+                  chart.data.datasets.forEach((dataset, datasetIndex) => {
+                    const meta = chart.getDatasetMeta(datasetIndex);
+                    if (!meta.hidden) {
+                      meta.data.forEach((element, index) => {
+                        const value = dataset.data[index];
+                        const x = element.x;
+                        const y = element.y - 6;
+                        ctx.save();
+                        ctx.font = "bold 12px 'Segoe UI'";
+                        ctx.fillStyle = "#1f2937";
+                        ctx.textAlign = "center";
+                        ctx.fillText(`${value}%`, x, y);
+                        ctx.restore();
+                      });
+                    }
+                  });
+                },
+              },
+            ],
+          });
+        })
+        .catch((error) => {
+          console.error("Error fetching dashboard data:", error);
+          // Tampilkan pesan error di halaman
+          const main = document.querySelector("main");
+          const errorDiv = document.createElement("div");
+          errorDiv.className =
+            "bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4";
+          errorDiv.innerHTML =
+            "<strong>Error!</strong> Gagal memuat data dashboard. Pastikan server berjalan dan Anda sudah login.";
+          main.prepend(errorDiv);
+        });
     </script>
   </body>
 </html>
