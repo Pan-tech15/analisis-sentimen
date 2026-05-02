@@ -680,17 +680,27 @@
           });
         }
 
+        // ==================== PAGINATION STYLE DATASET ====================
         function renderPagination(tableKey) {
           const table = tables[tableKey];
           const totalPages = Math.ceil(
             table.filtered.length / table.rowsPerPage,
           );
-          table.pagination.innerHTML = "";
+          const container = table.pagination;
+          container.innerHTML = "";
           if (totalPages <= 1) return;
 
+          const wrapper = document.createElement("div");
+          wrapper.className = "flex items-center space-x-2";
+
+          // Previous button
           const prevBtn = document.createElement("button");
-          prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-          prevBtn.className = `px-3 py-2 rounded-lg border-2 transition-all ${table.currentPage === 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200" : "bg-white hover:bg-blue-50 hover:border-blue-300 text-gray-700 border-gray-200"}`;
+          prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
+          prevBtn.className = `px-3 py-1 rounded border ${
+            table.currentPage === 1
+              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+              : "bg-white hover:bg-blue-50"
+          }`;
           prevBtn.disabled = table.currentPage === 1;
           prevBtn.onclick = () => {
             if (table.currentPage > 1) {
@@ -699,23 +709,44 @@
               renderPagination(tableKey);
             }
           };
-          table.pagination.appendChild(prevBtn);
+          wrapper.appendChild(prevBtn);
 
-          for (let i = 1; i <= totalPages; i++) {
-            const pageBtn = document.createElement("button");
-            pageBtn.innerText = i;
-            pageBtn.className = `px-4 py-2 rounded-lg border-2 transition-all font-semibold ${table.currentPage === i ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white border-blue-500 shadow-md" : "bg-white hover:bg-blue-50 hover:border-blue-300 text-gray-700 border-gray-200"}`;
-            pageBtn.onclick = () => {
-              table.currentPage = i;
-              renderTable(tableKey);
-              renderPagination(tableKey);
-            };
-            table.pagination.appendChild(pageBtn);
-          }
+          const pageInfo = document.createElement("span");
+          pageInfo.className = "text-gray-700";
+          pageInfo.innerText = `Page ${table.currentPage} of ${totalPages}`;
+          wrapper.appendChild(pageInfo);
 
+          const pageInput = document.createElement("input");
+          pageInput.type = "number";
+          pageInput.min = 1;
+          pageInput.max = totalPages;
+          pageInput.value = table.currentPage;
+          pageInput.className = "w-16 border rounded px-2 py-1 text-center";
+          wrapper.appendChild(pageInput);
+
+          const goBtn = document.createElement("button");
+          goBtn.innerText = "Go";
+          goBtn.className =
+            "px-3 py-1 rounded border bg-blue-500 text-white hover:bg-blue-600";
+          goBtn.onclick = () => {
+            let newPage = parseInt(pageInput.value);
+            if (isNaN(newPage)) newPage = 1;
+            if (newPage < 1) newPage = 1;
+            if (newPage > totalPages) newPage = totalPages;
+            table.currentPage = newPage;
+            renderTable(tableKey);
+            renderPagination(tableKey);
+          };
+          wrapper.appendChild(goBtn);
+
+          // Next button
           const nextBtn = document.createElement("button");
-          nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-          nextBtn.className = `px-3 py-2 rounded-lg border-2 transition-all ${table.currentPage === totalPages ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200" : "bg-white hover:bg-blue-50 hover:border-blue-300 text-gray-700 border-gray-200"}`;
+          nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
+          nextBtn.className = `px-3 py-1 rounded border ${
+            table.currentPage === totalPages
+              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+              : "bg-white hover:bg-blue-50"
+          }`;
           nextBtn.disabled = table.currentPage === totalPages;
           nextBtn.onclick = () => {
             if (table.currentPage < totalPages) {
@@ -724,7 +755,9 @@
               renderPagination(tableKey);
             }
           };
-          table.pagination.appendChild(nextBtn);
+          wrapper.appendChild(nextBtn);
+
+          container.appendChild(wrapper);
         }
 
         function updateComparisonAndChart() {
