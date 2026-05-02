@@ -1176,7 +1176,7 @@
                   <span
                     class="info-icon"
                     data-param-key="findBestRatio"
-                    data-tooltip="Find Best Ratio akan menjalankan training untuk semua rasio yang tersimpan (50:50 s/d 90:10) tanpa Fine‑Tuning & UMAP, lalu menampilkan perbandingan akurasi untuk menemukan rasio terbaik."
+                    data-tooltip="Find Best Ratio will train the model using all ratio from Split Data Ratio table to search for the best accuracy"
                     style="margin-right: 8px"
                     >ⓘ</span
                   >
@@ -2205,6 +2205,20 @@
       <p><b>How it works:</b> IndoBERT’s pooled output is a vector of size 768 (or the dimension after UMAP). <i>Target Dim</i> can be the same as the pooled output or a smaller number you wish to project to. Here it often matches the UMAP output dimension when UMAP is enabled.</p>
       <p><b>Value range:</b> 2 – 768.</p>
       <p><b>Recommendation:</b> Keep <b>768</b> unless you have a specific reason to reduce it. When UMAP is enabled, set it equal to <i>n_components</i>.</p>
+    `,
+        },
+        findBestRatio: {
+          title: "Find Best Ratio",
+          html: `
+      <p><b>Fungsi:</b> Tombol ini akan secara otomatis menjalankan pelatihan (training) untuk <b>semua rasio pembagian data</b> yang telah Anda simpan di tabel Split Data Ratio, mulai dari rasio terkecil (50:50) hingga terbesar (90:10).</p>
+      <p><b>Tujuan:</b> Membandingkan performa model pada berbagai rasio train/test untuk menemukan rasio yang memberikan akurasi tertinggi, sehingga Anda dapat memilih rasio optimal untuk pelatihan akhir tanpa harus mencoba satu per satu secara manual.</p>
+      <p><b>Proses:</b></p>
+      <ul>
+        <li>• Fine‑Tuning dan UMAP <b>dinonaktifkan sementara</b> selama pencarian untuk menghemat waktu.</li>
+        <li>• Setiap rasio akan menghasilkan satu konfigurasi model baru (dengan nama mengandung <i>_bestratio_</i>) dan satu record training.</li>
+        <li>• Setelah semua rasio selesai, sebuah tabel perbandingan akan ditampilkan beserta rasio terbaik yang otomatis terpilih.</li>
+      </ul>
+      <p><b>Catatan:</b> Proses ini bisa memakan waktu cukup lama karena menjalankan beberapa training secara berurutan. Pastikan dataset sudah dipilih dan parameter dasar (selain Fine‑Tuning/UMAP) sudah sesuai sebelum memulai.</p>
     `,
         },
 
