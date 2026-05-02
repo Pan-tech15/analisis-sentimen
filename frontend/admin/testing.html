@@ -236,7 +236,9 @@
           <div id="uploadDatasetSection" class="mb-4">
             <p class="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
               <i class="fas fa-info-circle mr-1 text-blue-500"></i>
-              The test dataset will be automatically taken from the hold‑out set of the selected model (according to the training data split ratio).
+              The test dataset will be automatically taken from the hold‑out set
+              of the selected model (according to the training data split
+              ratio).
             </p>
           </div>
 
@@ -796,6 +798,34 @@
           initModelDropdown();
           initAlgorithmButtons();
           initSourceCheckboxes();
+          // Cek parameter id di URL
+          const urlParams = new URLSearchParams(window.location.search);
+          const trainingId = urlParams.get("id");
+          if (trainingId) {
+            // Tunda sedikit untuk memastikan modelsList sudah terisi
+            setTimeout(() => {
+              const model = modelsList.find((m) => m.id == trainingId);
+              if (model) {
+                // Set algorithm
+                document.getElementById("selectedAlgorithm").value =
+                  model.algorithm;
+                // Update tombol algoritma
+                if (model.algorithm === "IndoBERT-KNN") {
+                  document.getElementById("btnIndoBERT").click();
+                } else {
+                  document.getElementById("btnLexicon").click();
+                }
+                // Pilih model di dropdown
+                document.getElementById("modelSearchInput").value =
+                  model.displayText;
+                document.getElementById("selectedModelId").value = model.id;
+                // Sembunyikan dropdown
+                document
+                  .getElementById("modelDropdownList")
+                  .classList.remove("show");
+              }
+            }, 800);
+          }
           const btnIndo = document.getElementById("btnIndoBERT");
           btnIndo.classList.remove(
             "bg-gray-200",

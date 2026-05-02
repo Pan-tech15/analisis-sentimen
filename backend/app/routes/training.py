@@ -1,7 +1,7 @@
 import os
 import uuid
 import threading
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, send_file, current_app
 from werkzeug.utils import secure_filename
 from app import db
 from app.models.model_config import ModelConfig
@@ -96,6 +96,28 @@ def get_history():
     trainings = Training.query.order_by(Training.created_at.desc()).all()
     return jsonify([t.to_dict() for t in trainings]), 200
 
+@training_bp.route('/<int:training_id>/download', methods=['GET'])
+def download_model(training_id):
+    training = Training.query.get(training_id)
+    if not training:
+        return jsonify({'error': 'Training tidak ditemukan'}), 404
+
+    model_path = training.model_path
+    if not model_path:
+        return jsonify({'error': 'File model tidak ditemukan'}), 404
+
+    # Ubah path relatif menjadi absolut
+    if not os.path.isabs(model_path):
+        # current_app.root_path = /path/to/backend/app
+        # kita ingin naik ke /path/to/backend
+        backend_dir = os.path.dirname(current_app.root_path)
+        model_path = os.path.join(backend_dir, model_path)
+
+    if not os.path.exists(model_path):
+        return jsonify({'error': f'File tidak ditemukan: {model_path}'}), 404
+
+    return send_file(model_path, as_attachment=True, download_name=f"model_{training_id}.pkl")
+
 @training_bp.route('/<int:training_id>', methods=['DELETE'])
 def delete_training(training_id):
     training = Training.query.get(training_id)
@@ -105,7 +127,6 @@ def delete_training(training_id):
     db.session.commit()
     return jsonify({'message': 'Training dihapus'}), 200
 
-# HANYA SATU DEFINISI get_training_detail DENGAN LENGKAP
 @training_bp.route('/<int:training_id>', methods=['GET'])
 def get_training_detail(training_id):
     training = Training.query.get(training_id)
