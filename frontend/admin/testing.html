@@ -326,6 +326,46 @@
         <!-- Test Results Table -->
         <div class="bg-white p-6 rounded-xl shadow-md">
           <h2 class="font-semibold text-gray-700 mb-4">Test Results</h2>
+
+           <!-- 🔽 FILTER BAR (TAMBAHKAN INI) -->
+  <!-- FILTER BAR - satu baris dengan tombol Apply di kanan -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
+  <div>
+    <label class="block text-xs font-medium text-gray-600 mb-1">Search text</label>
+    <input type="text" id="testSearchInput" placeholder="Dataset, Model..."
+           class="w-full border rounded p-1.5 text-sm">
+  </div>
+  <div>
+    <label class="block text-xs font-medium text-gray-600 mb-1">From date</label>
+    <input type="date" id="testDateFromInput" class="w-full border rounded p-1.5 text-sm">
+  </div>
+  <div>
+    <label class="block text-xs font-medium text-gray-600 mb-1">To date</label>
+    <input type="date" id="testDateToInput" class="w-full border rounded p-1.5 text-sm">
+  </div>
+  <div>
+    <label class="block text-xs font-medium text-gray-600 mb-1">Algorithm</label>
+    <select id="testAlgorithmSelect" class="w-full border rounded p-1.5 text-sm">
+      <option value="">All</option>
+      <option value="IndoBERT-KNN">IndoBERT-KNN</option>
+      <option value="Lexicon-NB">Lexicon-NB</option>
+    </select>
+  </div>
+  <div>
+    <label class="block text-xs font-medium text-gray-600 mb-1">Min Accuracy (%)</label>
+    <input type="number" id="testMinAccuracyInput" placeholder="0" min="0" max="100"
+           class="w-full border rounded p-1.5 text-sm">
+  </div>
+  <!-- Tombol Apply di kolom terakhir, rata bawah agar sejajar dengan input -->
+  <div class="flex items-end">
+    <button id="applyTestFilterBtn"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-sm w-full">
+      <i class="fas fa-filter mr-1"></i>Apply Filter
+    </button>
+  </div>
+</div>
+  <!-- 🔼 AKHIR FILTER BAR -->
+
           <div class="overflow-x-auto">
             <table class="min-w-full border border-gray-200">
               <thead class="bg-blue-500 text-white">
@@ -551,61 +591,104 @@
             renderTestPagination();
           }
         }
+        let testFilter = {
+  search: '',
+  dateFrom: '',
+  dateTo: '',
+  algorithm: '',
+  minAccuracy: null
+};
 
-        function renderTestTable() {
-          const start = (currentPage - 1) * rowsPerPage;
-          const end = start + rowsPerPage;
-          const pageData = testResults.slice(start, end);
-          const tbody = document.getElementById("testResultsBody");
-          tbody.innerHTML = "";
-          if (pageData.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-500">No test results yet. </td></tr>`;
-            return;
-          }
-          pageData.forEach((item) => {
-            const row = tbody.insertRow();
-            const datasetInfo =
-              item.dataset_filename || item.training_id
-                ? `Hold‑out set (Training #${item.training_id})`
-                : "-";
-            row.insertCell(0).innerHTML = datasetInfo;
-            row.insertCell(1).innerHTML = item.algorithm || "-";
-            row.insertCell(2).innerHTML =
-              item.accuracy != null ? item.accuracy.toFixed(3) : "-";
-            row.insertCell(3).innerHTML =
-              item.f1_score != null ? item.f1_score.toFixed(3) : "-";
-            const d = item.tested_at ? new Date(item.tested_at) : null;
-            if (d) {
-              const dd = String(d.getDate()).padStart(2, "0");
-              const mm = String(d.getMonth() + 1).padStart(2, "0");
-              const yy = String(d.getFullYear()).slice(-2);
-              const hh = String(d.getHours()).padStart(2, "0");
-              const min = String(d.getMinutes()).padStart(2, "0");
-              row.insertCell(4).innerHTML = `${dd}/${mm}/${yy}, ${hh}.${min}`;
-            } else {
-              row.insertCell(4).innerHTML = "-";
-            }
-            const act = row.insertCell(5);
-            act.className = "px-4 py-2 border border-gray-200 text-center";
-            act.innerHTML = `<a href="validasi-testing.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2"><i class="fas fa-eye"></i></a>`;
-            for (let cell of row.cells)
-              cell.classList.add("border", "border-gray-200", "px-4", "py-2");
-          });
-        }
+function getFilteredTestResults() {
+  return testResults.filter(item => {
+    // Search text
+    if (testFilter.search) {
+      const q = testFilter.search.toLowerCase();
+      const dataset = (item.dataset_filename || '').toLowerCase();
+      const algorithm = (item.algorithm || '').toLowerCase();
+      if (!dataset.includes(q) && !algorithm.includes(q)) return false;
+    }
+    // Date range
+    if (testFilter.dateFrom) {
+      const from = new Date(testFilter.dateFrom);
+      if (item.tested_at && new Date(item.tested_at) < from) return false;
+    }
+    if (testFilter.dateTo) {
+      const to = new Date(testFilter.dateTo);
+      to.setHours(23, 59, 59, 999);
+      if (item.tested_at && new Date(item.tested_at) > to) return false;
+    }
+    // Algorithm
+    if (testFilter.algorithm && item.algorithm !== testFilter.algorithm) return false;
+    // Min accuracy
+    if (testFilter.minAccuracy !== null && !isNaN(testFilter.minAccuracy)) {
+      const acc = item.accuracy;
+      if (acc == null || acc * 100 < testFilter.minAccuracy) return false;
+    }
+    return true;
+  });
+}
 
-        function renderTestPagination() {
-          const totalPages = Math.ceil(testResults.length / rowsPerPage);
-          renderPaginationControls(
-            "testPagination",
-            currentPage,
-            totalPages,
-            (newPage) => {
-              currentPage = newPage;
-              renderTestTable();
-              renderTestPagination();
-            },
-          );
-        }
+       function renderTestTable() {
+  const filtered = getFilteredTestResults();
+  const totalFiltered = filtered.length;
+  const totalPages = Math.ceil(totalFiltered / rowsPerPage) || 1;
+  if (currentPage > totalPages) currentPage = totalPages;
+  const start = (currentPage - 1) * rowsPerPage;
+  const end = start + rowsPerPage;
+  const pageData = filtered.slice(start, end);
+
+  const tbody = document.getElementById("testResultsBody");
+  tbody.innerHTML = "";
+  if (pageData.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-500">No test results yet. </td></tr>`;
+    return;
+  }
+  pageData.forEach((item) => {
+    const row = tbody.insertRow();
+    const datasetInfo =
+      item.dataset_filename || item.training_id
+        ? `Hold‑out set (Training #${item.training_id})`
+        : "-";
+    row.insertCell(0).innerHTML = datasetInfo;
+    row.insertCell(1).innerHTML = item.algorithm || "-";
+    row.insertCell(2).innerHTML =
+      item.accuracy != null ? item.accuracy.toFixed(3) : "-";
+    row.insertCell(3).innerHTML =
+      item.f1_score != null ? item.f1_score.toFixed(3) : "-";
+    const d = item.tested_at ? new Date(item.tested_at) : null;
+    if (d) {
+      const dd = String(d.getDate()).padStart(2, "0");
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const yy = String(d.getFullYear()).slice(-2);
+      const hh = String(d.getHours()).padStart(2, "0");
+      const min = String(d.getMinutes()).padStart(2, "0");
+      row.insertCell(4).innerHTML = `${dd}/${mm}/${yy}, ${hh}.${min}`;
+    } else {
+      row.insertCell(4).innerHTML = "-";
+    }
+    const act = row.insertCell(5);
+    act.className = "px-4 py-2 border border-gray-200 text-center";
+    act.innerHTML = `<a href="validasi-testing.html?id=${item.id}" class="text-blue-500 hover:text-blue-700 mr-2"><i class="fas fa-eye"></i></a>`;
+    for (let cell of row.cells)
+      cell.classList.add("border", "border-gray-200", "px-4", "py-2");
+  });
+}
+
+      function renderTestPagination() {
+  const filtered = getFilteredTestResults();
+  const totalPages = Math.ceil(filtered.length / rowsPerPage);
+  renderPaginationControls(
+    "testPagination",
+    currentPage,
+    totalPages,
+    (newPage) => {
+      currentPage = newPage;
+      renderTestTable();
+      renderTestPagination();
+    },
+  );
+}
 
         // ------------------- START TESTING -------------------
         async function startTesting() {
@@ -820,6 +903,19 @@
           initModelDropdown();
           initAlgorithmButtons();
           initSourceCheckboxes();
+
+          // Event listener untuk tombol Apply Filter (di luar blok trainingId)
+document.getElementById('applyTestFilterBtn').addEventListener('click', () => {
+  testFilter.search = document.getElementById('testSearchInput').value.trim();
+  testFilter.dateFrom = document.getElementById('testDateFromInput').value;
+  testFilter.dateTo = document.getElementById('testDateToInput').value;
+  testFilter.algorithm = document.getElementById('testAlgorithmSelect').value;
+  const minAcc = parseFloat(document.getElementById('testMinAccuracyInput').value);
+  testFilter.minAccuracy = isNaN(minAcc) ? null : minAcc;
+  currentPage = 1;
+  renderTestTable();
+  renderTestPagination();
+});
           // Cek parameter id di URL
           const urlParams = new URLSearchParams(window.location.search);
           const trainingId = urlParams.get("id");
