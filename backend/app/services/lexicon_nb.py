@@ -11,7 +11,7 @@ from datetime import datetime
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.naive_bayes import MultinomialNB, BernoulliNB
 from sklearn.model_selection import StratifiedKFold, train_test_split
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix, matthews_corrcoef
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix, matthews_corrcoef, roc_auc_score
 from sklearn.preprocessing import LabelEncoder
 
 from app import db
@@ -232,16 +232,6 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
             # ========== PREPROCESSING TEKS TRAINING ==========
             # Gunakan kolom cleaned_kalimat jika tersedia, jika tidak, pakai Sastrawi
             if 'cleaned_kalimat' in df.columns:
-                # Ambil teks yang sudah bersih dari hasil preprocessing (sudah pakai Sastrawi)
-                # train_texts adalah list, kita perlu cocokkan dengan indeks asli df
-                # Karena train_test_split mengembalikan list, kita bisa menggunakan index dari df yang asli
-                # Untuk mempermudah, kita gunakan train_df kembali dengan index asli (df_index setelah reset)
-                # Cara aman: buat DataFrame sementara dari train_texts, tapi lebih mudah: kita split df langsung
-                # KITA TETAP GUNAKAN CARA SPLIT DF LANGSUNG DI SINI AGAR MUDAH MENGAMBIL cleaned_kalimat
-                train_df = df.loc[df.index.isin(df.index[:len(train_texts)])]   # tidak akurat
-                # Karena di atas kita split list, kita tidak punya indeks asli.
-                # Solusi terbaik: lakukan split ulang pada df untuk mendapatkan train_df
-                # (Jangan khawatir, karena random_state sama, hasil split akan SAMA)
                 log("Kolom 'cleaned_kalimat' ditemukan, mengambil teks yang sudah di-preprocessing.", training_id)
                 train_df, _ = train_test_split(
                     df, test_size=test_ratio, random_state=random_state, stratify=df['label']
@@ -339,7 +329,7 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                     if method == 'sum':
                         final_scores = proba + lex_te
                     elif method == 'weighted':
-                        w = float(fusion_params.get('weight', 0.5))
+                        w = float(fusion_params.get('weight', 0.7))
                         final_scores = w * proba + (1 - w) * lex_te
                     else:  # product
                         lex_te_norm = (lex_te - lex_te.min(axis=1, keepdims=True)) / (
@@ -363,13 +353,21 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                     rec_w = recall_score(y_te, y_pred, average='weighted', zero_division=0)
                     f1_w = f1_score(y_te, y_pred, average='weighted')
                     mcc = matthews_corrcoef(y_te, y_pred)
+
+                    # Hitung ROC-AUC per fold
+                    try:
+                        roc_auc_fold = roc_auc_score(y_te, proba, multi_class='ovr', average='weighted')
+                    except ValueError:
+                        roc_auc_fold = None
+
                     fold_metrics.append({
                         'fold': fold_idx + 1,
                         'accuracy': round(acc, 4),
                         'precision': round(prec_w, 4),
                         'recall': round(rec_w, 4),
                         'f1_score': round(f1_w, 4),
-                        'mcc': round(mcc, 4) 
+                        'mcc': round(mcc, 4),
+                        'roc_auc': round(roc_auc_fold, 4) if roc_auc_fold is not None else None
                     })
                     update_progress(app, training_id,
                                     45 + int((fold_idx+1)/n_folds * 30),
@@ -393,16 +391,30 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                 avg_prec = np.mean([f['precision'] for f in fold_metrics])
                 avg_rec = np.mean([f['recall'] for f in fold_metrics])
                 avg_f1 = np.mean([f['f1_score'] for f in fold_metrics])
+                # Rata‑rata ROC‑AUC dari fold yang tidak None
+                roc_auc_values = [f['roc_auc'] for f in fold_metrics if f['roc_auc'] is not None]
+                avg_roc_auc = np.mean(roc_auc_values) if roc_auc_values else None
+
+                # --- Tambahan: hitung metrik macro & MCC dari seluruh data training (gabungan) ---
+                macro_precision = precision_score(y_true_all, y_pred_all, average='macro', zero_division=0)
+                macro_recall = recall_score(y_true_all, y_pred_all, average='macro', zero_division=0)
+                macro_f1 = f1_score(y_true_all, y_pred_all, average='macro')
+                mcc_val = matthews_corrcoef(y_true_all, y_pred_all)
 
                 metrics = {
                     'accuracy': round(avg_acc, 4),
                     'f1_score': round(avg_f1, 4),
                     'precision': round(avg_prec, 4),
                     'recall': round(avg_rec, 4),
+                    'macro_precision': round(macro_precision, 4),
+                    'macro_recall': round(macro_recall, 4),
+                    'macro_f1_score': round(macro_f1, 4),
+                    'mcc': round(mcc_val, 4),
                     'confusion_matrix': cm_all.tolist(),  
                     'class_labels': classes,
                     'fold_metrics': fold_metrics,
-                    'holdout_path': holdout_path
+                    'holdout_path': holdout_path,
+                    'roc_auc': round(avg_roc_auc, 4) if avg_roc_auc is not None else None
                 }
 
             else:
@@ -444,7 +456,7 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                 if method == 'sum':
                     final_scores = proba + lex_test
                 elif method == 'weighted':
-                    w = float(fusion_params.get('weight', 0.5))
+                    w = float(fusion_params.get('weight', 0.7))
                     final_scores = w * proba + (1 - w) * lex_test
                 else:  # product
                     lex_test_norm = (lex_test - lex_test.min(axis=1, keepdims=True)) / (
@@ -467,14 +479,31 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                 recall = recall_score(y_test, y_pred, average='weighted', zero_division=0)
                 cm = confusion_matrix(y_test, y_pred).tolist()
 
+                # --- Tambahan: macro metrics & MCC ---
+                macro_precision = precision_score(y_test, y_pred, average='macro', zero_division=0)
+                macro_recall = recall_score(y_test, y_pred, average='macro', zero_division=0)
+                macro_f1 = f1_score(y_test, y_pred, average='macro')
+                mcc_val = matthews_corrcoef(y_test, y_pred)
+
+                # Hitung ROC-AUC pada data uji
+                try:
+                    roc_auc = roc_auc_score(y_test, proba, multi_class='ovr', average='weighted')
+                except ValueError:
+                    roc_auc = None
+
                 metrics = {
                     'accuracy': round(acc, 4),
                     'f1_score': round(f1, 4),
                     'precision': round(precision, 4),
                     'recall': round(recall, 4),
+                    'macro_precision': round(macro_precision, 4),
+                    'macro_recall': round(macro_recall, 4),
+                    'macro_f1_score': round(macro_f1, 4),
+                    'mcc': round(mcc_val, 4),
                     'confusion_matrix': cm,
                     'class_labels': classes,
-                    'holdout_path': holdout_path
+                    'holdout_path': holdout_path,
+                    'roc_auc': round(roc_auc, 4) if roc_auc is not None else None
                 }
                 log(f"Evaluasi selesai. Akurasi: {metrics['accuracy']}, F1: {metrics['f1_score']}", training_id)
 

@@ -156,7 +156,7 @@
             Confusion Matrix (Emotion) - Test Data
           </h2>
           <p class="text-xs text-gray-500 mb-4">
-           Actual vs Prediction - Hover on a cell to see details
+            Actual vs Prediction - Hover on a cell to see details
           </p>
           <div class="flex justify-center overflow-x-auto">
             <div
@@ -418,7 +418,11 @@
               ],
             );
           }
-          rows.push(["ROC-AUC (Macro)", "- (tidak dihitung)"]);
+          const rocAuc =
+            testingData.roc_auc != null
+              ? safeToFixed(testingData.roc_auc, 4)
+              : "- (not calculated)";
+          rows.push(["ROC-AUC (Weighted)", rocAuc]);
           for (let [name, value] of rows) {
             const tr = document.createElement("tr");
             tr.innerHTML = `<td class="px-4 py-2 border border-gray-200 font-medium">${name}</td><td class="px-4 py-2 border border-gray-200">${value}</td>`;

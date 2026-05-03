@@ -104,6 +104,11 @@ def get_detail(testing_id):
         except Exception:
             class_labels = []
 
+       # Ambil roc_auc dari testing.metrics jika ada
+    roc_auc = None
+    if testing.metrics and 'roc_auc' in testing.metrics:
+        roc_auc = testing.metrics['roc_auc']
+
     result = {
         'id': testing.id,
         'training_id': testing.training_id,
@@ -114,6 +119,7 @@ def get_detail(testing_id):
         'recall': testing.recall,
         'confusion_matrix': testing.confusion_matrix,
         'class_labels': class_labels,
+        'roc_auc': roc_auc,   # ← tambahkan ini
         'tested_at': testing.tested_at.isoformat() if testing.tested_at else None,
         'dataset_filename': training.dataset_filename,
         'algorithm': config.algorithm if config else None,

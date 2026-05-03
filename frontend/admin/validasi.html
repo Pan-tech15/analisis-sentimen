@@ -472,25 +472,46 @@
             let testVal = split.test;
 
             // Fallback ke params.naivebayes jika tidak ada di split
-            if ((trainVal === undefined || trainVal === null) && params.naivebayes) {
-              trainVal = params.naivebayes.train_ratio || params.naivebayes.train_size || params.naivebayes.train;
+            if (
+              (trainVal === undefined || trainVal === null) &&
+              params.naivebayes
+            ) {
+              trainVal =
+                params.naivebayes.train_ratio ||
+                params.naivebayes.train_size ||
+                params.naivebayes.train;
             }
-            if ((testVal === undefined || testVal === null) && params.naivebayes) {
-              testVal = params.naivebayes.test_ratio || params.naivebayes.test_size || params.naivebayes.test;
+            if (
+              (testVal === undefined || testVal === null) &&
+              params.naivebayes
+            ) {
+              testVal =
+                params.naivebayes.test_ratio ||
+                params.naivebayes.test_size ||
+                params.naivebayes.test;
             }
 
             // 🔧 PERBAIKAN: Jika hanya test diketahui, hitung train = 100 - test
-            if ((trainVal === undefined || trainVal === null) && testVal !== undefined && testVal !== null) {
+            if (
+              (trainVal === undefined || trainVal === null) &&
+              testVal !== undefined &&
+              testVal !== null
+            ) {
               const testNum = parseFloat(testVal);
               if (!isNaN(testNum)) trainVal = String(100 - testNum);
             }
             // 🔧 PERBAIKAN: Jika hanya train diketahui, hitung test = 100 - train
-            if ((testVal === undefined || testVal === null) && trainVal !== undefined && trainVal !== null) {
+            if (
+              (testVal === undefined || testVal === null) &&
+              trainVal !== undefined &&
+              trainVal !== null
+            ) {
               const trainNum = parseFloat(trainVal);
               if (!isNaN(trainNum)) testVal = String(100 - trainNum);
             }
 
-            const trainDisplay = trainVal !== undefined ? String(trainVal) : "-";
+            const trainDisplay =
+              trainVal !== undefined ? String(trainVal) : "-";
             const testDisplay = testVal !== undefined ? String(testVal) : "-";
 
             let methodDesc = "";
@@ -507,10 +528,16 @@
             addItem("Method", methodDesc, "fa-code-branch");
 
             if (isCrossVal) {
-              addItem("Number of folds", split.crossval?.folds || "-", "fa-layer-group");
-            } else {
-              addItem("Rasio Train", trainDisplay, "fa-chart-pie");
-              addItem("Rasio Test", testDisplay, "fa-chart-pie");
+              addItem(
+                "Number of folds",
+                split.crossval?.folds || "-",
+                "fa-layer-group",
+              );
+            }
+            // Selalu tampilkan rasio train & test (karena selalu ada split awal)
+            if (trainDisplay !== "-" || testDisplay !== "-") {
+              addItem("Train Ratio", trainDisplay, "fa-chart-pie");
+              addItem("Test Ratio", testDisplay, "fa-chart-pie");
             }
             // ========== AKHIR DATA SHARING ==========
 
@@ -920,7 +947,11 @@
                 ],
               );
             }
-            rows.push(["ROC-AUC (Macro)", "- (tidak dihitung)"]);
+            const rocAuc =
+              metrics.roc_auc != null
+                ? safeToFixed(metrics.roc_auc, 4)
+                : "- (not calculated)";
+            rows.push(["ROC-AUC (Weighted)", rocAuc]);
             for (let [name, value] of rows) {
               const tr = document.createElement("tr");
               tr.innerHTML = `
