@@ -137,10 +137,10 @@
           <div
             class="bg-white p-4 rounded-xl shadow-md border-l-4 border-blue-500"
           >
-            <p class="text-sm text-gray-500 uppercase">Total Sentences</p>
-            <p class="text-2xl font-bold text-gray-800">10,000</p>
+            <p class="text-sm text-gray-500 uppercase">Total Datasets</p>
+            <p class="text-2xl font-bold text-gray-800">0</p>
             <p class="text-sm text-gray-400 mt-1">
-              <i class="far fa-calendar-alt mr-1"></i> Dataset: combined_idiom
+              Jumlah dataset dalam sistem
             </p>
           </div>
           <div
@@ -203,6 +203,7 @@
         <!-- Model Readiness Status -->
         <div class="mt-6 grid grid-cols-2 gap-4">
           <div
+            id="indobertStatus"
             class="bg-white p-3 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between"
           >
             <div class="flex items-center">
@@ -213,11 +214,14 @@
               </div>
               <div>
                 <p class="font-medium text-gray-800">IndoBERT‑KNN</p>
-                <p class="text-sm text-gray-500">Trained models: 3 versions</p>
+                <p id="indobertVersion" class="text-sm text-gray-500">
+                  Trained models: 0 versions
+                </p>
               </div>
             </div>
           </div>
           <div
+            id="lexiconStatus"
             class="bg-white p-3 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between"
           >
             <div class="flex items-center">
@@ -228,7 +232,9 @@
               </div>
               <div>
                 <p class="font-medium text-gray-800">Lexicon‑Naive Bayes</p>
-                <p class="text-sm text-gray-500">Trained models: 2 versions</p>
+                <p id="lexiconVersion" class="text-sm text-gray-500">
+                  Trained models: 0 versions
+                </p>
               </div>
             </div>
           </div>
@@ -248,28 +254,27 @@
             <div class="grid grid-cols-4 gap-2 text-center">
               <div>
                 <p class="text-sm text-gray-500">Accuracy</p>
-                <p class="text-xl font-bold text-green-600">94.2%</p>
+                <p class="text-xl font-bold text-green-600">-</p>
+                <!-- kosong -->
               </div>
               <div>
                 <p class="text-sm text-gray-500">Precision</p>
-                <p class="text-xl font-bold text-blue-600">93.8%</p>
+                <p class="text-xl font-bold text-blue-600">-</p>
               </div>
               <div>
                 <p class="text-sm text-gray-500">Recall</p>
-                <p class="text-xl font-bold text-purple-600">92.5%</p>
+                <p class="text-xl font-bold text-purple-600">-</p>
               </div>
               <div>
                 <p class="text-sm text-gray-500">F1-Score</p>
-                <p class="text-xl font-bold text-orange-600">93.1%</p>
+                <p class="text-xl font-bold text-orange-600">-</p>
               </div>
             </div>
             <div
               class="mt-3 flex justify-between text-sm text-gray-400 border-t pt-2"
             >
-              <span><i class="far fa-clock mr-1"></i>14 Apr 2026</span>
-              <span
-                ><i class="fas fa-tachometer-alt mr-1"></i>5 min 13 sec</span
-              >
+              <span><i class="far fa-clock mr-1"></i>-</span>
+              <span><i class="fas fa-tachometer-alt mr-1"></i>-</span>
             </div>
           </div>
 
@@ -286,50 +291,81 @@
             <div class="grid grid-cols-4 gap-2 text-center">
               <div>
                 <p class="text-sm text-gray-500">Accuracy</p>
-                <p class="text-xl font-bold text-green-600">92.0%</p>
+                <p class="text-xl font-bold text-green-600">-</p>
               </div>
               <div>
                 <p class="text-sm text-gray-500">Precision</p>
-                <p class="text-xl font-bold text-indigo-600">91.5%</p>
+                <p class="text-xl font-bold text-indigo-600">-</p>
               </div>
               <div>
                 <p class="text-sm text-gray-500">Recall</p>
-                <p class="text-xl font-bold text-pink-600">91.0%</p>
+                <p class="text-xl font-bold text-pink-600">-</p>
               </div>
               <div>
                 <p class="text-sm text-gray-500">F1-Score</p>
-                <p class="text-xl font-bold text-teal-600">91.2%</p>
+                <p class="text-xl font-bold text-teal-600">-</p>
               </div>
             </div>
             <div
               class="mt-3 flex justify-between text-sm text-gray-400 border-t pt-2"
             >
-              <span><i class="far fa-clock mr-1"></i>12 Apr 2026</span>
-              <span><i class="fas fa-tachometer-alt mr-1"></i>1 min 2 sec</span>
+              <span><i class="far fa-clock mr-1"></i>-</span>
+              <span><i class="fas fa-tachometer-alt mr-1"></i>-</span>
             </div>
           </div>
         </div>
 
-        <!-- BAR CHART: Model Performance Comparison (kedua model di atas 90%) -->
-        <div class="bg-white p-5 rounded-xl shadow-md mt-6">
-          <h2
-            class="font-semibold text-gray-700 text-lg mb-4 flex items-center"
-          >
-            <i class="fas fa-chart-simple text-blue-500 mr-2"></i>
-            Model Performance Comparison
-          </h2>
-          <div class="h-80">
-            <canvas id="comparisonBarChart"></canvas>
+        <!-- Two Charts Side by Side: Model Comparison & Train-Test Comparison -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          <!-- Model Performance Comparison Chart -->
+          <div class="bg-white p-5 rounded-xl shadow-md">
+            <h2
+              class="font-semibold text-gray-700 text-lg mb-4 flex items-center"
+            >
+              <i class="fas fa-chart-simple text-blue-500 mr-2"></i>
+              Model Performance Comparison
+            </h2>
+            <div class="h-80">
+              <canvas id="comparisonBarChart"></canvas>
+            </div>
+            <p class="text-sm text-gray-500 mt-2 text-center">
+              Comparison of evaluation metrics between the best models
+              IndoBERT‑KNN and Lexicon‑NB
+            </p>
           </div>
-          <p class="text-sm text-gray-500 mt-2 text-center">
-            Comparison of evaluation metrics between the best models
-            IndoBERT‑KNN and Lexicon‑NB (both above 90%)
-          </p>
+
+          <!-- Training vs Testing Comparison Chart -->
+          <div class="bg-white p-5 rounded-xl shadow-md">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="font-semibold text-gray-700 text-lg flex items-center">
+                <i class="fas fa-chart-line text-purple-500 mr-2"></i>
+                Training vs Testing Performance
+              </h2>
+              <div class="flex items-center space-x-2">
+                <span class="text-sm text-gray-600">Model:</span>
+                <button
+                  id="toggleModelBtn"
+                  class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-1 px-4 rounded-lg transition-colors"
+                >
+                  IndoBERT-KNN
+                </button>
+              </div>
+            </div>
+            <div class="h-80">
+              <canvas id="trainTestChart"></canvas>
+            </div>
+            <p class="text-sm text-gray-500 mt-2 text-center">
+              Comparison between training and testing metrics (overfitting
+              detection)
+            </p>
+          </div>
         </div>
       </main>
     </div>
 
     <script>
+      let trainTestChart = null;
+      let currentAlgorithm = "IndoBERT-KNN";
       // Ambil token dari localStorage (pastikan sudah disimpan saat login)
       const token = localStorage.getItem("access_token");
       if (!token) {
@@ -350,7 +386,7 @@
       toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
 
       // Fetch data dashboard
-      fetch("/api/dashboard/stats", {
+      fetch("http://localhost:5000/api/dashboard/stats", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -366,13 +402,24 @@
           // Update stat cards
           document.querySelector(
             ".border-l-4.border-blue-500 .text-2xl",
-          ).innerText = data.total_sentences.toLocaleString();
+          ).innerText = data.total_datasets.toLocaleString();
           document.querySelector(
             ".border-l-4.border-green-500 .text-2xl",
           ).innerText = data.total_idioms.toLocaleString();
           document.querySelector(
             ".border-l-4.border-purple-500 .text-2xl",
           ).innerText = data.total_models.toLocaleString();
+
+          // Update jumlah trained models per algoritma
+          const indobertVersionElem =
+            document.getElementById("indobertVersion");
+          const lexiconVersionElem = document.getElementById("lexiconVersion");
+          if (indobertVersionElem) {
+            indobertVersionElem.innerText = `Trained models: ${data.total_trained_indobert || 0} versions`;
+          }
+          if (lexiconVersionElem) {
+            lexiconVersionElem.innerText = `Trained models: ${data.total_trained_lexicon || 0} versions`;
+          }
 
           // Update idiom vs non-idiom di pie chart dan ringkasan angka
           const idiomCount = data.idiom_count;
@@ -435,21 +482,36 @@
             },
           });
 
-          // Update Bar Chart Emotion Distribution
-          const emotionLabels = Object.keys(data.emotion_distribution);
-          const sentenceCounts = emotionLabels.map(
-            (label) => data.emotion_distribution[label],
-          );
-          const barColors = [
-            "#10b981",
-            "#3b82f6",
-            "#f59e0b",
-            "#6b7280",
-            "#ef4444",
-            "#8b5cf6",
-            "#ec489a",
-            "#d1d5db",
+          // Update Bar Chart Emotion Distribution - versi rapi
+          const allowedEmotions = [
+            "anger",
+            "fear",
+            "happy",
+            "neutral",
+            "sadness",
+            "surprise",
+            "trust",
           ];
+          const emotionLabels = allowedEmotions;
+          const sentenceCounts = allowedEmotions.map(
+            (emo) => data.emotion_distribution[emo] || 0,
+          );
+
+          const maxCount = Math.max(...sentenceCounts, 0);
+          const yMax = Math.ceil(maxCount / 500) * 500; // kelipatan 500, minimal 500
+          // Tapi sesuai permintaan range sampai 3500, bisa set tetap 3500 atau dinamis
+          const fixedYMax = 3500;
+
+          const barColors = {
+            anger: "#ef4444", // merah
+            fear: "#8b5cf6", // ungu
+            happy: "#10b981", // hijau
+            neutral: "#6b7280", // abu
+            sadness: "#3b82f6", // biru
+            surprise: "#f59e0b", // oranye
+            trust: "#ec489a", // pink
+          };
+          const bgColors = emotionLabels.map((l) => barColors[l]);
 
           const ctxBar = document
             .getElementById("emotionChart")
@@ -460,10 +522,12 @@
               labels: emotionLabels,
               datasets: [
                 {
-                  label: "Sentence Count",
+                  label: "",
                   data: sentenceCounts,
-                  backgroundColor: barColors.slice(0, emotionLabels.length),
-                  borderRadius: 6,
+                  backgroundColor: bgColors,
+                  borderRadius: 8,
+                  barPercentage: 0.7,
+                  categoryPercentage: 0.85,
                 },
               ],
             },
@@ -471,22 +535,44 @@
               responsive: true,
               maintainAspectRatio: true,
               plugins: {
-                legend: {
-                  position: "top",
-                  labels: { boxWidth: 12, font: { size: 16 } },
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    label: (ctx) => `${ctx.raw} sentences`,
+                  },
                 },
-                tooltip: { enabled: true },
               },
               scales: {
                 y: {
                   beginAtZero: true,
+                  max: fixedYMax,
                   title: {
                     display: true,
                     text: "Sentence Count",
-                    font: { size: 16 },
+                    font: { size: 14, weight: "bold" },
+                    color: "#4b5563",
+                  },
+                  grid: {
+                    color: "#e5e7eb",
+                    drawBorder: true,
+                    borderDash: [5, 5],
+                  },
+                  ticks: {
+                    stepSize: 500,
+                    callback: (val) => val.toLocaleString(),
+                    font: { size: 12 },
                   },
                 },
-                x: { ticks: { font: { size: 16 }, maxRotation: 25 } },
+                x: {
+                  ticks: {
+                    font: { size: 14, weight: "500" },
+                    textTransform: "capitalize",
+                  },
+                  grid: { display: false },
+                },
+              },
+              layout: {
+                padding: { top: 20, bottom: 10, left: 10, right: 10 },
               },
             },
             plugins: [
@@ -499,12 +585,12 @@
                       meta.data.forEach((element, index) => {
                         const value = dataset.data[index];
                         const x = element.x;
-                        const y = element.y - 6;
+                        const y = element.y - 8;
                         ctx.save();
-                        ctx.font = "bold 12px 'Segoe UI'";
+                        ctx.font = 'bold 12px "Segoe UI"';
                         ctx.fillStyle = "#1f2937";
                         ctx.textAlign = "center";
-                        ctx.fillText(value, x, y);
+                        ctx.fillText(`${value.toFixed(2)}%`, x, y);
                         ctx.restore();
                       });
                     }
@@ -526,6 +612,7 @@
           );
 
           if (indobert) {
+            // Update metrik accuracy, precision, recall, f1 (sudah benar)
             indobertCard.querySelector(
               ".grid-cols-4 .text-green-600",
             ).innerText = `${(indobert.accuracy * 100).toFixed(1)}%`;
@@ -538,21 +625,26 @@
             indobertCard.querySelector(
               ".grid-cols-4 .text-orange-600",
             ).innerText = `${(indobert.f1_score * 100).toFixed(1)}%`;
-            const timeSpan = indobertCard.querySelector(
-              ".border-t .flex.justify-between span:first-child",
+
+            // Perbaikan selector untuk tanggal dan durasi
+            const infoDiv = indobertCard.querySelector(
+              ".flex.justify-between.border-t",
             );
-            if (timeSpan && indobert.created_at) {
-              const createdDate = new Date(indobert.created_at);
-              timeSpan.innerHTML = `<i class="far fa-clock mr-1"></i>${createdDate.toLocaleDateString()}`;
-            }
-            const durationSpan = indobertCard.querySelector(
-              ".border-t .flex.justify-between span:last-child",
-            );
-            if (durationSpan && indobert.duration) {
-              durationSpan.innerHTML = `<i class="fas fa-tachometer-alt mr-1"></i>${indobert.duration}`;
+            if (infoDiv) {
+              const spans = infoDiv.querySelectorAll("span");
+              if (spans.length >= 2) {
+                const timeSpan = spans[0];
+                const durationSpan = spans[1];
+                if (indobert.created_at) {
+                  const createdDate = new Date(indobert.created_at);
+                  timeSpan.innerHTML = `<i class="far fa-clock mr-1"></i>${createdDate.toLocaleDateString()}`;
+                }
+                if (indobert.duration) {
+                  durationSpan.innerHTML = `<i class="fas fa-tachometer-alt mr-1"></i>${indobert.duration}`;
+                }
+              }
             }
           } else {
-            // Tampilkan pesan "Belum ada model"
             indobertCard.innerHTML =
               '<div class="p-4 text-center text-gray-500">Belum ada model IndoBERT-KNN yang terlatih</div>';
           }
@@ -568,23 +660,31 @@
               `${(lexicon.recall * 100).toFixed(1)}%`;
             lexiconCard.querySelector(".grid-cols-4 .text-teal-600").innerText =
               `${(lexicon.f1_score * 100).toFixed(1)}%`;
-            const timeSpan = lexiconCard.querySelector(
-              ".border-t .flex.justify-between span:first-child",
+
+            const infoDiv = lexiconCard.querySelector(
+              ".flex.justify-between.border-t",
             );
-            if (timeSpan && lexicon.created_at) {
-              const createdDate = new Date(lexicon.created_at);
-              timeSpan.innerHTML = `<i class="far fa-clock mr-1"></i>${createdDate.toLocaleDateString()}`;
-            }
-            const durationSpan = lexiconCard.querySelector(
-              ".border-t .flex.justify-between span:last-child",
-            );
-            if (durationSpan && lexicon.duration) {
-              durationSpan.innerHTML = `<i class="fas fa-tachometer-alt mr-1"></i>${lexicon.duration}`;
+            if (infoDiv) {
+              const spans = infoDiv.querySelectorAll("span");
+              if (spans.length >= 2) {
+                const timeSpan = spans[0];
+                const durationSpan = spans[1];
+                if (lexicon.created_at) {
+                  const createdDate = new Date(lexicon.created_at);
+                  timeSpan.innerHTML = `<i class="far fa-clock mr-1"></i>${createdDate.toLocaleDateString()}`;
+                }
+                if (lexicon.duration) {
+                  durationSpan.innerHTML = `<i class="fas fa-tachometer-alt mr-1"></i>${lexicon.duration}`;
+                }
+              }
             }
           } else {
             lexiconCard.innerHTML =
               '<div class="p-4 text-center text-gray-500">Belum ada model Lexicon-NB yang terlatih</div>';
           }
+
+          console.log("IndoBERT best model:", indobert);
+          console.log("Lexicon best model:", lexicon);
 
           // Update Comparison Chart (bar chart) dengan data dari best models
           const comparisonLabels = [
@@ -688,6 +788,7 @@
               },
             ],
           });
+          loadTrainTestComparison(currentAlgorithm);
         })
         .catch((error) => {
           console.error("Error fetching dashboard data:", error);
@@ -699,6 +800,154 @@
           errorDiv.innerHTML =
             "<strong>Error!</strong> Gagal memuat data dashboard. Pastikan server berjalan dan Anda sudah login.";
           main.prepend(errorDiv);
+        });
+      function loadTrainTestComparison(algorithm) {
+        fetch(
+          `http://localhost:5000/api/dashboard/train-test-comparison?algorithm=${encodeURIComponent(algorithm)}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        )
+          .then((response) => {
+            if (!response.ok) throw new Error("Gagal mengambil data");
+            return response.json();
+          })
+          .then((data) => {
+            const ctx = document
+              .getElementById("trainTestChart")
+              .getContext("2d");
+            const labels = ["Accuracy", "Precision", "Recall", "F1-Score"];
+            const trainData = [
+              data.training.accuracy ? data.training.accuracy * 100 : 0,
+              data.training.precision ? data.training.precision * 100 : 0,
+              data.training.recall ? data.training.recall * 100 : 0,
+              data.training.f1_score ? data.training.f1_score * 100 : 0,
+            ];
+            const testData = [
+              data.testing.accuracy ? data.testing.accuracy * 100 : 0,
+              data.testing.precision ? data.testing.precision * 100 : 0,
+              data.testing.recall ? data.testing.recall * 100 : 0,
+              data.testing.f1_score ? data.testing.f1_score * 100 : 0,
+            ];
+
+            if (trainTestChart) trainTestChart.destroy();
+
+            trainTestChart = new Chart(ctx, {
+              type: "bar",
+              data: {
+                labels: labels,
+                datasets: [
+                  {
+                    label: "Training",
+                    data: trainData,
+                    backgroundColor: "#3b82f6",
+                    borderRadius: 6,
+                    barPercentage: 0.65,
+                    categoryPercentage: 0.8,
+                  },
+                  {
+                    label: "Testing",
+                    data: testData,
+                    backgroundColor: "#ef4444",
+                    borderRadius: 6,
+                    barPercentage: 0.65,
+                    categoryPercentage: 0.8,
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                layout: {
+                  padding: { top: 20, bottom: 20, left: 10, right: 10 },
+                },
+                plugins: {
+                  legend: {
+                    position: "top",
+                    labels: { font: { size: 14, weight: "bold" } },
+                  },
+                  tooltip: {
+                    callbacks: {
+                      label: (ctx) => `${ctx.dataset.label}: ${ctx.raw}%`,
+                    },
+                  },
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                      display: true,
+                      text: "Percentage (%)",
+                      font: { size: 12 },
+                    },
+                    ticks: {
+                      callback: (val) => `${val}%`,
+                      stepSize: 20,
+                      font: { size: 11 },
+                    },
+                  },
+                  x: {
+                    ticks: {
+                      font: { size: 12, weight: "500" },
+                      maxRotation: 15,
+                      autoSkip: true,
+                    },
+                  },
+                },
+              },
+              plugins: [
+                {
+                  afterDraw(chart) {
+                    const ctx = chart.ctx;
+                    chart.data.datasets.forEach((dataset, datasetIndex) => {
+                      const meta = chart.getDatasetMeta(datasetIndex);
+                      if (!meta.hidden) {
+                        meta.data.forEach((element, index) => {
+                          const value = dataset.data[index];
+                          const x = element.x;
+                          const y = element.y - 6;
+                          ctx.save();
+                          ctx.font = "bold 12px 'Segoe UI'";
+                          ctx.fillStyle = "#1f2937";
+                          ctx.textAlign = "center";
+                          ctx.fillText(`${value.toFixed(2)}%`, x, y);
+                          ctx.restore();
+                        });
+                      }
+                    });
+                  },
+                },
+              ],
+            });
+          })
+          .catch((error) => {
+            console.error("Error loading train-test comparison:", error);
+            const ctx = document
+              .getElementById("trainTestChart")
+              .getContext("2d");
+            if (trainTestChart) trainTestChart.destroy();
+            ctx.font = "16px 'Segoe UI'";
+            ctx.fillStyle = "#ef4444";
+            ctx.fillText("Tidak ada data testing untuk model ini", 50, 150);
+          });
+      }
+      document
+        .getElementById("toggleModelBtn")
+        .addEventListener("click", () => {
+          const btn = document.getElementById("toggleModelBtn");
+          if (currentAlgorithm === "IndoBERT-KNN") {
+            currentAlgorithm = "Lexicon-NB";
+            btn.textContent = "Lexicon-NB";
+            btn.classList.remove("bg-blue-500");
+            btn.classList.add("bg-purple-500");
+          } else {
+            currentAlgorithm = "IndoBERT-KNN";
+            btn.textContent = "IndoBERT-KNN";
+            btn.classList.remove("bg-purple-500");
+            btn.classList.add("bg-blue-500");
+          }
+          loadTrainTestComparison(currentAlgorithm);
         });
     </script>
   </body>
