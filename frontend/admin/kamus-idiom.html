@@ -19,7 +19,7 @@
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- Sidebar dengan gradien (konsisten dengan halaman lain) -->
+      <!-- Sidebar -->
       <aside
         class="w-64 bg-white shadow-2xl flex-shrink-0 overflow-y-auto border-r border-gray-100"
       >
@@ -113,7 +113,7 @@
 
       <!-- Main Content -->
       <main class="flex-1 overflow-y-auto p-6 bg-gray-100">
-        <!-- Header dengan gradient -->
+        <!-- Header -->
         <div
           class="mb-8 p-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500 rounded-xl shadow-lg text-white"
         >
@@ -125,7 +125,7 @@
           </p>
         </div>
 
-        <!-- Upload CSV dengan Preview File -->
+        <!-- Upload CSV -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-6">
           <h2 class="font-semibold text-gray-700 mb-4">Upload Idiom Data</h2>
           <div
@@ -144,7 +144,6 @@
             <input type="file" id="fileInput" class="hidden" accept=".csv" />
           </div>
 
-          <!-- Preview file setelah dipilih -->
           <div id="filePreview" class="mt-4 hidden">
             <div
               class="flex items-center justify-between bg-gray-50 p-4 rounded-lg border border-gray-200"
@@ -190,7 +189,7 @@
                     <th class="px-4 py-2 border border-blue-400 w-32">
                       Emotion
                     </th>
-                  </table>
+                  </tr>
                 </thead>
                 <tbody id="previewTableBody"></tbody>
               </table>
@@ -213,7 +212,8 @@
             <div>
               <label class="block text-sm font-medium text-gray-700"
                 >Idiom</label
-              ><input
+              >
+              <input
                 type="text"
                 id="newIdiom"
                 class="mt-1 block w-full border rounded-md p-2"
@@ -223,7 +223,8 @@
             <div>
               <label class="block text-sm font-medium text-gray-700"
                 >Meaning</label
-              ><input
+              >
+              <input
                 type="text"
                 id="newMeaning"
                 class="mt-1 block w-full border rounded-md p-2"
@@ -233,7 +234,8 @@
             <div>
               <label class="block text-sm font-medium text-gray-700"
                 >Emotion</label
-              ><select
+              >
+              <select
                 id="newEmotion"
                 class="mt-1 block w-full border rounded-md p-2"
               >
@@ -256,12 +258,18 @@
           </button>
         </div>
 
-        <!-- Filter, Search, dan Tabel -->
+        <!-- Idiom List Table -->
         <div class="bg-white p-6 rounded-xl shadow-md">
           <div class="flex justify-between items-center mb-3">
             <h2 class="text-lg font-semibold text-gray-800">
               <i class="fas fa-list-alt mr-2 text-blue-600"></i>Idiom List
             </h2>
+            <button
+              id="exportCsvBtn"
+              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition"
+            >
+              <i class="fas fa-download mr-1"></i> Export CSV
+            </button>
           </div>
 
           <!-- Search & Sort -->
@@ -288,7 +296,7 @@
             </button>
           </div>
 
-          <!-- Tabel -->
+          <!-- Table -->
           <div class="overflow-x-auto">
             <table class="fixed-table min-w-full border border-gray-200">
               <thead class="bg-blue-500 text-white">
@@ -304,7 +312,7 @@
             </table>
           </div>
 
-          <!-- Total dan Pagination -->
+          <!-- Pagination & Total -->
           <div class="flex flex-wrap justify-between items-center mt-4 gap-3">
             <div id="pagination" class="flex justify-center space-x-2"></div>
             <span
@@ -317,7 +325,7 @@
       </main>
     </div>
 
-    <!-- Edit Idiom Modal -->
+    <!-- Edit Modal -->
     <div
       id="editModal"
       class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50"
@@ -325,24 +333,24 @@
       <div class="bg-white rounded-lg shadow-xl w-96 p-6">
         <h3 class="text-lg font-semibold mb-4">Edit Idiom</h3>
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700">Idiom</label
-          ><input
+          <label class="block text-sm font-medium text-gray-700">Idiom</label>
+          <input
             type="text"
             id="editIdiom"
             class="mt-1 block w-full border rounded-md p-2"
           />
         </div>
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700">Meaning</label
-          ><input
+          <label class="block text-sm font-medium text-gray-700">Meaning</label>
+          <input
             type="text"
             id="editMeaning"
             class="mt-1 block w-full border rounded-md p-2"
           />
         </div>
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700">Emotion</label
-          ><select
+          <label class="block text-sm font-medium text-gray-700">Emotion</label>
+          <select
             id="editEmotion"
             class="mt-1 block w-full border rounded-md p-2"
           >
@@ -361,8 +369,9 @@
             id="closeModalBtn"
             class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
           >
-            Cancel</button
-          ><button
+            Cancel
+          </button>
+          <button
             id="saveEditBtn"
             class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
@@ -382,8 +391,8 @@
       let currentSearch = "";
       let totalIdioms = 0;
 
-      // Preview file handling
       let selectedFile = null;
+      let uploadedData = [];
 
       function formatFileSize(bytes) {
         if (bytes === 0) return "0 Bytes";
@@ -415,7 +424,6 @@
         const fileInput = document.getElementById("fileInput");
         fileInput.value = "";
         updateFilePreview(null);
-        // Also hide the preview section and reset uploadedData
         document.getElementById("previewSection").classList.add("hidden");
         uploadedData = [];
       }
@@ -558,7 +566,6 @@
         paginationDiv.appendChild(container);
       }
 
-      // Add, Delete, Edit functions
       async function addIdiom() {
         const idiomText = document.getElementById("newIdiom").value.trim();
         const meaning = document.getElementById("newMeaning").value.trim();
@@ -662,6 +669,7 @@
         loadIdioms();
       }
 
+      // --- DOM Elements & Event Listeners ---
       document
         .getElementById("applyFilterBtn")
         .addEventListener("click", applyFilterAndSort);
@@ -675,12 +683,10 @@
         .getElementById("saveEditBtn")
         .addEventListener("click", saveEdit);
 
-      // Upload area with preview
       const uploadArea = document.getElementById("uploadArea");
       const fileInput = document.getElementById("fileInput");
       const clearFileBtn = document.getElementById("clearFileBtn");
       const uploadBtn = document.getElementById("uploadBtn");
-      let uploadedData = [];
 
       uploadArea.addEventListener("click", () => fileInput.click());
       uploadArea.addEventListener("dragover", (e) => {
@@ -701,32 +707,44 @@
       });
 
       fileInput.addEventListener("change", (e) => {
-        if (fileInput.files.length) {
-          updateFilePreview(fileInput.files[0]);
-        } else {
-          updateFilePreview(null);
-        }
+        if (fileInput.files.length) updateFilePreview(fileInput.files[0]);
+        else updateFilePreview(null);
       });
 
       clearFileBtn.addEventListener("click", clearFile);
 
-      // Upload button (only for preview, actual CSV parsing happens when file selected)
+      // =================== FIXED UPLOAD BUTTON ===================
       uploadBtn.addEventListener("click", () => {
         if (!selectedFile) {
           alert("Please select a CSV file first.");
           return;
         }
-        // Proceed to parse the file (same as before)
         const file = selectedFile;
         Papa.parse(file, {
           header: true,
           skipEmptyLines: true,
           complete: function (results) {
+            // Ambil elemen preview setelah DOM siap (pastikan ada)
+            const previewSection = document.getElementById("previewSection");
+            const previewBody = document.getElementById("previewTableBody");
+
+            if (!previewSection || !previewBody) {
+              console.error(
+                "Preview elements missing: previewSection or previewTableBody",
+              );
+              alert(
+                "Gagal memuat preview: elemen halaman tidak lengkap. Refresh halaman dan coba lagi.",
+              );
+              return;
+            }
+
             const data = results.data;
             if (data.length === 0) {
               alert("File is empty");
               return;
             }
+
+            // Deteksi kolom
             let idiomKey = null,
               meaningKey = null,
               emotionKey = null;
@@ -746,6 +764,7 @@
               );
               return;
             }
+
             uploadedData = [];
             for (let row of data) {
               let idiom = row[idiomKey] ? row[idiomKey].trim() : "";
@@ -763,11 +782,13 @@
                 });
               }
             }
+
             if (uploadedData.length === 0) {
               alert("No valid data found");
               return;
             }
-            const previewBody = document.getElementById("previewTableBody");
+
+            // Tampilkan preview
             previewBody.innerHTML = "";
             const previewRows = uploadedData.slice(0, 10);
             previewRows.forEach((item, idx) => {
@@ -781,18 +802,12 @@
             });
             if (uploadedData.length > 10) {
               const infoRow = previewBody.insertRow();
-              infoRow.insertCell(0).colSpan = 4;
-              infoRow.insertCell(0).innerHTML =
-                `... and ${uploadedData.length - 10} more entries`;
-              infoRow.cells[0].classList.add(
-                "text-center",
-                "text-gray-500",
-                "py-2",
-              );
+              const infoCell = infoRow.insertCell(0);
+              infoCell.colSpan = 4;
+              infoCell.innerHTML = `... and ${uploadedData.length - 10} more entries`;
+              infoCell.classList.add("text-center", "text-gray-500", "py-2");
             }
-            document
-              .getElementById("previewSection")
-              .classList.remove("hidden");
+            previewSection.classList.remove("hidden");
           },
           error: function (err) {
             console.error(err);
@@ -800,6 +815,34 @@
           },
         });
       });
+      // ============================================================
+
+      // Export CSV
+      document
+        .getElementById("exportCsvBtn")
+        .addEventListener("click", async () => {
+          try {
+            const response = await apiFetch("/idioms/export");
+            if (!response) return;
+            if (!response.ok) {
+              const err = await response.json();
+              alert(err.message || "Gagal mengekspor data");
+              return;
+            }
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "idioms_export.csv";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+          } catch (error) {
+            console.error(error);
+            alert("Terjadi kesalahan saat mengekspor data");
+          }
+        });
 
       document
         .getElementById("extractBtn")
@@ -819,7 +862,7 @@
               alert(result.message);
               uploadedData = [];
               document.getElementById("previewSection").classList.add("hidden");
-              clearFile(); // reset preview and file input
+              clearFile();
               currentPage = 1;
               loadIdioms();
             } else alert(result.message || "Failed to extract idioms");
@@ -840,8 +883,6 @@
       const dataCollectionIcon = document.getElementById("dataCollectionIcon");
       toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
 
-      // === BUKA DROPDOWN DATA COLLECTION SECARA OTOMATIS ===
-      // Karena halaman Idiom Dictionary berada di dalam menu Data Collection, kita pastikan dropdown terbuka
       if (dataCollectionMenu && dataCollectionIcon) {
         dataCollectionMenu.classList.remove("hidden");
         dataCollectionIcon.classList.add("rotate-180");

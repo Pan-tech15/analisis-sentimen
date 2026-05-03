@@ -19,7 +19,18 @@ class Training(db.Model):
     # Gunakan back_populates
     config = db.relationship('ModelConfig', back_populates='trainings', passive_deletes=True)
 
-    def to_dict(self):      # ✅ sekarang di dalam kelas
+    def to_dict(self):
+        def _fmt(dt):
+            """Format a datetime into an ISO 8601 string with 'Z' suffix (UTC)."""
+            if dt is None:
+                return None
+            # Convert to UTC if it has timezone info, otherwise treat naive as UTC
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            else:
+                dt = dt.astimezone(timezone.utc)
+            return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+
         dataset_name = None
         if self.dataset:
             dataset_name = self.dataset.dataset_name
@@ -44,7 +55,7 @@ class Training(db.Model):
             'progress': self.progress,
             'metrics': self.metrics,
             'model_path': self.model_path,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
+            'created_at': _fmt(self.created_at),
+            'completed_at': _fmt(self.completed_at),
             'split_ratio': split_ratio
         }

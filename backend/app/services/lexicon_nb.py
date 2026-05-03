@@ -6,7 +6,7 @@ import time
 import pandas as pd
 import numpy as np
 import joblib
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.naive_bayes import MultinomialNB, BernoulliNB
@@ -329,7 +329,7 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                     if method == 'sum':
                         final_scores = proba + lex_te
                     elif method == 'weighted':
-                        w = float(fusion_params.get('weight', 0.7))
+                        w = float(fusion_params.get('weight', 0.8))
                         final_scores = w * proba + (1 - w) * lex_te
                     else:  # product
                         lex_te_norm = (lex_te - lex_te.min(axis=1, keepdims=True)) / (
@@ -456,7 +456,7 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                 if method == 'sum':
                     final_scores = proba + lex_test
                 elif method == 'weighted':
-                    w = float(fusion_params.get('weight', 0.7))
+                    w = float(fusion_params.get('weight', 0.8))
                     final_scores = w * proba + (1 - w) * lex_test
                 else:  # product
                     lex_test_norm = (lex_test - lex_test.min(axis=1, keepdims=True)) / (
@@ -528,7 +528,7 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
             training.progress = 100
             training.metrics = metrics
             training.model_path = model_path
-            training.completed_at = datetime.utcnow()
+            training.completed_at = datetime.now(timezone.utc)
             db.session.commit()
             log(f"Training {training_id} selesai!", training_id)
 
