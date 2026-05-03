@@ -525,10 +525,12 @@
               precision: m.precision ?? item.precision,
               recall: m.recall ?? item.recall,
               f1_score: m.f1_score ?? item.f1_score,
-              macro_accuracy: m.macro_accuracy,
-              macro_precision: m.macro_precision,
-              macro_recall: m.macro_recall,
-              macro_f1_score: m.macro_f1_score,
+              // FALLBACK: gunakan metrik weighted jika macro tidak tersedia
+              macro_accuracy: m.macro_accuracy ?? m.accuracy ?? item.accuracy,
+              macro_precision:
+                m.macro_precision ?? m.precision ?? item.precision,
+              macro_recall: m.macro_recall ?? m.recall ?? item.recall,
+              macro_f1_score: m.macro_f1_score ?? m.f1_score ?? item.f1_score,
               mcc: m.mcc,
               roc_auc: m.roc_auc,
             },
@@ -583,6 +585,8 @@
                     .toLocaleString("en-US", {
                       dateStyle: "short",
                       timeStyle: "short",
+                      timeZone:
+                        Intl.DateTimeFormat().resolvedOptions().timeZone,
                     })
                     .toLowerCase()
                 : "-";
@@ -643,7 +647,7 @@
             }
             row.insertCell(1).innerHTML = algoHtml;
 
-            // Kolom 2: Accuracy (W)  -- PERHATIKAN indeks sudah benar sesuai urutan header
+            // Kolom 2-13 mengikuti urutan header
             row.insertCell(2).innerHTML =
               `<span class="font-semibold text-blue-600">${formatMetric(m.accuracy)}</span>`;
             row.insertCell(3).innerHTML =
@@ -668,13 +672,18 @@
               m.roc_auc != null
                 ? `<span class="font-semibold text-orange-600">${(m.roc_auc * 100).toFixed(2)}%</span>`
                 : "-";
-            const d = item.created_at ? new Date(item.created_at) : null;
+            const d = item.created_at ? new Date(item.created_at) : null; // ⬅ tambahkan 'Z'
             row.insertCell(12).innerHTML = d
-              ? `<span class="text-gray-500 text-xs">${d.toLocaleString("en-US", { dateStyle: "short", timeStyle: "short" })}</span>`
+              ? `<span class="text-gray-500 text-xs">${d.toLocaleString("en-US", { dateStyle: "short", timeStyle: "short", timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone })}</span>` // ⬅ tambahkan timeZone
               : "-";
             const actCell = row.insertCell(13);
             actCell.className = "px-4 py-2 border border-gray-200 text-center";
-            actCell.innerHTML = `<a href="validasi.html?id=${item.id}" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 transition-all mr-1" title="View details"><i class="fas fa-eye"></i></a><button class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700 transition-all download-model" data-id="${item.id}" ${!item.model_path ? "disabled" : ""} title="Download model"><i class="fas fa-download"></i></button>`;
+            // Perbaikan link: training -> validasi.html, testing -> validasi-testing.html
+            const detailPage =
+              tableKey === "testing"
+                ? "validasi-testing.html"
+                : "validasi.html";
+            actCell.innerHTML = `<a href="${detailPage}?id=${item.id}" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 transition-all mr-1" title="View details"><i class="fas fa-eye"></i></a><button class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700 transition-all download-model" data-id="${item.id}" ${!item.model_path ? "disabled" : ""} title="Download model"><i class="fas fa-download"></i></button>`;
             for (let cell of row.cells)
               cell.classList.add("border", "border-gray-200", "px-4", "py-2.5");
           });
@@ -828,13 +837,16 @@
               m.roc_auc != null
                 ? `<span class="font-semibold text-orange-600">${(m.roc_auc * 100).toFixed(2)}%</span>`
                 : "-";
-            const d = item.created_at ? new Date(item.created_at) : null;
+            const d = item.created_at ? new Date(item.created_at) : null; // ⬅ tambahkan 'Z'
             row.insertCell(13).innerHTML = d
-              ? `<span class="text-gray-500 text-xs">${d.toLocaleString("en-US", { dateStyle: "short", timeStyle: "short" })}</span>`
+              ? `<span class="text-gray-500 text-xs">${d.toLocaleString("en-US", { dateStyle: "short", timeStyle: "short", timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone })}</span>` // ⬅ tambahkan timeZone
               : "-";
             const actCell = row.insertCell(14);
             actCell.className = "px-4 py-2 border border-gray-200 text-center";
-            actCell.innerHTML = `<a href="validasi.html?id=${item.id}" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 transition-all" title="View details"><i class="fas fa-eye"></i></a>`;
+            // Perbaikan link: training -> validasi.html, testing -> validasi-testing.html
+            const detailPage =
+              source === "Training" ? "validasi.html" : "validasi-testing.html";
+            actCell.innerHTML = `<a href="${detailPage}?id=${item.id}" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 transition-all" title="View details"><i class="fas fa-eye"></i></a>`;
             for (let cell of row.cells)
               cell.classList.add("border", "border-gray-200", "px-4", "py-2.5");
           }
