@@ -1,355 +1,626 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>IdiomSense - Emotion Detection in Indonesian Idioms</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            background-attachment: fixed;
-            position: relative;
-            overflow-x: hidden;
+      body {
+        font-family: "Poppins", sans-serif;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        background-attachment: fixed;
+        position: relative;
+        overflow-x: hidden;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image:
+          radial-gradient(
+            circle at 20% 50%,
+            rgba(120, 119, 198, 0.1) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 80% 80%,
+            rgba(168, 85, 247, 0.1) 0%,
+            transparent 50%
+          );
+        pointer-events: none;
+        z-index: 0;
+      }
+      * {
+        transition: all 0.3s ease;
+      }
+      .bg-gradient-custom {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        box-shadow:
+          0 20px 40px rgba(0, 0, 0, 0.08),
+          0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+      }
+      .floating-shape {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        filter: blur(60px);
+        animation: float 8s ease-in-out infinite;
+      }
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px) scale(1);
         }
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
-                              radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 0;
+        50% {
+          transform: translateY(-30px) scale(1.1);
         }
-        * {
-            transition: all 0.3s ease;
+      }
+      .example-card {
+        position: relative;
+        background: linear-gradient(135deg, #ffffff, #f8fafc);
+        transition:
+          transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+          box-shadow 0.4s;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+      }
+      .example-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow:
+          0 25px 35px -10px rgba(0, 0, 0, 0.15),
+          0 0 0 2px rgba(99, 102, 241, 0.3) inset;
+      }
+      .pulse-btn {
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
         }
-        .bg-gradient-custom {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        70% {
+          box-shadow: 0 0 0 15px rgba(59, 130, 246, 0);
         }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+        100% {
+          box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
         }
-        .floating-shape {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            filter: blur(60px);
-            animation: float 8s ease-in-out infinite;
+      }
+      .result-reveal {
+        animation: slideUpFade 0.7s ease-out;
+      }
+      @keyframes slideUpFade {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
         }
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(-30px) scale(1.1); }
+        to {
+          opacity: 1;
+          transform: translateY(0);
         }
-        .example-card {
-            position: relative;
-            background: linear-gradient(135deg, #ffffff, #f8fafc);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s;
-            border: 1px solid rgba(0,0,0,0.05);
+      }
+      .text-clip-standard {
+        background-clip: text;
+        -webkit-background-clip: text;
+      }
+      .loading-spinner {
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top: 3px solid white;
+        width: 24px;
+        height: 24px;
+        animation: spin 0.8s linear infinite;
+        display: inline-block;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
         }
-        .example-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 25px 35px -10px rgba(0,0,0,0.15), 0 0 0 2px rgba(99, 102, 241, 0.3) inset;
+        100% {
+          transform: rotate(360deg);
         }
-        .example-card::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(99,102,241,0.05), transparent);
-            border-radius: inherit;
-            z-index: 0;
-        }
-        .example-card > * { position: relative; z-index: 1; }
-
-        .pulse-btn {
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
-        }
-        .result-reveal {
-            animation: slideUpFade 0.7s ease-out;
-        }
-        @keyframes slideUpFade {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        tbody tr:hover {
-            background-color: rgba(99, 102, 241, 0.05);
-            transform: scale(1.01);
-        }
-        .text-clip-standard {
-            background-clip: text;
-            -webkit-background-clip: text;
-        }
+      }
     </style>
-</head>
-<body class="font-sans antialiased relative z-10">
-
+  </head>
+  <body class="font-sans antialiased relative z-10">
     <!-- Navigation -->
-    <nav class="bg-white/80 backdrop-blur-lg shadow-lg border-b border-white/50 sticky top-0 z-30">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center space-x-2">
-                    <span class="font-extrabold text-3xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-clip-standard text-transparent drop-shadow-sm">
-                        IdiomSense ✨
-                    </span>
-                </div>
-                <div class="hidden md:flex space-x-8">
-                    <a href="beranda.html" class="text-transparent bg-gradient-to-r from-blue-600 to-purple-600 text-clip-standard font-semibold border-b-2 border-blue-600 pb-1">Home</a>
-                </div>
-                <div class="md:hidden">
-                    <button id="menu-btn" class="text-gray-700 focus:outline-none">
-                        <i class="fas fa-bars text-2xl"></i>
-                    </button>
-                </div>
-            </div>
-            <div id="mobile-menu" class="hidden md:hidden mt-2 pb-3 space-y-1">
-                <a href="beranda.html" class="block px-3 py-2 rounded-md text-base font-medium text-indigo-600 bg-indigo-50">Home</a>
-            </div>
+    <nav
+      class="bg-white/80 backdrop-blur-lg shadow-lg border-b border-white/50 sticky top-0 z-30"
+    >
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center space-x-2">
+            <span
+              class="font-extrabold text-3xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-clip-standard text-transparent drop-shadow-sm"
+            >
+              IdiomSense ✨
+            </span>
+          </div>
+          <div class="hidden md:flex space-x-8">
+            <a
+              href="beranda.html"
+              class="text-transparent bg-gradient-to-r from-blue-600 to-purple-600 text-clip-standard font-semibold border-b-2 border-blue-600 pb-1"
+              >Home</a
+            >
+          </div>
+          <div class="md:hidden">
+            <button id="menu-btn" class="text-gray-700 focus:outline-none">
+              <i class="fas fa-bars text-2xl"></i>
+            </button>
+          </div>
         </div>
+        <div id="mobile-menu" class="hidden md:hidden mt-2 pb-3 space-y-1">
+          <a
+            href="beranda.html"
+            class="block px-3 py-2 rounded-md text-base font-medium text-indigo-600 bg-indigo-50"
+            >Home</a
+          >
+        </div>
+      </div>
     </nav>
 
-    <!-- Hero Section with animated shapes -->
-    <section class="bg-gradient-custom text-white py-20 px-4 relative overflow-hidden">
-        <div class="floating-shape w-72 h-72 top-10 left-10 opacity-30 bg-pink-300" style="animation-delay: 0s;"></div>
-        <div class="floating-shape w-96 h-96 bottom-10 right-20 opacity-20 bg-yellow-300" style="animation-delay: 2s;"></div>
-        <div class="floating-shape w-64 h-64 top-40 right-10 opacity-25 bg-blue-300" style="animation-delay: 4s;"></div>
-        <div class="max-w-4xl mx-auto text-center relative z-10">
-            <h1 class="text-5xl md:text-6xl font-extrabold mb-6 leading-tight drop-shadow-2xl">
-                Emotion in <span class="text-transparent bg-gradient-to-r from-yellow-200 to-amber-400 text-clip-standard">Indonesian Idioms</span>
-            </h1>
-            <p class="text-xl text-blue-100 max-w-2xl mx-auto opacity-90">
-                Uncover feelings behind everyday phrases. Type an idiom sentence and let AI decode the emotion.
-            </p>
-            <div class="mt-8 flex justify-center">
-                <span class="inline-flex items-center gap-2 text-sm bg-white/20 backdrop-blur-md rounded-full px-5 py-2 border border-white/30">
-                    <i class="fas fa-robot"></i> Powered by IndoBERT & Lexicon
-                </span>
-            </div>
+    <!-- Hero Section -->
+    <section
+      class="bg-gradient-custom text-white py-20 px-4 relative overflow-hidden"
+    >
+      <div
+        class="floating-shape w-72 h-72 top-10 left-10 opacity-30 bg-pink-300"
+        style="animation-delay: 0s"
+      ></div>
+      <div
+        class="floating-shape w-96 h-96 bottom-10 right-20 opacity-20 bg-yellow-300"
+        style="animation-delay: 2s"
+      ></div>
+      <div
+        class="floating-shape w-64 h-64 top-40 right-10 opacity-25 bg-blue-300"
+        style="animation-delay: 4s"
+      ></div>
+      <div class="max-w-4xl mx-auto text-center relative z-10">
+        <h1
+          class="text-5xl md:text-6xl font-extrabold mb-6 leading-tight drop-shadow-2xl"
+        >
+          Emotion in
+          <span
+            class="text-transparent bg-gradient-to-r from-yellow-200 to-amber-400 text-clip-standard"
+            >Indonesian Idioms</span
+          >
+        </h1>
+        <p class="text-xl text-blue-100 max-w-2xl mx-auto opacity-90">
+          Uncover feelings behind everyday phrases. Type an idiom sentence and
+          let AI decode the emotion.
+        </p>
+        <div class="mt-8 flex justify-center">
+          <span
+            class="inline-flex items-center gap-2 text-sm bg-white/20 backdrop-blur-md rounded-full px-5 py-2 border border-white/30"
+          >
+            <i class="fas fa-robot"></i> Powered by IndoBERT & Lexicon
+          </span>
         </div>
+      </div>
     </section>
 
     <!-- Main Content -->
-    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 -mt-12 relative z-10">
-        
-        <!-- Text Input Card - glassmorphism -->
-        <div class="glass-card rounded-3xl p-8 border-t-4 border-indigo-500 hover:shadow-2xl transition-all duration-500 max-w-2xl mx-auto">
-            <div class="flex items-center space-x-3 mb-6">
-                <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-3 rounded-2xl shadow-lg">
-                    <i class="fas fa-pen-fancy text-white text-xl"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-gray-800">Detect Emotion</h2>
-            </div>
-            <p class="text-gray-600 text-sm mb-5 flex items-center gap-2">
-                <i class="fas fa-info-circle text-indigo-400"></i> 
-                Max <span class="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">20 words</span> per sentence
+    <main
+      class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 -mt-12 relative z-10"
+    >
+      <!-- Text Input Card -->
+      <div
+        class="glass-card rounded-3xl p-8 border-t-4 border-indigo-500 hover:shadow-2xl transition-all duration-500 max-w-2xl mx-auto"
+      >
+        <div class="flex items-center space-x-3 mb-6">
+          <div
+            class="bg-gradient-to-br from-indigo-500 to-purple-600 p-3 rounded-2xl shadow-lg"
+          >
+            <i class="fas fa-pen-fancy text-white text-xl"></i>
+          </div>
+          <h2 class="text-2xl font-bold text-gray-800">Detect Emotion</h2>
+        </div>
+        <p class="text-gray-600 text-sm mb-5 flex items-center gap-2">
+          <i class="fas fa-info-circle text-indigo-400"></i>
+          Max
+          <span
+            class="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full"
+            >20 words</span
+          >
+          per sentence
+        </p>
+        <textarea
+          id="single-text"
+          rows="4"
+          class="w-full bg-white/80 backdrop-blur-sm border-2 border-gray-200 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-400 focus:border-transparent placeholder-gray-400 text-gray-700"
+          placeholder="e.g., Dia angkat kaki dari kantor karena bosan."
+        ></textarea>
+        <div class="mt-4 flex justify-between items-center">
+          <span id="word-count" class="text-sm text-gray-500 font-medium"
+            >0/20 words</span
+          >
+          <button
+            id="analyze-btn"
+            class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold py-3 px-8 rounded-2xl shadow-xl flex items-center space-x-2 transform hover:scale-105 transition-all duration-300"
+          >
+            <i class="fas fa-magnifying-glass"></i>
+            <span>Detect Emotion</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Result Section -->
+      <div
+        id="result-section"
+        class="mt-12 hidden max-w-3xl mx-auto result-reveal"
+      >
+        <div class="glass-card rounded-3xl p-6 border-t-4 border-emerald-400">
+          <h3
+            class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3"
+          >
+            <span class="bg-emerald-100 p-2 rounded-full"
+              ><i class="fas fa-check-circle text-emerald-600 text-2xl"></i
+            ></span>
+            Detection Result
+          </h3>
+          <div
+            id="result-content"
+            class="grid grid-cols-1 md:grid-cols-3 gap-6"
+          >
+            <!-- Dinamis via JS -->
+          </div>
+          <div
+            id="result-error"
+            class="hidden text-red-600 text-center py-4"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Example Sentences -->
+      <div class="mt-16 max-w-3xl mx-auto">
+        <h3
+          class="text-3xl font-bold text-gray-800 mb-8 flex items-center gap-3"
+        >
+          <span class="bg-yellow-100 p-2 rounded-full"
+            ><i class="fas fa-lightbulb text-yellow-600 text-2xl"></i
+          ></span>
+          Try an example
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div
+            class="example-card p-6 rounded-2xl cursor-pointer"
+            data-text="Ia sangat takut kehilangan muka jika teman-temannya tahu bahwa dia sebenarnya pembunuh."
+          >
+            <p class="text-gray-800 font-medium">
+              “Ia sangat takut
+              <span class="bg-red-200 text-red-800 px-2 py-0.5 rounded-full"
+                >kehilangan muka</span
+              >
+              jika teman-temannya tahu...”
             </p>
-            <textarea id="single-text" rows="4" 
-                class="w-full bg-white/80 backdrop-blur-sm border-2 border-gray-200 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-400 focus:border-transparent placeholder-gray-400 text-gray-700"
-                placeholder="e.g., Dia angkat kaki dari kantor karena bosan."></textarea>
-            <div class="mt-4 flex justify-between items-center">
-                <span id="word-count" class="text-sm text-gray-500 font-medium">0/20 words</span>
-                <button id="analyze-btn" class="pulse-btn bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold py-3 px-8 rounded-2xl shadow-xl flex items-center space-x-2 transform hover:scale-105 transition-all duration-300">
-                    <i class="fas fa-magnifying-glass"></i>
-                    <span>Detect Emotion</span>
-                </button>
-            </div>
+            <span
+              class="inline-block mt-4 text-xs bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-1.5 rounded-full shadow"
+              >Scared</span
+            >
+          </div>
+          <div
+            class="example-card p-6 rounded-2xl cursor-pointer"
+            data-text="Aku kesal sekali hari ini, rasanya ingin membanting tulang."
+          >
+            <p class="text-gray-800 font-medium">
+              “...ingin
+              <span class="bg-green-200 text-green-800 px-2 py-0.5 rounded-full"
+                >membanting tulang</span
+              >”
+            </p>
+            <span
+              class="inline-block mt-4 text-xs bg-gradient-to-r from-green-500 to-teal-500 text-white px-4 py-1.5 rounded-full shadow"
+              >Anger</span
+            >
+          </div>
+          <div
+            class="example-card p-6 rounded-2xl cursor-pointer"
+            data-text="Presentasinya sukses besar, dia benar-benar naik daun."
+          >
+            <p class="text-gray-800 font-medium">
+              “...dia
+              <span
+                class="bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded-full"
+                >naik daun</span
+              >”
+            </p>
+            <span
+              class="inline-block mt-4 text-xs bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 py-1.5 rounded-full shadow"
+              >Happy</span
+            >
+          </div>
         </div>
+      </div>
 
-        <!-- Result Section (hanya Detection Result) -->
-        <div id="result-section" class="mt-12 hidden max-w-3xl mx-auto result-reveal">
-            
-            <!-- Detection Info Cards -->
-            <div class="glass-card rounded-3xl p-6 border-t-4 border-emerald-400">
-                <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                    <span class="bg-emerald-100 p-2 rounded-full"><i class="fas fa-check-circle text-emerald-600 text-2xl"></i></span>
-                    Detection Result
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-gradient-to-br from-blue-50 to-indigo-100 p-5 rounded-2xl shadow-sm hover:shadow-md transition">
-                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Emotion</p>
-                        <p id="result-emotion" class="text-2xl font-bold text-indigo-700 mt-2">-</p>
-                    </div>
-                    <div class="bg-gradient-to-br from-purple-50 to-fuchsia-100 p-5 rounded-2xl shadow-sm hover:shadow-md transition">
-                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Idiom</p>
-                        <p id="result-idiom" class="text-2xl font-bold text-purple-700 mt-2">-</p>
-                    </div>
-                    <div class="bg-gradient-to-br from-amber-50 to-yellow-100 p-5 rounded-2xl shadow-sm hover:shadow-md transition">
-                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Meaning</p>
-                        <p id="result-meaning" class="text-2xl font-bold text-yellow-700 mt-2">-</p>
-                    </div>
-                </div>
+      <!-- Model Information -->
+      <div class="mt-16 max-w-3xl mx-auto">
+        <div
+          class="bg-gradient-to-br from-indigo-700 via-purple-700 to-pink-600 rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden"
+        >
+          <div class="absolute inset-0 opacity-10">
+            <i class="fas fa-robot text-9xl absolute -top-10 -right-10"></i>
+          </div>
+          <div
+            class="relative z-10 flex flex-col md:flex-row items-start gap-6"
+          >
+            <div class="bg-white/20 p-4 rounded-2xl backdrop-blur-sm">
+              <i class="fas fa-microchip text-4xl"></i>
             </div>
-        </div>
-
-        <!-- Example Sentences with modern cards -->
-        <div class="mt-16 max-w-3xl mx-auto">
-            <h3 class="text-3xl font-bold text-gray-800 mb-8 flex items-center gap-3">
-                <span class="bg-yellow-100 p-2 rounded-full"><i class="fas fa-lightbulb text-yellow-600 text-2xl"></i></span>
-                Try an example
-            </h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="example-card p-6 rounded-2xl cursor-pointer" data-text="Dia angkat kaki dari kantor karena bosan.">
-                    <p class="text-gray-800 font-medium">“Dia <span class="bg-blue-200 text-blue-800 px-2 py-0.5 rounded-full">angkat kaki</span> dari kantor...”</p>
-                    <span class="inline-block mt-4 text-xs bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-1.5 rounded-full shadow">Sad</span>
-                </div>
-                <div class="example-card p-6 rounded-2xl cursor-pointer" data-text="Aku kesal sekali hari ini, rasanya ingin membanting tulang.">
-                    <p class="text-gray-800 font-medium">“...ingin <span class="bg-green-200 text-green-800 px-2 py-0.5 rounded-full">membanting tulang</span>”</p>
-                    <span class="inline-block mt-4 text-xs bg-gradient-to-r from-green-500 to-teal-500 text-white px-4 py-1.5 rounded-full shadow">Anger</span>
-                </div>
-                <div class="example-card p-6 rounded-2xl cursor-pointer" data-text="Presentasinya sukses besar, dia benar-benar naik daun.">
-                    <p class="text-gray-800 font-medium">“...dia <span class="bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded-full">naik daun</span>”</p>
-                    <span class="inline-block mt-4 text-xs bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 py-1.5 rounded-full shadow">Happy</span>
-                </div>
+            <div>
+              <h4 class="font-bold text-2xl mb-2">Advanced AI Models</h4>
+              <p class="text-purple-100 text-sm max-w-lg">
+                Combining <strong>IndoBERT</strong> transformer with KNN & UMAP,
+                alongside Lexicon-based Naive Bayes, to classify emotions in
+                Indonesian idioms across 7 categories.
+              </p>
+              <div class="flex flex-wrap gap-3 mt-4">
+                <span
+                  class="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm"
+                  >😊 Happy</span
+                >
+                <span
+                  class="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm"
+                  >😢 Sad</span
+                >
+                <span
+                  class="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm"
+                  >😠 Angry</span
+                >
+                <span
+                  class="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm"
+                  >😨 Scared</span
+                >
+                <span
+                  class="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm"
+                  >😲 Surprise</span
+                >
+                <span
+                  class="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm"
+                  >🤝 Trust</span
+                >
+                <span
+                  class="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm"
+                  >😐 Neutral</span
+                >
+              </div>
             </div>
+          </div>
         </div>
-
-        <!-- Model Information - modern gradient with icons -->
-        <div class="mt-16 max-w-3xl mx-auto">
-            <div class="bg-gradient-to-br from-indigo-700 via-purple-700 to-pink-600 rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden">
-                <div class="absolute inset-0 opacity-10">
-                    <i class="fas fa-robot text-9xl absolute -top-10 -right-10"></i>
-                </div>
-                <div class="relative z-10 flex flex-col md:flex-row items-start gap-6">
-                    <div class="bg-white/20 p-4 rounded-2xl backdrop-blur-sm">
-                        <i class="fas fa-microchip text-4xl"></i>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-2xl mb-2">Advanced AI Models</h4>
-                        <p class="text-purple-100 text-sm max-w-lg">
-                            Combining <strong>IndoBERT</strong> transformer with KNN & UMAP, alongside Lexicon-based Naive Bayes, to classify emotions in Indonesian idioms across 7 categories.
-                        </p>
-                        <div class="flex flex-wrap gap-3 mt-4">
-                            <span class="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm">😊 Happy</span>
-                            <span class="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm">😢 Sad</span>
-                            <span class="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm">😠 Angry</span>
-                            <span class="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm">😨 Scared</span>
-                            <span class="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm">😲 Surprise</span>
-                            <span class="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm">🤝 Trust</span>
-                            <span class="bg-white/20 px-3 py-1 rounded-full text-xs backdrop-blur-sm">😐 Neutral</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
     </main>
 
     <!-- Footer -->
-    <footer class="mt-16 bg-white/40 backdrop-blur-md border-t border-white/50 py-8">
-        <div class="max-w-7xl mx-auto px-4 text-center text-gray-600 text-sm font-medium">
-            &copy; 2025 IdiomSense · Crafted with ❤️ for Indonesian language research
-        </div>
+    <footer
+      class="mt-16 bg-white/40 backdrop-blur-md border-t border-white/50 py-8"
+    >
+      <div
+        class="max-w-7xl mx-auto px-4 text-center text-gray-600 text-sm font-medium"
+      >
+        &copy; 2025 IdiomSense · Crafted with ❤️ for Indonesian language
+        research
+      </div>
     </footer>
 
-    <!-- JavaScript (disesuaikan, tanpa update grafik/tabel) -->
     <script>
-        (function() {
-            const menuBtn = document.getElementById('menu-btn');
-            const mobileMenu = document.getElementById('mobile-menu');
-            if (menuBtn && mobileMenu) {
-                menuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
-            }
+      (function () {
+        // Mobile menu
+        const menuBtn = document.getElementById("menu-btn");
+        const mobileMenu = document.getElementById("mobile-menu");
+        if (menuBtn && mobileMenu) {
+          menuBtn.addEventListener("click", () =>
+            mobileMenu.classList.toggle("hidden"),
+          );
+        }
 
-            const textarea = document.getElementById('single-text');
-            const wordCount = document.getElementById('word-count');
-            if (textarea && wordCount) {
-                textarea.addEventListener('input', function() {
-                    const words = this.value.trim().split(/\s+/).filter(w => w.length > 0);
-                    const count = words.length;
-                    wordCount.textContent = `${count}/20 words`;
-                    wordCount.className = count > 20 
-                        ? 'text-sm text-red-500 font-bold' 
-                        : 'text-sm text-gray-500 font-medium';
-                });
-            }
+        // Word counter
+        const textarea = document.getElementById("single-text");
+        const wordCount = document.getElementById("word-count");
+        if (textarea && wordCount) {
+          textarea.addEventListener("input", function () {
+            const words = this.value
+              .trim()
+              .split(/\s+/)
+              .filter((w) => w.length > 0);
+            const count = words.length;
+            wordCount.textContent = `${count}/20 words`;
+            wordCount.className =
+              count > 20
+                ? "text-sm text-red-500 font-bold"
+                : "text-sm text-gray-500 font-medium";
+          });
+        }
 
-            document.querySelectorAll('.example-card').forEach(card => {
-                card.addEventListener('click', () => {
-                    const text = card.getAttribute('data-text');
-                    if (textarea) {
-                        textarea.value = text;
-                        textarea.dispatchEvent(new Event('input'));
-                        textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        document.getElementById('result-section').classList.add('hidden');
-                    }
-                });
+        // Example cards
+        document.querySelectorAll(".example-card").forEach((card) => {
+          card.addEventListener("click", () => {
+            const text = card.getAttribute("data-text");
+            if (textarea) {
+              textarea.value = text;
+              textarea.dispatchEvent(new Event("input"));
+              textarea.scrollIntoView({ behavior: "smooth", block: "center" });
+              document.getElementById("result-section").classList.add("hidden");
+            }
+          });
+        });
+
+        // API Base URL (sesuaikan dengan alamat backend Anda)
+        const API_BASE = "http://localhost:5000/api"; // asumsikan proxy atau backend di path yang sama
+
+        let bestModelId = null;
+
+        // Ambil model terbaik dari backend saat halaman dimuat
+        async function fetchBestModel() {
+          try {
+            const response = await fetch(`${API_BASE}/testing/best-model`);
+            if (!response.ok) {
+              throw new Error("Gagal mengambil model terbaik");
+            }
+            const data = await response.json();
+            bestModelId = data.model_id;
+            console.log(
+              `Model terbaik ID: ${bestModelId}, akurasi: ${data.accuracy}, algoritma: ${data.algorithm}`,
+            );
+            // Tampilkan info model di console, bisa juga ditambahkan di UI jika perlu
+          } catch (error) {
+            console.error("Error fetching best model:", error);
+            alert(
+              "Tidak ada model yang tersedia. Silakan latih model terlebih dahulu.",
+            );
+          }
+        }
+
+        // Tampilkan hasil di UI
+        function displayResult(result) {
+          const resultSection = document.getElementById("result-section");
+          const resultContent = document.getElementById("result-content");
+          const errorDiv = document.getElementById("result-error");
+
+          // Reset
+          resultContent.innerHTML = "";
+          errorDiv.classList.add("hidden");
+
+          if (!result.has_idiom) {
+            // Tidak ada idiom
+            errorDiv.classList.remove("hidden");
+            errorDiv.textContent =
+              result.message || "Tidak terdeteksi idiom dalam kalimat.";
+            resultSection.classList.remove("hidden");
+            resultSection.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
             });
+            return;
+          }
 
-            const idiomMap = {
-                'angkat kaki': { emotion: 'Sad 😢', meaning: 'Pergi meninggalkan' },
-                'membanting tulang': { emotion: 'Anger 😠', meaning: 'Bekerja keras' },
-                'naik daun': { emotion: 'Happy 😊', meaning: 'Menjadi terkenal' },
-                'buah tangan': { emotion: 'Neutral 😐', meaning: 'Oleh-oleh' },
-                'panjang tangan': { emotion: 'Anger 😠', meaning: 'Suka mencuri' },
-                'ringan tangan': { emotion: 'Happy 😊', meaning: 'Suka membantu' },
-                'besar kepala': { emotion: 'Anger 😠', meaning: 'Sombong' },
-                'kecil hati': { emotion: 'Sad 😢', meaning: 'Mudah tersinggung' },
-            };
+          // Ada idiom
+          const emotionMap = {
+            senang: "😊 Happy",
+            sedih: "😢 Sad",
+            marah: "😠 Angry",
+            takut: "😨 Scared",
+            terkejut: "😲 Surprise",
+            percaya: "🤝 Trust",
+            netral: "😐 Neutral",
+            non_idiom: "Non-idiom",
+          };
+          let emotionDisplay = result.emotion;
+          if (emotionMap[result.emotion?.toLowerCase()]) {
+            emotionDisplay = emotionMap[result.emotion.toLowerCase()];
+          } else if (result.emotion) {
+            emotionDisplay = result.emotion;
+          }
 
-            function analyzeText(text) {
-                const lowerText = text.toLowerCase();
-                let foundIdiom = null;
-                let detectedEmotion = 'Neutral 😐';
-                let meaning = '-';
-                for (const [idiom, info] of Object.entries(idiomMap)) {
-                    if (lowerText.includes(idiom)) {
-                        foundIdiom = idiom;
-                        detectedEmotion = info.emotion;
-                        meaning = info.meaning;
-                        break;
-                    }
-                }
-                if (!foundIdiom) {
-                    if (lowerText.includes('bahagia') || lowerText.includes('senang')) detectedEmotion = 'Happy 😊';
-                    else if (lowerText.includes('sedih') || lowerText.includes('kecewa')) detectedEmotion = 'Sad 😢';
-                    else if (lowerText.includes('marah') || lowerText.includes('kesal')) detectedEmotion = 'Anger 😠';
-                    else if (lowerText.includes('takut')) detectedEmotion = 'Scared 😨';
-                    else if (lowerText.includes('terkejut')) detectedEmotion = 'Surprise 😲';
-                }
-                return {
-                    idiom: foundIdiom || 'No idiom detected',
-                    emotion: detectedEmotion,
-                    meaning: foundIdiom ? meaning : '-',
-                };
-            }
+          const cards = [
+            {
+              label: "Emotion",
+              value: emotionDisplay,
+              bg: "from-blue-50 to-indigo-100",
+              textColor: "text-indigo-700",
+            },
+            {
+              label: "Idiom",
+              value: result.idiom_text || "-",
+              bg: "from-purple-50 to-fuchsia-100",
+              textColor: "text-purple-700",
+            },
+            {
+              label: "Meaning",
+              value: result.idiom_meaning || "-",
+              bg: "from-amber-50 to-yellow-100",
+              textColor: "text-yellow-700",
+            },
+          ];
 
-            function displayResult(res) {
-                document.getElementById('result-emotion').textContent = res.emotion;
-                document.getElementById('result-idiom').textContent = res.idiom;
-                document.getElementById('result-meaning').textContent = res.meaning;
+          cards.forEach((card) => {
+            const div = document.createElement("div");
+            div.className = `bg-gradient-to-br ${card.bg} p-5 rounded-2xl shadow-sm hover:shadow-md transition`;
+            div.innerHTML = `
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">${card.label}</p>
+                        <p class="text-2xl font-bold ${card.textColor} mt-2 break-words">${card.value}</p>
+                    `;
+            resultContent.appendChild(div);
+          });
 
-                const section = document.getElementById('result-section');
-                section.classList.remove('hidden');
-                section.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                section.classList.remove('result-reveal');
-                void section.offsetWidth;
-                section.classList.add('result-reveal');
-            }
+          resultSection.classList.remove("hidden");
+          resultSection.scrollIntoView({ behavior: "smooth", block: "center" });
+          resultSection.classList.remove("result-reveal");
+          void resultSection.offsetWidth;
+          resultSection.classList.add("result-reveal");
+        }
 
-            document.getElementById('analyze-btn').addEventListener('click', () => {
-                const text = textarea.value.trim();
-                const words = text.split(/\s+/).filter(w => w.length > 0);
-                if (words.length === 0) return alert('Please enter a sentence.');
-                if (words.length > 20) return alert('Sentence exceeds 20 words!');
-                displayResult(analyzeText(text));
+        // Fungsi prediksi ke backend
+        async function predictText(text) {
+          if (!bestModelId) {
+            alert(
+              "Model belum siap. Silakan muat ulang halaman atau coba lagi nanti.",
+            );
+            return;
+          }
+
+          const words = text
+            .trim()
+            .split(/\s+/)
+            .filter((w) => w.length > 0);
+          if (words.length === 0) {
+            alert("Masukkan kalimat terlebih dahulu.");
+            return;
+          }
+          if (words.length > 20) {
+            alert("Kalimat melebihi 20 kata!");
+            return;
+          }
+
+          // Tampilkan loading pada tombol
+          const analyzeBtn = document.getElementById("analyze-btn");
+          const originalBtnHtml = analyzeBtn.innerHTML;
+          analyzeBtn.innerHTML =
+            '<div class="loading-spinner"></div><span class="ml-2">Memproses...</span>';
+          analyzeBtn.disabled = true;
+
+          try {
+            const response = await fetch(`${API_BASE}/testing/predict`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ model_id: bestModelId, text: text }),
             });
-        })();
+            const data = await response.json();
+            if (!response.ok) {
+              throw new Error(data.error || "Gagal melakukan prediksi");
+            }
+            displayResult(data);
+          } catch (error) {
+            console.error("Prediction error:", error);
+            alert("Terjadi kesalahan: " + error.message);
+          } finally {
+            analyzeBtn.innerHTML = originalBtnHtml;
+            analyzeBtn.disabled = false;
+          }
+        }
+
+        // Event listener tombol detect
+        document.getElementById("analyze-btn").addEventListener("click", () => {
+          const text = textarea.value.trim();
+          predictText(text);
+        });
+
+        // Inisialisasi: ambil model terbaik
+        fetchBestModel();
+      })();
     </script>
-</body>
+  </body>
 </html>

@@ -557,6 +557,11 @@
               addItem("Fusion Method", fusion.method || "-", "fa-code-merge");
               addItem("Formula", fusion.formula || "-", "fa-superscript");
 
+              // Tambahkan nilai Weight (α) jika metode weighted
+              if (fusion.method === "weighted" && fusion.weight !== undefined) {
+                addItem("Weight (α)", fusion.weight, "fa-weight-scale");
+              }
+
               const rankings = params.emotion_rankings;
               if (rankings && Object.keys(rankings).length > 0) {
                 addCategoryHeader("😊 Order of emotional intensity (1–7)");

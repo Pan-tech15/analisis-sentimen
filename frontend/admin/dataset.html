@@ -12,10 +12,15 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
       .chart-container {
-        max-height: 280px;
+        min-height: 400px;
+        width: 100%;
+        position: relative;
+        margin-bottom: 2rem;
       }
       .bar-chart-container {
-        max-height: 260px;
+        min-height: 400px;
+        width: 100%;
+        position: relative;
       }
       .editable-name {
         cursor: pointer;
@@ -30,7 +35,7 @@
   </head>
   <body class="bg-gray-100 font-sans antialiased">
     <div class="flex h-screen overflow-hidden">
-      <!-- Sidebar -->
+      <!-- Sidebar (sama) -->
       <aside
         class="w-64 bg-white shadow-2xl flex-shrink-0 overflow-y-auto border-r border-gray-100"
       >
@@ -141,7 +146,7 @@
           </p>
         </div>
 
-        <!-- Upload Raw Dataset -->
+        <!-- Upload Raw Dataset (tidak diubah) -->
         <div class="bg-white p-6 rounded-xl shadow-md mb-6">
           <h2 class="font-semibold text-gray-700 mb-4">Upload Raw Dataset</h2>
           <div class="mb-4">
@@ -159,7 +164,6 @@
             </p>
           </div>
 
-          <!-- Drag & Drop area (hanya CSV) -->
           <div
             class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 transition"
             id="uploadArea"
@@ -176,7 +180,6 @@
             <input type="file" id="fileInput" class="hidden" accept=".csv" />
           </div>
 
-          <!-- Preview file setelah dipilih -->
           <div id="filePreview" class="mt-4 hidden">
             <div
               class="flex items-center justify-between bg-gray-50 p-4 rounded-lg border border-gray-200"
@@ -207,7 +210,7 @@
           </button>
         </div>
 
-        <!-- Dataset List -->
+        <!-- Dataset List (tidak diubah) -->
         <div class="bg-white p-6 rounded-xl shadow-md">
           <div class="flex justify-between items-center mb-4">
             <h2 class="font-semibold text-gray-700">Dataset List</h2>
@@ -219,7 +222,6 @@
             </button>
           </div>
 
-          <!-- Filter Bar -->
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1"
@@ -262,7 +264,6 @@
             </div>
           </div>
 
-          <!-- Table -->
           <div class="overflow-x-auto">
             <table class="min-w-full border border-gray-200">
               <thead class="bg-blue-500 text-white">
@@ -280,13 +281,13 @@
           <div id="datasetPagination" class="flex justify-center mt-4"></div>
         </div>
 
-        <!-- Chart Container -->
+        <!-- Chart Container - DIPERBESAR -->
         <div
           id="chartContainer"
-          class="bg-white p-4 rounded-xl shadow-md mt-6 hidden"
+          class="bg-white p-6 rounded-xl shadow-md mt-6 hidden"
         >
-          <div class="flex justify-between items-center mb-2">
-            <h2 class="font-semibold text-gray-700 text-lg">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="font-semibold text-gray-700 text-xl">
               Dataset Statistics
             </h2>
             <button
@@ -298,32 +299,26 @@
           </div>
           <div
             id="viewedFileName"
-            class="text-sm text-gray-600 mb-3 italic"
+            class="text-md text-gray-600 mb-4 italic"
           ></div>
-          <div class="mb-6">
-            <h3 class="font-medium text-gray-700 text-center mb-2">
+
+          <!-- Emotion Distribution Chart -->
+          <div class="mb-8">
+            <h3 class="font-medium text-gray-700 text-center text-lg mb-3">
               Emotion Distribution (7 Classes)
             </h3>
             <div class="chart-container">
-              <canvas
-                id="emotionBarChart"
-                width="100%"
-                height="240"
-                style="max-height: 240px"
-              ></canvas>
+              <canvas id="emotionBarChart"></canvas>
             </div>
           </div>
+
+          <!-- Idiom vs Non-Idiom Chart -->
           <div>
-            <h3 class="font-medium text-gray-700 text-center mb-2">
+            <h3 class="font-medium text-gray-700 text-center text-lg mb-3">
               Sentence Count (Idiom vs Non‑Idiom)
             </h3>
             <div class="bar-chart-container">
-              <canvas
-                id="idiomBarChart"
-                width="100%"
-                height="220"
-                style="max-height: 220px"
-              ></canvas>
+              <canvas id="idiomBarChart"></canvas>
             </div>
           </div>
         </div>
@@ -331,7 +326,7 @@
     </div>
 
     <script>
-      // === Configuration ===
+      // === Configuration (sama) ===
       const API_BASE = "http://localhost:5000/api";
       let authToken = localStorage.getItem("access_token");
       const rowsPerPage = 5;
@@ -513,7 +508,7 @@
         tbody.innerHTML = "";
         if (pageData.length === 0) {
           tbody.innerHTML =
-            '<tr><td colspan="5" class="text-center py-4 text-gray-500">No datasets available.</td></tr>';
+            '<tr><td colspan="5" class="text-center py-4 text-gray-500">No datasets available. </td><tr>';
           return;
         }
         pageData.forEach((ds) => {
@@ -691,19 +686,42 @@
                     "#ec489a",
                     "#ef4444",
                   ],
-                  borderRadius: 6,
+                  borderRadius: 8,
+                  barPercentage: 0.7,
+                  categoryPercentage: 0.8,
                 },
               ],
             },
             options: {
               responsive: true,
               maintainAspectRatio: true,
-              plugins: { legend: { position: "top" } },
+              plugins: {
+                legend: {
+                  position: "top",
+                  labels: { font: { size: 14, weight: "bold" } },
+                },
+                tooltip: {
+                  bodyFont: { size: 14 },
+                  titleFont: { size: 14, weight: "bold" },
+                },
+              },
               scales: {
                 y: {
                   beginAtZero: true,
-                  title: { display: true, text: "Sentence Count" },
+                  title: {
+                    display: true,
+                    text: "Sentence Count",
+                    font: { size: 14, weight: "bold" },
+                  },
+                  ticks: { font: { size: 12 }, stepSize: 50 },
                 },
+                x: {
+                  ticks: { font: { size: 12, weight: "500" }, maxRotation: 25 },
+                  title: { display: false },
+                },
+              },
+              layout: {
+                padding: { top: 20, bottom: 20, left: 10, right: 10 },
               },
             },
           });
@@ -720,19 +738,40 @@
                   label: "Sentence Count",
                   data: [idiomCount, nonIdiomCount],
                   backgroundColor: ["#3b82f6", "#9ca3af"],
-                  borderRadius: 6,
+                  borderRadius: 8,
+                  barPercentage: 0.5,
                 },
               ],
             },
             options: {
               responsive: true,
               maintainAspectRatio: true,
-              plugins: { legend: { position: "top" } },
+              plugins: {
+                legend: {
+                  position: "top",
+                  labels: { font: { size: 14, weight: "bold" } },
+                },
+                tooltip: {
+                  bodyFont: { size: 14 },
+                  titleFont: { size: 14, weight: "bold" },
+                },
+              },
               scales: {
                 y: {
                   beginAtZero: true,
-                  title: { display: true, text: "Sentence Count" },
+                  title: {
+                    display: true,
+                    text: "Sentence Count",
+                    font: { size: 14, weight: "bold" },
+                  },
+                  ticks: { font: { size: 12 }, stepSize: 50 },
                 },
+                x: {
+                  ticks: { font: { size: 14, weight: "500" } },
+                },
+              },
+              layout: {
+                padding: { top: 20, bottom: 20, left: 10, right: 10 },
               },
             },
           });

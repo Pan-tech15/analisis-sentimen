@@ -1320,6 +1320,37 @@
                         <option value="weighted">Weighted Average</option>
                       </select>
                     </div>
+                    <!-- Tambahkan ini di dalam div dengan class "grid grid-cols-1 md:grid-cols-2 gap-4" -->
+                    <div
+                      class="md:col-span-2 hidden"
+                      id="weightControlContainer"
+                    >
+                      <label class="block text-sm text-gray-600">
+                        Weight (α) for Weighted Average
+                        <span
+                          class="info-icon"
+                          data-param-key="lexiconWeight"
+                          data-tooltip="A value between 0 and 1. The higher it is, the more dominant Naive Bayes becomes. Default: 0.8."
+                          >ⓘ</span
+                        >
+                      </label>
+                      <div class="flex items-center gap-3 mt-1">
+                        <input
+                          type="range"
+                          id="lexiconWeight"
+                          min="0"
+                          max="1"
+                          step="0.05"
+                          value="0.8"
+                          class="w-full"
+                        />
+                        <span
+                          id="lexiconWeightValue"
+                          class="text-sm font-mono w-12 text-center"
+                          >0.80</span
+                        >
+                      </div>
+                    </div>
                     <div>
                       <label class="block text-sm text-gray-600">Formula</label>
                       <input
@@ -1331,6 +1362,7 @@
                     </div>
                   </div>
                 </div>
+
                 <div class="flex justify-end mt-6 gap-2">
                   <span
                     class="info-icon"
@@ -1993,6 +2025,33 @@
         }
         formulaInput.value = formula;
       }
+      // Sembunyikan kontrol bobot pada awalnya (karena metode default adalah 'product')
+      const weightControl = document.getElementById("weightControlContainer");
+      const weightSlider = document.getElementById("lexiconWeight");
+      const weightValue = document.getElementById("lexiconWeightValue");
+
+      function toggleWeightControl() {
+        const method = document.getElementById("fusionMethodSelect").value;
+        if (method === "weighted") {
+          weightControl.classList.remove("hidden");
+        } else {
+          weightControl.classList.add("hidden");
+        }
+      }
+
+      // Event listener untuk perubahan metode
+      document
+        .getElementById("fusionMethodSelect")
+        .addEventListener("change", toggleWeightControl);
+
+      // Update tampilan nilai slider
+      if (weightSlider) {
+        weightSlider.addEventListener("input", function () {
+          weightValue.textContent = parseFloat(this.value).toFixed(2);
+        });
+      }
+      // Panggil sekali untuk mengatur state awal
+      toggleWeightControl();
 
       // ==================== INFO TOOLTIP ====================
       (function () {
@@ -2072,365 +2131,371 @@
         maxSeqLength: {
           title: "Max Sequence Length",
           html: `
-      <p><b>Definition:</b> The maximum number of tokens (word pieces) that the model can process for one sentence. Every text is split into small units called tokens. If a sentence has more tokens than this limit, it will be cut off (if truncation is enabled). Shorter sentences are padded to match this length.</p>
-      <p><b>Value range:</b> 64, 128, 256, 512 tokens.</p>
-      <p><b>Recommendation:</b> <b>128</b> is a good balance – it covers most Indonesian sentences without wasting memory or slowing down training. Use 256 or 512 only if your sentences are very long (e.g., paragraphs). Larger values increase memory usage and training time but may capture more context.</p>
-    `,
+            <p><b>Definition:</b> The maximum number of tokens (word pieces) that the model can process for one sentence. Every text is split into small units called tokens. If a sentence has more tokens than this limit, it will be cut off (if truncation is enabled). Shorter sentences are padded to match this length.</p>
+            <p><b>Value range:</b> 64, 128, 256, 512 tokens.</p>
+            <p><b>Recommendation:</b> <b>128</b> is a good balance – it covers most Indonesian sentences without wasting memory or slowing down training. Use 256 or 512 only if your sentences are very long (e.g., paragraphs). Larger values increase memory usage and training time but may capture more context.</p>
+          `,
         },
         padding: {
           title: "Padding",
           html: `
-      <p><b>Definition:</b> The strategy to make all sentences in a batch have the same length by adding special empty tokens. Deep learning models require fixed‑size inputs, so padding fills shorter sentences with zeros.</p>
-      <p><b>Options:</b>
-        <ul>
-          <li><b>max_length</b> – pad/truncate exactly to <i>Max Sequence Length</i>.</li>
-          <li><b>longest</b> – pad each batch to the length of the longest sentence in that batch (up to <i>Max Sequence Length</i>).</li>
-        </ul>
-      </p>
-      <p><b>Recommendation:</b> <b>max_length</b> is simpler and ensures consistency across batches. Use <i>longest</i> if you want to save memory with highly variable sentence lengths.</p>
-    `,
+            <p><b>Definition:</b> The strategy to make all sentences in a batch have the same length by adding special empty tokens. Deep learning models require fixed‑size inputs, so padding fills shorter sentences with zeros.</p>
+            <p><b>Options:</b>
+              <ul>
+                <li><b>max_length</b> – pad/truncate exactly to <i>Max Sequence Length</i>.</li>
+                <li><b>longest</b> – pad each batch to the length of the longest sentence in that batch (up to <i>Max Sequence Length</i>).</li>
+              </ul>
+            </p>
+            <p><b>Recommendation:</b> <b>max_length</b> is simpler and ensures consistency across batches. Use <i>longest</i> if you want to save memory with highly variable sentence lengths.</p>
+          `,
         },
         truncation: {
           title: "Truncation",
           html: `
-      <p><b>Definition:</b> Whether to cut off sentences that are longer than <i>Max Sequence Length</i>. If <b>True</b>, any token beyond the limit is discarded. If <b>False</b>, long sentences may cause an error or be skipped.</p>
-      <p><b>Options:</b> True / False</p>
-      <p><b>Recommendation:</b> Always set to <b>True</b> – real‑world text often exceeds the limit, and truncation prevents crashes.</p>
-    `,
+            <p><b>Definition:</b> Whether to cut off sentences that are longer than <i>Max Sequence Length</i>. If <b>True</b>, any token beyond the limit is discarded. If <b>False</b>, long sentences may cause an error or be skipped.</p>
+            <p><b>Options:</b> True / False</p>
+            <p><b>Recommendation:</b> Always set to <b>True</b> – real‑world text often exceeds the limit, and truncation prevents crashes.</p>
+          `,
         },
         batchSizeParam: {
           title: "Batch Size",
           html: `
-      <p><b>Definition:</b> The number of sentences processed together in one step before the model updates its internal weights. Instead of training on one sentence at a time, the model averages the learning signal over a <i>batch</i>. Larger batches give more stable gradients but use more memory.</p>
-      <p><b>Value range:</b> 8, 16, 32, 64 (powers of 2 are typical).</p>
-      <p><b>Recommendation:</b> <b>16</b> for most hardware; try <b>32</b> if you have a GPU with enough memory. Reduce to <b>8</b> if you get out‑of‑memory errors. Larger batches speed up training but may require a lower learning rate. Too large a batch can harm generalization.</p>
-    `,
+            <p><b>Definition:</b> The number of sentences processed together in one step before the model updates its internal weights. Instead of training on one sentence at a time, the model averages the learning signal over a <i>batch</i>. Larger batches give more stable gradients but use more memory.</p>
+            <p><b>Value range:</b> 8, 16, 32, 64 (powers of 2 are typical).</p>
+            <p><b>Recommendation:</b> <b>16</b> for most hardware; try <b>32</b> if you have a GPU with enough memory. Reduce to <b>8</b> if you get out‑of‑memory errors. Larger batches speed up training but may require a lower learning rate. Too large a batch can harm generalization.</p>
+          `,
         },
         earlyStoppingPatience: {
           title: "Early Stopping Patience",
           html: `
-      <p><b>Definition:</b> The number of training epochs to wait without improvement on the validation set before automatically stopping the training. This prevents overfitting and saves time.</p>
-      <p><b>Value range:</b> 1 – 10 (integer).</p>
-      <p><b>Recommendation:</b> Start with <b>2</b> or <b>3</b>. A smaller patience stops early and avoids overfitting; a larger patience gives the model more chances to improve (especially useful when the learning rate is small).</p>
-    `,
+            <p><b>Definition:</b> The number of training epochs to wait without improvement on the validation set before automatically stopping the training. This prevents overfitting and saves time.</p>
+            <p><b>Value range:</b> 1 – 10 (integer).</p>
+            <p><b>Recommendation:</b> Start with <b>2</b> or <b>3</b>. A smaller patience stops early and avoids overfitting; a larger patience gives the model more chances to improve (especially useful when the learning rate is small).</p>
+          `,
         },
         randomState: {
           title: "Random State",
           html: `
-      <p><b>Definition:</b> A fixed number used to initialize all random processes (shuffling data, initializing weights, UMAP). Setting a specific <i>random state</i> guarantees that you get the same output every time you run with the same settings.</p>
-      <p><b>Value range:</b> Any integer (common choices: 42, 0, 123).</p>
-      <p><b>Recommendation:</b> Keep the default <b>42</b> unless you deliberately want to test different random initializations.</p>
-    `,
+            <p><b>Definition:</b> A fixed number used to initialize all random processes (shuffling data, initializing weights, UMAP). Setting a specific <i>random state</i> guarantees that you get the same output every time you run with the same settings.</p>
+            <p><b>Value range:</b> Any integer (common choices: 42, 0, 123).</p>
+            <p><b>Recommendation:</b> Keep the default <b>42</b> unless you deliberately want to test different random initializations.</p>
+          `,
         },
         pooling: {
           title: "Pooling Strategy",
           html: `
-      <p><b>Definition:</b> The method used to combine the many token vectors produced by IndoBERT into a single fixed‑size vector representing the whole sentence.</p>
-      <p><b>Options:</b>
-        <ul>
-          <li><b>CLS</b> – uses the special [CLS] token’s output (common in classification).</li>
-          <li><b>MEAN</b> – averages all token vectors. Robust and widely used.</li>
-          <li><b>MAX</b> – takes the maximum value across tokens for each dimension.</li>
-        </ul>
-      </p>
-      <p><b>Recommendation:</b> <b>MEAN</b> often works best for semantic tasks. <i>CLS</i> is a classic choice; <i>MAX</i> is rare.</p>
-    `,
+            <p><b>Definition:</b> The method used to combine the many token vectors produced by IndoBERT into a single fixed‑size vector representing the whole sentence.</p>
+            <p><b>Options:</b>
+              <ul>
+                <li><b>CLS</b> – uses the special [CLS] token’s output (common in classification).</li>
+                <li><b>MEAN</b> – averages all token vectors. Robust and widely used.</li>
+                <li><b>MAX</b> – takes the maximum value across tokens for each dimension.</li>
+              </ul>
+            </p>
+            <p><b>Recommendation:</b> <b>MEAN</b> often works best for semantic tasks. <i>CLS</i> is a classic choice; <i>MAX</i> is rare.</p>
+          `,
         },
         ftDropout: {
           title: "Classifier Dropout",
           html: `
-      <p><b>Definition:</b> The fraction of neurons in the classification head that are randomly turned off during each training step. Dropout prevents the model from relying too much on any single neuron, which reduces overfitting. A value of 0.1 means 10% of the neurons are dropped.</p>
-      <p><b>Value range:</b> 0.0 – 0.5 (common). Higher values give stronger regularization.</p>
-      <p><b>Recommendation:</b> <b>0.1</b> is a safe starting point. If the model overfits (validation accuracy much lower than training accuracy), try 0.2 or 0.3.</p>
-    `,
+            <p><b>Definition:</b> The fraction of neurons in the classification head that are randomly turned off during each training step. Dropout prevents the model from relying too much on any single neuron, which reduces overfitting. A value of 0.1 means 10% of the neurons are dropped.</p>
+            <p><b>Value range:</b> 0.0 – 0.5 (common). Higher values give stronger regularization.</p>
+            <p><b>Recommendation:</b> <b>0.1</b> is a safe starting point. If the model overfits (validation accuracy much lower than training accuracy), try 0.2 or 0.3.</p>
+          `,
         },
         enableFinetune: {
           title: "Fine‑Tuning (Enable)",
           html: `
-      <p><b>Definition:</b> A switch that activates additional training of the IndoBERT encoder on your specific dataset. By default, IndoBERT provides general language features. When <b>enabled</b>, the entire network (or some of its layers) is further trained on your data, adapting the model to your domain and task.</p>
-      <p><b>Options:</b> Enabled / Disabled</p>
-      <p><b>Recommendation:</b> <b>Enable</b> it for the best accuracy, but be aware it increases training time and may require careful tuning of the fine‑tuning parameters below. Disable only for a quick baseline test.</p>
-    `,
+            <p><b>Definition:</b> A switch that activates additional training of the IndoBERT encoder on your specific dataset. By default, IndoBERT provides general language features. When <b>enabled</b>, the entire network (or some of its layers) is further trained on your data, adapting the model to your domain and task.</p>
+            <p><b>Options:</b> Enabled / Disabled</p>
+            <p><b>Recommendation:</b> <b>Enable</b> it for the best accuracy, but be aware it increases training time and may require careful tuning of the fine‑tuning parameters below. Disable only for a quick baseline test.</p>
+          `,
         },
         ftEpoch: {
           title: "Epoch (Fine‑Tuning)",
           html: `
-      <p><b>Definition:</b> The number of complete passes through the entire training dataset during fine‑tuning. Each epoch the model sees every training example once. More epochs allow the model to learn better, but too many can cause overfitting.</p>
-      <p><b>Value range:</b> 1 – 50 (integer).</p>
-      <p><b>Recommendation:</b> <b>3 – 5</b> epochs are usually enough for fine‑tuning a pre‑trained model. Increase if the dataset is large, but employ <i>Early Stopping</i> to avoid wasted computation.</p>
-    `,
+            <p><b>Definition:</b> The number of complete passes through the entire training dataset during fine‑tuning. Each epoch the model sees every training example once. More epochs allow the model to learn better, but too many can cause overfitting.</p>
+            <p><b>Value range:</b> 1 – 50 (integer).</p>
+            <p><b>Recommendation:</b> <b>3 – 5</b> epochs are usually enough for fine‑tuning a pre‑trained model. Increase if the dataset is large, but employ <i>Early Stopping</i> to avoid wasted computation.</p>
+          `,
         },
         ftLearningRate: {
           title: "Learning Rate (Fine‑Tuning)",
           html: `
-      <p><b>Definition:</b> The step size the optimizer takes when updating the model’s weights. A smaller learning rate means smaller, more careful adjustments. After each batch, the model calculates how wrong its predictions were (the gradient). The learning rate scales this gradient before the weights are updated.</p>
-      <p><b>Value range:</b> Typically between <b>1e‑6</b> (0.000001) and <b>5e‑4</b> (0.0005). The dropdown offers common values.</p>
-      <p><b>Recommendation:</b> <b>2e‑5 (0.00002)</b> is a standard and safe choice for fine‑tuning transformer models. If training is unstable, try lower (1e‑5). If it learns too slowly, try 3e‑5 or 5e‑5.</p>
-    `,
+            <p><b>Definition:</b> The step size the optimizer takes when updating the model’s weights. A smaller learning rate means smaller, more careful adjustments. After each batch, the model calculates how wrong its predictions were (the gradient). The learning rate scales this gradient before the weights are updated.</p>
+            <p><b>Value range:</b> Typically between <b>1e‑6</b> (0.000001) and <b>5e‑4</b> (0.0005). The dropdown offers common values.</p>
+            <p><b>Recommendation:</b> <b>2e‑5 (0.00002)</b> is a standard and safe choice for fine‑tuning transformer models. If training is unstable, try lower (1e‑5). If it learns too slowly, try 3e‑5 or 5e‑5.</p>
+          `,
         },
         ftOptimizer: {
           title: "Optimizer",
           html: `
-      <p><b>Definition:</b> The algorithm that decides exactly how the weights are updated using the gradients.</p>
-      <p><b>Options:</b>
-        <ul>
-          <li><b>AdamW</b> – a modern variant of Adam with proper weight decay. Preferred for transformer fine‑tuning.</li>
-          <li><b>Adam</b> – widely used, works well but can overfit if weight decay is not set separately.</li>
-          <li><b>SGD</b> – classic stochastic gradient descent; rarely used with transformers, needs careful tuning.</li>
-        </ul>
-      </p>
-      <p><b>Recommendation:</b> Stick with <b>AdamW</b> – it’s the industry standard for BERT‑like models.</p>
-    `,
+            <p><b>Definition:</b> The algorithm that decides exactly how the weights are updated using the gradients.</p>
+            <p><b>Options:</b>
+              <ul>
+                <li><b>AdamW</b> – a modern variant of Adam with proper weight decay. Preferred for transformer fine‑tuning.</li>
+                <li><b>Adam</b> – widely used, works well but can overfit if weight decay is not set separately.</li>
+                <li><b>SGD</b> – classic stochastic gradient descent; rarely used with transformers, needs careful tuning.</li>
+              </ul>
+            </p>
+            <p><b>Recommendation:</b> Stick with <b>AdamW</b> – it’s the industry standard for BERT‑like models.</p>
+          `,
         },
         ftWeightDecay: {
           title: "Weight Decay",
           html: `
-      <p><b>Definition:</b> A penalty added to the loss function that encourages the model to keep its weights small, which helps reduce overfitting. Large weights can cause the model to memorize noise in the training data.</p>
-      <p><b>Value range:</b> 0.0 – 0.1 (commonly 0.01). Higher values regularize stronger.</p>
-      <p><b>Recommendation:</b> <b>0.01</b> is standard. If overfitting is severe, increase to 0.1; if underfitting, decrease to 0.001.</p>
-    `,
+            <p><b>Definition:</b> A penalty added to the loss function that encourages the model to keep its weights small, which helps reduce overfitting. Large weights can cause the model to memorize noise in the training data.</p>
+            <p><b>Value range:</b> 0.0 – 0.1 (commonly 0.01). Higher values regularize stronger.</p>
+            <p><b>Recommendation:</b> <b>0.01</b> is standard. If overfitting is severe, increase to 0.1; if underfitting, decrease to 0.001.</p>
+          `,
         },
         ftWarmupRatio: {
           title: "Warmup Ratio",
           html: `
-      <p><b>Definition:</b> The fraction of total training steps used to gradually increase the learning rate from zero to the target value. During warmup, the model makes only small adjustments, avoiding destructive large updates at the very beginning. After warmup, the learning rate follows a normal decay schedule.</p>
-      <p><b>Value range:</b> 0.0 – 1.0 (a ratio of total steps). Typical: 0.0 – 0.2.</p>
-      <p><b>Recommendation:</b> <b>0.1</b> (10% of total steps) is a safe default for fine‑tuning transformers.</p>
-    `,
+            <p><b>Definition:</b> The fraction of total training steps used to gradually increase the learning rate from zero to the target value. During warmup, the model makes only small adjustments, avoiding destructive large updates at the very beginning. After warmup, the learning rate follows a normal decay schedule.</p>
+            <p><b>Value range:</b> 0.0 – 1.0 (a ratio of total steps). Typical: 0.0 – 0.2.</p>
+            <p><b>Recommendation:</b> <b>0.1</b> (10% of total steps) is a safe default for fine‑tuning transformers.</p>
+          `,
         },
         ftFreezeLayers: {
           title: "Freeze Layers",
           html: `
-      <p><b>Definition:</b> The number of IndoBERT’s bottom layers whose weights are <i>not</i> updated during fine‑tuning. The early layers capture general language features (e.g., grammar). Freezing them preserves this general knowledge and reduces the number of trainable parameters, speeding up training and preventing overfitting on small datasets.</p>
-      <p><b>Value range:</b> 0 – 12 (IndoBERT‑base has 12 transformer layers).</p>
-      <p><b>Recommendation:</b> <b>9</b> (freeze the first 9 layers, fine‑tune the top 3) is a good starting point for small sentiment datasets. If you have a large dataset (>10k samples), you can unfreeze more (e.g., freeze 0 layers for full fine‑tuning).</p>
-    `,
+            <p><b>Definition:</b> The number of IndoBERT’s bottom layers whose weights are <i>not</i> updated during fine‑tuning. The early layers capture general language features (e.g., grammar). Freezing them preserves this general knowledge and reduces the number of trainable parameters, speeding up training and preventing overfitting on small datasets.</p>
+            <p><b>Value range:</b> 0 – 12 (IndoBERT‑base has 12 transformer layers).</p>
+            <p><b>Recommendation:</b> <b>9</b> (freeze the first 9 layers, fine‑tune the top 3) is a good starting point for small sentiment datasets. If you have a large dataset (>10k samples), you can unfreeze more (e.g., freeze 0 layers for full fine‑tuning).</p>
+          `,
         },
         ftGradAccum: {
           title: "Gradient Accumulation",
           html: `
-      <p><b>Definition:</b> The number of mini‑batches to process before performing a single weight update. Effectively simulates a larger batch size without needing more GPU memory. Suppose your GPU can only handle a batch size of 8, but you want the effect of a batch of 32. Set <b>Gradient Accumulation = 4</b>. The model processes 4 batches of size 8, accumulating the gradients, and then updates the weights once.</p>
-      <p><b>Value range:</b> 1 – 8 (integer). 1 means no accumulation.</p>
-      <p><b>Recommendation:</b> Keep <b>1</b> unless you need a larger effective batch. Increase if training is unstable or you want a “bigger batch” effect on limited hardware.</p>
-    `,
+            <p><b>Definition:</b> The number of mini‑batches to process before performing a single weight update. Effectively simulates a larger batch size without needing more GPU memory. Suppose your GPU can only handle a batch size of 8, but you want the effect of a batch of 32. Set <b>Gradient Accumulation = 4</b>. The model processes 4 batches of size 8, accumulating the gradients, and then updates the weights once.</p>
+            <p><b>Value range:</b> 1 – 8 (integer). 1 means no accumulation.</p>
+            <p><b>Recommendation:</b> Keep <b>1</b> unless you need a larger effective batch. Increase if training is unstable or you want a “bigger batch” effect on limited hardware.</p>
+          `,
         },
         ftMaxGradNorm: {
           title: "Max Grad Norm",
           html: `
-      <p><b>Definition:</b> The maximum allowed length of the gradient vector. If the gradient becomes larger, it is scaled down to this value. Gradients can sometimes explode, causing very large weight updates that ruin training. Gradient clipping limits the size of those updates, improving stability.</p>
-      <p><b>Value range:</b> 0.5 – 5.0 (common).</p>
-      <p><b>Recommendation:</b> <b>1.0</b> is a universal starting point. If training becomes very erratic, you can try 0.5.</p>
-    `,
+            <p><b>Definition:</b> The maximum allowed length of the gradient vector. If the gradient becomes larger, it is scaled down to this value. Gradients can sometimes explode, causing very large weight updates that ruin training. Gradient clipping limits the size of those updates, improving stability.</p>
+            <p><b>Value range:</b> 0.5 – 5.0 (common).</p>
+            <p><b>Recommendation:</b> <b>1.0</b> is a universal starting point. If training becomes very erratic, you can try 0.5.</p>
+          `,
         },
         enableUMAP: {
           title: "UMAP (Enable)",
           html: `
-      <p><b>Definition:</b> Whether to apply UMAP (Uniform Manifold Approximation and Projection) to reduce the dimensionality of the sentence vectors before feeding them into KNN. IndoBERT outputs vectors of size 768 (or similar). UMAP compresses this high‑dimensional space into fewer dimensions while trying to preserve the local and global structure. This can help KNN work faster and sometimes better, especially if the original embedding contains noise.</p>
-      <p><b>Options:</b> Enabled / Disabled</p>
-      <p><b>Recommendation:</b> Consider enabling if your dataset is moderate (a few thousand examples) and you see poor KNN performance. It makes the KNN step much faster. For very small datasets (<500), it may not be necessary.</p>
-    `,
+            <p><b>Definition:</b> Whether to apply UMAP (Uniform Manifold Approximation and Projection) to reduce the dimensionality of the sentence vectors before feeding them into KNN. IndoBERT outputs vectors of size 768 (or similar). UMAP compresses this high‑dimensional space into fewer dimensions while trying to preserve the local and global structure. This can help KNN work faster and sometimes better, especially if the original embedding contains noise.</p>
+            <p><b>Options:</b> Enabled / Disabled</p>
+            <p><b>Recommendation:</b> Consider enabling if your dataset is moderate (a few thousand examples) and you see poor KNN performance. It makes the KNN step much faster. For very small datasets (<500), it may not be necessary.</p>
+          `,
         },
         umapNComponents: {
           title: "n_components (UMAP)",
           html: `
-      <p><b>Definition:</b> The number of dimensions in the reduced space produced by UMAP. A small value (e.g., 5) captures only major patterns; a larger value (e.g., 50) preserves more fine‑grained information but increases KNN computation time.</p>
-      <p><b>Value range:</b> 2 – 100. Must be less than the original dimension (usually ≤ 768).</p>
-      <p><b>Recommendation:</b> Start with <b>5 – 10</b>. If you lose too much accuracy, raise to 20–50. Keep it below 100 to avoid slow KNN.</p>
-    `,
+            <p><b>Definition:</b> The number of dimensions in the reduced space produced by UMAP. A small value (e.g., 5) captures only major patterns; a larger value (e.g., 50) preserves more fine‑grained information but increases KNN computation time.</p>
+            <p><b>Value range:</b> 2 – 100. Must be less than the original dimension (usually ≤ 768).</p>
+            <p><b>Recommendation:</b> Start with <b>5 – 10</b>. If you lose too much accuracy, raise to 20–50. Keep it below 100 to avoid slow KNN.</p>
+          `,
         },
         umapNNeighbors: {
           title: "n_neighbors (UMAP)",
           html: `
-      <p><b>Definition:</b> The size of the local neighborhood considered by UMAP. Larger values produce more global structure; smaller values focus on fine local detail. A low number (e.g., 5) means UMAP will try to preserve very close neighbor relationships, which may unravel the global shape. A high number (e.g., 50) forces a broader view, potentially merging distinct clusters.</p>
-      <p><b>Value range:</b> 2 – 200.</p>
-      <p><b>Recommendation:</b> <b>15 – 30</b> is a balanced range. For small datasets (<1k samples), use 10–15; for larger ones, 30–50 is acceptable.</p>
-    `,
+            <p><b>Definition:</b> The size of the local neighborhood considered by UMAP. Larger values produce more global structure; smaller values focus on fine local detail. A low number (e.g., 5) means UMAP will try to preserve very close neighbor relationships, which may unravel the global shape. A high number (e.g., 50) forces a broader view, potentially merging distinct clusters.</p>
+            <p><b>Value range:</b> 2 – 200.</p>
+            <p><b>Recommendation:</b> <b>15 – 30</b> is a balanced range. For small datasets (<1k samples), use 10–15; for larger ones, 30–50 is acceptable.</p>
+          `,
         },
         umapMinDist: {
           title: "min_dist (UMAP)",
           html: `
-      <p><b>Definition:</b> The minimum distance between points in the low‑dimensional space. Controls how clumped the points are. A very small value (0.0) allows points to be packed tightly; structures like clusters may be more visible. A larger value (0.5) forces points to spread out, which can help separate classes visually but may hide dense clusters.</p>
-      <p><b>Value range:</b> 0.0 – 1.0.</p>
-      <p><b>Recommendation:</b> <b>0.1</b> works well for most cases. If KNN performance suffers because classes overlap too much, try 0.05.</p>
-    `,
+            <p><b>Definition:</b> The minimum distance between points in the low‑dimensional space. Controls how clumped the points are. A very small value (0.0) allows points to be packed tightly; structures like clusters may be more visible. A larger value (0.5) forces points to spread out, which can help separate classes visually but may hide dense clusters.</p>
+            <p><b>Value range:</b> 0.0 – 1.0.</p>
+            <p><b>Recommendation:</b> <b>0.1</b> works well for most cases. If KNN performance suffers because classes overlap too much, try 0.05.</p>
+          `,
         },
         umapMetric: {
           title: "metric (UMAP)",
           html: `
-      <p><b>Definition:</b> The distance measure used by UMAP to compare the similarity of two vectors.</p>
-      <p><b>Options:</b> <b>cosine</b> (angle‑based, often best for text), <b>euclidean</b> (straight‑line distance), <b>manhattan</b> (grid‑like distance).</p>
-      <p><b>Recommendation:</b> <b>cosine</b> is recommended for BERT embeddings because they are often compared by direction, not magnitude.</p>
-    `,
+            <p><b>Definition:</b> The distance measure used by UMAP to compare the similarity of two vectors.</p>
+            <p><b>Options:</b> <b>cosine</b> (angle‑based, often best for text), <b>euclidean</b> (straight‑line distance), <b>manhattan</b> (grid‑like distance).</p>
+            <p><b>Recommendation:</b> <b>cosine</b> is recommended for BERT embeddings because they are often compared by direction, not magnitude.</p>
+          `,
         },
         umapRandomState: {
           title: "random_state (UMAP)",
           html: `
-      <p><b>Definition:</b> The seed that controls the random initial placement of points in UMAP, allowing reproducible results.</p>
-      <p><b>Value range:</b> Any integer.</p>
-      <p><b>Recommendation:</b> Use the same <b>42</b> as the main Random State to keep everything deterministic.</p>
-    `,
+            <p><b>Definition:</b> The seed that controls the random initial placement of points in UMAP, allowing reproducible results.</p>
+            <p><b>Value range:</b> Any integer.</p>
+            <p><b>Recommendation:</b> Use the same <b>42</b> as the main Random State to keep everything deterministic.</p>
+          `,
         },
         knnK: {
           title: "k (n_neighbors) KNN",
           html: `
-      <p><b>Definition:</b> The number of nearest neighbors considered when KNN makes a prediction. Given a new sentence, KNN finds the <i>k</i> most similar sentences in the training set and predicts the emotion by majority vote (or weighted vote).</p>
-      <p><b>Value range:</b> 1 – 50 (odd numbers preferred to avoid ties).</p>
-      <p><b>Recommendation:</b> Start with <b>5 – 15</b>. A very small <i>k</i> (e.g., 1) makes the model sensitive to noise; a very large <i>k</i> may blur class boundaries. Use <b>7</b> as a default.</p>
-    `,
+            <p><b>Definition:</b> The number of nearest neighbors considered when KNN makes a prediction. Given a new sentence, KNN finds the <i>k</i> most similar sentences in the training set and predicts the emotion by majority vote (or weighted vote).</p>
+            <p><b>Value range:</b> 1 – 50 (odd numbers preferred to avoid ties).</p>
+            <p><b>Recommendation:</b> Start with <b>5 – 15</b>. A very small <i>k</i> (e.g., 1) makes the model sensitive to noise; a very large <i>k</i> may blur class boundaries. Use <b>7</b> as a default.</p>
+          `,
         },
         knnMetric: {
           title: "Distance Metric (KNN)",
           html: `
-      <p><b>Definition:</b> How KNN measures “closeness” between two vectors.</p>
-      <p><b>Options:</b> <b>cosine</b>, <b>euclidean</b>, <b>manhattan</b>.</p>
-      <p><b>Recommendation:</b> <b>cosine</b> is strongly recommended for textual embeddings as it focuses on direction rather than absolute length.</p>
-    `,
+            <p><b>Definition:</b> How KNN measures “closeness” between two vectors.</p>
+            <p><b>Options:</b> <b>cosine</b>, <b>euclidean</b>, <b>manhattan</b>.</p>
+            <p><b>Recommendation:</b> <b>cosine</b> is strongly recommended for textual embeddings as it focuses on direction rather than absolute length.</p>
+          `,
         },
         knnWeights: {
           title: "Weights (KNN)",
           html: `
-      <p><b>Definition:</b> How much influence each neighbor’s vote has.</p>
-      <p><b>Options:</b>
-        <ul>
-          <li><b>uniform</b> – all <i>k</i> neighbors count equally.</li>
-          <li><b>distance</b> – closer neighbors get more weight (inversely proportional to distance).</li>
-        </ul>
-      </p>
-      <p><b>Recommendation:</b> <b>distance</b> usually gives better results because it reduces the impact of distant outliers.</p>
-    `,
+            <p><b>Definition:</b> How much influence each neighbor’s vote has.</p>
+            <p><b>Options:</b>
+              <ul>
+                <li><b>uniform</b> – all <i>k</i> neighbors count equally.</li>
+                <li><b>distance</b> – closer neighbors get more weight (inversely proportional to distance).</li>
+              </ul>
+            </p>
+            <p><b>Recommendation:</b> <b>distance</b> usually gives better results because it reduces the impact of distant outliers.</p>
+          `,
         },
         knnAlgorithm: {
           title: "Algorithm (KNN)",
           html: `
-      <p><b>Definition:</b> The method used internally to find the nearest neighbors quickly.</p>
-      <p><b>Options:</b> <b>auto</b> (chooses the best algorithm for your data size), <b>ball_tree</b>, <b>kd_tree</b>, <b>brute</b>.</p>
-      <p><b>Recommendation:</b> Leave as <b>auto</b> – the library will select an efficient algorithm automatically.</p>
-    `,
+            <p><b>Definition:</b> The method used internally to find the nearest neighbors quickly.</p>
+            <p><b>Options:</b> <b>auto</b> (chooses the best algorithm for your data size), <b>ball_tree</b>, <b>kd_tree</b>, <b>brute</b>.</p>
+            <p><b>Recommendation:</b> Leave as <b>auto</b> – the library will select an efficient algorithm automatically.</p>
+          `,
         },
         knnLeafSize: {
           title: "Leaf Size (KNN)",
           html: `
-      <p><b>Definition:</b> The number of points at which a node in the tree‑based algorithms (kd_tree or ball_tree) stops splitting. Only relevant if algorithm is tree‑based.</p>
-      <p><b>Value range:</b> 1 – 100 (integer).</p>
-      <p><b>Recommendation:</b> The default <b>30</b> works fine. Adjust only if you notice performance issues with very large datasets; larger leaf sizes slightly speed up queries but reduce tree quality.</p>
-    `,
+            <p><b>Definition:</b> The number of points at which a node in the tree‑based algorithms (kd_tree or ball_tree) stops splitting. Only relevant if algorithm is tree‑based.</p>
+            <p><b>Value range:</b> 1 – 100 (integer).</p>
+            <p><b>Recommendation:</b> The default <b>30</b> works fine. Adjust only if you notice performance issues with very large datasets; larger leaf sizes slightly speed up queries but reduce tree quality.</p>
+          `,
         },
         knnP: {
           title: "p (Minkowski) KNN",
           html: `
-      <p><b>Definition:</b> The power parameter for the Minkowski distance metric. Only relevant when <i>knnMetric</i> is set to 'minkowski'.</p>
-      <p><b>Value range:</b> <b>1</b> (Manhattan distance), <b>2</b> (Euclidean distance).</p>
-      <p><b>Recommendation:</b> Since you are using cosine/euclidean directly, this parameter usually has no effect. Keep default <b>2</b>.</p>
-    `,
+            <p><b>Definition:</b> The power parameter for the Minkowski distance metric. Only relevant when <i>knnMetric</i> is set to 'minkowski'.</p>
+            <p><b>Value range:</b> <b>1</b> (Manhattan distance), <b>2</b> (Euclidean distance).</p>
+            <p><b>Recommendation:</b> Since you are using cosine/euclidean directly, this parameter usually has no effect. Keep default <b>2</b>.</p>
+          `,
         },
         hybridMethod: {
           title: "Confidence Adjustment (Hybrid)",
           html: `
-      <p><b>Definition:</b> A method to refine KNN’s probability estimates by incorporating the distance‑based confidence of the nearest neighbors.</p>
-      <p><b>Options:</b>
-        <ul>
-          <li><b>KNN Murni (none)</b> – raw KNN probabilities are used as‑is.</li>
-          <li><b>Confidence‑based</b> – multiplies the KNN probability by a confidence score derived from the average distance to the neighbors. Closer neighbors → higher confidence.</li>
-          <li><b>Weighted Average</b> – combines KNN probability and confidence with a weighted average (alpha factor).</li>
-        </ul>
-      </p>
-      <p><b>Recommendation:</b> Start with <b>KNN Murni</b> to establish a baseline. Experiment with <i>Confidence‑based</i> if you suspect some neighbors are uncertain.</p>
-    `,
+            <p><b>Definition:</b> A method to refine KNN’s probability estimates by incorporating the distance‑based confidence of the nearest neighbors.</p>
+            <p><b>Options:</b>
+              <ul>
+                <li><b>KNN Murni (none)</b> – raw KNN probabilities are used as‑is.</li>
+                <li><b>Confidence‑based</b> – multiplies the KNN probability by a confidence score derived from the average distance to the neighbors. Closer neighbors → higher confidence.</li>
+                <li><b>Weighted Average</b> – combines KNN probability and confidence with a weighted average (alpha factor).</li>
+              </ul>
+            </p>
+            <p><b>Recommendation:</b> Start with <b>KNN Murni</b> to establish a baseline. Experiment with <i>Confidence‑based</i> if you suspect some neighbors are uncertain.</p>
+          `,
         },
         targetDim: {
           title: "Target Embedding Dimension",
           html: `
-      <p><b>Definition:</b> The final size of the feature vector that will be passed to KNN. This influences how much information from IndoBERT is retained.</p>
-      <p><b>How it works:</b> IndoBERT’s pooled output is a vector of size 768 (or the dimension after UMAP). <i>Target Dim</i> can be the same as the pooled output or a smaller number you wish to project to. Here it often matches the UMAP output dimension when UMAP is enabled.</p>
-      <p><b>Value range:</b> 2 – 768.</p>
-      <p><b>Recommendation:</b> Keep <b>768</b> unless you have a specific reason to reduce it. When UMAP is enabled, set it equal to <i>n_components</i>.</p>
-    `,
+            <p><b>Definition:</b> The final size of the feature vector that will be passed to KNN. This influences how much information from IndoBERT is retained.</p>
+            <p><b>How it works:</b> IndoBERT’s pooled output is a vector of size 768 (or the dimension after UMAP). <i>Target Dim</i> can be the same as the pooled output or a smaller number you wish to project to. Here it often matches the UMAP output dimension when UMAP is enabled.</p>
+            <p><b>Value range:</b> 2 – 768.</p>
+            <p><b>Recommendation:</b> Keep <b>768</b> unless you have a specific reason to reduce it. When UMAP is enabled, set it equal to <i>n_components</i>.</p>
+          `,
         },
         findBestRatio: {
           title: "Find Best Ratio",
           html: `
-      <p><b>Fungsi:</b> Tombol ini akan secara otomatis menjalankan pelatihan (training) untuk <b>semua rasio pembagian data</b> yang telah Anda simpan di tabel Split Data Ratio, mulai dari rasio terkecil (50:50) hingga terbesar (90:10).</p>
-      <p><b>Tujuan:</b> Membandingkan performa model pada berbagai rasio train/test untuk menemukan rasio yang memberikan akurasi tertinggi, sehingga Anda dapat memilih rasio optimal untuk pelatihan akhir tanpa harus mencoba satu per satu secara manual.</p>
-      <p><b>Proses:</b></p>
-      <ul>
-        <li>• Fine‑Tuning dan UMAP <b>dinonaktifkan sementara</b> selama pencarian untuk menghemat waktu.</li>
-        <li>• Setiap rasio akan menghasilkan satu konfigurasi model baru (dengan nama mengandung <i>_bestratio_</i>) dan satu record training.</li>
-        <li>• Setelah semua rasio selesai, sebuah tabel perbandingan akan ditampilkan beserta rasio terbaik yang otomatis terpilih.</li>
-      </ul>
-      <p><b>Catatan:</b> Proses ini bisa memakan waktu cukup lama karena menjalankan beberapa training secara berurutan. Pastikan dataset sudah dipilih dan parameter dasar (selain Fine‑Tuning/UMAP) sudah sesuai sebelum memulai.</p>
-    `,
+            <p><b>Fungsi:</b> Tombol ini akan secara otomatis menjalankan pelatihan (training) untuk <b>semua rasio pembagian data</b> yang telah Anda simpan di tabel Split Data Ratio, mulai dari rasio terkecil (50:50) hingga terbesar (90:10).</p>
+            <p><b>Tujuan:</b> Membandingkan performa model pada berbagai rasio train/test untuk menemukan rasio yang memberikan akurasi tertinggi, sehingga Anda dapat memilih rasio optimal untuk pelatihan akhir tanpa harus mencoba satu per satu secara manual.</p>
+            <p><b>Proses:</b></p>
+            <ul>
+              <li>• Fine‑Tuning dan UMAP <b>dinonaktifkan sementara</b> selama pencarian untuk menghemat waktu.</li>
+              <li>• Setiap rasio akan menghasilkan satu konfigurasi model baru (dengan nama mengandung <i>_bestratio_</i>) dan satu record training.</li>
+              <li>• Setelah semua rasio selesai, sebuah tabel perbandingan akan ditampilkan beserta rasio terbaik yang otomatis terpilih.</li>
+            </ul>
+            <p><b>Catatan:</b> Proses ini bisa memakan waktu cukup lama karena menjalankan beberapa training secara berurutan. Pastikan dataset sudah dipilih dan parameter dasar (selain Fine‑Tuning/UMAP) sudah sesuai sebelum memulai.</p>
+          `,
         },
 
         // ==================== LEXICON-NB ====================
         lexiconAlpha: {
           title: "Alpha (Laplace Smoothing)",
           html: `
-      <p><b>Definition:</b> The Laplace (additive) smoothing parameter for the Naive Bayes classifier. It prevents zero probabilities when a word never appears in a particular class. The algorithm adds <i>alpha</i> to each word count so that no probability becomes zero.</p>
-      <p><b>Value range:</b> 0.0 – 2.0 (common). A value of 1.0 is classic Laplace smoothing; smaller values (e.g., 0.1) give less smoothing, larger values (e.g., 1.5) smooth more aggressively.</p>
-      <p><b>Recommendation:</b> Start with <b>1.0</b>. If the model seems underconfident or overconfident on rare words, adjust slightly. For very large vocabularies, a slightly lower alpha (0.5) may work better.</p>
-    `,
+            <p><b>Definition:</b> The Laplace (additive) smoothing parameter for the Naive Bayes classifier. It prevents zero probabilities when a word never appears in a particular class. The algorithm adds <i>alpha</i> to each word count so that no probability becomes zero.</p>
+            <p><b>Value range:</b> 0.0 – 2.0 (common). A value of 1.0 is classic Laplace smoothing; smaller values (e.g., 0.1) give less smoothing, larger values (e.g., 1.5) smooth more aggressively.</p>
+            <p><b>Recommendation:</b> Start with <b>1.0</b>. If the model seems underconfident or overconfident on rare words, adjust slightly. For very large vocabularies, a slightly lower alpha (0.5) may work better.</p>
+          `,
         },
         lexiconModelType: {
           title: "Model Type (Naive Bayes)",
           html: `
-      <p><b>Definition:</b> The variant of the Naive Bayes algorithm used for classification.</p>
-      <p><b>Options:</b>
-        <ul>
-          <li><b>MultinomialNB</b> – suitable for discrete features (e.g., word counts). It models the probability of a word’s frequency given the class. Best for text classification with count vectors.</li>
-          <li><b>BernoulliNB</b> – designed for binary features (word present/absent). It may work better on short texts or when word frequency is less important than word presence.</li>
-        </ul>
-      </p>
-      <p><b>Recommendation:</b> Use <b>MultinomialNB</b> for most text datasets. Try <b>BernoulliNB</b> if your texts are very short (e.g., tweets, titles) and word repetition is not informative.</p>
-    `,
+            <p><b>Definition:</b> The variant of the Naive Bayes algorithm used for classification.</p>
+            <p><b>Options:</b>
+              <ul>
+                <li><b>MultinomialNB</b> – suitable for discrete features (e.g., word counts). It models the probability of a word’s frequency given the class. Best for text classification with count vectors.</li>
+                <li><b>BernoulliNB</b> – designed for binary features (word present/absent). It may work better on short texts or when word frequency is less important than word presence.</li>
+              </ul>
+            </p>
+            <p><b>Recommendation:</b> Use <b>MultinomialNB</b> for most text datasets. Try <b>BernoulliNB</b> if your texts are very short (e.g., tweets, titles) and word repetition is not informative.</p>
+          `,
         },
         lexiconVectorizer: {
           title: "Vectorizer",
           html: `
-      <p><b>Definition:</b> The method used to convert the raw text into numerical vectors that the Naive Bayes model can understand.</p>
-      <p><b>Options:</b>
-        <ul>
-          <li><b>CountVectorizer</b> – builds a vocabulary of known words and counts how many times each word appears in a sentence. Simple and effective.</li>
-          <li><b>TfidfVectorizer</b> – similar to CountVectorizer, but weights words by their importance: common words across all documents are downscaled, while rare but discriminative words are boosted.</li>
-        </ul>
-      </p>
-      <p><b>Recommendation:</b> <b>TfidfVectorizer</b> often outperforms CountVectorizer because it reduces the impact of stop words and very frequent terms. Use <b>CountVectorizer</b> for a quick baseline or when word presence is the only signal.</p>
-    `,
+            <p><b>Definition:</b> The method used to convert the raw text into numerical vectors that the Naive Bayes model can understand.</p>
+            <p><b>Options:</b>
+              <ul>
+                <li><b>CountVectorizer</b> – builds a vocabulary of known words and counts how many times each word appears in a sentence. Simple and effective.</li>
+                <li><b>TfidfVectorizer</b> – similar to CountVectorizer, but weights words by their importance: common words across all documents are downscaled, while rare but discriminative words are boosted.</li>
+              </ul>
+            </p>
+            <p><b>Recommendation:</b> <b>TfidfVectorizer</b> often outperforms CountVectorizer because it reduces the impact of stop words and very frequent terms. Use <b>CountVectorizer</b> for a quick baseline or when word presence is the only signal.</p>
+          `,
         },
         emotionRanking: {
           title: "Emotion Ranking Order",
           html: `
-      <p><b>Definition:</b> The priority order of the seven basic emotions used by the lexicon‑based part of the system. When multiple emotions are detected, the one with the lowest rank number (highest priority) is selected first. Each emotion must have a unique rank from 1 (most preferred) to 7 (least preferred).</p>
-      <p><b>How it works:</b> The lexicon scorer returns scores for all emotions. If there is a tie, the ranking decides which emotion wins.</p>
-      <p><b>Recommendation:</b> The default order follows typical sentiment analysis conventions. Adjust only if you have domain knowledge that some emotion should be preferred in ambiguous cases.</p>
-    `,
+            <p><b>Definition:</b> The priority order of the seven basic emotions used by the lexicon‑based part of the system. When multiple emotions are detected, the one with the lowest rank number (highest priority) is selected first. Each emotion must have a unique rank from 1 (most preferred) to 7 (least preferred).</p>
+            <p><b>How it works:</b> The lexicon scorer returns scores for all emotions. If there is a tie, the ranking decides which emotion wins.</p>
+            <p><b>Recommendation:</b> The default order follows typical sentiment analysis conventions. Adjust only if you have domain knowledge that some emotion should be preferred in ambiguous cases.</p>
+          `,
         },
         fusionMethodSelect: {
           title: "Fusion Method",
           html: `
-      <p><b>Definition:</b> The method used to combine the predictions from the Naive Bayes model and the Lexicon‑based scorer into a single final prediction.</p>
-      <p><b>Options:</b>
-        <ul>
-          <li><b>Product</b> – multiplies the Naive Bayes probability by (1 + lexicon score). The lexicon acts as a booster.</li>
-          <li><b>Sum</b> – simply adds the Naive Bayes probability and the lexicon score. Both have equal influence.</li>
-          <li><b>Weighted Average</b> – takes a weighted combination: α * P(NB) + (1‑α) * S(lexicon). The weight α controls the balance.</li>
-        </ul>
-      </p>
-      <p><b>Recommendation:</b> Start with <b>Product</b> as a robust baseline. <b>Weighted Average</b> gives you the most control if you find that one source is more reliable, but you need to tune the weight.</p>
-    `,
+            <p><b>Definition:</b> The method used to combine the predictions from the Naive Bayes model and the Lexicon‑based scorer into a single final prediction.</p>
+            <p><b>Options:</b>
+              <ul>
+                <li><b>Product</b> – multiplies the Naive Bayes probability by (1 + lexicon score). The lexicon acts as a booster.</li>
+                <li><b>Sum</b> – simply adds the Naive Bayes probability and the lexicon score. Both have equal influence.</li>
+                <li><b>Weighted Average</b> – takes a weighted combination: α * P(NB) + (1‑α) * S(lexicon). The weight α controls the balance.</li>
+              </ul>
+            </p>
+            <p><b>Recommendation:</b> Start with <b>Product</b> as a robust baseline. <b>Weighted Average</b> gives you the most control if you find that one source is more reliable, but you need to tune the weight.</p>
+          `,
         },
         fusionFormulaInput: {
           title: "Fusion Formula",
           html: `
-      <p><b>Definition:</b> The mathematical formula corresponding to the selected fusion method. This field is read‑only and shows you exactly how the two scores are combined.</p>
-      <p><b>Formulas:</b>
-        <ul>
-          <li><b>Product:</b> P_final = P_NB × (1 + S_lexicon)</li>
-          <li><b>Sum:</b> P_final = P_NB + S_lexicon</li>
-          <li><b>Weighted Average:</b> P_final = α · P_NB + (1 − α) · S_lexicon</li>
-        </ul>
-      </p>
-      <p><b>Note:</b> α (alpha) is configured in the hybrid/weighted parameter if weighted average is selected.</p>
-    `,
+            <p><b>Definition:</b> The mathematical formula corresponding to the selected fusion method. This field is read‑only and shows you exactly how the two scores are combined.</p>
+            <p><b>Formulas:</b>
+              <ul>
+                <li><b>Product:</b> P_final = P_NB × (1 + S_lexicon)</li>
+                <li><b>Sum:</b> P_final = P_NB + S_lexicon</li>
+                <li><b>Weighted Average:</b> P_final = α · P_NB + (1 − α) · S_lexicon</li>
+              </ul>
+            </p>
+            <p><b>Note:</b> α (alpha) is configured in the hybrid/weighted parameter if weighted average is selected.</p>
+          `,
+        },
+        lexiconWeight: {
+          title: "Weight (α) for Weighted Average",
+          html: `<p><b>Definition:</b> The blending factor between Naive Bayes probability and Lexicon score when <i>Weighted Average</i> fusion method is selected.</p>
+               <p><b>Value range:</b> 0.0 – 1.0.</p>
+               <p><b>Recommendation:</b> Start with 0.8 (default) if you trust Naive Bayes more than the lexicon. Decrease to 0.5 if you want equal contribution, or to 0.3 if lexicon is more reliable.</p>`,
         },
       };
 
@@ -2509,12 +2574,12 @@
 
           if (editingSplitId === s.id) {
             row.innerHTML = `
-                    <td class="border border-gray-200 px-4 py-2"><input type="number" id="editTrain-${s.id}" value="${s.train}" class="w-20 border rounded p-1" /></td>
-                    <td class="border border-gray-200 px-4 py-2"><input type="number" id="editTest-${s.id}" value="${s.test}" class="w-20 border rounded p-1" /></td>
-                    <td class="border border-gray-200 px-4 py-2 text-center">
-                      <button class="text-green-600 hover:text-green-800 mr-2" onclick="saveEditInline(${s.id})"><i class="fas fa-save"></i></button>
-                      <button class="text-gray-500 hover:text-gray-700" onclick="cancelEditInline()"><i class="fas fa-times"></i></button>
-                    </td>`;
+                          <td class="border border-gray-200 px-4 py-2"><input type="number" id="editTrain-${s.id}" value="${s.train}" class="w-20 border rounded p-1" /></td>
+                          <td class="border border-gray-200 px-4 py-2"><input type="number" id="editTest-${s.id}" value="${s.test}" class="w-20 border rounded p-1" /></td>
+                          <td class="border border-gray-200 px-4 py-2 text-center">
+                            <button class="text-green-600 hover:text-green-800 mr-2" onclick="saveEditInline(${s.id})"><i class="fas fa-save"></i></button>
+                            <button class="text-gray-500 hover:text-gray-700" onclick="cancelEditInline()"><i class="fas fa-times"></i></button>
+                          </td>`;
             const trainEdit = document.getElementById(`editTrain-${s.id}`);
             const testEdit = document.getElementById(`editTest-${s.id}`);
             if (trainEdit && testEdit) {
@@ -2530,8 +2595,8 @@
             const actions = document.createElement("td");
             actions.className = "px-4 py-2 border border-gray-200 text-center";
             actions.innerHTML = `
-                    <i class="fas fa-edit text-blue-500 mr-3 cursor-pointer hover:text-blue-700" data-id="${s.id}"></i>
-                    <i class="fas fa-trash text-red-500 cursor-pointer hover:text-red-700" data-id="${s.id}"></i>`;
+                          <i class="fas fa-edit text-blue-500 mr-3 cursor-pointer hover:text-blue-700" data-id="${s.id}"></i>
+                          <i class="fas fa-trash text-red-500 cursor-pointer hover:text-red-700" data-id="${s.id}"></i>`;
             row.appendChild(actions);
           }
           for (let c of row.cells)
@@ -2936,11 +3001,11 @@
               : "-";
 
             row.innerHTML = `
-        <td class="px-4 py-3 text-center">${start + idx + 1}</td>
-        <td class="px-4 py-3 font-medium text-gray-800">${name}</td>
-        <td class="px-4 py-3 text-center font-bold text-green-700">${acc}</td>
-        <td class="px-4 py-3 text-sm text-gray-600">${dataset}</td>
-        <td class="px-4 py-3 text-sm text-gray-500">${date}</td>`;
+              <td class="px-4 py-3 text-center">${start + idx + 1}</td>
+              <td class="px-4 py-3 font-medium text-gray-800">${name}</td>
+              <td class="px-4 py-3 text-center font-bold text-green-700">${acc}</td>
+              <td class="px-4 py-3 text-sm text-gray-600">${dataset}</td>
+              <td class="px-4 py-3 text-sm text-gray-500">${date}</td>`;
             row.addEventListener("click", () => selectExistingModel(m));
             tbody.appendChild(row);
           });
@@ -3160,11 +3225,12 @@
       }
 
       function fillLexiconParams(params) {
+        // Reset ke default terlebih dahulu
         resetLexiconToDefault();
 
         if (!params || Object.keys(params).length === 0) return;
 
-        // Naive Bayes
+        // 1. Isi parameter Naive Bayes (jika ada)
         if (params.naivebayes) {
           const nb = params.naivebayes;
           if (nb.alpha != null)
@@ -3174,14 +3240,33 @@
           if (nb.vectorizer)
             document.getElementById("lexiconVectorizer").value = nb.vectorizer;
         }
-        // Fusion
+
+        // 2. Isi fusion method dan weight
         if (params.fusion) {
-          if (params.fusion.method)
-            document.getElementById("fusionMethodSelect").value =
-              params.fusion.method;
+          const fusionSelect = document.getElementById("fusionMethodSelect");
+          fusionSelect.value = params.fusion.method;
+
+          // Jika ada properti weight (hanya untuk metode 'weighted')
+          if (params.fusion.weight !== undefined) {
+            const slider = document.getElementById("lexiconWeight");
+            if (slider) {
+              slider.value = params.fusion.weight;
+              const weightValueSpan =
+                document.getElementById("lexiconWeightValue");
+              if (weightValueSpan) {
+                weightValueSpan.textContent = params.fusion.weight.toFixed(2);
+              }
+            }
+          }
+
+          // Update tampilan formula
           updateFusionFormula();
+
+          // ✅ Kunci: sinkronkan tampilan weight control (muncul hanya jika metode 'weighted')
+          toggleWeightControl();
         }
-        // Emotion rankings
+
+        // 3. Isi emotion rankings
         if (params.emotion_rankings) {
           const rankSelects = document.querySelectorAll(
             "#emotionRankingContainer select.emotion-rank",
@@ -3196,6 +3281,8 @@
               sel.value = params.emotion_rankings[emotion];
             }
           });
+          // Update dropdown dependencies (disable option yang sudah dipakai)
+          updateEmotionDropdowns();
         }
       }
 
@@ -3265,6 +3352,7 @@
       }
 
       function resetLexiconToDefault() {
+        // Reset nilai input form ke default
         document.getElementById("lexiconAlpha").value =
           defaultLexiconParams.lexiconAlpha;
         document.getElementById("lexiconModelType").value =
@@ -3273,17 +3361,27 @@
           defaultLexiconParams.lexiconVectorizer;
         document.getElementById("fusionMethodSelect").value =
           defaultLexiconParams.fusionMethodSelect;
+
+        // Update tampilan formula (misal: product → "P_final = P_NB × (1 + S_lexicon)")
         updateFusionFormula();
 
+        // ✅ Sembunyikan kontrol bobot (karena default method = product, bukan weighted)
+        toggleWeightControl();
+
+        // Reset emotion rankings ke urutan default
         const rankSelects = document.querySelectorAll(
           "#emotionRankingContainer select.emotion-rank",
         );
         rankSelects.forEach((sel) => {
           const emotion = sel.getAttribute("data-emotion");
-          if (defaultLexiconParams.emotionRankings[emotion] != null) {
-            sel.value = defaultLexiconParams.emotionRankings[emotion];
+          const defaultRank = defaultLexiconParams.emotionRankings[emotion];
+          if (defaultRank != null && defaultRank >= 1 && defaultRank <= 7) {
+            sel.value = defaultRank;
           }
         });
+
+        // Update dropdown dependencies (disable options yang sudah terpilih)
+        updateEmotionDropdowns();
       }
 
       // ==================== TRAINING HISTORY ====================
@@ -3439,13 +3537,13 @@
           const actCell = row.insertCell(7);
           actCell.className = "px-4 py-2 border border-gray-200 text-center";
           actCell.innerHTML = `
-          <div class="flex justify-center items-center space-x-2">
-            <a href="validasi.html?id=${item.id}" title="Lihat Evaluasi" class="text-blue-500 hover:text-blue-700"><i class="fas fa-eye"></i></a>
-            <button title="Download Model" class="text-green-600 hover:text-green-800 download-model" data-id="${item.id}" ${!item.model_path ? "disabled" : ""}><i class="fas fa-download"></i></button>
-            <button title="Gunakan untuk Testing" class="text-purple-500 hover:text-purple-700 use-for-testing" data-id="${item.id}"><i class="fas fa-vial"></i></button>
-            <button title="Quick View" class="text-gray-600 hover:text-gray-800 quick-view-btn" data-id="${item.id}"><i class="fas fa-chevron-down"></i></button>
-            <button title="Hapus Training" class="text-red-500 hover:text-red-700 delete-training" data-id="${item.id}"><i class="fas fa-trash"></i></button>
-          </div>`;
+                <div class="flex justify-center items-center space-x-2">
+                  <a href="validasi.html?id=${item.id}" title="Lihat Evaluasi" class="text-blue-500 hover:text-blue-700"><i class="fas fa-eye"></i></a>
+                  <button title="Download Model" class="text-green-600 hover:text-green-800 download-model" data-id="${item.id}" ${!item.model_path ? "disabled" : ""}><i class="fas fa-download"></i></button>
+                  <button title="Gunakan untuk Testing" class="text-purple-500 hover:text-purple-700 use-for-testing" data-id="${item.id}"><i class="fas fa-vial"></i></button>
+                  <button title="Quick View" class="text-gray-600 hover:text-gray-800 quick-view-btn" data-id="${item.id}"><i class="fas fa-chevron-down"></i></button>
+                  <button title="Hapus Training" class="text-red-500 hover:text-red-700 delete-training" data-id="${item.id}"><i class="fas fa-trash"></i></button>
+                </div>`;
 
           // Styling semua cell
           for (let c of row.cells) {
@@ -3494,23 +3592,23 @@
                 const knn = params.knn || {};
                 const hybrid = params.hybrid || {};
                 summaryHtml = `
-          <div class="param-grid">
-            <div class="param-item"><span class="text-xs text-gray-500">Fine‑Tuning</span><br>${finetune.enabled ? "<span class='text-green-600'>✔ Aktif</span>" : "<span class='text-gray-400'>Mati</span>"}</div>
-            <div class="param-item"><span class="text-xs text-gray-500">Epoch</span><br>${finetune.epochs ?? "-"}</div>
-            <div class="param-item"><span class="text-xs text-gray-500">Learning Rate</span><br>${finetune.learningRate ?? "-"}</div>
-            <div class="param-item"><span class="text-xs text-gray-500">UMAP</span><br>${umap.enabled ? "<span class='text-green-600'>✔ Aktif</span>" : "<span class='text-gray-400'>Mati</span>"}</div>
-            <div class="param-item"><span class="text-xs text-gray-500">KNN k</span><br>${knn.k ?? "-"}</div>
-            <div class="param-item"><span class="text-xs text-gray-500">Hybrid</span><br>${hybrid.method || "none"}</div>
-          </div>`;
+                <div class="param-grid">
+                  <div class="param-item"><span class="text-xs text-gray-500">Fine‑Tuning</span><br>${finetune.enabled ? "<span class='text-green-600'>✔ Aktif</span>" : "<span class='text-gray-400'>Mati</span>"}</div>
+                  <div class="param-item"><span class="text-xs text-gray-500">Epoch</span><br>${finetune.epochs ?? "-"}</div>
+                  <div class="param-item"><span class="text-xs text-gray-500">Learning Rate</span><br>${finetune.learningRate ?? "-"}</div>
+                  <div class="param-item"><span class="text-xs text-gray-500">UMAP</span><br>${umap.enabled ? "<span class='text-green-600'>✔ Aktif</span>" : "<span class='text-gray-400'>Mati</span>"}</div>
+                  <div class="param-item"><span class="text-xs text-gray-500">KNN k</span><br>${knn.k ?? "-"}</div>
+                  <div class="param-item"><span class="text-xs text-gray-500">Hybrid</span><br>${hybrid.method || "none"}</div>
+                </div>`;
               } else {
                 const fusion = params.fusion || {};
                 const nb = params.naivebayes || {};
                 summaryHtml = `
-          <div class="param-grid">
-            <div class="param-item"><span class="text-xs text-gray-500">Fusion</span><br>${fusion.method || "-"}</div>
-            <div class="param-item"><span class="text-xs text-gray-500">Model NB</span><br>${nb.model_type || "-"}</div>
-            <div class="param-item"><span class="text-xs text-gray-500">Vectorizer</span><br>${nb.vectorizer || "-"}</div>
-          </div>`;
+                <div class="param-grid">
+                  <div class="param-item"><span class="text-xs text-gray-500">Fusion</span><br>${fusion.method || "-"}</div>
+                  <div class="param-item"><span class="text-xs text-gray-500">Model NB</span><br>${nb.model_type || "-"}</div>
+                  <div class="param-item"><span class="text-xs text-gray-500">Vectorizer</span><br>${nb.vectorizer || "-"}</div>
+                </div>`;
               }
               // Buat baris accordion di bawah baris saat ini
               const currentRow = this.closest("tr");
@@ -3710,26 +3808,26 @@
         const accPercent = (best.metrics.accuracy * 100).toFixed(2);
         const params = best.params || trainingParamsStore[best.id] || {};
         container.innerHTML = `
-  <div class="border rounded-lg p-4 bg-gradient-to-r from-yellow-50 to-orange-50">
-    <div class="flex flex-wrap justify-between items-start gap-4">
-      <div>
-        <p class="text-sm text-gray-500">Best Model (${algorithm})</p>
-        <p class="font-bold text-lg text-gray-800">${best.config_name || best.dataset_filename || "-"}</p>
-        <p class="text-sm text-gray-600">Dataset: ${best.dataset_filename || "-"}</p>
-        <p class="text-sm text-gray-600">Ratio: ${best.split_ratio || "-"}</p>
-        <p class="text-xl font-bold text-green-700 mt-1">Accuracy: ${accPercent}%</p>
-        ${Object.keys(params).length > 0 ? `<button onclick="showParamModal(${best.id})" class="mt-2 bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 text-sm">Lihat Parameter</button>` : ""}
-      </div>
-      <div class="flex items-center space-x-2">
-        <a href="validasi.html?id=${best.id}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition inline-flex items-center space-x-2">
-          <i class="fas fa-chart-bar"></i><span>Lihat Evaluasi</span>
-        </a>
-        <a href="testing.html?id=${best.id}" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition inline-flex items-center space-x-2">
-          <i class="fas fa-vial"></i><span>Testing</span>
-        </a>
-      </div>
-    </div>
-  </div>`;
+        <div class="border rounded-lg p-4 bg-gradient-to-r from-yellow-50 to-orange-50">
+          <div class="flex flex-wrap justify-between items-start gap-4">
+            <div>
+              <p class="text-sm text-gray-500">Best Model (${algorithm})</p>
+              <p class="font-bold text-lg text-gray-800">${best.config_name || best.dataset_filename || "-"}</p>
+              <p class="text-sm text-gray-600">Dataset: ${best.dataset_filename || "-"}</p>
+              <p class="text-sm text-gray-600">Ratio: ${best.split_ratio || "-"}</p>
+              <p class="text-xl font-bold text-green-700 mt-1">Accuracy: ${accPercent}%</p>
+              ${Object.keys(params).length > 0 ? `<button onclick="showParamModal(${best.id})" class="mt-2 bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 text-sm">Lihat Parameter</button>` : ""}
+            </div>
+            <div class="flex items-center space-x-2">
+              <a href="validasi.html?id=${best.id}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition inline-flex items-center space-x-2">
+                <i class="fas fa-chart-bar"></i><span>Lihat Evaluasi</span>
+              </a>
+              <a href="testing.html?id=${best.id}" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition inline-flex items-center space-x-2">
+                <i class="fas fa-vial"></i><span>Testing</span>
+              </a>
+            </div>
+          </div>
+        </div>`;
         container.dataset.bestId = best.id;
       }
 
@@ -3771,16 +3869,16 @@
         const resultSection = document.getElementById("trainingResultSection");
         const resultContent = document.getElementById("resultContent");
         resultContent.innerHTML = `
-                <div class="space-y-4">
-                  <div class="flex items-center justify-between">
-                    <h3 class="font-semibold text-gray-700">Training Progress</h3>
-                    <span id="pollingStatusLabel" class="text-sm text-gray-500">Memulai...</span>
-                  </div>
-                  <div class="w-full bg-gray-200 rounded-full h-6">
-                    <div id="progressBarFill" class="bg-blue-600 h-6 rounded-full transition-all duration-500" style="width: 0%"></div>
-                  </div>
-                  <p id="progressMessage" class="text-sm text-gray-600">Menghubungkan ke server...</p>
-                </div>`;
+                      <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                          <h3 class="font-semibold text-gray-700">Training Progress</h3>
+                          <span id="pollingStatusLabel" class="text-sm text-gray-500">Memulai...</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-6">
+                          <div id="progressBarFill" class="bg-blue-600 h-6 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                        <p id="progressMessage" class="text-sm text-gray-600">Menghubungkan ke server...</p>
+                      </div>`;
         resultSection.classList.remove("hidden");
 
         const poll = async () => {
@@ -3821,21 +3919,21 @@
                   const detail = await detailRes.json();
                   const m = detail.metrics || {};
                   const metrikHtml = `
-                          <div class="mt-4 grid grid-cols-2 gap-3">
-                            <div class="bg-blue-50 p-3 rounded text-center"><p class="text-sm text-gray-600">Accuracy</p><p class="text-xl font-bold text-blue-700">${m.accuracy ? (m.accuracy * 100).toFixed(2) + "%" : "-"}</p></div>
-                            <div class="bg-green-50 p-3 rounded text-center"><p class="text-sm text-gray-600">F1 Score</p><p class="text-xl font-bold text-green-700">${m.f1_score ? (m.f1_score * 100).toFixed(2) + "%" : "-"}</p></div>
-                            <div class="bg-yellow-50 p-3 rounded text-center"><p class="text-sm text-gray-600">Precision</p><p class="text-xl font-bold text-yellow-700">${m.precision ? (m.precision * 100).toFixed(2) + "%" : "-"}</p></div>
-                            <div class="bg-purple-50 p-3 rounded text-center"><p class="text-sm text-gray-600">Recall</p><p class="text-xl font-bold text-purple-700">${m.recall ? (m.recall * 100).toFixed(2) + "%" : "-"}</p></div>
-                          </div>`;
+                                <div class="mt-4 grid grid-cols-2 gap-3">
+                                  <div class="bg-blue-50 p-3 rounded text-center"><p class="text-sm text-gray-600">Accuracy</p><p class="text-xl font-bold text-blue-700">${m.accuracy ? (m.accuracy * 100).toFixed(2) + "%" : "-"}</p></div>
+                                  <div class="bg-green-50 p-3 rounded text-center"><p class="text-sm text-gray-600">F1 Score</p><p class="text-xl font-bold text-green-700">${m.f1_score ? (m.f1_score * 100).toFixed(2) + "%" : "-"}</p></div>
+                                  <div class="bg-yellow-50 p-3 rounded text-center"><p class="text-sm text-gray-600">Precision</p><p class="text-xl font-bold text-yellow-700">${m.precision ? (m.precision * 100).toFixed(2) + "%" : "-"}</p></div>
+                                  <div class="bg-purple-50 p-3 rounded text-center"><p class="text-sm text-gray-600">Recall</p><p class="text-xl font-bold text-purple-700">${m.recall ? (m.recall * 100).toFixed(2) + "%" : "-"}</p></div>
+                                </div>`;
                   resultContent.innerHTML += metrikHtml;
                 }
               } catch (e) {}
               resultContent.innerHTML += `
-                      <div class="mt-4 text-center">
-                        <a href="validasi.html?id=${trainingId}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition inline-flex items-center space-x-2">
-                          <i class="fas fa-chart-bar"></i><span>Lihat Evaluasi Lengkap</span>
-                        </a>
-                      </div>`;
+                            <div class="mt-4 text-center">
+                              <a href="validasi.html?id=${trainingId}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition inline-flex items-center space-x-2">
+                                <i class="fas fa-chart-bar"></i><span>Lihat Evaluasi Lengkap</span>
+                              </a>
+                            </div>`;
               loadTrainingHistory();
             } else if (status === "failed") {
               clearInterval(pollingInterval);
@@ -4275,6 +4373,16 @@
             document.getElementById("fusionMethodSelect").value;
           const fusionFormula =
             document.getElementById("fusionFormulaInput").value;
+
+          // ✅ Buat objek fusion dengan weight jika diperlukan
+          let fusion = { method: fusionMethod, formula: fusionFormula };
+          if (fusionMethod === "weighted") {
+            const weightSlider = document.getElementById("lexiconWeight");
+            if (weightSlider) {
+              fusion.weight = parseFloat(weightSlider.value);
+            }
+          }
+
           return {
             general: { randomState: 42 },
             split: {
@@ -4291,7 +4399,7 @@
               vectorizer: document.getElementById("lexiconVectorizer").value,
             },
             emotion_rankings: emotionRankings,
-            fusion: { method: fusionMethod, formula: fusionFormula },
+            fusion: fusion, // ← sekarang fusion bisa berisi weight
           };
         }
       }
