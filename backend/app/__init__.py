@@ -1,3 +1,4 @@
+import logging
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -17,6 +18,19 @@ def create_app():
 
     app.config['UPLOAD_FOLDER'] = 'data/raw'
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
+
+    if not app.debug:
+        # Untuk production, bisa gunakan handler file
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
+    else:
+        # Untuk development, tampilkan di console
+        logging.basicConfig(
+            level=logging.DEBUG if app.debug else logging.INFO,
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
 
     db.init_app(app)
     migrate.init_app(app, db)
@@ -54,8 +68,8 @@ def create_app():
     from app.routes.split_ratio import split_ratio_bp
     app.register_blueprint(split_ratio_bp)
 
-    from app.routes.testing import testing_bp        # <-- tambahan
-    app.register_blueprint(testing_bp)                # <-- tambahan
+    from app.routes.testing import testing_bp
+    app.register_blueprint(testing_bp)
 
     from app.routes.dashboard import dashboard_bp
     app.register_blueprint(dashboard_bp)

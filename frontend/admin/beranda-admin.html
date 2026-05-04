@@ -164,7 +164,7 @@
           <!-- Bar Chart: Emotion Distribution -->
           <div class="bg-white p-4 rounded-xl shadow-md">
             <h2 class="font-semibold text-gray-700 mb-2">
-              Emotion Distribution (8 Classes)
+              Emotion Distribution
             </h2>
             <div class="h-80">
               <canvas id="emotionChart"></canvas>
@@ -278,7 +278,7 @@
             </div>
           </div>
 
-          <!-- Card: Lexicon-Naive Bayes (dinaikkan ke atas 90%) -->
+          <!-- Card: Lexicon-Naive Bayes -->
           <div
             class="bg-white p-5 rounded-xl shadow-md border-t-4 border-purple-500"
           >
@@ -366,14 +366,11 @@
     <script>
       let trainTestChart = null;
       let currentAlgorithm = "IndoBERT-KNN";
-      // Ambil token dari localStorage (pastikan sudah disimpan saat login)
       const token = localStorage.getItem("access_token");
       if (!token) {
-        // Redirect ke login jika tidak ada token
         window.location.href = "login.html";
       }
 
-      // Dropdown toggle
       function toggleDropdown(btn, menu, icon) {
         btn.addEventListener("click", () => {
           menu.classList.toggle("hidden");
@@ -385,11 +382,8 @@
       const dataCollectionIcon = document.getElementById("dataCollectionIcon");
       toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
 
-      // Fetch data dashboard
       fetch("http://localhost:5000/api/dashboard/stats", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
         .then((response) => {
           if (response.status === 401) {
@@ -410,7 +404,6 @@
             ".border-l-4.border-purple-500 .text-2xl",
           ).innerText = data.total_models.toLocaleString();
 
-          // Update jumlah trained models per algoritma
           const indobertVersionElem =
             document.getElementById("indobertVersion");
           const lexiconVersionElem = document.getElementById("lexiconVersion");
@@ -421,7 +414,6 @@
             lexiconVersionElem.innerText = `Trained models: ${data.total_trained_lexicon || 0} versions`;
           }
 
-          // Update idiom vs non-idiom di pie chart dan ringkasan angka
           const idiomCount = data.idiom_count;
           const nonIdiomCount = data.non_idiom_count;
           const total = idiomCount + nonIdiomCount;
@@ -432,26 +424,24 @@
             ? ((nonIdiomCount / total) * 100).toFixed(1)
             : 0;
 
-          // Update teks ringkasan
           const summaryDiv = document.querySelector(
             ".bg-gray-50.p-4.rounded-lg",
           );
           if (summaryDiv) {
             summaryDiv.innerHTML = `
-        <p class="text-sm text-gray-600 font-medium">Idiom</p>
-        <p class="text-2xl font-bold text-blue-600">${idiomCount.toLocaleString()}</p>
-        <p class="text-sm text-gray-500">(${idiomPercent}%)</p>
-        <hr class="my-2" />
-        <p class="text-sm text-gray-600 font-medium">Non‑idiom</p>
-        <p class="text-2xl font-bold text-gray-600">${nonIdiomCount.toLocaleString()}</p>
-        <p class="text-sm text-gray-500">(${nonIdiomPercent}%)</p>
-        <hr class="my-2" />
-        <p class="text-sm font-medium text-gray-700">Total</p>
-        <p class="text-xl font-bold">${total.toLocaleString()}</p>
-      `;
+              <p class="text-sm text-gray-600 font-medium">Idiom</p>
+              <p class="text-2xl font-bold text-blue-600">${idiomCount.toLocaleString()}</p>
+              <p class="text-sm text-gray-500">(${idiomPercent}%)</p>
+              <hr class="my-2" />
+              <p class="text-sm text-gray-600 font-medium">Non‑idiom</p>
+              <p class="text-2xl font-bold text-gray-600">${nonIdiomCount.toLocaleString()}</p>
+              <p class="text-sm text-gray-500">(${nonIdiomPercent}%)</p>
+              <hr class="my-2" />
+              <p class="text-sm font-medium text-gray-700">Total</p>
+              <p class="text-xl font-bold">${total.toLocaleString()}</p>
+            `;
           }
 
-          // Update Pie Chart (Idiom vs Non-idiom)
           const ctxPie = document
             .getElementById("idiomPieChart")
             .getContext("2d");
@@ -482,7 +472,6 @@
             },
           });
 
-          // Update Bar Chart Emotion Distribution - versi rapi
           const allowedEmotions = [
             "anger",
             "fear",
@@ -496,20 +485,15 @@
           const sentenceCounts = allowedEmotions.map(
             (emo) => data.emotion_distribution[emo] || 0,
           );
-
-          const maxCount = Math.max(...sentenceCounts, 0);
-          const yMax = Math.ceil(maxCount / 500) * 500; // kelipatan 500, minimal 500
-          // Tapi sesuai permintaan range sampai 3500, bisa set tetap 3500 atau dinamis
           const fixedYMax = 3500;
-
           const barColors = {
-            anger: "#ef4444", // merah
-            fear: "#8b5cf6", // ungu
-            happy: "#10b981", // hijau
-            neutral: "#6b7280", // abu
-            sadness: "#3b82f6", // biru
-            surprise: "#f59e0b", // oranye
-            trust: "#ec489a", // pink
+            anger: "#ef4444",
+            fear: "#8b5cf6",
+            happy: "#10b981",
+            neutral: "#6b7280",
+            sadness: "#3b82f6",
+            surprise: "#f59e0b",
+            trust: "#ec489a",
           };
           const bgColors = emotionLabels.map((l) => barColors[l]);
 
@@ -571,9 +555,7 @@
                   grid: { display: false },
                 },
               },
-              layout: {
-                padding: { top: 20, bottom: 10, left: 10, right: 10 },
-              },
+              layout: { padding: { top: 20, bottom: 10, left: 10, right: 10 } },
             },
             plugins: [
               {
@@ -590,7 +572,7 @@
                         ctx.font = 'bold 12px "Segoe UI"';
                         ctx.fillStyle = "#1f2937";
                         ctx.textAlign = "center";
-                        ctx.fillText(`${value.toFixed(2)}%`, x, y);
+                        ctx.fillText(`${value.toLocaleString()}`, x, y);
                         ctx.restore();
                       });
                     }
@@ -600,7 +582,6 @@
             ],
           });
 
-          // Update Best Models Cards
           const indobert = data.best_models["IndoBERT-KNN"];
           const lexicon = data.best_models["Lexicon-NB"];
 
@@ -612,7 +593,6 @@
           );
 
           if (indobert) {
-            // Update metrik accuracy, precision, recall, f1 (sudah benar)
             indobertCard.querySelector(
               ".grid-cols-4 .text-green-600",
             ).innerText = `${(indobert.accuracy * 100).toFixed(1)}%`;
@@ -626,21 +606,18 @@
               ".grid-cols-4 .text-orange-600",
             ).innerText = `${(indobert.f1_score * 100).toFixed(1)}%`;
 
-            // Perbaikan selector untuk tanggal dan durasi
             const infoDiv = indobertCard.querySelector(
               ".flex.justify-between.border-t",
             );
             if (infoDiv) {
               const spans = infoDiv.querySelectorAll("span");
               if (spans.length >= 2) {
-                const timeSpan = spans[0];
-                const durationSpan = spans[1];
                 if (indobert.created_at) {
                   const createdDate = new Date(indobert.created_at);
-                  timeSpan.innerHTML = `<i class="far fa-clock mr-1"></i>${createdDate.toLocaleDateString()}`;
+                  spans[0].innerHTML = `<i class="far fa-clock mr-1"></i>${createdDate.toLocaleDateString()}`;
                 }
                 if (indobert.duration) {
-                  durationSpan.innerHTML = `<i class="fas fa-tachometer-alt mr-1"></i>${indobert.duration}`;
+                  spans[1].innerHTML = `<i class="fas fa-tachometer-alt mr-1"></i>${indobert.duration}`;
                 }
               }
             }
@@ -667,14 +644,12 @@
             if (infoDiv) {
               const spans = infoDiv.querySelectorAll("span");
               if (spans.length >= 2) {
-                const timeSpan = spans[0];
-                const durationSpan = spans[1];
                 if (lexicon.created_at) {
                   const createdDate = new Date(lexicon.created_at);
-                  timeSpan.innerHTML = `<i class="far fa-clock mr-1"></i>${createdDate.toLocaleDateString()}`;
+                  spans[0].innerHTML = `<i class="far fa-clock mr-1"></i>${createdDate.toLocaleDateString()}`;
                 }
                 if (lexicon.duration) {
-                  durationSpan.innerHTML = `<i class="fas fa-tachometer-alt mr-1"></i>${lexicon.duration}`;
+                  spans[1].innerHTML = `<i class="fas fa-tachometer-alt mr-1"></i>${lexicon.duration}`;
                 }
               }
             }
@@ -683,10 +658,6 @@
               '<div class="p-4 text-center text-gray-500">Belum ada model Lexicon-NB yang terlatih</div>';
           }
 
-          console.log("IndoBERT best model:", indobert);
-          console.log("Lexicon best model:", lexicon);
-
-          // Update Comparison Chart (bar chart) dengan data dari best models
           const comparisonLabels = [
             "Accuracy",
             "Precision",
@@ -746,7 +717,8 @@
                 },
                 tooltip: {
                   callbacks: {
-                    label: (ctx) => `${ctx.dataset.label}: ${ctx.raw}%`,
+                    label: (ctx) =>
+                      `${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%`,
                   },
                 },
               },
@@ -779,7 +751,8 @@
                         ctx.font = "bold 12px 'Segoe UI'";
                         ctx.fillStyle = "#1f2937";
                         ctx.textAlign = "center";
-                        ctx.fillText(`${value}%`, x, y);
+                        // Bulatkan ke 1 desimal
+                        ctx.fillText(`${value.toFixed(1)}%`, x, y);
                         ctx.restore();
                       });
                     }
@@ -788,11 +761,11 @@
               },
             ],
           });
+
           loadTrainTestComparison(currentAlgorithm);
         })
         .catch((error) => {
           console.error("Error fetching dashboard data:", error);
-          // Tampilkan pesan error di halaman
           const main = document.querySelector("main");
           const errorDiv = document.createElement("div");
           errorDiv.className =
@@ -801,12 +774,11 @@
             "<strong>Error!</strong> Gagal memuat data dashboard. Pastikan server berjalan dan Anda sudah login.";
           main.prepend(errorDiv);
         });
+
       function loadTrainTestComparison(algorithm) {
         fetch(
           `http://localhost:5000/api/dashboard/train-test-comparison?algorithm=${encodeURIComponent(algorithm)}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
+          { headers: { Authorization: `Bearer ${token}` } },
         )
           .then((response) => {
             if (!response.ok) throw new Error("Gagal mengambil data");
@@ -868,7 +840,8 @@
                   },
                   tooltip: {
                     callbacks: {
-                      label: (ctx) => `${ctx.dataset.label}: ${ctx.raw}%`,
+                      label: (ctx) =>
+                        `${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%`,
                     },
                   },
                 },
@@ -911,7 +884,7 @@
                           ctx.font = "bold 12px 'Segoe UI'";
                           ctx.fillStyle = "#1f2937";
                           ctx.textAlign = "center";
-                          ctx.fillText(`${value.toFixed(2)}%`, x, y);
+                          ctx.fillText(`${value.toFixed(1)}%`, x, y);
                           ctx.restore();
                         });
                       }
@@ -932,6 +905,7 @@
             ctx.fillText("Tidak ada data testing untuk model ini", 50, 150);
           });
       }
+
       document
         .getElementById("toggleModelBtn")
         .addEventListener("click", () => {

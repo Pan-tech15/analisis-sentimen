@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import logging
 import re
 import joblib
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix, matthews_corrcoef, roc_auc_score
@@ -7,6 +8,15 @@ from app.models.training import Training
 from app.models.testing import Testing
 from app.models.idiom import Idiom
 from app import db
+from app.utils.preprocessing_utils import preprocess_text as sastrawi_preprocess
+
+
+logger = logging.getLogger(__name__)
+
+# ------------------ PREPROCESSING UNTUK INDOBERT (MINIMAL) ------------------
+def preprocess_indobert(text):
+    """Preprocessing minimal untuk IndoBERT (hanya lowercasing)."""
+    return str(text).lower().strip()
 
 # ------------------ PREPROCESSING SAMA SEPERTI TRAINING ------------------
 def preprocess_text(text):
@@ -94,16 +104,12 @@ def predict_lexicon(texts, artifacts):
     fusion_method = artifacts.get('fusion_method', 'product')
     fusion_weight = artifacts.get('fusion_weight', 0.5)
 
-    # Preprocessing teks
-    cleaned_texts = [preprocess_text(t) for t in texts]
+    # Gunakan preprocessing Sastrawi (sama dengan training)
+    cleaned_texts = [sastrawi_preprocess(t) for t in texts]
 
-    # Transform ke vektor
     X_tfidf = vectorizer.transform(cleaned_texts)
-
-    # Dapatkan proba dari Naive Bayes
     proba = model.predict_proba(X_tfidf)
 
-    # Jika ada komponen lexicon, hitung skor lexicon (dictionary + PMI)
     if dict_lexicon:
         total_docs = sum(class_doc_counts.values()) if class_doc_counts else 1
         lexicon_scores = []
@@ -115,7 +121,6 @@ def predict_lexicon(texts, artifacts):
             lexicon_scores.append(combined)
         lexicon_scores = np.array(lexicon_scores)
     else:
-        # Fallback: lexicon scores = 0
         lexicon_scores = np.zeros_like(proba)
 
     # Fusion
@@ -123,13 +128,11 @@ def predict_lexicon(texts, artifacts):
         final_scores = proba + lexicon_scores
     elif fusion_method == 'weighted':
         final_scores = fusion_weight * proba + (1 - fusion_weight) * lexicon_scores
-    else:  # product
-        # Normalisasi lexicon_scores ke rentang positif
+    else:
         lex_norm = (lexicon_scores - lexicon_scores.min(axis=1, keepdims=True)) / (
             lexicon_scores.max(axis=1, keepdims=True) - lexicon_scores.min(axis=1, keepdims=True) + 1e-8)
         final_scores = proba * (1 + lex_norm)
 
-    # Softmax dan prediksi
     exp_scores = np.exp(final_scores - np.max(final_scores, axis=1, keepdims=True))
     final_scores = exp_scores / exp_scores.sum(axis=1, keepdims=True)
 
@@ -138,7 +141,6 @@ def predict_lexicon(texts, artifacts):
     else:
         y_pred = np.argmax(final_scores, axis=1)
 
-    # Kembalikan label asli
     return label_encoder.inverse_transform(y_pred)
 
 def predict_lexicon_proba(texts, artifacts):
@@ -154,7 +156,7 @@ def predict_lexicon_proba(texts, artifacts):
     fusion_method = artifacts.get('fusion_method', 'product')
     fusion_weight = artifacts.get('fusion_weight', 0.5)
 
-    cleaned_texts = [preprocess_text(t) for t in texts]
+    cleaned_texts = [sastrawi_preprocess(t) for t in texts]
     X_tfidf = vectorizer.transform(cleaned_texts)
     proba_nb = model.predict_proba(X_tfidf)   # probabilitas dari Naive Bayes
 
@@ -206,21 +208,21 @@ def predict_indobert(texts, artifacts):
     max_seq_length = artifacts['max_seq_length']
     use_umap = artifacts.get('use_umap', False)
 
+    cleaned_texts = [preprocess_indobert(t) for t in texts]
+
     bert_model.to(device)
     bert_model.eval()
 
     embeddings = []
     with torch.no_grad():
-        for text in texts:
+        for text in cleaned_texts:
             encoded = tokenizer(
                 text, truncation=True, padding='max_length',
                 max_length=max_seq_length, return_tensors='pt'
             ).to(device)
             if hasattr(bert_model, 'bert'):
-                # Model adalah IndoBERTClassifier (fine‑tuned)
                 outputs = bert_model.bert(input_ids=encoded['input_ids'], attention_mask=encoded['attention_mask'])
             else:
-                # Model adalah AutoModel (tanpa fine‑tuning)
                 outputs = bert_model(input_ids=encoded['input_ids'], attention_mask=encoded['attention_mask'])
             if pooling == 'CLS':
                 emb = outputs.last_hidden_state[:, 0, :].cpu().numpy()
@@ -412,6 +414,33 @@ def check_idiom_in_text(text):
             return idiom.idiom_text, idiom.idiom_meaning
     return None
 
+# ------------------ FUNGSI PREDIKSI UNTUK ENDPOINT ------------------
+def predict_single_text_with_idiom(training, text):
+    """Untuk IndoBERT‑KNN"""
+    logger.info(f"[IndoBERT-KNN] Checking idiom in text: {text[:100]}...")
+    idiom_result = check_idiom_in_text(text)
+    if not idiom_result:
+        logger.info("[IndoBERT-KNN] No idiom detected")
+        return {'has_idiom': False, 'message': 'Tidak terdeteksi idiom'}
+    idiom_text, idiom_meaning = idiom_result
+    logger.info(f"[IndoBERT-KNN] Idiom found: '{idiom_text}' -> meaning: '{idiom_meaning}'")
+
+    # Preprocessing minimal (lowercasing)
+    cleaned = preprocess_indobert(text)
+    logger.info(f"[IndoBERT-KNN] Cleaned text: {cleaned[:100]}...")
+
+    artifacts = joblib.load(training.model_path)
+    logger.info("[IndoBERT-KNN] Artifacts loaded successfully")
+    emotion = predict_indobert([cleaned], artifacts)[0]
+    logger.info(f"[IndoBERT-KNN] Predicted emotion: {emotion}")
+
+    return {
+        'has_idiom': True,
+        'idiom_text': idiom_text,
+        'idiom_meaning': idiom_meaning,
+        'emotion': emotion
+    }
+
 def predict_single_text_with_idiom(training, text):
     """
     Untuk IndoBERT‑KNN: cek idiom → jika ada lanjut prediksi emosi; jika tidak, kembalikan pesan.
@@ -441,24 +470,90 @@ def predict_single_text_with_idiom(training, text):
 
 # ------------------ DETEKSI IDIOM & PREDIKSI UNTUK INPUT TEXT LEXICON-NB ------------------
 def predict_single_text_with_idiom_lexicon(training, text):
-    """
-    Untuk Lexicon‑NB: cek idiom → jika ada lanjut prediksi emosi; jika tidak, kembalikan pesan.
-    Mengembalikan dictionary.
-    """
+    """Untuk Lexicon‑NB"""
+    logger.info(f"[Lexicon-NB] Checking idiom in text: {text[:100]}...")
     idiom_result = check_idiom_in_text(text)
     if not idiom_result:
+        logger.info("[Lexicon-NB] No idiom detected")
+        return {'has_idiom': False, 'message': 'Tidak terdeteksi idiom'}
+    idiom_text, idiom_meaning = idiom_result
+    logger.info(f"[Lexicon-NB] Idiom found: '{idiom_text}' -> meaning: '{idiom_meaning}'")
+
+    # Preprocessing menggunakan Sastrawi (sama dengan training)
+    cleaned = sastrawi_preprocess(text)
+    logger.info(f"[Lexicon-NB] Cleaned text: {cleaned[:100]}...")
+
+    artifacts = joblib.load(training.model_path)
+    logger.info("[Lexicon-NB] Artifacts loaded successfully")
+    emotion = predict_lexicon([cleaned], artifacts)[0]
+    logger.info(f"[Lexicon-NB] Predicted emotion: {emotion}")
+
+    return {
+        'has_idiom': True,
+        'idiom_text': idiom_text,
+        'idiom_meaning': idiom_meaning,
+        'emotion': emotion
+    }
+
+def predict_single_text_with_idiom(training, text):
+    """
+    Untuk IndoBERT‑KNN: cek idiom → jika ada lanjut prediksi emosi; jika tidak, kembalikan pesan.
+    """
+    logger.info(f"[IndoBERT-KNN] Checking idiom in text: {text[:100]}...")
+    idiom_result = check_idiom_in_text(text)
+    if not idiom_result:
+        logger.info("[IndoBERT-KNN] No idiom detected")
         return {
             'has_idiom': False,
             'message': 'Tidak terdeteksi idiom'
         }
     idiom_text, idiom_meaning = idiom_result
+    logger.info(f"[IndoBERT-KNN] Idiom found: '{idiom_text}' -> meaning: '{idiom_meaning}'")
 
-    # Lakukan prediksi emosi dengan teks yang SUDAH DIBERSIHKAN
-    cleaned = preprocess_text(text)   # pakai fungsi preprocess_text yang sudah ada di file ini
-    # Panggil fungsi prediksi Lexicon yang sudah ada
+    # Preprocessing
+    from app.utils.preprocessing_utils import preprocess_text
+    cleaned = preprocess_text(text)
+    logger.info(f"[IndoBERT-KNN] Cleaned text: {cleaned[:100]}...")
+    
+    # Load artifacts
     artifacts = joblib.load(training.model_path)
-    emotion = predict_lexicon([cleaned], artifacts)[0]   # ambil prediksi pertama
+    logger.info("[IndoBERT-KNN] Artifacts loaded successfully")
+    
+    # Prediksi
+    emotion = predict_indobert([cleaned], artifacts)[0]
+    logger.info(f"[IndoBERT-KNN] Predicted emotion: {emotion}")
+    
+    return {
+        'has_idiom': True,
+        'idiom_text': idiom_text,
+        'idiom_meaning': idiom_meaning,
+        'emotion': emotion
+    }
 
+def predict_single_text_with_idiom_lexicon(training, text):
+    """
+    Untuk Lexicon‑NB: cek idiom → jika ada lanjut prediksi emosi; jika tidak, kembalikan pesan.
+    """
+    logger.info(f"[Lexicon-NB] Checking idiom in text: {text[:100]}...")
+    idiom_result = check_idiom_in_text(text)
+    if not idiom_result:
+        logger.info("[Lexicon-NB] No idiom detected")
+        return {
+            'has_idiom': False,
+            'message': 'Tidak terdeteksi idiom'
+        }
+    idiom_text, idiom_meaning = idiom_result
+    logger.info(f"[Lexicon-NB] Idiom found: '{idiom_text}' -> meaning: '{idiom_meaning}'")
+
+    cleaned = sastrawi_preprocess(text)
+    logger.info(f"[Lexicon-NB] Cleaned text: {cleaned[:100]}...")
+    
+    artifacts = joblib.load(training.model_path)
+    logger.info("[Lexicon-NB] Artifacts loaded successfully")
+    
+    emotion = predict_lexicon([cleaned], artifacts)[0]
+    logger.info(f"[Lexicon-NB] Predicted emotion: {emotion}")
+    
     return {
         'has_idiom': True,
         'idiom_text': idiom_text,

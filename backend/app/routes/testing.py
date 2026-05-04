@@ -1,12 +1,18 @@
 import threading
+import logging
 import joblib  # <-- tambahkan ini
 from flask import Blueprint, request, jsonify, current_app
 from app import db
 from app.models.training import Training
 from app.models.testing import Testing
-from app.services.testing_service import run_testing, predict_single_text
+from app.services.testing_service import (
+    run_testing,
+    predict_single_text_with_idiom,
+    predict_single_text_with_idiom_lexicon
+)
 
 testing_bp = Blueprint('testing', __name__, url_prefix='/api/testing')
+logger = logging.getLogger(__name__)
 
 @testing_bp.route('/start', methods=['POST'])
 def start_testing():
@@ -42,27 +48,37 @@ def predict_text():
     data = request.get_json()
     model_id = data.get('model_id')
     text = data.get('text') or data.get('idiom_text')
+    
+    logger.info(f"Prediction request received - model_id: {model_id}, text: {text[:50]}...")
+    
     if not model_id or not text:
+        logger.warning("Missing model_id or text in request")
         return jsonify({'error': 'model_id dan text diperlukan'}), 400
 
     training = Training.query.get(model_id)
     if not training:
+        logger.error(f"Model with id {model_id} not found")
         return jsonify({'error': 'Model tidak ditemukan'}), 404
+
+    logger.info(f"Using model: {training.config.algorithm if training.config else 'unknown'}, "
+                f"training_id: {training.id}, status: {training.status}")
 
     try:
         if training.config.algorithm == 'IndoBERT-KNN':
-            from app.services.testing_service import predict_single_text_with_idiom
+            logger.info("Calling predict_single_text_with_idiom for IndoBERT-KNN")
             result = predict_single_text_with_idiom(training, text)
+            logger.info(f"Prediction result: {result}")
             return jsonify(result), 200
         elif training.config.algorithm == 'Lexicon-NB':
-            from app.services.testing_service import predict_single_text_with_idiom_lexicon
+            logger.info("Calling predict_single_text_with_idiom_lexicon for Lexicon-NB")
             result = predict_single_text_with_idiom_lexicon(training, text)
+            logger.info(f"Prediction result: {result}")
             return jsonify(result), 200
         else:
-            # fallback (tidak seharusnya terjadi)
-            emotion = predict_single_text(training, text)
-            return jsonify({'emotion': emotion}), 200
+            logger.error(f"Unsupported algorithm: {training.config.algorithm}")
+            return jsonify({'error': 'Algoritma tidak didukung'}), 400
     except Exception as e:
+        logger.exception(f"Error during prediction: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @testing_bp.route('/status/<int:testing_id>', methods=['GET'])
@@ -125,3 +141,29 @@ def get_detail(testing_id):
         'algorithm': config.algorithm if config else None,
     }
     return jsonify(result), 200
+
+@testing_bp.route('/best-model', methods=['GET'])
+def get_best_model():
+    """Mengembalikan model_id dengan akurasi tertinggi"""
+    from app.models.training import Training
+    from app.models.testing import Testing
+    # Cari testing dengan accuracy tertinggi
+    best_test = Testing.query.filter(Testing.status == 'completed', Testing.accuracy.isnot(None)) \
+                            .order_by(Testing.accuracy.desc()).first()
+    if best_test:
+        return jsonify({
+            'model_id': best_test.training_id,
+            'accuracy': best_test.accuracy,
+            'algorithm': best_test.training.config.algorithm if best_test.training and best_test.training.config else None
+        }), 200
+    # Jika tidak ada testing, cari training terbaru yang selesai
+    best_train = Training.query.filter(Training.status == 'completed', Training.metrics.isnot(None)) \
+                               .order_by(Training.completed_at.desc()).first()
+    if best_train:
+        accuracy = best_train.metrics.get('accuracy') if best_train.metrics else None
+        return jsonify({
+            'model_id': best_train.id,
+            'accuracy': accuracy,
+            'algorithm': best_train.config.algorithm if best_train.config else None
+        }), 200
+    return jsonify({'error': 'Belum ada model yang tersedia'}), 404
