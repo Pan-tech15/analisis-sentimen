@@ -11,7 +11,7 @@ from app.services.testing_service import (
     predict_single_text_with_idiom_lexicon
 )
 
-testing_bp = Blueprint('testing', __name__, url_prefix='/api/testing')
+testing_bp = Blueprint('testing', __name__)
 logger = logging.getLogger(__name__)
 
 @testing_bp.route('/start', methods=['POST'])

@@ -38,8 +38,7 @@ def create_app():
     bcrypt.init_app(app)
 
     CORS(app, 
-         resources={r"/api/*": {"origins": ["http://localhost:5500", "http://127.0.0.1:5500"]}},
-         supports_credentials=True,
+         resources={r"/api/*": {"origins": ["http://localhost:5500", "http://127.0.0.1:5500", "http://192.168.1.11:5500"]}, r"/testing/*": {"origins": "*"}}, 
          allow_headers=["Content-Type", "Authorization"],
          methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
@@ -69,7 +68,7 @@ def create_app():
     app.register_blueprint(split_ratio_bp)
 
     from app.routes.testing import testing_bp
-    app.register_blueprint(testing_bp)
+    app.register_blueprint(testing_bp, url_prefix='/testing')
 
     from app.routes.dashboard import dashboard_bp
     app.register_blueprint(dashboard_bp)
