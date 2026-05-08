@@ -140,7 +140,7 @@
             <p class="text-sm text-gray-500 uppercase">Total Datasets</p>
             <p class="text-2xl font-bold text-gray-800">0</p>
             <p class="text-sm text-gray-400 mt-1">
-              Jumlah dataset dalam sistem
+              Number of datasets in the system
             </p>
           </div>
           <div
@@ -161,10 +161,10 @@
 
         <!-- Two Charts Side by Side -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <!-- Bar Chart: Emotion Distribution -->
+          <!-- Bar Chart: Emotion Distribution (urutan intensitas, fear dan sad tertukar) -->
           <div class="bg-white p-4 rounded-xl shadow-md">
             <h2 class="font-semibold text-gray-700 mb-2">
-              Emotion Distribution
+              Emotion Distribution (by Intensity)
             </h2>
             <div class="h-80">
               <canvas id="emotionChart"></canvas>
@@ -240,7 +240,7 @@
           </div>
         </div>
 
-        <!-- Best Model Cards (kedua model di atas 90%) -->
+        <!-- Best Model Cards -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           <!-- Card: IndoBERT-KNN -->
           <div
@@ -255,7 +255,6 @@
               <div>
                 <p class="text-sm text-gray-500">Accuracy</p>
                 <p class="text-xl font-bold text-green-600">-</p>
-                <!-- kosong -->
               </div>
               <div>
                 <p class="text-sm text-gray-500">Precision</p>
@@ -472,43 +471,58 @@
             },
           });
 
-          const allowedEmotions = [
-            "anger",
-            "fear",
-            "happy",
-            "neutral",
-            "sadness",
-            "surprise",
-            "trust",
+          // ========== URUTAN INTENSITAS EMOSI (FEAR & SAD DITUKAR) ==========
+          // Urutan baru: Happy (1), Trust (2), Surprise (3), Neutral (4), Sad (5), Fear (6), Angry (7)
+          const intensityOrder = [
+            "happy", // 1 (terendah)
+            "trust", // 2
+            "surprise", // 3
+            "neutral", // 4
+            "sadness", // 5 - SAD (sedih) sekarang di posisi lebih rendah dari Fear
+            "fear", // 6 - FEAR (takut) di posisi lebih tinggi
+            "anger", // 7 (tertinggi)
           ];
-          const emotionLabels = allowedEmotions;
-          const sentenceCounts = allowedEmotions.map(
-            (emo) => data.emotion_distribution[emo] || 0,
-          );
-          const fixedYMax = 3500;
-          const barColors = {
-            anger: "#ef4444",
-            fear: "#8b5cf6",
-            happy: "#10b981",
-            neutral: "#6b7280",
-            sadness: "#3b82f6",
-            surprise: "#f59e0b",
-            trust: "#ec489a",
+          // Label yang ditampilkan (capitalized)
+          const displayLabels = {
+            happy: "Happy",
+            trust: "Trust",
+            surprise: "Surprise",
+            neutral: "Neutral",
+            sadness: "Sad",
+            fear: "Fear",
+            anger: "Angry",
           };
-          const bgColors = emotionLabels.map((l) => barColors[l]);
+          // Warna konsisten per emosi
+          const emotionColors = {
+            happy: "#10b981", // hijau
+            trust: "#3b82f6", // biru
+            surprise: "#f59e0b", // oranye
+            neutral: "#6b7280", // abu
+            sadness: "#ec489a", // pink (sad)
+            fear: "#8b5cf6", // ungu (fear)
+            anger: "#ef4444", // merah
+          };
 
+          // Susun labels dan data sesuai urutan intensitas yang baru
+          const sortedLabels = intensityOrder.map((key) => displayLabels[key]);
+          const sortedCounts = intensityOrder.map(
+            (key) => data.emotion_distribution[key] || 0,
+          );
+          const sortedColors = intensityOrder.map((key) => emotionColors[key]);
+
+          const fixedYMax = 3500;
           const ctxBar = document
             .getElementById("emotionChart")
             .getContext("2d");
           new Chart(ctxBar, {
             type: "bar",
             data: {
-              labels: emotionLabels,
+              labels: sortedLabels,
               datasets: [
                 {
                   label: "",
-                  data: sentenceCounts,
-                  backgroundColor: bgColors,
+                  data: sortedCounts,
+                  backgroundColor: sortedColors,
                   borderRadius: 8,
                   barPercentage: 0.7,
                   categoryPercentage: 0.85,
@@ -550,7 +564,6 @@
                 x: {
                   ticks: {
                     font: { size: 14, weight: "500" },
-                    textTransform: "capitalize",
                   },
                   grid: { display: false },
                 },
@@ -623,7 +636,7 @@
             }
           } else {
             indobertCard.innerHTML =
-              '<div class="p-4 text-center text-gray-500">Belum ada model IndoBERT-KNN yang terlatih</div>';
+              '<div class="p-4 text-center text-gray-500">No IndoBERT-KNN model trained yet</div>';
           }
 
           if (lexicon) {
@@ -655,7 +668,7 @@
             }
           } else {
             lexiconCard.innerHTML =
-              '<div class="p-4 text-center text-gray-500">Belum ada model Lexicon-NB yang terlatih</div>';
+              '<div class="p-4 text-center text-gray-500">No Lexicon-NB model trained yet</div>';
           }
 
           const comparisonLabels = [
@@ -751,7 +764,6 @@
                         ctx.font = "bold 12px 'Segoe UI'";
                         ctx.fillStyle = "#1f2937";
                         ctx.textAlign = "center";
-                        // Bulatkan ke 1 desimal
                         ctx.fillText(`${value.toFixed(1)}%`, x, y);
                         ctx.restore();
                       });
@@ -771,7 +783,7 @@
           errorDiv.className =
             "bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4";
           errorDiv.innerHTML =
-            "<strong>Error!</strong> Gagal memuat data dashboard. Pastikan server berjalan dan Anda sudah login.";
+            "<strong>Error!</strong> Failed to load dashboard data. Make sure the server is running and you are logged in.";
           main.prepend(errorDiv);
         });
 
@@ -781,7 +793,7 @@
           { headers: { Authorization: `Bearer ${token}` } },
         )
           .then((response) => {
-            if (!response.ok) throw new Error("Gagal mengambil data");
+            if (!response.ok) throw new Error("Failed to fetch data");
             return response.json();
           })
           .then((data) => {
@@ -902,7 +914,7 @@
             if (trainTestChart) trainTestChart.destroy();
             ctx.font = "16px 'Segoe UI'";
             ctx.fillStyle = "#ef4444";
-            ctx.fillText("Tidak ada data testing untuk model ini", 50, 150);
+            ctx.fillText("No testing data for this model", 50, 150);
           });
       }
 
