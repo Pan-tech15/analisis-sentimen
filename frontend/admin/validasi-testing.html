@@ -354,7 +354,7 @@
             return;
           }
           try {
-            const res = await fetch(`${API_BASE}/api/testing/${testingId}`);
+            const res = await fetch(`${API_BASE}/testing/${testingId}`);
             if (!res.ok) throw new Error("Gagal memuat data testing");
             testingData = await res.json();
 

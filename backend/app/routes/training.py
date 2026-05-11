@@ -10,7 +10,7 @@ from app.services.indobert_knn import train_indobert_knn
 from app.services.lexicon_nb import train_lexicon_nb
 from app.models.preprocessing import Preprocessing
 
-training_bp = Blueprint('training', __name__, url_prefix='/api/training')
+training_bp = Blueprint('training', __name__)
 
 UPLOAD_FOLDER = 'data/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)

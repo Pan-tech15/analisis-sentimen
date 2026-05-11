@@ -516,7 +516,11 @@ def predict_single_text_with_idiom(training, text):
     logger.info(f"[IndoBERT-KNN] Cleaned text: {cleaned[:100]}...")
     
     # Load artifacts
-    artifacts = joblib.load(training.model_path)
+    import torch
+    try:
+        artifacts = torch.load(training.model_path, map_location=torch.device('cpu'), weights_only=False)
+    except Exception:
+        artifacts = joblib.load(training.model_path)
     logger.info("[IndoBERT-KNN] Artifacts loaded successfully")
     
     # Prediksi
@@ -548,7 +552,11 @@ def predict_single_text_with_idiom_lexicon(training, text):
     cleaned = sastrawi_preprocess(text)
     logger.info(f"[Lexicon-NB] Cleaned text: {cleaned[:100]}...")
     
-    artifacts = joblib.load(training.model_path)
+    import torch
+    try:
+        artifacts = torch.load(training.model_path, map_location=torch.device('cpu'), weights_only=False)
+    except Exception:
+        artifacts = joblib.load(training.model_path)
     logger.info("[Lexicon-NB] Artifacts loaded successfully")
     
     emotion = predict_lexicon([cleaned], artifacts)[0]

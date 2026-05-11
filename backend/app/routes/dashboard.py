@@ -124,14 +124,19 @@ def get_dashboard_stats():
 @dashboard_bp.route('/train-test-comparison', methods=['GET'])
 @jwt_required()
 def get_train_test_comparison():
+    import logging  # <-- TAMBAHAN LOG
+    logger = logging.getLogger(__name__)  # <-- TAMBAHAN LOG
+
     algorithm = request.args.get('algorithm', 'IndoBERT-KNN')
-    
+    logger.info(f"Train-test comparison requested for algorithm: {algorithm}")  # <-- TAMBAHAN LOG
+
     trainings = db.session.query(Training).join(ModelConfig).filter(
         ModelConfig.algorithm == algorithm,
         Training.status == 'completed',
         Training.metrics.isnot(None)
     ).all()
-    
+    logger.info(f"Found {len(trainings)} completed trainings for {algorithm}")  # <-- TAMBAHAN LOG
+
     best_training = None
     max_acc = -1
     for t in trainings:
@@ -139,18 +144,23 @@ def get_train_test_comparison():
         if acc is not None and acc > max_acc:
             max_acc = acc
             best_training = t
-    
+            logger.info(f"New best training id={t.id}, accuracy={acc}")  # <-- TAMBAHAN LOG
+
     if not best_training:
+        logger.warning(f"No completed training found for {algorithm}")  # <-- TAMBAHAN LOG
         return jsonify({'error': f'Tidak ada model {algorithm} yang selesai'}), 404
-    
+
     testing_record = Testing.query.filter_by(
         training_id=best_training.id,
         status='completed'
     ).order_by(Testing.tested_at.desc()).first()
-    
+    logger.info(f"Testing record found: {testing_record is not None}, id={testing_record.id if testing_record else None}")  # <-- TAMBAHAN LOG
+
     train_metrics = best_training.metrics or {}
     test_metrics = testing_record.to_dict() if testing_record else {}
-    
+    logger.info(f"Training metrics: {train_metrics}")  # <-- TAMBAHAN LOG
+    logger.info(f"Testing metrics: {test_metrics}")  # <-- TAMBAHAN LOG
+
     return jsonify({
         'algorithm': algorithm,
         'training': {

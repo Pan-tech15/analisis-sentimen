@@ -38,10 +38,9 @@ def create_app():
     bcrypt.init_app(app)
 
     CORS(app, 
-         resources={r"/api/*": {"origins": ["http://localhost:5500", "http://127.0.0.1:5500", "http://192.168.1.11:5500"]}, r"/testing/*": {"origins": "*"}}, 
-         allow_headers=["Content-Type", "Authorization"],
-         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
-
+        origins=["http://localhost:5500", "http://127.0.0.1:5500", "http://192.168.1.11:5500"],
+        allow_headers=["Content-Type", "Authorization"],
+        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
     # Import models
     from app.models import User, Dataset, Idiom, Preprocessing, ModelConfig, Training, Testing
 
@@ -62,7 +61,7 @@ def create_app():
     app.register_blueprint(processing_bp)
 
     from app.routes.training import training_bp
-    app.register_blueprint(training_bp)
+    app.register_blueprint(training_bp, url_prefix='/training')
 
     from app.routes.split_ratio import split_ratio_bp
     app.register_blueprint(split_ratio_bp)
