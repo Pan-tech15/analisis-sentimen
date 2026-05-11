@@ -464,10 +464,10 @@
         async function fetchData() {
           const selectedAlgo = algoSelect.value;
           try {
-            const trainRes = await fetch(`${API_BASE}/api/training/history`);
+            const trainRes = await fetch(`${API_BASE}/training/history`);
             if (!trainRes.ok) throw new Error("Gagal mengambil data training");
             let trainings = await trainRes.json();
-            const testRes = await fetch(`${API_BASE}/api/testing/history`);
+            const testRes = await fetch(`${API_BASE}/testing/history`);
             if (!testRes.ok) throw new Error("Gagal mengambil data testing");
             let tests = await testRes.json();
             trainings = trainings.filter(
@@ -727,12 +727,25 @@
 
         // ========== COMPARISON TABLE TRANSPOSED (METRICS AS ROWS) ==========
         function updateComparisonAndChart() {
-          const bestTraining = tables.training.data
-            .filter((i) => i.metrics?.accuracy != null)
-            .sort((a, b) => b.metrics.accuracy - a.metrics.accuracy)[0];
+          // 1. Cari testing terbaik (akurasi tertinggi)
           const bestTesting = tables.testing.data
             .filter((i) => i.metrics?.accuracy != null)
             .sort((a, b) => b.metrics.accuracy - a.metrics.accuracy)[0];
+
+          let bestTraining = null;
+          if (bestTesting && bestTesting.training_id) {
+            // 2. Cari training yang memiliki id = training_id dari testing terbaik
+            bestTraining = tables.training.data.find(
+              (t) => t.id === bestTesting.training_id,
+            );
+          }
+
+          // 3. Fallback: jika tidak ditemukan (misal data korup), ambil training terbaik sendiri
+          if (!bestTraining) {
+            bestTraining = tables.training.data
+              .filter((i) => i.metrics?.accuracy != null)
+              .sort((a, b) => b.metrics.accuracy - a.metrics.accuracy)[0];
+          }
 
           // Build transposed table
           const thead = document.getElementById("comparisonTableHead");

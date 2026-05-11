@@ -526,7 +526,7 @@
         // ------------------- MODEL LOADING -------------------
         async function loadTrainedModels() {
           try {
-            const res = await apiFetch("/api/training/history");
+            const res = await apiFetch("/training/history");
             if (!res) return;
             const history = await res.json();
             modelsList = history
@@ -610,7 +610,7 @@
         // ------------------- TEST RESULTS -------------------
         async function loadTestResults() {
           try {
-            const res = await apiFetch("/api/testing/history");
+            const res = await apiFetch("/testing/history");
             if (!res) return;
             testResults = await res.json();
             testResults.sort(
@@ -773,8 +773,8 @@
 
           try {
             const endpoint = isInputText
-              ? "/api/testing/predict"
-              : "/api/testing/start";
+              ? "/testing/predict"
+              : "/testing/start";
             const res = await apiFetch(endpoint, {
               method: "POST",
               body: JSON.stringify(requestBody),
@@ -805,9 +805,7 @@
               currentTestId = testId;
               if (pollingInterval) clearInterval(pollingInterval);
               pollingInterval = setInterval(async () => {
-                const statusRes = await apiFetch(
-                  `/api/testing/status/${testId}`,
-                );
+                const statusRes = await apiFetch(`/testing/status/${testId}`);
                 if (!statusRes) return;
                 const data = await statusRes.json();
                 testStatus.innerText =

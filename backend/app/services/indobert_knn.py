@@ -606,6 +606,8 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             log(f"Evaluasi selesai. Akurasi: {metrics['accuracy']}, F1: {metrics['f1_score']}", training_id)
 
             # ========== 8. Simpan model ==========
+
+            ft_model = ft_model.to('cpu')
             model_filename = f"indobert_knn_{training_id}.pkl"
             model_path = os.path.join(MODEL_FOLDER, model_filename)
             artifacts = {

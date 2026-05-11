@@ -872,7 +872,7 @@
             return;
           }
           try {
-            const res = await fetch(`${API_BASE}/api/training/${trainingId}`);
+            const res = await fetch(`${API_BASE}/training/${trainingId}`);
             if (!res.ok) throw new Error("Gagal memuat data training");
             trainingData = await res.json();
             document.getElementById("datasetName").textContent =

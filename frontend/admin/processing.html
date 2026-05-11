@@ -3404,7 +3404,7 @@
 
       async function loadTrainingHistory() {
         try {
-          const res = await fetch(`${API_BASE}/api/training/history`, {
+          const res = await fetch(`${API_BASE}/training/history`, {
             headers: getHeaders(),
           });
           if (!res.ok) throw new Error("Failed to load history");
@@ -3557,7 +3557,7 @@
             const id = btn.dataset.id;
             const t = trainingHistory.find((x) => x.id == id);
             if (t && t.model_path) {
-              window.open(`${API_BASE}/api/training/${id}/download`, "_blank");
+              window.open(`${API_BASE}/training/${id}/download`, "_blank");
             }
           });
         });
@@ -3578,7 +3578,7 @@
             this.innerHTML = '<i class="fas fa-spinner fa-pulse"></i>';
             // Fetch detail training
             try {
-              const res = await fetch(`${API_BASE}/api/training/${id}`, {
+              const res = await fetch(`${API_BASE}/training/${id}`, {
                 headers: getHeaders(),
               });
               if (!res.ok) throw new Error("Gagal mengambil detail");
@@ -3641,7 +3641,7 @@
               return;
             const id = btn.dataset.id;
             try {
-              const res = await fetch(`${API_BASE}/api/training/${id}`, {
+              const res = await fetch(`${API_BASE}/training/${id}`, {
                 method: "DELETE",
                 headers: getHeaders(),
               });
@@ -3884,7 +3884,7 @@
         const poll = async () => {
           try {
             const res = await fetch(
-              `${API_BASE}/api/training/status/${trainingId}`,
+              `${API_BASE}/training/status/${trainingId}`,
               { headers: getHeaders() },
             );
             if (!res.ok) throw new Error("Gagal mengambil status");
@@ -3912,7 +3912,7 @@
                 "Selesai!";
               try {
                 const detailRes = await fetch(
-                  `${API_BASE}/api/training/${trainingId}`,
+                  `${API_BASE}/training/${trainingId}`,
                   { headers: getHeaders() },
                 );
                 if (detailRes.ok) {
@@ -4068,7 +4068,7 @@
           }
 
           // Jalankan training
-          const trainRes = await fetch(`${API_BASE}/api/training/start`, {
+          const trainRes = await fetch(`${API_BASE}/training/start`, {
             method: "POST",
             headers: getHeaders(),
             body: JSON.stringify({
@@ -4201,7 +4201,7 @@
             const configId = configData.id;
 
             // Jalankan training
-            const trainRes = await fetch(`${API_BASE}/api/training/start`, {
+            const trainRes = await fetch(`${API_BASE}/training/start`, {
               method: "POST",
               headers: getHeaders(),
               body: JSON.stringify({
@@ -4409,7 +4409,7 @@
           const poll = async () => {
             try {
               const res = await fetch(
-                `${API_BASE}/api/training/status/${trainingId}`,
+                `${API_BASE}/training/status/${trainingId}`,
                 {
                   headers: getHeaders(),
                 },
