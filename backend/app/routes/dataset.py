@@ -277,6 +277,7 @@ def preview_dataset(dataset_id):
     return jsonify({
         'dataset_id': dataset_id,
         'filename': dataset.filename,
+        'dataset_name': dataset.dataset_name,
         'total_rows': total_rows,
         'page': page,
         'per_page': per_page,

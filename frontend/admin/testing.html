@@ -66,7 +66,7 @@
           class="p-4 border-b bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-b-lg"
         >
           <span class="font-bold text-2xl">IdiomSense</span>
-          <p class="text-sm text-blue-100">Admin Panel</p>
+          <p class="text-x1 text-blue-100">Admin Panel</p>
         </div>
         <nav class="p-4">
           <ul class="space-y-1">
@@ -89,7 +89,7 @@
                 </div>
                 <i
                   id="dataCollectionIcon"
-                  class="fas fa-chevron-down text-sm transition-transform"
+                  class="fas fa-chevron-down text-x1 transition-transform"
                 ></i>
               </button>
               <ul id="dataCollectionMenu" class="ml-6 mt-1 space-y-1 hidden">
@@ -167,7 +167,7 @@
 
           <!-- Select Algorithm (tombol) -->
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2"
+            <label class="block text-x1 font-medium text-gray-700 mb-2"
               >Select Algorithm</label
             >
             <div class="flex flex-wrap gap-3">
@@ -191,7 +191,7 @@
 
           <!-- Select Trained Model -->
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1"
+            <label class="block text-x1 font-medium text-gray-700 mb-1"
               >Select Trained Model</label
             >
             <div class="search-dropdown" id="modelDropdown">
@@ -208,7 +208,7 @@
 
           <!-- Data source (Checkbox) -->
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2"
+            <label class="block text-x1 font-medium text-gray-700 mb-2"
               >Data source</label
             >
             <div class="flex gap-6">
@@ -234,7 +234,7 @@
 
           <!-- Bagian Upload Dataset (tanpa dropdown) -->
           <div id="uploadDatasetSection" class="mb-4">
-            <p class="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
+            <p class="text-x1 text-gray-600 bg-blue-50 p-3 rounded-lg">
               <i class="fas fa-info-circle mr-1 text-blue-500"></i>
               The test dataset will be automatically taken from the hold‑out set
               of the selected model (according to the training data split
@@ -246,7 +246,7 @@
           <div id="inputTextSection" class="hidden mb-4">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1"
+                <label class="block text-x1 font-medium text-gray-700 mb-1"
                   >Sentence</label
                 >
                 <textarea
@@ -256,10 +256,10 @@
                   class="w-full border border-gray-300 rounded-lg p-2"
                   placeholder="Enter a sentence..."
                 ></textarea>
-                <p class="text-xs text-gray-500 mt-1">Maks 200 karakter</p>
+                <p class="text-x1 text-gray-500 mt-1">Maks 200 karakter</p>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1"
+                <label class="block text-x1 font-medium text-gray-700 mb-1"
                   >Emotion Detected</label
                 >
                 <input
@@ -271,7 +271,7 @@
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1"
+                <label class="block text-x1 font-medium text-gray-700 mb-1"
                   >Idiom Detected</label
                 >
                 <input
@@ -283,7 +283,7 @@
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1"
+                <label class="block text-x1 font-medium text-gray-700 mb-1"
                   >Meaning of Idioms</label
                 >
                 <input
@@ -306,7 +306,7 @@
 
           <!-- Status -->
           <div class="mt-4 p-3 bg-gray-50 rounded-lg">
-            <p class="text-sm text-gray-600">
+            <p class="text-x1 text-gray-600">
               Status :
               <span id="testStatus" class="font-medium">Not Started</span>
             </p>
@@ -318,7 +318,7 @@
                   style="width: 0%"
                 ></div>
               </div>
-              <p id="progressPercent" class="text-xs text-gray-500 mt-1">0%</p>
+              <p id="progressPercent" class="text-x1 text-gray-500 mt-1">0%</p>
             </div>
           </div>
         </div>
@@ -333,43 +333,43 @@
             class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 mb-4 p-3 bg-gray-50 rounded-lg"
           >
             <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1"
+              <label class="block text-x1 font-medium text-gray-600 mb-1"
                 >Search text</label
               >
               <input
                 type="text"
                 id="testSearchInput"
                 placeholder="Dataset, Model..."
-                class="w-full border rounded p-1.5 text-sm"
+                class="w-full border rounded p-1.5 text-x1"
               />
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1"
+              <label class="block text-x1 font-medium text-gray-600 mb-1"
                 >From date</label
               >
               <input
                 type="date"
                 id="testDateFromInput"
-                class="w-full border rounded p-1.5 text-sm"
+                class="w-full border rounded p-1.5 text-x1"
               />
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1"
+              <label class="block text-x1 font-medium text-gray-600 mb-1"
                 >To date</label
               >
               <input
                 type="date"
                 id="testDateToInput"
-                class="w-full border rounded p-1.5 text-sm"
+                class="w-full border rounded p-1.5 text-x1"
               />
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1"
+              <label class="block text-x1 font-medium text-gray-600 mb-1"
                 >Algorithm</label
               >
               <select
                 id="testAlgorithmSelect"
-                class="w-full border rounded p-1.5 text-sm"
+                class="w-full border rounded p-1.5 text-x1"
               >
                 <option value="">All</option>
                 <option value="IndoBERT-KNN">IndoBERT-KNN</option>
@@ -377,7 +377,7 @@
               </select>
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1"
+              <label class="block text-x1 font-medium text-gray-600 mb-1"
                 >Min Accuracy (%)</label
               >
               <input
@@ -386,14 +386,14 @@
                 placeholder="0"
                 min="0"
                 max="100"
-                class="w-full border rounded p-1.5 text-sm"
+                class="w-full border rounded p-1.5 text-x1"
               />
             </div>
             <!-- Tombol Apply di kolom terakhir, rata bawah agar sejajar dengan input -->
             <div class="flex items-end">
               <button
                 id="applyTestFilterBtn"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-sm w-full"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-x1 w-full"
               >
                 <i class="fas fa-filter mr-1"></i>Apply Filter
               </button>
@@ -433,6 +433,9 @@
         let pollingInterval = null;
         let currentTestId = null;
         let modelsList = [];
+
+        let modelsLoaded = false;
+        let testsLoaded = false;
 
         async function apiFetch(endpoint, options = {}) {
           const headers = {
@@ -534,15 +537,18 @@
               .map((item) => ({
                 id: item.id,
                 name:
+                  item.dataset_name ||
                   item.dataset_filename ||
                   item.config_name ||
                   `Training #${item.id}`,
                 algorithm: item.algorithm,
                 accuracy: item.metrics?.accuracy || 0,
-                displayText: `${item.dataset_filename || item.config_name || `Training #${item.id}`} (${item.algorithm}) - Acc: ${item.metrics?.accuracy ? item.metrics.accuracy.toFixed(3) : "N/A"}`,
+                displayText: `${item.config_name || item.dataset_filename || `Training #${item.id}`} (Acc: ${item.metrics?.accuracy ? (item.metrics.accuracy * 100).toFixed(1) : "N/A"}%)`,
                 created_at: item.created_at,
               }));
             modelsList.sort((a, b) => b.accuracy - a.accuracy);
+            modelsLoaded = true;
+            tryRenderBoth();
             autoSelectBestModel();
             populateModelDropdown(
               document.getElementById("modelSearchInput").value,
@@ -551,6 +557,13 @@
             console.error(err);
             modelsList = [];
             populateModelDropdown("");
+          }
+        }
+
+        function tryRenderBoth() {
+          if (modelsLoaded && testsLoaded) {
+            renderTestTable();
+            renderTestPagination();
           }
         }
 
@@ -617,13 +630,13 @@
               (a, b) => new Date(b.tested_at) - new Date(a.tested_at),
             );
             currentPage = 1;
-            renderTestTable();
-            renderTestPagination();
+            testsLoaded = true;
+            tryRenderBoth();
           } catch (err) {
             console.error(err);
             testResults = [];
-            renderTestTable();
-            renderTestPagination();
+            testsLoaded = true;
+            tryRenderBoth();
           }
         }
         let testFilter = {
@@ -687,11 +700,20 @@
           }
           pageData.forEach((item) => {
             const row = tbody.insertRow();
-            const datasetInfo =
-              item.dataset_filename || item.training_id
-                ? `Hold‑out set (Training #${item.training_id})`
-                : "-";
-            row.insertCell(0).innerHTML = datasetInfo;
+            let datasetDisplay = "-";
+            if (item.training_id) {
+              const training = modelsList.find(
+                (m) => m.id === item.training_id,
+              );
+              if (training) {
+                datasetDisplay = training.name; // sudah berisi dataset_name atau fallback
+              } else {
+                datasetDisplay = `Hold‑out set (Training #${item.training_id})`;
+              }
+            } else if (item.dataset_filename) {
+              datasetDisplay = item.dataset_filename;
+            }
+            row.insertCell(0).innerHTML = datasetDisplay;
             row.insertCell(1).innerHTML = item.algorithm || "-";
             row.insertCell(2).innerHTML =
               item.accuracy != null ? item.accuracy.toFixed(3) : "-";
