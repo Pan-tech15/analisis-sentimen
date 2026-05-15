@@ -1026,8 +1026,11 @@
             trainingData = await res.json();
             document.getElementById("datasetName").textContent =
               trainingData.dataset_name || "-";
-            document.getElementById("modelName").textContent =
-              trainingData.algorithm || "-";
+            let modelDisplay = trainingData.algorithm || "-";
+            if (trainingData.config_name) {
+              modelDisplay = `${trainingData.config_name} (${trainingData.algorithm})`;
+            }
+            document.getElementById("modelName").textContent = modelDisplay;
 
             let params = trainingData.params;
             if (!params && trainingData.model_config_id) {

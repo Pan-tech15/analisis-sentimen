@@ -476,6 +476,18 @@
             tests = tests.filter(
               (t) => t.status === "completed" && t.algorithm === selectedAlgo,
             );
+
+            const trainingNameMap = {};
+            trainings.forEach((t) => {
+              trainingNameMap[t.id] = t.dataset_name || t.dataset_filename;
+            });
+
+            // Tambahkan dataset_name ke setiap testing
+            tests = tests.map((item) => ({
+              ...item,
+              dataset_name:
+                trainingNameMap[item.training_id] || item.dataset_filename,
+            }));
             tables.training.data = trainings.map(mapTrainingToTable);
             tables.testing.data = tests.map(mapTestingToTable);
             filterTableData("training");
@@ -493,7 +505,7 @@
           const m = item.metrics || {};
           return {
             id: item.id,
-            dataset_filename: item.dataset_filename,
+            dataset_filename: item.dataset_name || item.dataset_filename,
             algorithm: item.algorithm,
             created_at: item.created_at,
             completed_at: item.completed_at,
@@ -520,7 +532,7 @@
           const m = item.metrics || {};
           return {
             id: item.id,
-            dataset_filename: item.dataset_filename,
+            dataset_filename: item.dataset_name || item.dataset_filename,
             algorithm: item.algorithm,
             created_at: item.tested_at,
             completed_at: item.tested_at,
