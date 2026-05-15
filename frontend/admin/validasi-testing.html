@@ -40,7 +40,7 @@
           class="p-4 border-b bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-b-lg"
         >
           <span class="font-bold text-2xl">IdiomSense</span>
-          <p class="text-sm text-blue-100">Admin Panel</p>
+          <p class="text-x1 text-blue-100">Admin Panel</p>
         </div>
         <nav class="p-4">
           <ul class="space-y-1">
@@ -63,7 +63,7 @@
                 </div>
                 <i
                   id="dataCollectionIcon"
-                  class="fas fa-chevron-down text-sm transition-transform"
+                  class="fas fa-chevron-down text-x1 transition-transform"
                 ></i>
               </button>
               <ul id="dataCollectionMenu" class="ml-6 mt-1 space-y-1 hidden">
@@ -140,11 +140,11 @@
         <div class="bg-white p-6 rounded-xl shadow-md mb-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p class="text-sm text-gray-500">Dataset Name</p>
+              <p class="text-x1 text-gray-500">Dataset Name</p>
               <p id="datasetName" class="font-semibold text-gray-800">-</p>
             </div>
             <div>
-              <p class="text-sm text-gray-500">Model</p>
+              <p class="text-x1 text-gray-500">Model</p>
               <p id="modelName" class="font-semibold text-gray-800">-</p>
             </div>
           </div>
@@ -155,7 +155,7 @@
           <h2 class="font-semibold text-gray-700 mb-2">
             Confusion Matrix (Emotion) - Test Data
           </h2>
-          <p class="text-xs text-gray-500 mb-4">
+          <p class="text-x1 text-gray-500 mb-4">
             Actual vs Prediction - Hover on a cell to see details
           </p>
           <div class="flex justify-center overflow-x-auto">
@@ -172,7 +172,7 @@
               ></canvas>
             </div>
           </div>
-          <div class="flex justify-center mt-6 text-sm text-gray-500 gap-4">
+          <div class="flex justify-center mt-6 text-x1 text-gray-500 gap-4">
             <div class="flex items-center">
               <div
                 class="w-5 h-5 rounded"
@@ -506,10 +506,28 @@
             if (!res.ok) throw new Error("Gagal memuat data testing");
             testingData = await res.json();
 
-            document.getElementById("datasetName").textContent =
-              testingData.dataset_filename || "-";
-            document.getElementById("modelName").textContent =
-              testingData.algorithm || "-";
+            let datasetDisplay = testingData.dataset_filename || "-";
+            let modelDisplay = testingData.algorithm || "-";
+            if (testingData.training_id) {
+              try {
+                const trainRes = await fetch(
+                  `${API_BASE}/training/${testingData.training_id}`,
+                );
+                if (trainRes.ok) {
+                  const trainData = await trainRes.json();
+                  if (trainData.dataset_name) {
+                    datasetDisplay = trainData.dataset_name;
+                  }
+                  if (trainData.config_name) {
+                    modelDisplay = `${trainData.config_name} (${testingData.algorithm || trainData.algorithm})`;
+                  }
+                }
+              } catch (e) {
+                console.warn("Gagal mengambil detail training:", e);
+              }
+            }
+            document.getElementById("datasetName").textContent = datasetDisplay;
+            document.getElementById("modelName").textContent = modelDisplay;
 
             // Data metrik langsung di root (backend baru)
             matrix =

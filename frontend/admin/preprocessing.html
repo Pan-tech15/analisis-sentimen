@@ -317,7 +317,11 @@
               datasets.forEach((ds) => {
                 const option = document.createElement("option");
                 option.value = ds.id;
-                option.textContent = `${ds.filename} (${ds.rows} rows) - Upload: ${new Date(ds.uploaded_at).toLocaleDateString()}`;
+                // Tampilkan dataset_name jika ada, fallback ke original_filename, lalu filename
+                const displayName =
+                  ds.dataset_name || ds.original_filename || ds.filename;
+                const rowCount = ds.row_count || ds.rows || 0;
+                option.textContent = `${displayName} (${rowCount} rows) - Upload: ${new Date(ds.uploaded_at).toLocaleDateString()}`;
                 datasetSelect.appendChild(option);
               });
             }
@@ -343,7 +347,7 @@
             console.error(error);
             allHistory = [];
             applyFilter();
-            historyTbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-500">Failed to load history.  </td></tr>`;
+            historyTbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-500">Failed to load history.   </td></tr>`;
           }
         }
 
@@ -397,7 +401,7 @@
           const pageData = filteredHistory.slice(start, end);
 
           if (pageData.length === 0) {
-            historyTbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500">No data available. Using `;
+            historyTbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500">No data available.</td></tr>`;
             return;
           }
 

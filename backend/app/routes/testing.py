@@ -137,6 +137,7 @@ def get_detail(testing_id):
         'class_labels': class_labels,
         'roc_auc': roc_auc,   # ← tambahkan ini
         'tested_at': testing.tested_at.isoformat() if testing.tested_at else None,
+        'dataset_name': training.dataset.dataset_name if training.dataset else None, 
         'dataset_filename': training.dataset_filename,
         'algorithm': config.algorithm if config else None,
     }

@@ -42,7 +42,10 @@ def start_preprocessing():
 
     # Buat record preprocessing dengan status pending
     existing_count = Preprocessing.query.filter_by(dataset_id=dataset_id).count()
-    default_name = f"Preprocess #{existing_count + 1}"
+    if dataset.dataset_name:
+        default_name = f"{dataset.dataset_name}"
+    else:
+        default_name = f"Preprocess #{existing_count + 1}"
 
     preprocessing = Preprocessing(
         dataset_id=dataset_id,
