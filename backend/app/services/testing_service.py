@@ -397,6 +397,14 @@ def run_testing(app, test_id):
             test.progress = 100
             db.session.commit()
 
+             # ========== UPDATE BOBOT ENSEMBLE OTOMATIS ==========
+            try:
+                from app.services.ensemble_weight_updater import update_ensemble_weights
+                update_ensemble_weights()
+                logger.info(f"Bobot ensemble berhasil diperbarui setelah testing {test_id}")
+            except Exception as e:
+                logger.warning(f"Gagal memperbarui bobot ensemble: {e}")
+
         except Exception as e:
             test.status = 'failed'
             test.progress = 0

@@ -168,3 +168,59 @@ def get_best_model():
             'algorithm': best_train.config.algorithm if best_train.config else None
         }), 200
     return jsonify({'error': 'Belum ada model yang tersedia'}), 404
+
+@testing_bp.route('/ensemble-predict', methods=['POST'])
+def ensemble_predict():
+    """Prediksi menggunakan ensemble (IndoBERT-KNN + Lexicon-NB) dengan bobot per kelas"""
+    from app.services.ensemble import EnsembleService
+    from app.models.training import Training
+    from app.models.model_config import ModelConfig
+    
+    data = request.get_json()
+    text = data.get('text')
+    if not text:
+        return jsonify({'error': 'Text required'}), 400
+    
+    def get_best_model_by_algorithm(algorithm):
+        """Mencari training dengan akurasi tertinggi untuk algoritma tertentu."""
+        # Join Training dengan ModelConfig, filter berdasarkan algorithm
+        trainings = Training.query.join(ModelConfig).filter(
+            ModelConfig.algorithm == algorithm,
+            Training.status == 'completed'
+        ).all()
+        best = None
+        best_acc = -1.0
+        for t in trainings:
+            acc = t.metrics.get('accuracy', 0) if t.metrics else 0
+            if acc > best_acc:
+                best_acc = acc
+                best = t
+        return best
+    
+    model_a = get_best_model_by_algorithm('IndoBERT-KNN')
+    model_b = get_best_model_by_algorithm('Lexicon-NB')
+    
+    if not model_a or not model_b:
+        return jsonify({'error': 'Model belum tersedia. Silakan latih kedua model terlebih dahulu.'}), 404
+    
+    # Inisialisasi ensemble service
+    ensemble = EnsembleService(model_a, model_b)
+    
+    # Prediksi
+    emotion, confidence, scores = ensemble.predict(text)
+    
+    # Cek idiom (gunakan fungsi yang sudah ada di testing_service)
+    from app.services.testing_service import check_idiom_in_text
+    idiom_result = check_idiom_in_text(text)
+    has_idiom = idiom_result is not None
+    idiom_text = idiom_result[0] if has_idiom else None
+    idiom_meaning = idiom_result[1] if has_idiom else None
+    
+    return jsonify({
+        'has_idiom': has_idiom,
+        'emotion': emotion,
+        'confidence': confidence,
+        'scores': scores,
+        'idiom_text': idiom_text,
+        'idiom_meaning': idiom_meaning
+    })
