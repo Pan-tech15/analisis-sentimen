@@ -299,7 +299,74 @@
             </div>
           </div>
         </div>
-
+        <!-- Metrics Definitions -->
+        <div class="mt-8 p-5 bg-gray-50 rounded-xl border border-gray-200">
+          <h3
+            class="font-semibold text-gray-800 text-lg mb-3 flex items-center"
+          >
+            <i class="fas fa-info-circle text-blue-500 mr-2"></i> Metric
+            Definitions
+          </h3>
+          <div class="text-sm text-gray-600 space-y-3">
+            <p>
+              <strong class="text-blue-600">Weighted Metrics</strong> – Averaged
+              by the number of true instances per class (support). Suitable for
+              imbalanced datasets.
+            </p>
+            <ul class="list-disc pl-6 space-y-1">
+              <li>
+                <strong>Accuracy</strong> – Overall correctness = (TP + TN) /
+                (TP + TN + FP + FN)
+              </li>
+              <li>
+                <strong>Precision</strong> – How many selected items are
+                relevant = TP / (TP + FP)
+              </li>
+              <li>
+                <strong>Recall</strong> – How many relevant items are selected =
+                TP / (TP + FN)
+              </li>
+              <li>
+                <strong>F1-Score</strong> – Harmonic mean of precision and
+                recall = 2 × (Precision × Recall) / (Precision + Recall)
+              </li>
+            </ul>
+            <p>
+              <strong class="text-purple-600">Macro Metrics</strong> –
+              Unweighted average across classes, giving equal weight to each
+              class.
+            </p>
+            <ul class="list-disc pl-6 space-y-1">
+              <li>
+                <strong>Macro Accuracy</strong> – Average of class-wise
+                accuracies (balanced accuracy).
+              </li>
+              <li>
+                <strong>Macro Precision/Recall/F1</strong> – Arithmetic mean of
+                per-class scores.
+              </li>
+            </ul>
+            <p><strong>Additional Metrics</strong></p>
+            <ul class="list-disc pl-6 space-y-1">
+              <li>
+                <strong>MCC (Matthews Correlation Coefficient)</strong> – A
+                balanced measure considering all four categories: (TP×TN -
+                FP×FN) / √[(TP+FP)(TP+FN)(TN+FP)(TN+FN)]. Range [-1,1] where 1 =
+                perfect, 0 = random, -1 = total disagreement.
+              </li>
+              <li>
+                <strong>ROC-AUC (Weighted)</strong> – Area Under the Receiver
+                Operating Characteristic curve. Measures class separability.
+                Higher is better (1.0 = perfect). Weighted average across
+                classes.
+              </li>
+            </ul>
+            <p class="text-xs text-gray-500 mt-2">
+              Notation: TP = True Positive, TN = True Negative, FP = False
+              Positive, FN = False Negative.
+            </p>
+          </div>
+        </div>
         <!-- Tombol kembali -->
         <div class="mt-6 flex justify-end">
           <a
