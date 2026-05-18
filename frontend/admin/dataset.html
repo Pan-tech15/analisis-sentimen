@@ -10,18 +10,8 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-      .chart-container {
-        min-height: 400px;
-        width: 100%;
-        position: relative;
-        margin-bottom: 2rem;
-      }
-      .bar-chart-container {
-        min-height: 400px;
-        width: 100%;
-        position: relative;
-      }
       .editable-name {
         cursor: pointer;
         border-bottom: 1px dashed #3b82f6;
@@ -221,7 +211,81 @@
               Export All
             </button>
           </div>
-
+          <!-- Informasi Kolom Dataset -->
+          <div
+            class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100 shadow-sm"
+          >
+            <div class="flex items-center gap-2 mb-3">
+              <i class="fas fa-table-list text-blue-600 text-lg"></i>
+              <h3 class="font-semibold text-gray-800">
+                Dataset Column Description
+              </h3>
+              <i
+                class="fas fa-question-circle text-gray-400 text-sm cursor-help"
+                title="Penjelasan setiap kolom pada file CSV"
+              ></i>
+            </div>
+            <div
+              class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm"
+            >
+              <div class="flex items-start gap-2">
+                <span
+                  class="font-mono bg-white px-2 py-0.5 rounded border border-gray-300 text-blue-700"
+                  >id</span
+                >
+                <span class="text-gray-600"
+                  >Unique integer ID for each sentence
+                </span>
+              </div>
+              <div class="flex items-start gap-2">
+                <span
+                  class="font-mono bg-white px-2 py-0.5 rounded border border-gray-300 text-blue-700"
+                  >kalimat</span
+                >
+                <span class="text-gray-600">Sentence text</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <span
+                  class="font-mono bg-white px-2 py-0.5 rounded border border-gray-300 text-blue-700"
+                  >has_idiom</span
+                >
+                <span class="text-gray-600"
+                  >1 = the sentence has an idiom, 0 = the sentence doesn't have
+                  an idiom</span
+                >
+              </div>
+              <div class="flex items-start gap-2">
+                <span
+                  class="font-mono bg-white px-2 py-0.5 rounded border border-gray-300 text-blue-700"
+                  >idiom_text</span
+                >
+                <span class="text-gray-600"
+                  >Idiom phrase contained in the sentence</span
+                >
+              </div>
+              <div class="flex items-start gap-2">
+                <span
+                  class="font-mono bg-white px-2 py-0.5 rounded border border-gray-300 text-blue-700"
+                  >emotion</span
+                >
+                <span class="text-gray-600"
+                  >Emotion that reflects the idiomatic sentence (happy, angry,
+                  sad, fear, trust, surprise, neutral, or empty if it doesn't
+                  have an idiom)</span
+                >
+              </div>
+              <div class="flex items-start gap-2">
+                <span
+                  class="font-mono bg-white px-2 py-0.5 rounded border border-gray-300 text-blue-700"
+                  >idiom_meaning</span
+                >
+                <span class="text-gray-600">Meaning of an idiom</span>
+              </div>
+            </div>
+            <div
+              class="mt-3 pt-2 border-t border-blue-100 text-xs text-gray-500 flex items-center gap-1"
+            ></div>
+          </div>
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div>
               <label class="block text-x1 font-medium text-gray-700 mb-1"
@@ -279,6 +343,32 @@
             </table>
           </div>
           <div id="datasetPagination" class="flex justify-center mt-4"></div>
+          <!-- Legenda / Deskripsi Icon Actions -->
+          <div class="mt-6 pt-4 border-t border-gray-200">
+            <p class="text-sm font-medium text-gray-700 mb-2">
+              Keterangan Icon:
+            </p>
+            <div
+              class="flex flex-wrap items-center gap-4 text-sm text-gray-600"
+            >
+              <div class="flex items-center gap-1">
+                <i class="fas fa-eye text-blue-500"></i>
+                <span>View dataset statistic </span>
+              </div>
+              <div class="flex items-center gap-1">
+                <i class="fas fa-book text-green-500"></i>
+                <span>Extract idiom to idiom dictionary </span>
+              </div>
+              <div class="flex items-center gap-1">
+                <i class="fas fa-download text-purple-500"></i>
+                <span>Download Dataset </span>
+              </div>
+              <div class="flex items-center gap-1">
+                <i class="fas fa-trash text-red-500"></i>
+                <span>Delete Dataset </span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Chart Container - DIPERBESAR -->
@@ -302,23 +392,29 @@
             class="text-md text-gray-600 mb-4 italic"
           ></div>
 
-          <!-- Emotion Distribution Chart -->
-          <div class="mb-8">
-            <h3 class="font-medium text-gray-700 text-center text-lg mb-3">
-              Emotion Distribution (7 Classes)
-            </h3>
-            <div class="chart-container">
-              <canvas id="emotionBarChart"></canvas>
+          <!-- Dua Grafik Berdampingan -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Emotion Distribution Chart -->
+            <div>
+              <h3 class="font-medium text-gray-700 text-center text-lg mb-3">
+                Emotion Distribution (7 Classes)
+              </h3>
+              <div class="chart-container" style="min-height: 300px">
+                <canvas id="emotionBarChart"></canvas>
+              </div>
             </div>
-          </div>
 
-          <!-- Idiom vs Non-Idiom Chart -->
-          <div>
-            <h3 class="font-medium text-gray-700 text-center text-lg mb-3">
-              Sentence Count (Idiom vs Non‑Idiom)
-            </h3>
-            <div class="bar-chart-container">
-              <canvas id="idiomBarChart"></canvas>
+            <!-- Idiom vs Non-Idiom Chart -->
+            <!-- Idiom vs Non-Idiom Chart -->
+            <div>
+              <h3 class="font-medium text-gray-700 text-center text-lg mb-3">
+                Sentence Count (Idiom vs Non‑Idiom)
+              </h3>
+              <div class="flex justify-center">
+                <div style="width: 250px; height: 250px">
+                  <canvas id="idiomBarChart"></canvas>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -326,7 +422,7 @@
     </div>
 
     <script>
-      // === Configuration (sama) ===
+      // ======================= KONFIGURASI =======================
       const API_BASE = "http://localhost:5000/api";
       let authToken = localStorage.getItem("access_token");
       const rowsPerPage = 5;
@@ -338,8 +434,24 @@
       let currentPage = 1;
       let selectedFile = null;
 
-      document.getElementById("uploadBtn").disabled = true;
+      // Helper hitung kata
+      function countWords(str) {
+        return str
+          .trim()
+          .split(/\s+/)
+          .filter((w) => w.length > 0).length;
+      }
 
+      // Format tanggal DD/MM/YYYY
+      function formatDate(dateString) {
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+      }
+
+      // Fetch dengan token
       async function apiFetch(endpoint, options = {}) {
         const headers = {
           "Content-Type": "application/json",
@@ -357,6 +469,7 @@
         return response;
       }
 
+      // ======================= DATASET CRUD =======================
       async function loadDatasets() {
         try {
           const response = await apiFetch("/datasets/");
@@ -366,7 +479,7 @@
           applyFilter();
         } catch (error) {
           console.error(error);
-          alert("Failed to load dataset list");
+          Swal.fire("Error", "Failed to load dataset list", "error");
         }
       }
 
@@ -390,20 +503,13 @@
             textMatch =
               name.includes(searchText) || filename.includes(searchText);
           }
-
           let dateMatch = true;
           if (dateFrom || dateTo) {
-            const uploadDate = new Date(ds.uploaded_at);
-            if (dateFrom) {
-              const from = new Date(dateFrom);
-              from.setHours(0, 0, 0, 0);
-              if (uploadDate < from) dateMatch = false;
-            }
-            if (dateTo && dateMatch) {
-              const to = new Date(dateTo);
-              to.setHours(23, 59, 59, 999);
-              if (uploadDate > to) dateMatch = false;
-            }
+            const uploadDateStr = new Date(ds.uploaded_at)
+              .toISOString()
+              .split("T")[0];
+            if (dateFrom && uploadDateStr < dateFrom) dateMatch = false;
+            if (dateTo && uploadDateStr > dateTo) dateMatch = false;
           }
           return textMatch && dateMatch;
         });
@@ -425,53 +531,34 @@
             return true;
           } else {
             const err = await response.json();
-            alert(err.message || "Failed to rename");
+            Swal.fire("Gagal", err.message || "Gagal mengganti nama", "error");
             return false;
           }
         } catch (error) {
           console.error(error);
-          alert("Error renaming dataset");
+          Swal.fire("Error", "Terjadi kesalahan saat rename", "error");
           return false;
         }
       }
 
-      function createEditableDatasetName(ds) {
-        const span = document.createElement("span");
-        span.textContent =
-          ds.dataset_name || ds.original_filename || ds.filename;
-        span.className = "editable-name font-medium";
-        span.title = "Double-click to rename dataset";
-        span.addEventListener("dblclick", (e) => {
-          e.stopPropagation();
-          const oldName = span.textContent;
-          const input = document.createElement("input");
-          input.type = "text";
-          input.value = oldName;
-          input.className = "border rounded px-2 py-1 w-48";
-          input.style.fontSize = "0.9rem";
-          span.replaceWith(input);
-          input.focus();
-
-          const saveRename = async () => {
-            const newName = input.value.trim();
-            if (!newName) {
-              alert("Dataset name cannot be empty");
-              input.focus();
-              return;
-            }
-            if (newName !== oldName) {
-              await renameDataset(ds.id, newName);
-            } else {
-              input.replaceWith(span);
-            }
-          };
-
-          input.addEventListener("blur", saveRename);
-          input.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") saveRename();
+      async function deleteDataset(id) {
+        try {
+          const response = await apiFetch(`/datasets/${id}`, {
+            method: "DELETE",
           });
-        });
-        return span;
+          if (!response) return;
+          if (response.ok) {
+            Swal.fire("Berhasil", "Dataset deleted", "success");
+            await loadDatasets();
+            document.getElementById("chartContainer").classList.add("hidden");
+          } else {
+            const err = await response.json();
+            Swal.fire("Gagal", err.message || "Failed to delete", "error");
+          }
+        } catch (error) {
+          console.error(error);
+          Swal.fire("Error", "Error deleting dataset", "error");
+        }
       }
 
       async function downloadDataset(id, filename) {
@@ -482,7 +569,7 @@
           });
           if (!response.ok) {
             const err = await response.json();
-            alert(err.message || "Download failed");
+            Swal.fire("Gagal", err.message || "Download failed", "error");
             return;
           }
           const blob = await response.blob();
@@ -496,8 +583,102 @@
           window.URL.revokeObjectURL(url);
         } catch (error) {
           console.error(error);
-          alert("Error downloading dataset");
+          Swal.fire("Error", "Error downloading dataset", "error");
         }
+      }
+
+      async function extractIdiomsFromDataset(datasetId) {
+        try {
+          const response = await apiFetch(
+            `/datasets/${datasetId}/extract-idioms`,
+            { method: "POST" },
+          );
+          if (!response) return;
+          const result = await response.json();
+          if (response.ok) Swal.fire("Berhasil", result.message, "success");
+          else
+            Swal.fire(
+              "Gagal",
+              result.message || "Failed to extract idioms",
+              "error",
+            );
+        } catch (error) {
+          console.error(error);
+          Swal.fire("Error", "Error extracting idioms", "error");
+        }
+      }
+
+      // ======================= RENDER TABEL & PAGINATION =======================
+      function createEditableDatasetName(ds) {
+        const span = document.createElement("span");
+        span.textContent =
+          ds.dataset_name || ds.original_filename || ds.filename;
+        span.className = "editable-name font-medium";
+        span.title = "Double-click to rename dataset";
+
+        span.addEventListener("dblclick", (e) => {
+          e.stopPropagation();
+          const oldName = span.textContent;
+          const input = document.createElement("input");
+          input.type = "text";
+          input.value = oldName;
+          input.className = "border rounded px-2 py-1 w-48";
+          input.style.fontSize = "0.9rem";
+          span.replaceWith(input);
+          input.focus();
+
+          let isProcessing = false;
+
+          const revertToSpan = () => {
+            input.replaceWith(span);
+          };
+
+          const attemptRename = async () => {
+            if (isProcessing) return;
+            isProcessing = true;
+
+            const newName = input.value.trim();
+            if (!newName) {
+              Swal.fire("Gagal", "Nama dataset tidak boleh kosong", "error");
+              revertToSpan();
+              isProcessing = false;
+              return;
+            }
+            if (countWords(newName) > 10) {
+              Swal.fire(
+                "Gagal",
+                "Nama dataset tidak boleh lebih dari 10 kata",
+                "error",
+              );
+              revertToSpan();
+              isProcessing = false;
+              return;
+            }
+            if (newName === oldName) {
+              revertToSpan();
+              isProcessing = false;
+              return;
+            }
+
+            const success = await renameDataset(ds.id, newName);
+            if (!success) {
+              revertToSpan();
+            } else {
+              revertToSpan();
+            }
+            isProcessing = false;
+          };
+
+          const onKeyPress = (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              attemptRename();
+            }
+          };
+          input.addEventListener("keypress", onKeyPress);
+          input.addEventListener("blur", attemptRename);
+        });
+        return span;
       }
 
       function renderDatasetTable() {
@@ -508,7 +689,7 @@
         tbody.innerHTML = "";
         if (pageData.length === 0) {
           tbody.innerHTML =
-            '<tr><td colspan="5" class="text-center py-4 text-gray-500">No datasets available. </td><tr>';
+            '<tr><td colspan="5" class="text-center py-4 text-gray-500">No datasets available.</td></tr>';
           return;
         }
         pageData.forEach((ds) => {
@@ -517,17 +698,15 @@
           nameCell.appendChild(createEditableDatasetName(ds));
           row.insertCell(1).innerHTML = ds.original_filename || ds.filename;
           row.insertCell(2).innerHTML = ds.rows;
-          row.insertCell(3).innerHTML = new Date(
-            ds.uploaded_at,
-          ).toLocaleDateString();
+          row.insertCell(3).innerHTML = formatDate(ds.uploaded_at);
           const actions = document.createElement("td");
           actions.className = "px-4 py-2 border border-gray-200 text-center";
           actions.innerHTML = `
-            <i class="fas fa-eye text-blue-500 mr-3 cursor-pointer hover:text-blue-700" data-id="${ds.id}" data-filename="${ds.dataset_name || ds.original_filename || ds.filename}" data-action="view"></i>
-            <i class="fas fa-book text-green-500 mr-3 cursor-pointer hover:text-green-700" data-id="${ds.id}" data-action="extract"></i>
-            <i class="fas fa-download text-purple-500 mr-3 cursor-pointer hover:text-purple-700" data-id="${ds.id}" data-filename="${ds.original_filename || ds.filename}" data-action="download"></i>
-            <i class="fas fa-trash text-red-500 cursor-pointer hover:text-red-700" data-id="${ds.id}" data-action="delete"></i>
-          `;
+                <i class="fas fa-eye text-blue-500 mr-3 cursor-pointer hover:text-blue-700" title="Lihat Statistik Dataset" data-id="${ds.id}" data-filename="${ds.dataset_name || ds.original_filename || ds.filename}" data-action="view"></i>
+                <i class="fas fa-book text-green-500 mr-3 cursor-pointer hover:text-green-700" title="Ekstrak Idiom ke Kamus" data-id="${ds.id}" data-action="extract"></i>
+                <i class="fas fa-download text-purple-500 mr-3 cursor-pointer hover:text-purple-700" title="Unduh Dataset" data-id="${ds.id}" data-filename="${ds.original_filename || ds.filename}" data-action="download"></i>
+                <i class="fas fa-trash text-red-500 cursor-pointer hover:text-red-700" title="Hapus Dataset" data-id="${ds.id}" data-action="delete"></i>
+            `;
           row.appendChild(actions);
           for (let cell of row.cells) {
             cell.classList.add("border", "border-gray-200", "px-4", "py-2");
@@ -544,13 +723,15 @@
         document.querySelectorAll('[data-action="extract"]').forEach((icon) => {
           icon.addEventListener("click", async (e) => {
             const id = parseInt(icon.dataset.id);
-            if (
-              confirm(
-                "Extract all idioms from this dataset to Idiom Dictionary?",
-              )
-            ) {
-              await extractIdiomsFromDataset(id);
-            }
+            Swal.fire({
+              title: "Ekstrak idiom?",
+              text: "Tambahkan semua idiom dari dataset ini ke Kamus Idiom?",
+              icon: "question",
+              showCancelButton: true,
+              confirmButtonText: "Ya, ekstrak",
+            }).then(async (result) => {
+              if (result.isConfirmed) await extractIdiomsFromDataset(id);
+            });
           });
         });
         document
@@ -565,9 +746,17 @@
         document.querySelectorAll('[data-action="delete"]').forEach((icon) => {
           icon.addEventListener("click", async (e) => {
             const id = parseInt(icon.dataset.id);
-            if (confirm("Delete this dataset?")) {
-              await deleteDataset(id);
-            }
+            Swal.fire({
+              title: "Hapus dataset?",
+              text: "Data tidak dapat dikembalikan!",
+              icon: "warning",
+              showCancelButton: true,
+              confirmButtonColor: "#d33",
+              cancelButtonColor: "#3085d6",
+              confirmButtonText: "Ya, hapus!",
+            }).then(async (result) => {
+              if (result.isConfirmed) await deleteDataset(id);
+            });
           });
         });
       }
@@ -581,7 +770,6 @@
 
         const container = document.createElement("div");
         container.className = "flex items-center space-x-2";
-
         const prevBtn = document.createElement("button");
         prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
         prevBtn.className = `px-3 py-1 rounded border ${currentPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-blue-50"}`;
@@ -638,26 +826,93 @@
         paginationDiv.appendChild(container);
       }
 
+      // ======================= GRAFIK STATISTIK =======================
       async function showCharts(datasetId, filename) {
         try {
-          const emotionLabels = [
+          const response = await apiFetch(`/datasets/${datasetId}/stats`);
+          if (!response) return;
+          if (!response.ok) throw new Error("Failed to fetch stats");
+          const stats = await response.json();
+          console.log("Stats:", stats);
+
+          const idiomCount = stats.has_idiom_count;
+          const nonIdiomCount = stats.no_idiom_count;
+          const total = idiomCount + nonIdiomCount;
+
+          // Mapping nilai asli ke label Inggris
+          const valueToLabel = {
+            senang: "Happy",
+            happy: "Happy",
+            percaya: "Trust",
+            trust: "Trust",
+            terkejut: "Surprise",
+            surprise: "Surprise",
+            netral: "Neutral",
+            neutral: "Neutral",
+            sedih: "Sad",
+            sadness: "Sad",
+            sad: "Sad",
+            takut: "Fear",
+            fear: "Fear",
+            marah: "Angry",
+            anger: "Angry",
+            angry: "Angry",
+          };
+
+          const rawEmotion = stats.raw_emotion_distribution || {};
+          let counts = {
+            Happy: 0,
+            Trust: 0,
+            Surprise: 0,
+            Neutral: 0,
+            Sad: 0,
+            Fear: 0,
+            Angry: 0,
+          };
+          for (const [key, val] of Object.entries(rawEmotion)) {
+            const label = valueToLabel[key.toLowerCase()];
+            if (label && counts.hasOwnProperty(label)) counts[label] += val;
+          }
+          // fallback jika raw kosong
+          if (Object.keys(rawEmotion).length === 0) {
+            const mapped = stats.emotion_distribution || {};
+            const fallbackMap = {
+              happy: "Happy",
+              trust: "Trust",
+              surprise: "Surprise",
+              neutral: "Neutral",
+              sadness: "Sad",
+              fear: "Fear",
+              anger: "Angry",
+            };
+            for (const [key, val] of Object.entries(mapped)) {
+              const label = fallbackMap[key];
+              if (label && counts.hasOwnProperty(label)) counts[label] += val;
+            }
+          }
+
+          const emotionOrder = [
             "Happy",
             "Trust",
             "Surprise",
             "Neutral",
-            "Fear",
             "Sad",
+            "Fear",
             "Angry",
           ];
-          const seed = datasetId;
-          const emotionCounts = emotionLabels.map(
-            (_, idx) =>
-              Math.floor(Math.random() * 100) + ((seed * 7 + idx) % 80),
+          const emotionData = emotionOrder.map((label) => counts[label]);
+          const emotionColors = {
+            Happy: "#10b981",
+            Trust: "#3b82f6",
+            Surprise: "#f59e0b",
+            Neutral: "#6b7280",
+            Sad: "#ec489a",
+            Fear: "#8b5cf6",
+            Angry: "#ef4444",
+          };
+          const backgroundColor = emotionOrder.map(
+            (label) => emotionColors[label],
           );
-          const totalRows =
-            allDatasets.find((d) => d.id === datasetId)?.rows || 100;
-          const idiomCount = Math.floor(totalRows * (0.3 + (seed % 50) / 100));
-          const nonIdiomCount = totalRows - idiomCount;
 
           document.getElementById("chartContainer").classList.remove("hidden");
           document.getElementById("viewedFileName").innerHTML =
@@ -672,23 +927,13 @@
           currentEmotionChart = new Chart(ctxEmotion, {
             type: "bar",
             data: {
-              labels: emotionLabels,
+              labels: emotionOrder,
               datasets: [
                 {
-                  label: "Sentence Count",
-                  data: emotionCounts,
-                  backgroundColor: [
-                    "#10b981",
-                    "#3b82f6",
-                    "#f59e0b",
-                    "#6b7280",
-                    "#8b5cf6",
-                    "#ec489a",
-                    "#ef4444",
-                  ],
+                  label: "Jumlah Kalimat",
+                  data: emotionData,
+                  backgroundColor: backgroundColor,
                   borderRadius: 8,
-                  barPercentage: 0.7,
-                  categoryPercentage: 0.8,
                 },
               ],
             },
@@ -696,32 +941,16 @@
               responsive: true,
               maintainAspectRatio: true,
               plugins: {
-                legend: {
-                  position: "top",
-                  labels: { font: { size: 14, weight: "bold" } },
-                },
+                legend: { position: "top" },
                 tooltip: {
-                  bodyFont: { size: 14 },
-                  titleFont: { size: 14, weight: "bold" },
+                  callbacks: { label: (ctx) => `${ctx.raw} kalimat` },
                 },
               },
               scales: {
                 y: {
                   beginAtZero: true,
-                  title: {
-                    display: true,
-                    text: "Sentence Count",
-                    font: { size: 14, weight: "bold" },
-                  },
-                  ticks: { font: { size: 12 }, stepSize: 50 },
+                  title: { display: true, text: "Jumlah Kalimat" },
                 },
-                x: {
-                  ticks: { font: { size: 12, weight: "500" }, maxRotation: 25 },
-                  title: { display: false },
-                },
-              },
-              layout: {
-                padding: { top: 20, bottom: 20, left: 10, right: 10 },
               },
             },
           });
@@ -730,16 +959,14 @@
             .getElementById("idiomBarChart")
             .getContext("2d");
           currentIdiomChart = new Chart(ctxIdiom, {
-            type: "bar",
+            type: "pie",
             data: {
               labels: ["Idiom", "Non‑idiom"],
               datasets: [
                 {
-                  label: "Sentence Count",
                   data: [idiomCount, nonIdiomCount],
                   backgroundColor: ["#3b82f6", "#9ca3af"],
-                  borderRadius: 8,
-                  barPercentage: 0.5,
+                  borderWidth: 0,
                 },
               ],
             },
@@ -747,76 +974,23 @@
               responsive: true,
               maintainAspectRatio: true,
               plugins: {
-                legend: {
-                  position: "top",
-                  labels: { font: { size: 14, weight: "bold" } },
-                },
+                legend: { position: "top" },
                 tooltip: {
-                  bodyFont: { size: 14 },
-                  titleFont: { size: 14, weight: "bold" },
-                },
-              },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  title: {
-                    display: true,
-                    text: "Sentence Count",
-                    font: { size: 14, weight: "bold" },
+                  callbacks: {
+                    label: (ctx) =>
+                      `${ctx.label}: ${ctx.raw} kalimat (${((ctx.raw / total) * 100).toFixed(1)}%)`,
                   },
-                  ticks: { font: { size: 12 }, stepSize: 50 },
                 },
-                x: {
-                  ticks: { font: { size: 14, weight: "500" } },
-                },
-              },
-              layout: {
-                padding: { top: 20, bottom: 20, left: 10, right: 10 },
               },
             },
           });
         } catch (error) {
           console.error(error);
-          alert("Failed to load statistics");
+          Swal.fire("Error", "Gagal memuat statistik dataset", "error");
         }
       }
 
-      async function deleteDataset(id) {
-        try {
-          const response = await apiFetch(`/datasets/${id}`, {
-            method: "DELETE",
-          });
-          if (!response) return;
-          if (response.ok) {
-            alert("Dataset deleted");
-            await loadDatasets();
-            document.getElementById("chartContainer").classList.add("hidden");
-          } else {
-            const err = await response.json();
-            alert(err.message || "Failed to delete");
-          }
-        } catch (error) {
-          console.error(error);
-          alert("Error deleting dataset");
-        }
-      }
-
-      async function extractIdiomsFromDataset(datasetId) {
-        try {
-          const response = await apiFetch(
-            `/datasets/${datasetId}/extract-idioms`,
-            { method: "POST" },
-          );
-          if (!response) return;
-          const result = await response.json();
-          if (response.ok) alert(result.message);
-          else alert(result.message || "Failed to extract idioms");
-        } catch (error) {
-          console.error(error);
-          alert("Error extracting idioms");
-        }
-      }
-
+      // ======================= UPLOAD & PREVIEW FILE =======================
       function formatFileSize(bytes) {
         if (bytes === 0) return "0 Bytes";
         const k = 1024;
@@ -846,6 +1020,9 @@
         updateFilePreview(null);
       }
 
+      // ======================= EVENT LISTENERS =======================
+      document.getElementById("uploadBtn").disabled = true;
+
       const uploadArea = document.getElementById("uploadArea");
       const fileInput = document.getElementById("fileInput");
       const clearFileBtn = document.getElementById("clearFileBtn");
@@ -869,15 +1046,10 @@
           updateFilePreview(files[0]);
         }
       });
-
       fileInput.addEventListener("change", () => {
-        if (fileInput.files.length) {
-          updateFilePreview(fileInput.files[0]);
-        } else {
-          updateFilePreview(null);
-        }
+        if (fileInput.files.length) updateFilePreview(fileInput.files[0]);
+        else updateFilePreview(null);
       });
-
       clearFileBtn.addEventListener("click", clearFile);
 
       document
@@ -887,15 +1059,19 @@
             .getElementById("datasetNameInput")
             .value.trim();
           if (!datasetName) {
-            alert("Please fill in the Dataset Name first.");
+            Swal.fire("Gagal", "Dataset name is required", "error");
+            return;
+          }
+          if (countWords(datasetName) > 10) {
+            Swal.fire("Gagal", "Dataset name cannot exceed 10 words", "error");
             return;
           }
           if (!selectedFile) {
-            alert("Please select a CSV file first.");
+            Swal.fire("Gagal", "Please select a CSV file first.", "error");
             return;
           }
           if (!selectedFile.name.toLowerCase().endsWith(".csv")) {
-            alert("Only CSV files are allowed.");
+            Swal.fire("Gagal", "Only CSV files are allowed.", "error");
             return;
           }
 
@@ -916,21 +1092,21 @@
             }
             const result = await response.json();
             if (response.ok) {
-              alert("Upload successful");
+              Swal.fire("Berhasil", "Dataset berhasil diupload", "success");
               clearFile();
               document.getElementById("datasetNameInput").value = "";
               await loadDatasets();
             } else {
-              alert(result.message || "Upload failed");
+              Swal.fire("Gagal", result.message || "Upload failed", "error");
             }
           } catch (error) {
             console.error(error);
-            alert("Error during upload");
+            Swal.fire("Error", "Error during upload", "error");
           }
         });
 
       document.getElementById("exportAllBtn").addEventListener("click", () => {
-        alert("Export feature will be available soon.");
+        Swal.fire("Info", "Export feature will be available soon.", "info");
       });
       document.getElementById("closeChartBtn").addEventListener("click", () => {
         document.getElementById("chartContainer").classList.add("hidden");
@@ -940,7 +1116,17 @@
       document
         .getElementById("applyFilterBtn")
         .addEventListener("click", applyFilter);
+      document
+        .getElementById("filterSearchInput")
+        .addEventListener("keyup", applyFilter);
+      document
+        .getElementById("filterDateFrom")
+        .addEventListener("change", applyFilter);
+      document
+        .getElementById("filterDateTo")
+        .addEventListener("change", applyFilter);
 
+      // Sidebar dropdown
       function toggleDropdown(btn, menu, icon) {
         btn.addEventListener("click", () => {
           menu.classList.toggle("hidden");
@@ -951,7 +1137,6 @@
       const dataCollectionMenu = document.getElementById("dataCollectionMenu");
       const dataCollectionIcon = document.getElementById("dataCollectionIcon");
       toggleDropdown(dataCollectionBtn, dataCollectionMenu, dataCollectionIcon);
-
       if (dataCollectionMenu && dataCollectionIcon) {
         dataCollectionMenu.classList.remove("hidden");
         dataCollectionIcon.classList.add("rotate-180");
