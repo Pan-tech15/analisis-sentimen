@@ -1,5 +1,7 @@
 import os
+import io
 import pandas as pd
+from flask_cors import cross_origin
 from flask import Blueprint, request, jsonify, current_app, send_file
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
@@ -12,6 +14,9 @@ from datetime import datetime
 dataset_bp = Blueprint('dataset', __name__, url_prefix='/api/datasets')
 
 ALLOWED_EXTENSIONS = {'csv'}
+
+def count_words(text):
+    return len(text.split())
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -36,10 +41,20 @@ def upload_dataset():
     if not allowed_file(file.filename):
         return jsonify({'message': 'Only CSV files allowed'}), 400
 
-    # Ambil dataset_name dari form
     dataset_name = request.form.get('dataset_name', '').strip()
     if not dataset_name:
-        dataset_name = None
+        return jsonify({'message': 'Dataset name is required'}), 400
+
+    # Batasi maksimal 10 kata
+    if count_words(dataset_name) > 10:
+        return jsonify({'message': 'Dataset name cannot exceed 10 words'}), 400
+
+    # CEK DUPLIKAT NAMA (case-sensitive)
+    existing = DatasetModel.query.filter(
+        DatasetModel.dataset_name == dataset_name
+    ).first()
+    if existing:
+        return jsonify({'message': 'Dataset name has already been registered'}), 409
 
     original_filename = secure_filename(file.filename)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -127,6 +142,18 @@ def rename_dataset(dataset_id):
     if not new_name:
         return jsonify({'message': 'Dataset name cannot be empty'}), 400
 
+    # Batasi maksimal 10 kata
+    if count_words(new_name) > 10:
+        return jsonify({'message': 'Dataset name cannot exceed 10 words'}), 400
+
+    # CEK DUPLIKAT (case-sensitive, kecuali dirinya sendiri)
+    duplicate = DatasetModel.query.filter(
+        DatasetModel.dataset_name == new_name,
+        DatasetModel.id != dataset_id
+    ).first()
+    if duplicate:
+        return jsonify({'message': 'Dataset name has already been registered'}), 409
+
     dataset.dataset_name = new_name
     db.session.commit()
 
@@ -165,7 +192,6 @@ def download_dataset(dataset_id):
         return jsonify({'message': 'Dataset not found'}), 404
 
     filepath = dataset.filepath
-    # Jika path masih relatif, jadikan absolut
     if not os.path.isabs(filepath):
         upload_folder = os.path.abspath(current_app.config.get('UPLOAD_FOLDER', 'data/raw'))
         filepath = os.path.join(upload_folder, os.path.basename(filepath))
@@ -173,8 +199,32 @@ def download_dataset(dataset_id):
     if not os.path.exists(filepath):
         return jsonify({'message': 'File not found on server'}), 404
 
+    # Baca file CSV asli
+    try:
+        df = pd.read_csv(filepath)
+    except Exception as e:
+        return jsonify({'message': f'Error reading file: {str(e)}'}), 500
+
+    # HAPUS kolom 'sentiment' jika ada
+    if 'sentiment' in df.columns:
+        df = df.drop(columns=['sentiment'])
+
+    # Simpan ke buffer dengan delimiter titik koma (;) dan BOM UTF-8
+    output = io.BytesIO()
+    df.to_csv(output, index=False, sep=';', encoding='utf-8-sig')
+    output.seek(0)
+
+    # Nama file download
     download_name = dataset.original_filename or dataset.filename
-    return send_file(filepath, as_attachment=True, download_name=download_name)
+    if not download_name.endswith('.csv'):
+        download_name += '.csv'
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name=download_name,
+        mimetype='text/csv'
+    )
 
 
 # ------------------- EXTRACT IDIOMS -------------------
@@ -282,4 +332,63 @@ def preview_dataset(dataset_id):
         'page': page,
         'per_page': per_page,
         'data': records
+    }), 200
+
+# ------------------- STATISTIK DATASET -------------------
+@dataset_bp.route('/<int:dataset_id>/stats', methods=['GET', 'OPTIONS'])
+@cross_origin()
+@jwt_required(optional=True)
+def dataset_stats(dataset_id):
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    dataset = DatasetModel.query.get(dataset_id)
+    if not dataset:
+        return jsonify({'message': 'Dataset not found'}), 404
+
+    try:
+        df = pd.read_csv(dataset.filepath)
+    except Exception as e:
+        return jsonify({'message': f'Error reading file: {str(e)}'}), 500
+
+    # Idiom vs non-idiom
+    has_idiom_count = int(df['has_idiom'].sum()) if 'has_idiom' in df else 0
+    total_rows = len(df)
+    no_idiom_count = total_rows - has_idiom_count
+
+    # Distribusi emosi ASLI (apa adanya, tanpa mapping)
+    raw_emotion_distribution = {}
+    if 'emotion' in df.columns:
+        # Hilangkan baris yang kosong, lalu hitung
+        emotion_series = df['emotion'].dropna().astype(str).str.strip().str.lower()
+        raw_counts = emotion_series.value_counts().to_dict()
+        raw_emotion_distribution = raw_counts
+
+    # Tetap kirimkan juga distribusi yang sudah di-map ke 7 kelas (untuk keperluan lain jika ada)
+    emotion_mapping = {
+        'senang': 'happy', 'bahagia': 'happy',
+        'marah': 'anger', 'jengkel': 'anger',
+        'sedih': 'sadness',
+        'takut': 'fear',
+        'percaya': 'trust',
+        'terkejut': 'surprise',
+        'netral': 'neutral',
+        'happy': 'happy', 'anger': 'anger', 'sadness': 'sadness',
+        'fear': 'fear', 'trust': 'trust', 'surprise': 'surprise', 'neutral': 'neutral'
+    }
+    mapped_counts = {}
+    if 'emotion' in df.columns:
+        for emo in df['emotion'].dropna():
+            emo_str = str(emo).strip().lower()
+            normalized = emotion_mapping.get(emo_str, emo_str)
+            mapped_counts[normalized] = mapped_counts.get(normalized, 0) + 1
+    for em in ['happy', 'trust', 'surprise', 'neutral', 'anger', 'sadness', 'fear']:
+        mapped_counts.setdefault(em, 0)
+
+    return jsonify({
+        'total_rows': total_rows,
+        'has_idiom_count': has_idiom_count,
+        'no_idiom_count': no_idiom_count,
+        'emotion_distribution': mapped_counts,           # 7 kelas (bisa 0 jika tidak ada mapping)
+        'raw_emotion_distribution': raw_emotion_distribution   # distribusi asli (Indonesia)
     }), 200
