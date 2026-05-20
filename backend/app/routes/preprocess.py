@@ -9,7 +9,7 @@ from datetime import datetime
 from app import db
 from app.models.dataset import Dataset
 from app.models.preprocessing import Preprocessing
-from app.utils.preprocessing_utils import preprocess_text
+from app.utils.preprocessing_utils import preprocess_light
 
 preprocess_bp = Blueprint('preprocess', __name__, url_prefix='/api/preprocess')
 
@@ -41,11 +41,17 @@ def start_preprocessing():
         return jsonify({'error': 'File dataset tidak ditemukan di server'}), 404
 
     # Buat record preprocessing dengan status pending
+    # Tentukan nama default
     existing_count = Preprocessing.query.filter_by(dataset_id=dataset_id).count()
     if dataset.dataset_name:
-        default_name = f"{dataset.dataset_name}"
+        default_name = dataset.dataset_name
     else:
         default_name = f"Preprocess #{existing_count + 1}"
+
+    # CEK apakah dataset ini sudah pernah dipreprocess (status completed)
+    existing_preproc = Preprocessing.query.filter_by(dataset_id=dataset_id, status='completed').first()
+    if existing_preproc:
+        return jsonify({'error': f'Dataset "{dataset.dataset_name or dataset.filename}" sudah pernah dibersihkan. Tidak boleh memproses ulang.'}), 400
 
     preprocessing = Preprocessing(
         dataset_id=dataset_id,
@@ -97,7 +103,7 @@ def run_preprocessing_thread(app, preproc_id, raw_path, original_filename):
             # Proses per batch agar progress bisa diupdate (simulasi progres)
             cleaned = []
             for i, text in enumerate(df['kalimat']):
-                cleaned.append(preprocess_text(str(text)))
+                cleaned.append(preprocess_light(str(text)))
                 # Update progress setiap 10% atau setiap 500 baris
                 if i % max(1, total_rows // 10) == 0:
                     progress = 30 + int((i / total_rows) * 60)  # 30-90%
@@ -208,30 +214,6 @@ def get_history():
         })
     return jsonify(results), 200
 
-@preprocess_bp.route('/history/<int:preprocess_id>', methods=['PUT'])
-def rename_preprocessing(preprocess_id):
-    """Mengganti nama preprocessing (frontend menggunakan PUT)"""
-    preprocessing = Preprocessing.query.get(preprocess_id)
-    if not preprocessing:
-        return jsonify({'error': 'Preprocessing not found'}), 404
-
-    data = request.get_json()
-    if not data:
-        return jsonify({'error': 'Data JSON tidak valid'}), 400
-
-    new_name = data.get('name', '').strip()
-    if not new_name:
-        return jsonify({'error': 'Name cannot be empty'}), 400
-
-    preprocessing.name = new_name
-    db.session.commit()
-    return jsonify({
-        'message': 'Name updated',
-        'name': new_name,
-        'id': preprocessing.id
-    }), 200
-
-
 @preprocess_bp.route('/history/<int:preprocess_id>', methods=['DELETE'])
 def delete_preprocessing(preprocess_id):
     """Menghapus preprocessing (frontend menggunakan DELETE)"""
@@ -251,3 +233,48 @@ def delete_preprocessing(preprocess_id):
     db.session.delete(preprocessing)
     db.session.commit()
     return jsonify({'message': 'Preprocessing deleted', 'id': preprocess_id}), 200
+
+@preprocess_bp.route('/download-heavy/<int:preprocess_id>', methods=['GET', 'OPTIONS'])
+@cross_origin(origins=["http://localhost:5500", "http://127.0.0.1:5500"], supports_credentials=True)
+def download_heavy(preprocess_id):
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    preprocessing = Preprocessing.query.get(preprocess_id)
+    if not preprocessing:
+        return jsonify({'error': 'Preprocessing record not found'}), 404
+
+    # Ambil dataset asli yang terkait
+    dataset = Dataset.query.get(preprocessing.dataset_id)
+    if not dataset or not os.path.exists(dataset.filepath):
+        return jsonify({'error': 'Original dataset file not found'}), 404
+
+    # Baca file mentah
+    df = pd.read_csv(dataset.filepath)
+    if 'kalimat' not in df.columns:
+        return jsonify({'error': "Column 'kalimat' not found in original dataset"}), 400
+
+    # Terapkan preprocessing heavy (stopword + stemming)
+    from app.utils.preprocessing_utils import preprocess_heavy
+    df['cleaned_kalimat'] = df['kalimat'].astype(str).apply(preprocess_heavy)
+
+    # Simpan ke file sementara
+    import tempfile
+    fd, temp_path = tempfile.mkstemp(suffix='.csv')
+    os.close(fd)
+    df.to_csv(temp_path, index=False)
+
+    # Kirim file, lalu hapus setelah request selesai
+    from flask import after_this_request
+    @after_this_request
+    def remove_file(response):
+        try:
+            os.remove(temp_path)
+        except Exception as e:
+            current_app.logger.warning(f"Gagal hapus temp file {temp_path}: {e}")
+        return response
+
+    # Nama file download: heavy_{original_filename}
+    original_filename = dataset.filename or f"dataset_{dataset.id}"
+    download_name = f"preprocessed_heavy_{original_filename}"
+    return send_file(temp_path, as_attachment=True, download_name=download_name, mimetype='text/csv')
