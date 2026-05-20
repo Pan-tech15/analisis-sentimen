@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Processing - IdiomSense Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
@@ -2640,13 +2641,27 @@
         const train = parseInt(document.getElementById("addTrain").value);
         const test = parseInt(document.getElementById("addTest").value);
         if (isNaN(train) || isNaN(test)) {
-          alert("Train dan Test harus diisi angka.");
+          Swal.fire("Error", "Train dan Test harus diisi angka.", "error");
           return;
         }
         if (train + test !== 100) {
-          alert("Total harus 100");
+          Swal.fire("Error", "Total train + test harus 100.", "error");
           return;
         }
+
+        // Cek apakah rasio sudah ada di splitRatios (data dari backend)
+        const exists = splitRatios.some(
+          (ratio) => ratio.train === train && ratio.test === test,
+        );
+        if (exists) {
+          Swal.fire(
+            "Gagal",
+            `Rasio ${train}:${test} sudah ada. Tidak boleh duplikat.`,
+            "error",
+          );
+          return;
+        }
+
         try {
           const res = await fetch(`${API_BASE}/api/split-ratios`, {
             method: "POST",
@@ -2655,15 +2670,20 @@
           });
           if (!res.ok) {
             const err = await res.json();
-            alert("Error: " + (err.error || "Gagal menambah"));
+            Swal.fire("Error", err.error || "Gagal menambah rasio", "error");
             return;
           }
           document.getElementById("addTrain").value = "";
           document.getElementById("addTest").value = "";
           await loadSplitRatios();
+          Swal.fire(
+            "Berhasil",
+            `Rasio ${train}:${test} ditambahkan.`,
+            "success",
+          );
         } catch (err) {
           console.error(err);
-          alert("Terjadi kesalahan jaringan");
+          Swal.fire("Error", "Terjadi kesalahan jaringan", "error");
         }
       }
 
@@ -2673,7 +2693,21 @@
         );
         const test = parseInt(document.getElementById(`editTest-${id}`).value);
         if (isNaN(train) || isNaN(test) || train + test !== 100) {
-          alert("Train + Test harus 100");
+          Swal.fire("Error", "Train + Test harus 100", "error");
+          return;
+        }
+
+        // Cek duplikasi, kecuali dengan dirinya sendiri
+        const duplicate = splitRatios.some(
+          (ratio) =>
+            ratio.id !== id && ratio.train === train && ratio.test === test,
+        );
+        if (duplicate) {
+          Swal.fire(
+            "Gagal",
+            `Rasio ${train}:${test} sudah ada. Tidak boleh duplikat.`,
+            "error",
+          );
           return;
         }
         try {

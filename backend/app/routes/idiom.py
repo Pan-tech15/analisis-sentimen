@@ -9,7 +9,25 @@ from sqlalchemy import or_, func
 
 idiom_bp = Blueprint('idiom', __name__, url_prefix='/api/idioms')
 
-# Helper: gabungkan arti (lowercase, unique, sorted)
+# ========== MAPPING EMOSI (Indonesia ↔ Inggris) ==========
+EMOJI_MAP = {
+    'senang': 'Happy', 'happy': 'Happy',
+    'sedih': 'Sad', 'sad': 'Sad',
+    'marah': 'Angry', 'angry': 'Angry',
+    'takut': 'Fear', 'fear': 'Fear',
+    'terkejut': 'Surprise', 'surprise': 'Surprise',
+    'percaya': 'Trust', 'trust': 'Trust',
+    'netral': 'Neutral', 'neutral': 'Neutral'
+}
+
+def normalize_emotion(emotion):
+    """Ubah emosi ke format Inggris (Happy, Sad, dll)"""
+    if not emotion:
+        return None
+    emotion_lower = emotion.strip().lower()
+    return EMOJI_MAP.get(emotion_lower, emotion_lower.capitalize())
+
+# Helper gabung arti (sama seperti sebelumnya)
 def merge_meanings(existing_meaning, new_meaning):
     existing_set = set([m.strip().lower() for m in existing_meaning.split(';')])
     new_meaning_lower = new_meaning.strip().lower()
@@ -18,16 +36,19 @@ def merge_meanings(existing_meaning, new_meaning):
         return '; '.join(sorted(existing_set))
     return existing_meaning
 
-# GET semua idiom (dengan filter, sort, pagination)
+# GET semua idiom (dengan filter, sort, pagination, dan filter emosi)
 @idiom_bp.route('/', methods=['GET'], strict_slashes=False)
 @jwt_required()
 def get_idioms():
     search = request.args.get('search', '').strip()
+    emotion_filter = request.args.get('emotion', '').strip()  # filter dalam bahasa Inggris
     sort = request.args.get('sort', 'asc')
     page = int(request.args.get('page', 1))
     per_page = int(request.args.get('per_page', 5))
     
     query = Idiom.query
+    
+    # Filter teks
     if search:
         query = query.filter(
             or_(
@@ -36,6 +57,27 @@ def get_idioms():
             )
         )
     
+    # Filter emosi (case‑insensitive, karena di database bisa Indonesia/Inggris)
+    if emotion_filter:
+        possible_values = [emotion_filter]
+        # Tambahkan padanan Indonesia jika filter dalam Inggris
+        for indo, eng in EMOJI_MAP.items():
+            if eng.lower() == emotion_filter.lower():
+                possible_values.append(indo)
+        # Gunakan ILIKE untuk semua kemungkinan
+        emotion_filter_lower = emotion_filter.lower()
+        conditions = []
+        for val in possible_values:
+            conditions.append(Idiom.emotion.ilike(val))
+        # Jika tidak ada kondisi, tambahkan kondisi yang selalu false (tidak perlu)
+        if conditions:
+            from sqlalchemy import or_
+            query = query.filter(or_(*conditions))
+        else:
+            # Fallback ke pencarian langsung (case‑insensitive)
+            query = query.filter(Idiom.emotion.ilike(f'%{emotion_filter}%'))
+    
+    # Sorting
     if sort == 'asc':
         query = query.order_by(Idiom.idiom_text.asc())
     else:
@@ -43,27 +85,34 @@ def get_idioms():
     
     paginated = query.paginate(page=page, per_page=per_page, error_out=False)
     
-    return jsonify({
-        'data': [{
+    # Format output dengan emosi dalam Inggris (gunakan mapping)
+    data = []
+    for i in paginated.items:
+        emotion_norm = normalize_emotion(i.emotion) if i.emotion else None
+        data.append({
             'id': i.id,
             'idiom': i.idiom_text,
             'meaning': i.idiom_meaning,
-            'emotion': i.emotion
-        } for i in paginated.items],
+            'emotion': emotion_norm  # selalu Inggris
+        })
+    
+    return jsonify({
+        'data': data,
         'total': paginated.total,
         'page': page,
         'per_page': per_page,
         'total_pages': paginated.pages
     }), 200
 
-# Tambah idiom manual
+# Tambah idiom manual (input emosi bisa Indonesia atau Inggris, disimpan Inggris)
 @idiom_bp.route('/', methods=['POST'], strict_slashes=False)
 @jwt_required()
 def add_idiom():
     data = request.get_json()
     idiom_text = data.get('idiom_text', '').strip().lower()
     idiom_meaning = data.get('idiom_meaning', '').strip().lower()
-    emotion = data.get('emotion', '').strip().lower() or None
+    emotion = data.get('emotion', '').strip()
+    emotion_normalized = normalize_emotion(emotion) if emotion else None
 
     if not idiom_text or not idiom_meaning:
         return jsonify({'message': 'Idiom dan makna harus diisi'}), 400
@@ -73,8 +122,8 @@ def add_idiom():
         new_meaning = merge_meanings(existing.idiom_meaning, idiom_meaning)
         if new_meaning != existing.idiom_meaning:
             existing.idiom_meaning = new_meaning
-        if emotion and existing.emotion != emotion:
-            existing.emotion = emotion
+        if emotion_normalized and existing.emotion != emotion_normalized:
+            existing.emotion = emotion_normalized
         db.session.commit()
         return jsonify({
             'id': existing.id,
@@ -87,7 +136,7 @@ def add_idiom():
         new_idiom = Idiom(
             idiom_text=idiom_text,
             idiom_meaning=idiom_meaning,
-            emotion=emotion,
+            emotion=emotion_normalized,
             source='manual'
         )
         db.session.add(new_idiom)
@@ -99,7 +148,7 @@ def add_idiom():
             'emotion': new_idiom.emotion
         }), 201
 
-# Edit idiom
+# Edit idiom (emosi dinormalisasi)
 @idiom_bp.route('/<int:idiom_id>', methods=['PUT'], strict_slashes=False)
 @jwt_required()
 def update_idiom(idiom_id):
@@ -110,20 +159,19 @@ def update_idiom(idiom_id):
     data = request.get_json()
     new_text = data.get('idiom_text', '').strip().lower()
     new_meaning = data.get('idiom_meaning', '').strip().lower()
-    emotion = data.get('emotion', '').strip().lower() or None
+    emotion = data.get('emotion', '').strip()
+    emotion_normalized = normalize_emotion(emotion) if emotion else None
     
     if not new_text or not new_meaning:
         return jsonify({'message': 'Idiom dan makna harus diisi'}), 400
     
-    # Jika teks idiom berubah
     if new_text != idiom.idiom_text:
         existing = Idiom.query.filter(func.lower(Idiom.idiom_text) == new_text).first()
         if existing:
-            # Gabungkan arti ke idiom yang sudah ada, lalu hapus idiom lama
             merged_meaning = merge_meanings(existing.idiom_meaning, new_meaning)
             existing.idiom_meaning = merged_meaning
-            if emotion and existing.emotion != emotion:
-                existing.emotion = emotion
+            if emotion_normalized and existing.emotion != emotion_normalized:
+                existing.emotion = emotion_normalized
             db.session.delete(idiom)
             db.session.commit()
             return jsonify({
@@ -136,11 +184,11 @@ def update_idiom(idiom_id):
         else:
             idiom.idiom_text = new_text
             idiom.idiom_meaning = new_meaning
-            idiom.emotion = emotion
+            idiom.emotion = emotion_normalized
     else:
-        # Teks sama, update arti (timpa, tidak digabung karena edit biasanya penggantian total)
         idiom.idiom_meaning = new_meaning
-        idiom.emotion = emotion
+        if emotion_normalized:
+            idiom.emotion = emotion_normalized
     
     db.session.commit()
     return jsonify({
@@ -150,25 +198,23 @@ def update_idiom(idiom_id):
         'emotion': idiom.emotion
     }), 200
 
-# Hapus idiom
+# Hapus idiom (sama)
 @idiom_bp.route('/<int:idiom_id>', methods=['DELETE'], strict_slashes=False)
 @jwt_required()
 def delete_idiom(idiom_id):
     idiom = Idiom.query.get(idiom_id)
     if not idiom:
         return jsonify({'message': 'Idiom tidak ditemukan'}), 404
-    
     db.session.delete(idiom)
     db.session.commit()
     return jsonify({'message': 'Idiom berhasil dihapus'}), 200
 
-# Upload CSV
+# Upload CSV (emosi dinormalisasi)
 @idiom_bp.route('/upload', methods=['POST'], strict_slashes=False)
 @jwt_required()
 def upload_idioms():
     if 'file' not in request.files:
         return jsonify({'message': 'File tidak ditemukan'}), 400
-    
     file = request.files['file']
     if file.filename == '':
         return jsonify({'message': 'File tidak dipilih'}), 400
@@ -204,9 +250,9 @@ def upload_idioms():
         idiom_meaning = str(row[meaning_col]).strip().lower()
         emotion = None
         if emotion_col:
-            raw_emotion = str(row[emotion_col]).strip().lower()
+            raw_emotion = str(row[emotion_col]).strip()
             if raw_emotion and raw_emotion != 'nan':
-                emotion = raw_emotion
+                emotion = normalize_emotion(raw_emotion)
         
         if not idiom_text or not idiom_meaning or idiom_text == 'nan' or idiom_meaning == 'nan':
             skipped += 1
@@ -238,7 +284,7 @@ def upload_idioms():
         'skipped': skipped
     }), 200
 
-# Batch POST (untuk preview & ekstrak dari frontend)
+# Batch POST (emosi dinormalisasi)
 @idiom_bp.route('/batch', methods=['POST'], strict_slashes=False)
 @jwt_required()
 def batch_add_idioms():
@@ -252,7 +298,8 @@ def batch_add_idioms():
     for item in idioms:
         idiom_text = item.get('idiom_text', '').strip().lower()
         idiom_meaning = item.get('idiom_meaning', '').strip().lower()
-        emotion = item.get('emotion', '').strip().lower() or None
+        emotion = item.get('emotion', '').strip()
+        emotion_norm = normalize_emotion(emotion) if emotion else None
         
         if not idiom_text or not idiom_meaning:
             continue
@@ -263,13 +310,13 @@ def batch_add_idioms():
             if new_meaning != existing.idiom_meaning:
                 existing.idiom_meaning = new_meaning
                 merged += 1
-            if emotion and existing.emotion != emotion:
-                existing.emotion = emotion
+            if emotion_norm and existing.emotion != emotion_norm:
+                existing.emotion = emotion_norm
         else:
             new_idiom = Idiom(
                 idiom_text=idiom_text,
                 idiom_meaning=idiom_meaning,
-                emotion=emotion,
+                emotion=emotion_norm,
                 source='batch'
             )
             db.session.add(new_idiom)
@@ -282,7 +329,7 @@ def batch_add_idioms():
         'merged': merged
     }), 200
 
-# Export semua idiom ke CSV
+# Export semua idiom ke CSV (emosi dalam Inggris)
 @idiom_bp.route('/export', methods=['GET'], strict_slashes=False)
 @jwt_required()
 def export_idioms():
@@ -291,7 +338,7 @@ def export_idioms():
     writer = csv.writer(output)
     writer.writerow(['idiom_text', 'idiom_meaning', 'emotion'])
     for idiom in all_idioms:
-        emotion = idiom.emotion if idiom.emotion else '-'
+        emotion = normalize_emotion(idiom.emotion) if idiom.emotion else ''
         writer.writerow([idiom.idiom_text, idiom.idiom_meaning, emotion])
     response = make_response(output.getvalue())
     response.headers['Content-Disposition'] = 'attachment; filename=idioms_export.csv'

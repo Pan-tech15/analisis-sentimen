@@ -5,7 +5,7 @@ from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 factory = StemmerFactory()
 stemmer = factory.create_stemmer()
 
-# Daftar stopword manual (lengkap)
+# Daftar stopword manual
 stop_words = set([
     'yang', 'dan', 'atau', 'juga', 'saja', 'pun', 'lah', 'kah', 'telah', 'sudah',
     'akan', 'bisa', 'dapat', 'harus', 'ingin', 'jika', 'karena', 'sehingga',
@@ -70,3 +70,38 @@ def preprocess_text(text, do_case_folding=True, do_normalize=True, do_stopword=T
     result = ' '.join(tokens)
     result = clean_whitespace(result)
     return result
+
+def preprocess_heavy(text, do_case_folding=True, do_normalize=True, do_stopword=True, do_stemming=True):
+    """
+    Preprocessing AGRESIF untuk memenuhi asumsi dosen:
+    - case folding
+    - normalisasi slang + hapus mention/hashtag/URL/tanda baca/angka
+    - stopword removal (termasuk pronomina)
+    - stemming (Sastrawi)
+    """
+    if not isinstance(text, str):
+        text = str(text)
+    if do_case_folding:
+        text = case_folding(text)
+    if do_normalize:
+        text = normalize_text(text)
+    tokens = tokenize(text)
+    if do_stopword:
+        tokens = remove_stopwords(tokens)
+    if do_stemming:
+        tokens = stemming(tokens)
+    result = ' '.join(tokens)
+    result = clean_whitespace(result)
+    return result
+
+# Untuk kompatibilitas, preprocess_text tetap mengarah ke heavy (atau light? terserah)
+# Namun untuk training, Anda akan memanggil preprocess_light secara terpisah.
+# Kita akan buat juga preprocess_light jika belum ada.
+def preprocess_light(text):
+    """Preprocessing ringan untuk IndoBERT-KNN (tanpa stopword & stemming)"""
+    if not isinstance(text, str):
+        text = str(text)
+    text = case_folding(text)
+    text = normalize_text(text)
+    text = clean_whitespace(text)
+    return text

@@ -10,6 +10,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
       .fixed-table {
         table-layout: fixed;
@@ -240,13 +241,13 @@
                 class="mt-1 block w-full border rounded-md p-2"
               >
                 <option value="">-- Select Emotion --</option>
-                <option value="Senang">Happy</option>
-                <option value="Sedih">Sad</option>
-                <option value="Marah">Angry</option>
-                <option value="Takut">Fearful</option>
-                <option value="Terkejut">Surprised</option>
-                <option value="Netral">Neutral</option>
-                <option value="Percaya">Trust</option>
+                <option value="Happy">Happy</option>
+                <option value="Sad">Sad</option>
+                <option value="Angry">Angry</option>
+                <option value="Fear">Fear</option>
+                <option value="Surprise">Surprise</option>
+                <option value="Trust">Trust</option>
+                <option value="Neutral">Neutral</option>
               </select>
             </div>
           </div>
@@ -274,7 +275,7 @@
 
           <!-- Search & Sort -->
           <div class="flex flex-wrap gap-4 mb-4">
-            <div class="flex-1">
+            <div class="flex-1 min-w-[200px]">
               <input
                 type="text"
                 id="searchInput"
@@ -286,6 +287,18 @@
               <select id="sortSelect" class="border rounded-lg p-2">
                 <option value="asc">Sort A-Z</option>
                 <option value="desc">Sort Z-A</option>
+              </select>
+            </div>
+            <div>
+              <select id="emotionFilter" class="border rounded-lg p-2">
+                <option value="">All Emotions</option>
+                <option value="Happy">Happy</option>
+                <option value="Sad">Sad</option>
+                <option value="Angry">Angry</option>
+                <option value="Fear">Fear</option>
+                <option value="Surprise">Surprise</option>
+                <option value="Trust">Trust</option>
+                <option value="Neutral">Neutral</option>
               </select>
             </div>
             <button
@@ -355,13 +368,13 @@
             class="mt-1 block w-full border rounded-md p-2"
           >
             <option value="">-- Select Emotion --</option>
-            <option value="Senang">Happy</option>
-            <option value="Sedih">Sad</option>
-            <option value="Marah">Angry</option>
-            <option value="Takut">Fearful</option>
-            <option value="Terkejut">Surprised</option>
-            <option value="Netral">Neutral</option>
-            <option value="Percaya">Trust</option>
+            <option value="Happy">Happy</option>
+            <option value="Sad">Sad</option>
+            <option value="Angry">Angry</option>
+            <option value="Fear">Fear</option>
+            <option value="Surprise">Surprise</option>
+            <option value="Trust">Trust</option>
+            <option value="Neutral">Neutral</option>
           </select>
         </div>
         <div class="flex justify-end space-x-2">
@@ -390,6 +403,7 @@
       let currentSort = "asc";
       let currentSearch = "";
       let totalIdioms = 0;
+      let currentEmotionFilter = "";
 
       let selectedFile = null;
       let uploadedData = [];
@@ -447,7 +461,7 @@
 
       async function loadIdioms() {
         try {
-          const url = `/idioms?page=${currentPage}&per_page=${rowsPerPage}&search=${encodeURIComponent(currentSearch)}&sort=${currentSort}`;
+          const url = `/idioms?page=${currentPage}&per_page=${rowsPerPage}&search=${encodeURIComponent(currentSearch)}&sort=${currentSort}&emotion=${encodeURIComponent(currentEmotionFilter)}`;
           const response = await apiFetch(url);
           if (!response) return;
           if (!response.ok) throw new Error("Failed to load data");
@@ -462,7 +476,7 @@
           renderPagination();
         } catch (error) {
           console.error(error);
-          alert("Failed to load idiom dictionary");
+          Swal.fire("Error", "Failed to load idiom dictionary", "error");
         }
       }
 
@@ -571,7 +585,7 @@
         const meaning = document.getElementById("newMeaning").value.trim();
         const emotion = document.getElementById("newEmotion").value;
         if (!idiomText || !meaning) {
-          alert("Idiom and meaning are required");
+          Swal.fire("Error", "Idiom and meaning are required");
           return;
         }
         try {
@@ -665,6 +679,7 @@
       function applyFilterAndSort() {
         currentSearch = document.getElementById("searchInput").value.trim();
         currentSort = document.getElementById("sortSelect").value;
+        currentEmotionFilter = document.getElementById("emotionFilter").value;
         currentPage = 1;
         loadIdioms();
       }

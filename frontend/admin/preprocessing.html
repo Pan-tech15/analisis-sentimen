@@ -252,10 +252,6 @@
             </table>
           </div>
           <div id="historyPagination" class="flex justify-center mt-4"></div>
-          <p class="text-xs text-gray-500 mt-2">
-            <i class="fas fa-info-circle"></i> Double-click on the dataset name
-            to edit.
-          </p>
         </div>
       </main>
     </div>
@@ -410,22 +406,22 @@
             const row = document.createElement("tr");
             row.className = "hover:bg-gray-50";
 
+            // No
             const cellNo = document.createElement("td");
             cellNo.className = "border border-gray-200 px-4 py-2 text-center";
             cellNo.textContent = start + index + 1;
             row.appendChild(cellNo);
 
+            // Nama (editable)
             const cellName = document.createElement("td");
             cellName.className =
               "border border-gray-200 px-4 py-2 editable-name";
             cellName.textContent = item.name || `Preprocessing #${item.id}`;
             cellName.dataset.id = item.id;
             cellName.dataset.originalName = cellName.textContent;
-            cellName.addEventListener("dblclick", () =>
-              enableInlineEdit(cellName, item.id),
-            );
             row.appendChild(cellName);
 
+            // Tanggal
             const cellDate = document.createElement("td");
             cellDate.className = "border border-gray-200 px-4 py-2";
             const date = item.created_at ? new Date(item.created_at) : null;
@@ -437,31 +433,52 @@
               : "-";
             row.appendChild(cellDate);
 
+            // Actions
             const cellAction = document.createElement("td");
             cellAction.className =
               "border border-gray-200 px-4 py-2 text-center";
-            cellAction.innerHTML = `
-              <button class="text-blue-600 hover:text-blue-800 mr-2 download-history" data-id="${item.id}" title="Download CSV"><i class="fas fa-download"></i></button>
-              <button class="text-red-600 hover:text-red-800 delete-history" data-id="${item.id}" title="Delete"><i class="fas fa-trash"></i></button>
-            `;
-            row.appendChild(cellAction);
-            historyTbody.appendChild(row);
-          });
 
-          document.querySelectorAll(".download-history").forEach((btn) => {
-            btn.addEventListener("click", (e) => {
-              downloadHistoryCSV(btn.dataset.id);
+            // Tombol Light (debug)
+            /* const lightBtn = document.createElement("button");
+            lightBtn.className = "text-green-600 hover:text-green-800 mr-2";
+            lightBtn.title = "Download Light (for Testing)";
+            lightBtn.innerHTML = '<i class="fas fa-sun"></i>';
+            lightBtn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              window.open(
+                `${API_BASE}/preprocess/download/${item.id}`,
+                "_blank",
+              );
             });
-          });
+            cellAction.appendChild(lightBtn); */
 
-          document.querySelectorAll(".delete-history").forEach((btn) => {
-            btn.addEventListener("click", async (e) => {
-              const id = btn.dataset.id;
+            // Tombol Heavy (untuk dosen)
+            const heavyBtn = document.createElement("button");
+            heavyBtn.className = "text-purple-600 hover:text-purple-800 mr-2";
+            heavyBtn.title = "Download";
+            heavyBtn.innerHTML = '<i class="fas fa-download"></i>';
+            heavyBtn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              window.open(
+                `${API_BASE}/preprocess/download-heavy/${item.id}`,
+                "_blank",
+              );
+            });
+            cellAction.appendChild(heavyBtn);
+
+            // Tombol Delete
+            const deleteBtn = document.createElement("button");
+            deleteBtn.className = "text-red-600 hover:text-red-800";
+            deleteBtn.title = "Delete";
+            deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+            deleteBtn.addEventListener("click", async (e) => {
+              e.stopPropagation();
               if (!confirm("Delete this preprocessing result?")) return;
               try {
-                const response = await apiFetch(`/preprocess/history/${id}`, {
-                  method: "DELETE",
-                });
+                const response = await apiFetch(
+                  `/preprocess/history/${item.id}`,
+                  { method: "DELETE" },
+                );
                 if (!response) return;
                 if (!response.ok) {
                   const err = await response.json();
@@ -474,6 +491,10 @@
                 alert("Error deleting.");
               }
             });
+            cellAction.appendChild(deleteBtn);
+
+            row.appendChild(cellAction);
+            historyTbody.appendChild(row);
           });
         }
 
@@ -574,9 +595,12 @@
                 return;
               }
               if (!response.ok) {
-                const err = await response.json();
-                alert(err.error || "Failed to rename");
-                cell.textContent = originalName;
+                const result = await response.json();
+                statusText.innerText = `Failed: ${result.error || result.message}`;
+                alert(result.error || result.message); // akan menampilkan pesan duplikat
+                startBtn.disabled = false;
+                startBtn.innerHTML =
+                  '<i class="fas fa-play"></i> Start Cleaning';
                 return;
               }
               cell.textContent = newName;
@@ -600,7 +624,7 @@
         }
 
         function downloadHistoryCSV(id) {
-          window.open(`${API_BASE}/preprocess/download/${id}`, "_blank");
+          window.open(`${API_BASE}/preprocess/download-heavy/${id}`, "_blank");
         }
 
         async function startCleaning() {
