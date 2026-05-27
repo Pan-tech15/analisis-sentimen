@@ -93,7 +93,21 @@ def get_status(testing_id):
 @testing_bp.route('/history', methods=['GET'])
 def get_history():
     tests = Testing.query.order_by(Testing.tested_at.desc()).all()
-    return jsonify([t.to_dict() for t in tests]), 200
+    result = []
+    for t in tests:
+        d = t.to_dict()
+        # Tambahkan config_name dari training
+        if t.training and t.training.config:
+            d['config_name'] = t.training.config.name
+        else:
+            d['config_name'] = None
+        # Tambahkan dataset_name dari training (opsional, untuk konsistensi)
+        if t.training and t.training.dataset:
+            d['dataset_name'] = t.training.dataset.dataset_name
+        else:
+            d['dataset_name'] = None
+        result.append(d)
+    return jsonify(result), 200
 
 @testing_bp.route('/<int:testing_id>', methods=['GET'])
 def get_detail(testing_id):

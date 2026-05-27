@@ -233,10 +233,13 @@
                   class="bg-gradient-to-r from-blue-500 to-blue-600 text-white"
                 >
                   <th class="px-4 py-3 border-r border-blue-400 text-left">
-                    Name
+                    Model Name
                   </th>
                   <th class="px-4 py-3 border-r border-blue-400 text-left">
-                    Model
+                    Algorithm
+                  </th>
+                  <th class="px-4 py-3 border-r border-blue-400 text-left">
+                    Dataset Name
                   </th>
                   <th
                     class="px-4 py-3 border-r border-blue-400 metric-min-width"
@@ -327,10 +330,13 @@
                   class="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white"
                 >
                   <th class="px-4 py-3 border-r border-emerald-400 text-left">
-                    Name
+                    Model Name
                   </th>
                   <th class="px-4 py-3 border-r border-emerald-400 text-left">
-                    Model
+                    Algorithm
+                  </th>
+                  <th class="px-4 py-3 border-r border-emerald-400 text-left">
+                    Dataset Name
                   </th>
                   <th
                     class="px-4 py-3 border-r border-emerald-400 metric-min-width"
@@ -513,7 +519,7 @@
             updateComparisonAndChart();
           } catch (error) {
             console.error(error);
-            const errMsg = `<tr><td colspan="14" class="text-center py-6 text-red-500"><i class="fas fa-exclamation-triangle"></i> Gagal memuat data: ${error.message}</td></td>`;
+            const errMsg = `<tr><td colspan="15" class="text-center py-6 text-red-500"><i class="fas fa-exclamation-triangle"></i> Gagal memuat data: ${error.message}</td></td>`;
             document.getElementById("trainingTableBody").innerHTML = errMsg;
             document.getElementById("testingTableBody").innerHTML = errMsg;
           }
@@ -523,6 +529,9 @@
           const m = item.metrics || {};
           return {
             id: item.id,
+            model_name:
+              item.config_name || item.algorithm || `Model ${item.id}`,
+            dataset_name: item.dataset_name || item.dataset_filename || "-",
             dataset_filename: item.dataset_name || item.dataset_filename,
             algorithm: item.algorithm,
             created_at: item.created_at,
@@ -551,6 +560,9 @@
           return {
             id: item.id,
             training_id: item.training_id,
+            model_name:
+              item.config_name || item.algorithm || `Model ${item.training_id}`,
+            dataset_name: item.dataset_name || item.dataset_filename || "-",
             dataset_filename: item.dataset_name || item.dataset_filename,
             algorithm: item.algorithm,
             created_at: item.tested_at,
@@ -600,15 +612,17 @@
           table.filtered = !query
             ? [...table.data]
             : table.data.filter((item) => {
-                const name = (item.dataset_filename || "").toLowerCase();
-                const model = (item.algorithm || "").toLowerCase();
+                const modelName = (item.model_name || "").toLowerCase();
+                const algo = (item.algorithm || "").toLowerCase();
+                const dataset = (item.dataset_name || "").toLowerCase();
                 const acc =
                   item.metrics?.accuracy != null
                     ? (item.metrics.accuracy * 100).toFixed(2)
                     : "";
                 return (
-                  name.includes(query) ||
-                  model.includes(query) ||
+                  modelName.includes(query) ||
+                  algo.includes(query) ||
+                  dataset.includes(query) ||
                   acc.includes(query)
                 );
               });
@@ -627,28 +641,40 @@
           const tbody = table.tbody;
           tbody.innerHTML = "";
           if (pageData.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="14" class="text-center py-6 text-gray-400"><i class="fas fa-inbox"></i> No data</td></table>`;
+            tbody.innerHTML = `<tr><td colspan="15" class="text-center py-6 text-gray-400"><i class="fas fa-inbox"></i> No data</td></tr>`;
             return;
           }
           pageData.forEach((item, idx) => {
             const m = item.metrics || {};
             const row = tbody.insertRow();
             row.className = idx % 2 === 0 ? "bg-white" : "bg-gray-50";
-            let nameCell = row.insertCell(0);
-            nameCell.innerText = item.dataset_filename || "-";
-            nameCell.className =
+
+            // Kolom 0: Model Name
+            let modelNameCell = row.insertCell(0);
+            modelNameCell.innerText = item.model_name || "-";
+            modelNameCell.className =
               "border border-gray-200 px-4 py-2.5 font-medium";
-            let modelHtml = `<span class="text-gray-700">${item.algorithm || "-"}</span>`;
+
+            // Kolom 1: Algorithm (dengan badge)
+            let algoHtml = `<span class="text-gray-700">${item.algorithm || "-"}</span>`;
             if (item.use_umap)
-              modelHtml += `<span class="ml-1 px-1.5 py-0.5 text-xs bg-purple-100 text-purple-800 rounded-full">UMAP</span>`;
+              algoHtml += `<span class="ml-1 px-1.5 py-0.5 text-xs bg-purple-100 text-purple-800 rounded-full">UMAP</span>`;
             if (item.finetuned)
-              modelHtml += `<span class="ml-1 px-1.5 py-0.5 text-xs bg-green-100 text-green-800 rounded-full">FT</span>`;
+              algoHtml += `<span class="ml-1 px-1.5 py-0.5 text-xs bg-green-100 text-green-800 rounded-full">FT</span>`;
             if (item.hybrid_method && item.hybrid_method !== "none")
-              modelHtml += `<span class="ml-1 px-1.5 py-0.5 text-xs bg-yellow-100 text-yellow-800 rounded-full">${item.hybrid_method.charAt(0).toUpperCase() + item.hybrid_method.slice(1)}</span>`;
-            let modelCell = row.insertCell(1);
-            modelCell.innerHTML = modelHtml;
-            modelCell.className =
+              algoHtml += `<span class="ml-1 px-1.5 py-0.5 text-xs bg-yellow-100 text-yellow-800 rounded-full">${item.hybrid_method.charAt(0).toUpperCase() + item.hybrid_method.slice(1)}</span>`;
+            let algoCell = row.insertCell(1);
+            algoCell.innerHTML = algoHtml;
+            algoCell.className =
               "border border-gray-200 px-4 py-2.5 whitespace-nowrap";
+
+            // Kolom 2: Dataset Name
+            let datasetCell = row.insertCell(2);
+            datasetCell.innerText = item.dataset_name || "-";
+            datasetCell.className =
+              "border border-gray-200 px-4 py-2.5 font-medium";
+
+            // Kolom 3-10: 8 metrik (AccW, PrecW, RecW, F1W, AccM, PrecM, RecM, F1M)
             const metricsArr = [
               m.accuracy,
               m.precision,
@@ -658,22 +684,27 @@
               m.macro_precision,
               m.macro_recall,
               m.macro_f1_score,
-              m.mcc,
-              m.roc_auc,
             ];
-            for (let i = 0; i <= 7; i++) {
-              let cell = row.insertCell(2 + i);
+            for (let i = 0; i < metricsArr.length; i++) {
+              let cell = row.insertCell(3 + i);
               let val = metricsArr[i];
-              cell.innerHTML = `<span class="metric-number font-semibold ${i < 4 ? "text-blue-600" : "text-purple-600"}">${formatMetric(val)}</span>`;
+              let colorClass = i < 4 ? "text-blue-600" : "text-purple-600";
+              cell.innerHTML = `<span class="metric-number font-semibold ${colorClass}">${formatMetric(val)}</span>`;
               cell.className = "border border-gray-200 px-4 py-2.5";
             }
-            let mccCell = row.insertCell(10);
+
+            // Kolom 11: MCC
+            let mccCell = row.insertCell(11);
             mccCell.innerHTML = `<span class="metric-number font-semibold text-emerald-600">${formatMCC(m.mcc)}</span>`;
             mccCell.className = "border border-gray-200 px-4 py-2.5";
-            let rocCell = row.insertCell(11);
+
+            // Kolom 12: ROC-AUC
+            let rocCell = row.insertCell(12);
             rocCell.innerHTML = `<span class="metric-number font-semibold text-orange-600">${formatROCAUC(m.roc_auc)}</span>`;
             rocCell.className = "border border-gray-200 px-4 py-2.5";
-            let dateCell = row.insertCell(12);
+
+            // Kolom 13: Date
+            let dateCell = row.insertCell(13);
             let d = item.created_at ? new Date(item.created_at) : null;
             dateCell.innerHTML = d
               ? d.toLocaleString("en-US", {
@@ -683,7 +714,9 @@
               : "-";
             dateCell.className =
               "border border-gray-200 px-4 py-2.5 text-gray-500 text-xs date-cell";
-            let actCell = row.insertCell(13);
+
+            // Kolom 14: Actions
+            let actCell = row.insertCell(14);
             actCell.className =
               "border border-gray-200 px-4 py-2.5 text-center";
             const detailPage =
