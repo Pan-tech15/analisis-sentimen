@@ -1,8 +1,10 @@
 import threading
+import os
 import logging
 import joblib  # <-- tambahkan ini
 from flask import Blueprint, request, jsonify, current_app
 from app import db
+from flask import send_file
 from app.models.training import Training
 from app.models.testing import Testing
 from app.services.testing_service import (
@@ -120,7 +122,7 @@ def get_detail(testing_id):
         except Exception:
             class_labels = []
 
-       # Ambil roc_auc dari testing.metrics jika ada
+    # Ambil roc_auc dari testing.metrics jika ada
     roc_auc = None
     if testing.metrics and 'roc_auc' in testing.metrics:
         roc_auc = testing.metrics['roc_auc']
@@ -140,6 +142,7 @@ def get_detail(testing_id):
         'dataset_name': training.dataset.dataset_name if training.dataset else None, 
         'dataset_filename': training.dataset_filename,
         'algorithm': config.algorithm if config else None,
+        'metrics': testing.metrics,   
     }
     return jsonify(result), 200
 
@@ -224,3 +227,29 @@ def ensemble_predict():
         'idiom_text': idiom_text,
         'idiom_meaning': idiom_meaning
     })
+
+
+@testing_bp.route('/<int:testing_id>/download', methods=['GET'])
+def download_testing_model(testing_id):
+    import os
+    from flask import send_file, current_app
+
+    testing = Testing.query.get(testing_id)
+    if not testing or not testing.training or not testing.training.model_path:
+        return jsonify({'error': 'Model not found'}), 404
+
+    model_path = testing.training.model_path
+
+    # Ubah path relatif menjadi absolut (sama seperti di training.py)
+    if not os.path.isabs(model_path):
+        backend_dir = os.path.dirname(current_app.root_path)  # naik satu level dari folder 'app'
+        model_path = os.path.join(backend_dir, model_path)
+
+    if not os.path.exists(model_path):
+        return jsonify({'error': 'Model file not found on server'}), 404
+
+    return send_file(
+        model_path,
+        as_attachment=True,
+        download_name=f"model_{testing.training_id}.pkl"
+    )
