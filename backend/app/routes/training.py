@@ -9,6 +9,7 @@ from app.models.training import Training
 from app.services.indobert_knn import train_indobert_knn
 from app.services.lexicon_nb import train_lexicon_nb
 from app.models.preprocessing import Preprocessing
+from flask import send_file
 
 training_bp = Blueprint('training', __name__)
 

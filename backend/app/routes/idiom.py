@@ -335,12 +335,14 @@ def batch_add_idioms():
 def export_idioms():
     all_idioms = Idiom.query.order_by(Idiom.idiom_text.asc()).all()
     output = StringIO()
-    writer = csv.writer(output)
+    # Tambahkan BOM UTF-8 agar Excel membaca karakter dengan benar
+    output.write('\ufeff')
+    writer = csv.writer(output, delimiter=';')
     writer.writerow(['idiom_text', 'idiom_meaning', 'emotion'])
     for idiom in all_idioms:
         emotion = normalize_emotion(idiom.emotion) if idiom.emotion else ''
         writer.writerow([idiom.idiom_text, idiom.idiom_meaning, emotion])
     response = make_response(output.getvalue())
     response.headers['Content-Disposition'] = 'attachment; filename=idioms_export.csv'
-    response.headers['Content-type'] = 'text/csv'
+    response.headers['Content-type'] = 'text/csv; charset=utf-8'
     return response

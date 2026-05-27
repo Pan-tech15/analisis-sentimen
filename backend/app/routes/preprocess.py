@@ -126,7 +126,7 @@ def run_preprocessing_thread(app, preproc_id, raw_path, original_filename):
             preprocessed_filename = f"preprocessed_{timestamp}_{original_name}.csv"
             preprocessed_folder = get_preprocessed_folder()
             preprocessed_path = os.path.join(preprocessed_folder, preprocessed_filename)
-            df.to_csv(preprocessed_path, index=False)
+            df.to_csv(preprocessed_path, index=False, encoding='utf-8-sig', sep=';')
 
             preprocessing.preprocessed_filepath = preprocessed_path
             preprocessing.row_count = total_rows
@@ -262,7 +262,7 @@ def download_heavy(preprocess_id):
     import tempfile
     fd, temp_path = tempfile.mkstemp(suffix='.csv')
     os.close(fd)
-    df.to_csv(temp_path, index=False)
+    df.to_csv(temp_path, index=False, encoding='utf-8-sig', sep=';')
 
     # Kirim file, lalu hapus setelah request selesai
     from flask import after_this_request
