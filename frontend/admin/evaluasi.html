@@ -706,12 +706,20 @@
             // Kolom 13: Date
             let dateCell = row.insertCell(13);
             let d = item.created_at ? new Date(item.created_at) : null;
-            dateCell.innerHTML = d
-              ? d.toLocaleString("en-US", {
-                  dateStyle: "short",
-                  timeStyle: "short",
-                })
-              : "-";
+            if (d) {
+              let datePart = d.toLocaleDateString("en-GB", {
+                year: "2-digit",
+                month: "2-digit",
+                day: "2-digit",
+              });
+              let timePart = d.toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+              dateCell.innerHTML = `${datePart} ${timePart}`;
+            } else {
+              dateCell.innerHTML = "-";
+            }
             dateCell.className =
               "border border-gray-200 px-4 py-2.5 text-gray-500 text-xs date-cell";
 
@@ -972,12 +980,34 @@
           const dateLabel = dateRow.insertCell(0);
           dateLabel.textContent = "Date";
           dateLabel.className = "border border-gray-200 px-4 py-2 font-medium";
-          const trainDate = bestTraining?.created_at
-            ? new Date(bestTraining.created_at).toLocaleString()
-            : "-";
-          const testDate = bestTesting?.created_at
-            ? new Date(bestTesting.created_at).toLocaleString()
-            : "-";
+          let trainDate = "-";
+          if (bestTraining?.created_at) {
+            let d = new Date(bestTraining.created_at);
+            let datePart = d.toLocaleDateString("en-GB", {
+              year: "2-digit",
+              month: "2-digit",
+              day: "2-digit",
+            });
+            let timePart = d.toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+            trainDate = `${datePart} ${timePart}`;
+          }
+          let testDate = "-";
+          if (bestTesting?.created_at) {
+            let d = new Date(bestTesting.created_at);
+            let datePart = d.toLocaleDateString("en-GB", {
+              year: "2-digit",
+              month: "2-digit",
+              day: "2-digit",
+            });
+            let timePart = d.toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+            testDate = `${datePart} ${timePart}`;
+          }
           const cellTrainDate = dateRow.insertCell(1);
           cellTrainDate.textContent = trainDate;
           cellTrainDate.className =
