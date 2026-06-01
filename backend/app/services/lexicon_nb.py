@@ -124,7 +124,16 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
         try:
             # 1. Baca dataset
             log(f"Membaca dataset dari {dataset_path}", training_id)
-            df = pd.read_csv(dataset_path)
+             # Deteksi separator file CSV (koma atau titik koma)
+            with open(dataset_path, 'r') as f:
+                first_line = f.readline()
+                if ';' in first_line:
+                    sep = ';'
+                else:
+                    sep = ','
+            log(f"Separator terdeteksi: '{sep}'", training_id)
+            df = pd.read_csv(dataset_path, sep=sep)
+            
             log(f"Dataset loaded: {len(df)} baris", training_id)
 
             if 'kalimat' not in df.columns or 'emotion' not in df.columns:
