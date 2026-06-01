@@ -146,11 +146,12 @@
             <input
               type="text"
               id="datasetNameInput"
+              maxlength="25"
               class="w-full md:w-96 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400"
               placeholder="Example: Idiom Data April 2026"
             />
             <p class="text-xs text-gray-500 mt-1">
-              Unique name for this dataset
+              Unique name for this dataset (max 25 characters)
             </p>
           </div>
 
@@ -644,10 +645,10 @@
               isProcessing = false;
               return;
             }
-            if (countWords(newName) > 10) {
+            if (newName.length > 25) {
               Swal.fire(
-                "Gagal",
-                "Nama dataset tidak boleh lebih dari 10 kata",
+                "Failed",
+                "Dataset name cannot exceed 25 characters",
                 "error",
               );
               revertToSpan();
@@ -1062,8 +1063,12 @@
             Swal.fire("Gagal", "Dataset name is required", "error");
             return;
           }
-          if (countWords(datasetName) > 10) {
-            Swal.fire("Gagal", "Dataset name cannot exceed 10 words", "error");
+          if (datasetName.length > 25) {
+            Swal.fire(
+              "Failed",
+              "Dataset name cannot exceed 25 characters",
+              "error",
+            );
             return;
           }
           if (!selectedFile) {

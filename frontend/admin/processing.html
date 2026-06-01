@@ -451,11 +451,13 @@
                 <input
                   type="text"
                   id="modelNameInput"
+                  maxlength="25"
                   placeholder="Enter model name..."
                   class="w-full md:w-96 text-x1 border rounded-lg p-2 focus:ring-2 focus:ring-blue-400"
                 />
                 <p class="text-xs text-gray-500 mt-1">
-                  Give a unique name for this model configuration.
+                  Give a unique name for this model configuration. (max 25
+                  characters)
                 </p>
               </div>
             </div>
@@ -4005,6 +4007,10 @@
           .value.trim();
         if (!modelNameInput) {
           alert("Please enter a model name.");
+          return;
+        }
+        if (modelNameInput.length > 25) {
+          alert("Model name cannot exceed 25 characters.");
           return;
         }
         const algorithm = document.getElementById("tuningAlgo").value;
