@@ -9,7 +9,7 @@ from datetime import datetime
 from app import db
 from app.models.dataset import Dataset
 from app.models.preprocessing import Preprocessing
-from app.utils.preprocessing_utils import preprocess_light
+from app.utils.preprocessing_utils import preprocess_text   # bukan preprocess_light
 
 preprocess_bp = Blueprint('preprocess', __name__, url_prefix='/api/preprocess')
 
@@ -103,7 +103,7 @@ def run_preprocessing_thread(app, preproc_id, raw_path, original_filename):
             # Proses per batch agar progress bisa diupdate (simulasi progres)
             cleaned = []
             for i, text in enumerate(df['kalimat']):
-                cleaned.append(preprocess_light(str(text)))
+                cleaned.append(preprocess_text(str(text)))
                 # Update progress setiap 10% atau setiap 500 baris
                 if i % max(1, total_rows // 10) == 0:
                     progress = 30 + int((i / total_rows) * 60)  # 30-90%
@@ -126,7 +126,7 @@ def run_preprocessing_thread(app, preproc_id, raw_path, original_filename):
             preprocessed_filename = f"preprocessed_{timestamp}_{original_name}.csv"
             preprocessed_folder = get_preprocessed_folder()
             preprocessed_path = os.path.join(preprocessed_folder, preprocessed_filename)
-            df.to_csv(preprocessed_path, index=False, encoding='utf-8-sig', sep=';')
+            df.to_csv(preprocessed_path, index=False)
 
             preprocessing.preprocessed_filepath = preprocessed_path
             preprocessing.row_count = total_rows
