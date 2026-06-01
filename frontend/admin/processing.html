@@ -1829,12 +1829,12 @@
         fusionMethodSelect: "product",
         emotionRankings: {
           happy: 1,
-          Trust: 2,
-          Surprised: 3,
-          Neutral: 4,
-          Sad: 5,
+          trust: 2,
+          surprised: 3,
+          neutral: 4,
+          sad: 5,
           scared: 6,
-          Angry: 7,
+          angry: 7,
         },
       };
 
@@ -4427,8 +4427,11 @@
             },
             naivebayes: {
               alpha:
-                parseFloat(document.getElementById("lexiconAlpha").value) ||
-                1.0,
+                parseFloat(
+                  document
+                    .getElementById("lexiconAlpha")
+                    .value.replace(",", "."),
+                ) || 1.0,
               model_type: document.getElementById("lexiconModelType").value,
               vectorizer: document.getElementById("lexiconVectorizer").value,
             },
