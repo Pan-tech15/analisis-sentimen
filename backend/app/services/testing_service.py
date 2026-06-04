@@ -197,7 +197,20 @@ def predict_lexicon_proba(texts, artifacts):
 
 # ------------------ PREDICT UNTUK INDOBERT-KNN ------------------
 def predict_indobert(texts, artifacts):
+    """
+    Prediksi label emosi menggunakan model IndoBERT-KNN (tanpa probabilitas).
+    
+    Args:
+        texts: list of strings (bisa mengandung NaN atau None)
+        artifacts: dictionary yang berisi komponen model yang disimpan
+    
+    Returns:
+        list of predicted emotion labels
+    """
     import torch
+    import pandas as pd
+    from app.services.testing_service import preprocess_indobert  # fungsi yang sudah ada
+    
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     tokenizer = artifacts['tokenizer']
     bert_model = artifacts['bert_model']
@@ -208,7 +221,14 @@ def predict_indobert(texts, artifacts):
     max_seq_length = artifacts['max_seq_length']
     use_umap = artifacts.get('use_umap', False)
 
-    cleaned_texts = [preprocess_indobert(t) for t in texts]
+    # Pastikan semua teks adalah string (NaN, None, dll diganti dengan string kosong)
+    cleaned_texts = []
+    for t in texts:
+        if pd.isna(t):
+            t = ""
+        else:
+            t = str(t)
+        cleaned_texts.append(preprocess_indobert(t))
 
     bert_model.to(device)
     bert_model.eval()
@@ -217,13 +237,26 @@ def predict_indobert(texts, artifacts):
     with torch.no_grad():
         for text in cleaned_texts:
             encoded = tokenizer(
-                text, truncation=True, padding='max_length',
-                max_length=max_seq_length, return_tensors='pt'
+                text,
+                truncation=True,
+                padding='max_length',
+                max_length=max_seq_length,
+                return_tensors='pt'
             ).to(device)
+            
             if hasattr(bert_model, 'bert'):
-                outputs = bert_model.bert(input_ids=encoded['input_ids'], attention_mask=encoded['attention_mask'])
+                # Model adalah IndoBERTClassifier (fine‑tuned)
+                outputs = bert_model.bert(
+                    input_ids=encoded['input_ids'],
+                    attention_mask=encoded['attention_mask']
+                )
             else:
-                outputs = bert_model(input_ids=encoded['input_ids'], attention_mask=encoded['attention_mask'])
+                # Model adalah AutoModel (tanpa fine‑tuning)
+                outputs = bert_model(
+                    input_ids=encoded['input_ids'],
+                    attention_mask=encoded['attention_mask']
+                )
+            
             if pooling == 'CLS':
                 emb = outputs.last_hidden_state[:, 0, :].cpu().numpy()
             elif pooling == 'MEAN':
@@ -233,6 +266,7 @@ def predict_indobert(texts, artifacts):
             else:
                 emb = outputs.last_hidden_state[:, 0, :].cpu().numpy()
             embeddings.append(emb[0])
+
     embeddings = np.vstack(embeddings)
 
     if use_umap and umap_reducer:
@@ -240,6 +274,109 @@ def predict_indobert(texts, artifacts):
 
     y_pred = knn_classifier.predict(embeddings)
     return label_encoder.inverse_transform(y_pred)
+
+
+def predict_indobert_proba(texts, artifacts):
+    """
+    Prediksi label emosi dan probabilitas menggunakan model IndoBERT-KNN.
+    Menghasilkan output yang kompatibel dengan fungsi `run_testing`.
+    
+    Args:
+        texts: list of strings (bisa mengandung NaN atau None)
+        artifacts: dictionary yang berisi komponen model
+    
+    Returns:
+        y_pred: list of predicted emotion labels
+        proba: array of probabilities (n_samples, n_classes)
+    """
+    import torch
+    import pandas as pd
+    import numpy as np
+    from app.services.testing_service import preprocess_indobert
+    
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    tokenizer = artifacts['tokenizer']
+    bert_model = artifacts['bert_model']
+    umap_reducer = artifacts.get('umap_reducer')
+    knn_classifier = artifacts['knn_classifier']
+    label_encoder = artifacts['label_encoder']
+    pooling = artifacts['pooling']
+    max_seq_length = artifacts['max_seq_length']
+    use_umap = artifacts.get('use_umap', False)
+    hybrid_method = artifacts.get('hybrid_method', 'none')
+    hybrid_alpha = artifacts.get('hybrid_alpha', 0.7)
+
+    # Bersihkan teks: NaN -> string kosong, dan ubah ke string jika perlu
+    cleaned_texts = []
+    for t in texts:
+        if pd.isna(t):
+            t = ""
+        else:
+            t = str(t)
+        cleaned_texts.append(preprocess_indobert(t))
+
+    bert_model.to(device)
+    bert_model.eval()
+
+    # Ekstraksi embedding
+    embeddings = []
+    with torch.no_grad():
+        for text in cleaned_texts:
+            encoded = tokenizer(
+                text,
+                truncation=True,
+                padding='max_length',
+                max_length=max_seq_length,
+                return_tensors='pt'
+            ).to(device)
+            
+            if hasattr(bert_model, 'bert'):
+                outputs = bert_model.bert(
+                    input_ids=encoded['input_ids'],
+                    attention_mask=encoded['attention_mask']
+                )
+            else:
+                outputs = bert_model(
+                    input_ids=encoded['input_ids'],
+                    attention_mask=encoded['attention_mask']
+                )
+            
+            if pooling == 'CLS':
+                emb = outputs.last_hidden_state[:, 0, :].cpu().numpy()
+            elif pooling == 'MEAN':
+                emb = outputs.last_hidden_state.mean(dim=1).cpu().numpy()
+            elif pooling == 'MAX':
+                emb = outputs.last_hidden_state.max(dim=1).values.cpu().numpy()
+            else:
+                emb = outputs.last_hidden_state[:, 0, :].cpu().numpy()
+            embeddings.append(emb[0])
+
+    embeddings = np.vstack(embeddings)
+
+    if use_umap and umap_reducer:
+        embeddings = umap_reducer.transform(embeddings)
+
+    # Probabilitas awal dari KNN
+    proba_knn = knn_classifier.predict_proba(embeddings)
+
+    # Confidence adjustment (sama seperti di training)
+    if hybrid_method in ['confidence', 'weighted']:
+        dist, _ = knn_classifier.kneighbors(embeddings)
+        mean_dist = np.mean(dist, axis=1)
+        confidence = 1.0 / (1.0 + mean_dist)
+        confidence = confidence.reshape(-1, 1)
+
+        if hybrid_method == 'confidence':
+            final_scores = proba_knn * confidence
+        elif hybrid_method == 'weighted':
+            final_scores = hybrid_alpha * proba_knn + (1 - hybrid_alpha) * confidence
+    else:
+        final_scores = proba_knn
+
+    # Normalisasi agar menjadi probabilitas (opsional, karena KNN sudah prob)
+    # Final scores bisa langsung digunakan sebagai probabilitas (bukan probabilitas sejati)
+    y_pred = np.argmax(final_scores, axis=1)
+    return label_encoder.inverse_transform(y_pred), final_scores
 
 def predict_indobert_proba(texts, artifacts):
     import torch
@@ -258,13 +395,26 @@ def predict_indobert_proba(texts, artifacts):
     bert_model.to(device)
     bert_model.eval()
 
+    # ===== PERBAIKAN: pastikan semua teks adalah string =====
+    import pandas as pd
+    cleaned_texts = []
+    for t in texts:
+        if pd.isna(t):
+            t = ""                     # atau "empty"
+        else:
+            t = str(t)
+        cleaned_texts.append(preprocess_indobert(t))   # preprocess minimal
+
     # Ekstraksi embedding
     embeddings = []
     with torch.no_grad():
-        for text in texts:
+        for text in cleaned_texts:
             encoded = tokenizer(
-                text, truncation=True, padding='max_length',
-                max_length=max_seq_length, return_tensors='pt'
+                text, 
+                truncation=True, 
+                padding='max_length',
+                max_length=max_seq_length, 
+                return_tensors='pt'
             ).to(device)
             if hasattr(bert_model, 'bert'):
                 # Model adalah IndoBERTClassifier (fine‑tuned)
@@ -335,7 +485,7 @@ def run_testing(app, test_id):
 
             holdout_path = training.metrics['holdout_path']
             df = pd.read_csv(holdout_path)
-            texts = df['kalimat'].tolist()
+            texts = df['kalimat'].fillna('').astype(str).tolist()
             y_true = df['label'].tolist() if 'label' in df.columns else df['emotion'].tolist()
 
             artifacts = joblib.load(training.model_path)
