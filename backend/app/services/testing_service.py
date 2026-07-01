@@ -522,6 +522,20 @@ def run_testing(app, test_id):
             except ValueError:
                 roc_auc = None
 
+            # Hitung Loss (Log Loss / Cross-Entropy) dan cetak ke terminal
+            try:
+                from sklearn.metrics import log_loss
+                loss_val = log_loss(y_true, proba)
+                # Cetak ke terminal dan logger
+                print(f"\n>>> Log Loss (Cross-Entropy): {loss_val:.6f}\n")
+                logger.info(f"Log Loss (Cross-Entropy): {loss_val:.6f}")
+                # Opsional: jika ingin simpan ke metrics (tidak wajib)
+                # test.metrics['log_loss'] = float(loss_val)
+            except Exception as e:
+                error_msg = f"Gagal menghitung log loss: {e}"
+                print(error_msg)
+                logger.warning(error_msg)
+
             # Simpan semua metrik ke kolom individual (backward compatible) + metrics JSON
             test.accuracy = float(acc)
             test.f1_score = float(f1)

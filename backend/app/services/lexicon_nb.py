@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.naive_bayes import MultinomialNB, BernoulliNB
 from sklearn.model_selection import StratifiedKFold, train_test_split
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix, matthews_corrcoef, roc_auc_score
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix, matthews_corrcoef, roc_auc_score, log_loss  # [ADDED] import log_loss
 from sklearn.preprocessing import LabelEncoder
 
 from app import db
@@ -348,6 +348,13 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                     exp_scores = np.exp(final_scores - np.max(final_scores, axis=1, keepdims=True))
                     final_scores = exp_scores / exp_scores.sum(axis=1, keepdims=True)
 
+                    # [ADDED] Hitung log loss berdasarkan probabilitas akhir (final_scores)
+                    try:
+                        loss_fold = log_loss(y_te, final_scores)
+                    except Exception as e:
+                        log(f"Warning: Gagal menghitung log loss untuk fold {fold_idx+1}: {e}", training_id)
+                        loss_fold = None
+
                     if tiebreaker is not None:
                         y_pred = predict_with_tiebreaker(final_scores, classes, tiebreaker)
                     else:
@@ -375,12 +382,13 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                         'precision': round(prec_w, 4),
                         'recall': round(rec_w, 4),
                         'f1_score': round(f1_w, 4),
+                        'loss': round(loss_fold, 4) if loss_fold is not None else None,  # [ADDED] simpan loss
                         'mcc': round(mcc, 4),
                         'roc_auc': round(roc_auc_fold, 4) if roc_auc_fold is not None else None
                     })
                     update_progress(app, training_id,
                                     45 + int((fold_idx+1)/n_folds * 30),
-                                    f"Fold {fold_idx+1}/{n_folds} selesai (Akurasi: {acc:.4f})")
+                                    f"Fold {fold_idx+1}/{n_folds} selesai (Akurasi: {acc:.4f}, Loss: {loss_fold:.4f})" if loss_fold else f"Fold {fold_idx+1}/{n_folds} selesai (Akurasi: {acc:.4f})")
 
                 # Gabungkan seluruh prediksi dan label aktual
                 y_true_all = np.concatenate(y_true_all)
@@ -403,6 +411,9 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                 # Rata‑rata ROC‑AUC dari fold yang tidak None
                 roc_auc_values = [f['roc_auc'] for f in fold_metrics if f['roc_auc'] is not None]
                 avg_roc_auc = np.mean(roc_auc_values) if roc_auc_values else None
+                # [ADDED] Rata-rata loss dari fold yang tidak None
+                loss_values = [f['loss'] for f in fold_metrics if f['loss'] is not None]
+                avg_loss = np.mean(loss_values) if loss_values else None
 
                 # --- Tambahan: hitung metrik macro & MCC dari seluruh data training (gabungan) ---
                 macro_precision = precision_score(y_true_all, y_pred_all, average='macro', zero_division=0)
@@ -415,6 +426,7 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                     'f1_score': round(avg_f1, 4),
                     'precision': round(avg_prec, 4),
                     'recall': round(avg_rec, 4),
+                    'loss': round(avg_loss, 4) if avg_loss is not None else None,  # [ADDED] simpan loss rata-rata
                     'macro_precision': round(macro_precision, 4),
                     'macro_recall': round(macro_recall, 4),
                     'macro_f1_score': round(macro_f1, 4),
@@ -475,6 +487,13 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                 exp_scores = np.exp(final_scores - np.max(final_scores, axis=1, keepdims=True))
                 final_scores = exp_scores / exp_scores.sum(axis=1, keepdims=True)
 
+                # [ADDED] Hitung log loss berdasarkan probabilitas akhir
+                try:
+                    loss_val = log_loss(y_test, final_scores)
+                except Exception as e:
+                    log(f"Warning: Gagal menghitung log loss: {e}", training_id)
+                    loss_val = None
+
                 if tiebreaker is not None:
                     log("Menggunakan tie-breaker ranking untuk prediksi.", training_id)
                     y_pred = predict_with_tiebreaker(final_scores, classes, tiebreaker)
@@ -505,6 +524,7 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                     'f1_score': round(f1, 4),
                     'precision': round(precision, 4),
                     'recall': round(recall, 4),
+                    'loss': round(loss_val, 4) if loss_val is not None else None,  # [ADDED] simpan loss
                     'macro_precision': round(macro_precision, 4),
                     'macro_recall': round(macro_recall, 4),
                     'macro_f1_score': round(macro_f1, 4),
@@ -514,7 +534,7 @@ def train_lexicon_nb(app, training_id, config, dataset_path):
                     'holdout_path': holdout_path,
                     'roc_auc': round(roc_auc, 4) if roc_auc is not None else None
                 }
-                log(f"Evaluasi selesai. Akurasi: {metrics['accuracy']}, F1: {metrics['f1_score']}", training_id)
+                log(f"Evaluasi selesai. Akurasi: {metrics['accuracy']}, F1: {metrics['f1_score']}, Loss: {metrics['loss']}", training_id)
 
             # 13. Simpan model (berlaku untuk kedua mode)
             model_filename = f"lexicon_nb_{training_id}.pkl"
