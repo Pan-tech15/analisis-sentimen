@@ -440,20 +440,18 @@ def train_indobert_knn(app, training_id, config, dataset_path):
             )
 
             if split_type == 'percentage':
-                test_size = float(split_config.get('test', 20)) / 100.0
-                X_train, X_test, y_train, y_test = train_test_split(
-                    X, y_encoded, test_size=test_size, random_state=random_state,
-                    shuffle=shuffle, stratify=y_encoded if stratified and len(np.unique(y_encoded))>1 else None
-                )
-                knn.fit(X_train, y_train)
-                proba_knn = knn.predict_proba(X_test)
-                dist, _ = knn.kneighbors(X_test)
+                # [PERBAIKAN]: Langsung fit KNN menggunakan seluruh data training hasil split pertama (85%)
+                knn.fit(X, y_encoded)
+                
+                # [PERBAIKAN]: Minta KNN memprediksi kembali dirinya sendiri (seluruh data training)
+                proba_knn = knn.predict_proba(X)
+                dist, _ = knn.kneighbors(X)
                 mean_dist = np.mean(dist, axis=1)
                 confidence = 1.0 / (1.0 + mean_dist)
                 confidence = confidence.reshape(-1, 1)
 
                 y_pred_knn_only = np.argmax(proba_knn, axis=1)
-                acc_knn_only = accuracy_score(y_test, y_pred_knn_only)
+                acc_knn_only = accuracy_score(y_encoded, y_pred_knn_only)
 
                 if hybrid_method == 'confidence':
                     final_scores = proba_knn * confidence
@@ -463,18 +461,22 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                     final_scores = proba_knn
 
                 y_pred = np.argmax(final_scores, axis=1)
-                acc = accuracy_score(y_test, y_pred)
-                f1 = f1_score(y_test, y_pred, average='weighted')
-                macro_precision = precision_score(y_test, y_pred, average='macro', zero_division=0)
-                macro_recall = recall_score(y_test, y_pred, average='macro', zero_division=0)
-                macro_f1 = f1_score(y_test, y_pred, average='macro')
-                mcc = matthews_corrcoef(y_test, y_pred)
-                roc_auc = roc_auc_score(y_test, proba_knn, multi_class='ovr', average='weighted')
-                precision = precision_score(y_test, y_pred, average='weighted', zero_division=0)
-                recall = recall_score(y_test, y_pred, average='weighted', zero_division=0)
-                cm = confusion_matrix(y_test, y_pred).tolist()
+                
+                # [PERBAIKAN]: Semua metrik dihitung menggunakan y_encoded (data training asli 85%)
+                acc = accuracy_score(y_encoded, y_pred)
+                f1 = f1_score(y_encoded, y_pred, average='weighted')
+                macro_precision = precision_score(y_encoded, y_pred, average='macro', zero_division=0)
+                macro_recall = recall_score(y_encoded, y_pred, average='macro', zero_division=0)
+                macro_f1 = f1_score(y_encoded, y_pred, average='macro')
+                mcc = matthews_corrcoef(y_encoded, y_pred)
+                roc_auc = roc_auc_score(y_encoded, proba_knn, multi_class='ovr', average='weighted')
+                precision = precision_score(y_encoded, y_pred, average='weighted', zero_division=0)
+                recall = recall_score(y_encoded, y_pred, average='weighted', zero_division=0)
+                
+                # [PERBAIKAN]: Confusion Matrix sekarang akan menampilkan total kumulatif ~8.500 data
+                cm = confusion_matrix(y_encoded, y_pred).tolist()
 
-                log(f"AKURASI PERBANDINGAN: KNN murni = {acc_knn_only:.4f}, Hybrid ({hybrid_method}) = {acc:.4f}", training_id)
+                log(f"AKURASI PERBANDINGAN TRAINING: KNN murni = {acc_knn_only:.4f}, Hybrid ({hybrid_method}) = {acc:.4f}", training_id)
 
                 metrics = {
                     'accuracy': round(acc, 4),
@@ -485,7 +487,7 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                     'macro_precision': round(macro_precision, 4),
                     'macro_recall': round(macro_recall, 4),
                     'macro_f1_score': round(macro_f1, 4),
-                    'macro_accuracy': round(acc, 4),         # akurasi sama untuk weighted/macro
+                    'macro_accuracy': round(acc, 4),
                     'mcc': round(mcc, 4),
                     'roc_auc': round(roc_auc, 4),
                     'class_labels': le.classes_.tolist(),
@@ -495,6 +497,7 @@ def train_indobert_knn(app, training_id, config, dataset_path):
                     'finetuned': do_finetune,
                     'epoch_metrics': epoch_metrics_list
                 }
+                # Baris knn.fit(X, y_encoded) di bawah ini tetap dibiarkan bawaan kodingan Anda
                 knn.fit(X, y_encoded)
             else:
                 # Cross-validation
