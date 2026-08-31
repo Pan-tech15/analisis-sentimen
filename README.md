@@ -170,19 +170,21 @@ Linguistic text cleaning processes are executed through tailored configurations 
 
 ### Stage 3: Processing Procedure
 
-The execution frameworks split the comprehensive corpus into an 80% global training environment and a 20% standalone validation holdout.
+The comprehensive corpus is split into training and testing sets using a **hold-out strategy**. As detailed in **Table 3**, the optimal split ratio differs between the two models: **IndoBERT–KNN achieves peak performance at an 85:15 split**, whereas **Naïve Bayes–Lexicon performs optimally at an 80:20 split**.
 
-- **IndoBERT-KNN Pipeline (`train_indobert_knn`):** Coordinates `Idiom detection` checks via the presence of the `has_idiom` constraint, `Idiom meaning annotation`, contextual encoder pooling, `Sentence embedding` extraction, and distance-based classification inside a UMAP-reduced compact representation space.
-- **Naïve Bayes-Lexicon Approach (`train_lexicon_nb`):** Constructs a dynamic co-occurrence grid comprising dictionary lookup scoring and corpus-wide Pointwise Mutual Information (`compute_pmi`). Features are vectorized using a TF-IDF scheme, fed into a `MultinomialNB` engine, and integrated via a custom soft-probability mathematical fusion algorithm.
+- **IndoBERT-KNN Pipeline (`train_indobert_knn`):**
+  Sequentially coordinates `Idiom detection` checks via the `has_idiom` constraint, `Idiom meaning annotation`, and contextual encoder pooling. The core IndoBERT model is fine-tuned using a fixed **5 Epoch** strategy (hyperparameters detailed in **Table 4**) applied directly to the training set. Following encoding, sentence embeddings are projected into a compact semantic space using **UMAP** (parameter configuration in **Table 5**) and classified via KNN.
 
-### Stage 4: Evaluation & Model Evaluation Highlights
+- **Naïve Bayes-Lexicon Approach (`train_lexicon_nb`):**
+  Constructs a dynamic co-occurrence grid comprising dictionary lookup scoring and corpus-wide Pointwise Mutual Information (`compute_pmi`). Unlike the epoch-based training of IndoBERT, **hyperparameter optimization (e.g., the `alpha` smoothing parameter) is conducted internally via a Stratified 10-fold Cross-Validation** strictly within the training subset. Features are vectorized using a TF-IDF scheme, fed into a `MultinomialNB` engine, and integrated via a custom soft-probability mathematical fusion algorithm.
 
-Model performance evaluation strategy explicitly differentiates the validation workflow based on specific architectural paradigms to map true empirical training behavior:
+### Stage 4: Evaluation & Model Performance Highlights
 
-- **IndoBERT-KNN Framework Validation:** Tracks localized feature representations over a progressive training sequence bounded by **5 distinct epochs** of fine-tuning, directly optimized utilizing a `Cross-Entropy Loss` metric over the 80% partitioned environment.
-- **Naïve Bayes-Lexicon Framework Validation:** Audits stability and feature dependency distributions inside a **Stratified 10-fold cross-validation setup** (`StratifiedKFold`) executed strictly within the partitioned environment to safeguard against overfitting.
-- **Core Performance Metrics:** Standalone generalization capability for both optimized models is verified on the separate 20% independent testing holdout partition (`holdout_lexicon_[id].csv`), tracking multi-class macro parameters across accuracy, precision, recall, F1-score, Log Loss, and the Matthews Correlation Coefficient (MCC).
-- **Experimental Baselines:** When validated on the 20% independent testing holdout partition, the proposed **IndoBERT–KNN** framework with UMAP achieved a prominent accuracy and F1-score of **97.45%** (Testing Loss: 0.0265, MCC: 0.970). This performance systematically outpaced the baseline **Naïve Bayes–Lexicon** model configuration, which achieved **93.13%** accuracy under identical testing splits. An ablation setup executed entirely without UMAP dimensionality reduction resulted in a lower testing accuracy of **89.07%** and an F1-score of **88.73%** for the transformer configuration.
+Model performance is executed via Confusion Matrices alongside standardized validation configurations:
+
+- **Validation Framework:** While hyperparameter tuning for the Naïve Bayes–Lexicon model utilizes Stratified 10-fold CV on the training data, the **final generalization performance for both models** is rigorously validated on the separate independent testing holdout (using the optimal split ratios specified in Table 3).
+- **Core Performance Metrics:** System validation tracks macro-averaged parameters across accuracy, precision, recall, F1-score, Log Loss, Matthews Correlation Coefficient (MCC), and ROC–AUC. The consolidated training and testing results for all metrics are presented in **Table 6** of the manuscript.
+- **Experimental Baselines:** When validated on the independent holdout, the proposed **IndoBERT–KNN** framework with UMAP achieved a prominent accuracy and F1-score of **97.45%** (Testing Loss: 0.0265, MCC: 0.970). This performance systematically outpaced the baseline **Naïve Bayes–Lexicon** model configuration, which achieved **93.13%** accuracy under identical testing splits. An ablation setup executed entirely without UMAP dimensionality reduction resulted in a lower testing accuracy of **89.07%** and an F1-score of **88.73%** for the transformer configuration.
 
 ## Code Availability & Open Data Policy
 
