@@ -71,7 +71,7 @@ To ensure exact replication of the empirical results presented in the study, the
 #### Naïve Bayes–Lexicon Classifier Settings
 
 - **Classifier Type:** Multinomial Naïve Bayes (`MultinomialNB`) with Laplace smoothing parameter alpha = 0.3.
-- **Feature Vectorizer:** `TfidfVectorizer` utilizing max_features = 5000 and ngram_range = (1,2).
+- **Feature Vectorizer:** `TfidfVectorizer` used to extract numerical text features by representing term importance within the text corpus.
 - **Hybrid Fusion Method:** Weighted Soft-Probability Decision Fusion ($P_{\text{final}} = \alpha \cdot P_{\text{NB}} + (1 - \alpha) \cdot S_{\text{lexicon}}$) with weight $\alpha = 0.9$.
 - **Tie-Breaker Ranking Array:** 7-tier scale mapping priority values: Happy (1), Trust (2), Surprised (3), Neutral (4), Sad (5), Scared (6), Angry (7).
 
