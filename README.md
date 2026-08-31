@@ -153,10 +153,10 @@ The execution pipeline follows the 4 structured framework stages established in 
 
 ### Stage 1: Data Collection & Stage 2: Pre-Processing
 
-Linguistic text cleaning processes are executed via two distinct paths in `preprocessing_utils.py`:
+Linguistic text cleaning processes are executed through tailored configurations depending on the requirements of each model framework:
 
-- **Jalur Ringan (`preprocess_light`):** Implements text case folding and slang-word mapping to retain the structural dependencies required for transformer encoders. Used exclusively for **IndoBERT–KNN**.
-- **Jalur Agresif (`preprocess_heavy`):** Implements heavy token-level cleansing including punctuation removal, stopword filtering via a manual token dictionary, and grammatical word-stemming via Sastrawi. Used exclusively for **Naïve Bayes–Lexicon**.
+- **Context-Preserving Preprocessing:** Implements text case folding and slang-word mapping to standardize the language while retaining complete structural and syntactic dependencies. This localized normalization ensures the semantic context remains intact for the transformer encoder, applied specifically for the **IndoBERT–KNN** framework.
+- **Aggressive Token-Level Cleansing:** Implements rigorous linguistic cleaning including lowercase transformation, punctuation and special-character removal, stopword filtering utilizing a manually defined token dictionary, and grammatical word-stemming via Sastrawi. This structured reduction minimizes feature noise and maps tokens to their base forms, applied specifically for the **Naïve Bayes–Lexicon** approach.
 
 ### Stage 3: Processing Procedure
 
