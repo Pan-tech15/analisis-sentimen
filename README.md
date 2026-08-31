@@ -6,52 +6,51 @@
 
 ## Description
 
-This repository contains the official computer code and structural environment for the idiom-aware emotion classification frameworks developed for Indonesian text. It implements a unified processing pipeline integrating idiom detection, idiom interpretation, and emotion classification. This platform evaluates two distinct hybrid NLP paradigms: an architecture integrating IndoBERT with K-Nearest Neighbors using Uniform Manifold Approximation and Projection (IndoBERT–KNN) for contextual representations, and a Naïve Bayes–Lexicon approach incorporating emotion intensity-based lexicons. The codebase handles full evaluation metrics including the Area Under the Receiver Operating Characteristic curve and Area Under the Curve analysis (ROC–AUC), Matthews Correlation Coefficient (MCC), and multi-class macro performance averages.
+This repository contains the official computer code and structural production environment for the idiom-aware emotion classification frameworks developed for Indonesian text. It implements a highly optimized, modular processing pipeline integrating idiom detection, idiom semantic interpretation, and emotion classification. This platform comprehensively implements and evaluates two distinct hybrid NLP paradigms: an architecture integrating IndoBERT with instance-based learning via K-Nearest Neighbors coupled with Uniform Manifold Approximation and Projection (IndoBERT–KNN) for high-dimensional contextual embeddings, and an ensemble Naïve Bayes–Lexicon approach incorporating statistical Pointwise Mutual Information (PMI) and mathematical Soft-Probability Decision Fusion. The codebase handles exhaustive validation metrics including Area Under the Receiver Operating Characteristic curve and Area Under the Curve analysis (ROC–AUC), Matthews Correlation Coefficient (MCC), Log Loss tracking, and multi-class macro performance averages.
 
 ## Dataset Information
 
-- **Data Directory Structure:** All research datasets are securely structured under the `backend/data/` directory.
-  - **Raw Data:** Located in `backend/data/raw/` (Contains the original data files formatted in English).
-  - **Preprocessed Data:** Located in `backend/data/preprocessed/` (Contains engineered features for model consumption).
-  - **Testing Data:** Located in `backend/data/testing/` (Contains validation splits such as holdout subsets).
-- **Data Language:** English (Completely translated and aligned with PeerJ requirements for reviewer and reader accessibility). The primary reference file uploaded to the submission portal is designated as `Dataset.csv`.
+- **Data Directory Structure:** All research corpuses are securely managed under the backend storage structure:
+  - **Raw Ingestion Directory:** `backend/data/raw/` (Contains original text files formatted with English metadata mapping).
+  - **Engineered Feature Directory:** `backend/data/preprocessed/` (Contains pre-computed linguistic tokens and feature matrix arrays).
+  - **Validation Holdout Directory:** `backend/data/testing/` (Contains independent validation slices generated at runtime).
+- **Data Language:** English metadata structures (The input text entries are in Indonesian, while all classification metadata, schemas, column headers, and target labels are fully mapped in English to ensure absolute reviewer accessibility). The definitive deployed file reference is designated as `Dataset.csv`.
 
 ### Data Distribution Summary
 
-The underlying research utilizes a dataset initially consisting of **10,186 text samples** compiled during the primary ingestion phase. The corpus maintains a natural balance distributed across core target emotion categories and literal text classes, which includes:
+The underlying research model pipeline processes a balanced data repository consisting of **10,186 text samples** compiled during the primary ingestion phase. The corpus maintains a natural balance distributed across core target emotion categories and literal text classes, which includes:
 
-- **Non-idiom data:** 5,013 samples
-- **Idiomatic data classes:** Distributed across 5,173 idiomatic sentences assigned into 7 emotion categories based on Plutchik's taxonomy:
-  - happiness (767)
-  - trust (734)
-  - surprise (735)
-  - neutral (724)
-  - sadness (733)
-  - fear (744)
-  - anger (736)
+- **Non-idiom Baseline Data:** 5,013 samples (Automatically categorized via the presence of the `has_idiom` flag).
+- **Idiomatic Context Data Classes:** 5,173 idiomatic sentences assigned into 7 emotion categories based on Plutchik's taxonomy:
+  - happiness (767 samples)
+  - trust (734 samples)
+  - surprise (735 samples)
+  - neutral (724 samples)
+  - sadness (733 samples)
+  - fear (744 samples)
+  - anger (736 samples)
 
-Because the macro distribution between the non-idiomatic category and the cumulative idiomatic configurations inherently reflects a balanced pattern (approximate 50:50 distribution), the dataset does not require synthetic data generation (Augmentation) or random under-sampling algorithms (Discarding). Consequently, the model pipelines leverage the authentic empirical architecture of the data without external modifications. Clear distribution frequencies across the model frameworks can be fully referenced in **Table 1** of the main manuscript.
+Because the macro distribution between the non-idiomatic category and the cumulative idiomatic configurations inherently reflects an optimized pattern (approximate 50:50 macro distribution), the dataset does not require synthetic data generation (Augmentation) or random under-sampling algorithms (Discarding). Consequently, the model pipelines leverage the authentic empirical architecture of the data without external modifications. Clear distribution frequencies across the model frameworks can be fully referenced in **Table 1** of the main manuscript.
 
 ## Code Information
 
-The project architecture follows a modular, layered production structure designed to strictly separate database interaction, API routing, core business logic, and utility pipelines:
+The production repository architecture follows a modular, layered structure designed to strictly separate database interaction, API routing, core business logic, and utility pipelines:
 
-- `backend/run.py`: The application entry point that instantiates, configures, and runs the Flask development server.
-- `backend/app/__init__.py`: Initializes the Flask application package, configures extensions, and binds application blueprints.
-- `backend/app/config.py`: Manages global environment configurations, runtime parameters, and PostgreSQL database credentials.
-- `backend/app/models/`: Contains database schema definitions and Object-Relational Mapping (ORM) models for storing persistent data (e.g., text, idioms, and classifications).
+- `backend/run.py`: The application entry point that instantiates, configures, and boots the local Flask development server.
+- `backend/app/__init__.py`: Initializes the Flask application package, configures global extensions, and binds blueprints.
+- `backend/app/config.py`: Manages environment configurations, structural application parameters, and PostgreSQL database credentials.
+- `backend/app/models/`: Contains database schema definitions and Object-Relational Mapping (ORM) models for tracking model runs (`training.py`).
 - `backend/app/routes/`: Houses modular API endpoints and routes divided by functional domains (e.g., `dashboard.py`) to handle requests from the frontend client.
-- `backend/app/services/`: Implements the core business logic, data processing workflows, and the IndoBERT embedding and K-Nearest Neighbors (KNN) execution frameworks.
-- `backend/app/utils/`: Dedicated directory for helper scripts, text preprocessing routines, and static evaluation metrics.
+- `backend/app/services/`: Implements the core business logic, containing the main training engines for the machine learning pipelines (`train_indobert_knn` and `train_lexicon_nb`).
+- `backend/app/utils/`: Dedicated directory for static evaluation metrics, database helper scripts, and text preprocessing tokenization routines (`preprocessing_utils.py`).
 - `backend/migrations/`: Stores automated database migration scripts and schema versioning histories managed via Flask-Migrate.
-- `frontend/`: Contains the presentation layer files, client-side web assets, and interfaces for the Administrative Portal and Public Dashboard.
+- `frontend/`: Contains presentation layer files, client-side web assets, and tracking dashboard interfaces.
 
 ## Prerequisites & Requirements
 
 - **Python Runtime:** Version 3.14.5 (or compatible 64-bit AMD architecture).
-- **Database Engine:** PostgreSQL Version 18.3.2.
-- **IDE/Editor:** Visual Studio Code (VSCode) recommended.
-- **Core Dependencies:** Python libraries listed in `requirements.txt`.
+- **Database Engine:** PostgreSQL Version 18.3.2 (Target database: `analisis_sentimen`).
+- **Core Dependencies:** Python libraries listed in `requirements.txt` (including `torch`, `transformers`, `umap-learn`, `joblib`, `scikit-learn`, and `Sastrawi`).
 
 ### Model Configuration & Hyperparameters
 
@@ -59,23 +58,22 @@ To ensure exact replication of the empirical results presented in the study, the
 
 #### IndoBERT Architecture Settings
 
-- **Max Sequence Length:** 128 | **Batch Size:** 16 | **Pooling Layer:** Mean
-- **Epochs:** 5 (Fine-tuning phase) | **Learning Rate:** 2E-05 | **Optimizer:** AdamW
-- **Freeze Layers:** 9 | **Classifier Dropout:** 0.1 | **Target Dimension:** 768
-  _(For complete layers setup, see **Table 4** in the manuscript)_
+- **Base Pretrained Model:** `indobenchmark/indobert-base-p2`
+- **Max Sequence Length:** 128 tokens | **Batch Size:** 32 samples | **Pooling Layer:** MEAN aggregation
+- **Fine-Tuning Hyperparameters:** Epochs = 5, Learning Rate = 2E-05, Optimizer = AdamW, Weight Decay = 0.01, Warmup Ratio = 0.1, Freeze Encoder Layers = 9, Classifier Dropout = 0.1.
 
 #### Dimension Reduction & Classifier (UMAP + KNN)
 
-- **UMAP Components:** 200 components with 30 neighbors (`metric='cosine'`, `min_dist=0.1`)
-- **KNN Classifier:** K=5 (`metric='cosine'`, `weights='distance'`, `algorithm='auto'`)
-  _(Detailed configurations are mapped in **Table 5** of the manuscript)_
+- **UMAP Components:** n_components = 200, n_neighbors = 30, min_dist = 0.1, metric = 'cosine'.
+- **KNN Classifier:** K = 5, metric = 'cosine', weights = 'distance', algorithm = 'auto', leaf_size = 30.
+- **Confidence Adjustment Method:** Weighted hybrid combination ($\alpha = 0.7$).
 
 #### Naïve Bayes–Lexicon Classifier Settings
 
-- **Classifier Type:** Multinomial Naïve Bayes (`MultinomialNB`)
-- **Feature Vectorizer:** TF-IDF Vectorizer (Term Frequency-Inverse Document Frequency)
-- **Smoothing Parameter:** alpha = 0.3 (To prevent zero-frequency evaluation issues)
-- **Emotion Intensity Scale:** 7-tier scale mapping numerical strength from happiness (1) to anger (7)
+- **Classifier Type:** Multinomial Naïve Bayes (`MultinomialNB`) with Laplace smoothing parameter alpha = 0.3.
+- **Feature Vectorizer:** `TfidfVectorizer` utilizing max_features = 5000 and ngram_range = (1,2).
+- **Hybrid Fusion Method:** Weighted Soft-Probability Decision Fusion ($P_{\text{final}} = \alpha \cdot P_{\text{NB}} + (1 - \alpha) \cdot S_{\text{lexicon}}$) with weight $\alpha = 0.9$.
+- **Tie-Breaker Ranking Array:** 7-tier scale mapping priority values: Happy (1), Trust (2), Surprised (3), Neutral (4), Sad (5), Scared (6), Angry (7).
 
 ## Environment Setup & Installation
 
@@ -83,7 +81,7 @@ To ensure exact replication of the empirical results presented in the study, the
 
 1. Install PostgreSQL version 18.3.2 on your system.
 2. Open pgAdmin4 or your preferred SQL terminal, connect to your local server, and create a new empty database named exactly `analisis_sentimen`.
-3. Since this project utilizes Flask-Migrate for database schema versioning, run the database upgrade command inside your activated virtual environment to automatically generate all tables (including the `idioms` table):
+3. Run the database upgrade command inside your activated virtual environment to automatically generate all training tables:
    ```bash
    cd backend
    flask db upgrade
@@ -92,22 +90,21 @@ To ensure exact replication of the empirical results presented in the study, the
 ### 2. Project Directory & Dataset Initialization
 
 1. Navigate to the `backend` project folder.
-2. Ensure your English-translated dataset files are placed within their respective subfolders under `backend/data/` (i.e., placing raw files inside `/raw`, preprocessed files inside `/preprocessed`, and evaluation splits inside `/testing`).
+2. Place your English-translated dataset files within their respective subfolders under `backend/data/` (i.e., raw files inside `/raw`, preprocessed files inside `/preprocessed`, and evaluation splits inside `/testing`).
 3. Create a new environment configuration file named `.env` inside the `backend` folder.
 4. Populate the `.env` file with the connection string and credentials matching your local PostgreSQL setup as outlined in `env.txt`.
 
 ### 3. Dependency Installation
 
-1. Open the project root folder (`analisis-sentimen`) inside VSCode.
-2. Open the integrated terminal (`Ctrl + ~`) and initialize a Python virtual environment:
+1. Open the project root folder inside VSCode terminal and initialize a Python virtual environment:
    ```bash
    python -m venv venv
    ```
-3. Activate the virtual environment:
+2. Activate the virtual environment:
    - **Windows (PowerShell):** `.\venv\Scripts\Activate.ps1`
    - **Windows (CMD):** `.\venv\Scripts\activate.bat`
    - **macOS/Linux:** `source venv/bin/activate`
-4. Install all required dependencies from the package registry:
+3. Install all required dependencies from the package registry:
    ```bash
    pip install -r requirements.txt
    ```
@@ -156,27 +153,25 @@ The execution pipeline follows the 4 structured framework stages established in 
 
 ### Stage 1: Data Collection & Stage 2: Pre-Processing
 
-Text cleaning pipelines process text corpuses systematically via the following steps:
+Linguistic text cleaning processes are executed via two distinct paths in `preprocessing_utils.py`:
 
-- **Lexical Cleansing:** Case folding, punctuation and special-character removal, stopword filtering, and grammatical stemming.
-- **Text Normalization:** Word normalization workflows and automated duplicate entry removal pipelines.
-- **Model Tokenization:** The clean text is structured into token IDs via IndoBERT’s WordPiece tokenizer, integrating standard `[CLS]` and `[SEP]` context boundaries.
+- **Jalur Ringan (`preprocess_light`):** Implements text case folding and slang-word mapping to retain the structural dependencies required for transformer encoders. Used exclusively for **IndoBERT–KNN**.
+- **Jalur Agresif (`preprocess_heavy`):** Implements heavy token-level cleansing including punctuation removal, stopword filtering via a manual token dictionary, and grammatical word-stemming via Sastrawi. Used exclusively for **Naïve Bayes–Lexicon**.
 
 ### Stage 3: Processing Procedure
 
-The core model frameworks process text pipelines through distinct task blocks:
+The execution frameworks split the comprehensive corpus into an 80% global training environment and a 20% standalone validation holdout.
 
-- **IndoBERT-KNN Pipeline:** Implements sequential blocks consisting of `Idiom detection`, `Idiom meaning annotation`, `IndoBERT encoder` transformations, `Sentence embedding` extraction, `KNN classification`, and final `Emotion prediction`.
-- **Naïve Bayes-Lexicon Approach:** Implements `Idiom detection`, `Hybrid Lexicon construction` (integrating both Dictionary-based and Corpus-based approaches), `Idiom meaning interpretation`, combined TF-IDF `Feature extraction`, and `Naïve Bayes classification` workflows.
+- **IndoBERT-KNN Pipeline (`train_indobert_knn`):** Sequentially coordinates `Idiom detection` checks via the presence of the `has_idiom` constraint, `Idiom meaning annotation`, contextual encoder pooling, `Sentence embedding` extraction, and distance-based classification inside a UMAP-reduced compact representation space.
+- **Naïve Bayes-Lexicon Approach (`train_lexicon_nb`):** Constructs a dynamic co-occurrence grid comprising dictionary lookup scoring and corpus-wide Pointwise Mutual Information (`compute_pmi`). Features are vectorized using a TF-IDF scheme, fed into a `MultinomialNB` engine, and integrated via a custom soft-probability mathematical fusi algorithm.
 
 ### Stage 4: Evaluation & Model Evaluation Highlights
 
 Model performance evaluation is executed via Confusion Matrix matrices alongside standardized cross-validation configurations:
 
-- **Core Performance Metrics:** System validation tracks macro-averaged and weighted-average parameters across accuracy, precision, recall, F1-score, and the Matthews Correlation Coefficient (MCC).
-- **Advanced Evaluators:** Discrepancies and threshold distributions are evaluated utilizing multi-class Area Under the Receiver Operating Characteristic curve and Area Under the Curve analysis, explicitly tracked via `ROC–AUC` and `ROU-AUC` baselines.
-- **Loss Parameters:** Model training optimizations track `Cross-Entropy Loss` and definitive `testing loss` parameters to evaluate model discriminative behavior on unseen samples.
-- **Experimental Baselines:** On the testing partitions, **IndoBERT–KNN** with UMAP achieved an accuracy and F1-score of **97.45%** (Testing Loss: 0.0265, MCC: 0.970), outperforming the baseline **Naïve Bayes–Lexicon** model which achieved **93.13%** accuracy. An ablation setup executed entirely without UMAP dimensionality reduction resulted in a lower testing accuracy of **89.07%** and an F1-score of **88.73%**.
+- **Validation Framework:** Parameter tuning is audited inside a Stratified 10-fold cross-validation setup (`StratifiedKFold`) within the training subset, while final generalizability is reported on the separate 20% independent testing holdout partition (`holdout_lexicon_[id].csv`).
+- **Core Performance Metrics:** System validation tracks macro-averaged parameters across accuracy, precision, recall, F1-score, Log Loss, and the Matthews Correlation Coefficient (MCC).
+- **Experimental Baselines:** When validated on the 20% independent testing holdout partition, the proposed **IndoBERT–KNN** framework with UMAP achieved a prominent accuracy and F1-score of **97.45%** (Testing Loss: 0.0265, MCC: 0.970). This performance systematically outpaced the baseline **Naïve Bayes–Lexicon** model configuration, which achieved **93.13%** accuracy under identical testing splits. An ablation setup executed entirely without UMAP dimensionality reduction resulted in a lower testing accuracy of **89.07%** and an F1-score of **88.73%** for the transformer configuration.
 
 ## Code Availability & Open Data Policy
 
