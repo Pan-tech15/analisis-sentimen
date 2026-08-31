@@ -30,7 +30,7 @@ The underlying research model pipeline processes a balanced data repository cons
   - fear (744 samples)
   - anger (736 samples)
 
-Because the macro distribution between the non-idiomatic category and the cumulative idiomatic configurations inherently reflects an optimized pattern (approximate 50:50 macro distribution), the dataset does not require synthetic data generation (Augmentation) or random under-sampling algorithms (Discarding). Consequently, the model pipelines leverage the authentic empirical architecture of the data without external modifications. Clear distribution frequencies across the model frameworks can be fully referenced in **Table 1** of the main manuscript.
+Because the macro distribution between the non-idiomatic category and the cumulative idiomatic configurations inherently reflects an optimized pattern (approximate 50:50 macro distribution), the dataset does not require synthetic data generation (Augmentation) or random under-sampling algorithms (Discarding). Consequently, the model pipelines leverage the authentic empirical architecture of the data without external modifications. The complete distribution frequencies are detailed in **Table 1** of the main manuscript.
 
 ## Code Information
 
@@ -48,8 +48,8 @@ The production repository architecture follows a modular, layered structure desi
 
 ## Prerequisites & Requirements
 
-- **Python Runtime:** Version 3.14.5 (or compatible 64-bit AMD architecture).
-- **Database Engine:** PostgreSQL Version 18.3.2 (Target database: `analisis_sentimen`).
+- **Python Runtime:** Version 3.12.5 (or compatible 64-bit AMD architecture).
+- **Database Engine:** PostgreSQL Version 16.2 (Target database: `analisis_sentimen`).
 - **Core Dependencies:** Python libraries listed in `requirements.txt` (including `torch`, `transformers`, `umap-learn`, `joblib`, `scikit-learn`, and `Sastrawi`).
 
 ### Model Configuration & Hyperparameters
@@ -59,17 +59,18 @@ To ensure exact replication of the empirical results presented in the study, the
 #### IndoBERT Architecture Settings
 
 - **Base Pretrained Model:** `indobenchmark/indobert-base-p2`
+- **Training Strategy:** Fixed epoch-based fine-tuning (Epochs = 5) without internal cross-validation for parameter selection. The complete parameter configuration is summarized in **Table 4** of the manuscript.
 - **Max Sequence Length:** 128 tokens | **Batch Size:** 32 samples | **Pooling Layer:** MEAN aggregation
-- **Fine-Tuning Hyperparameters:** Epochs = 5, Learning Rate = 2E-05, Optimizer = AdamW, Weight Decay = 0.01, Warmup Ratio = 0.1, Freeze Encoder Layers = 9, Classifier Dropout = 0.1.
+- **Fine-Tuning Hyperparameters:** Learning Rate = 2E-05, Optimizer = AdamW, Weight Decay = 0.01, Warmup Ratio = 0.1, Freeze Encoder Layers = 9, Classifier Dropout = 0.1.
 
 #### Dimension Reduction & Classifier (UMAP + KNN)
 
-- **UMAP Components:** n_components = 200, n_neighbors = 30, min_dist = 0.1, metric = 'cosine'.
+- **UMAP Components:** n_components = 200, n_neighbors = 30, min_dist = 0.1, metric = 'cosine' (parameter details available in **Table 5**).
 - **KNN Classifier:** K = 5, metric = 'cosine', weights = 'distance', algorithm = 'auto', leaf_size = 30.
-- **Confidence Adjustment Method:** Weighted hybrid combination ($\alpha = 0.7$).
 
 #### Naïve Bayes–Lexicon Classifier Settings
 
+- **Training Strategy:** Hyperparameters (e.g., Laplace smoothing alpha) are optimized via a Stratified 10-fold Cross-Validation approach strictly within the training subset.
 - **Classifier Type:** Multinomial Naïve Bayes (`MultinomialNB`) with Laplace smoothing parameter alpha = 0.3.
 - **Feature Vectorizer:** `TfidfVectorizer` used to extract numerical text features by representing term importance within the text corpus.
 - **Hybrid Fusion Method:** Weighted Soft-Probability Decision Fusion ($P_{\text{final}} = \alpha \cdot P_{\text{NB}} + (1 - \alpha) \cdot S_{\text{lexicon}}$) with weight $\alpha = 0.9$.
@@ -79,7 +80,7 @@ To ensure exact replication of the empirical results presented in the study, the
 
 ### 1. Database Configuration & Migration
 
-1. Install PostgreSQL version 18.3.2 on your system.
+1. Install PostgreSQL version 16.2 on your system.
 2. Open pgAdmin4 or your preferred SQL terminal, connect to your local server, and create a new empty database named exactly `analisis_sentimen`.
 3. Run the database upgrade command inside your activated virtual environment to automatically generate all training tables:
    ```bash
@@ -90,9 +91,9 @@ To ensure exact replication of the empirical results presented in the study, the
 ### 2. Project Directory & Dataset Initialization
 
 1. Navigate to the `backend` project folder.
-2. Place your English-translated dataset files within their respective subfolders under `backend/data/` (i.e., raw files inside `/raw`, preprocessed files inside `/preprocessed`, and evaluation splits inside `/testing`).
+2. Place your dataset files (provided as supplementary material `Dataset.csv`) within their respective subfolders under `backend/data/` (i.e., raw files inside `/raw`, preprocessed files inside `/preprocessed`, and evaluation splits inside `/testing`).
 3. Create a new environment configuration file named `.env` inside the `backend` folder.
-4. Populate the `.env` file with the connection string and credentials matching your local PostgreSQL setup as outlined in `env.txt`.
+4. Populate the `.env` file with the connection string and credentials matching your local PostgreSQL setup. Copy the template from `env.txt` and adjust the `DATABASE_URL` value (username, password, host, port).
 
 ### 3. Dependency Installation
 
@@ -101,9 +102,18 @@ To ensure exact replication of the empirical results presented in the study, the
    python -m venv venv
    ```
 2. Activate the virtual environment:
-   - **Windows (PowerShell):** `.\venv\Scripts\Activate.ps1`
-   - **Windows (CMD):** `.\venv\Scripts\activate.bat`
-   - **macOS/Linux:** `source venv/bin/activate`
+   - **Windows (PowerShell):**
+     ```powershell
+     .\venv\Scripts\Activate.ps1
+     ```
+   - **Windows (CMD):**
+     ```cmd
+     .\venv\Scripts\activate.bat
+     ```
+   - **macOS/Linux:**
+     ```bash
+     source venv/bin/activate
+     ```
 3. Install all required dependencies from the package registry:
    ```bash
    pip install -r requirements.txt
@@ -155,22 +165,23 @@ The execution pipeline follows the 4 structured framework stages established in 
 
 Linguistic text cleaning processes are executed through tailored configurations depending on the requirements of each model framework:
 
-- **Context-Preserving Preprocessing:** Implements text case folding and slang-word mapping to standardize the language while retaining complete structural and syntactic dependencies. This localized normalization ensures the semantic context remains intact for the transformer encoder, applied specifically for the **IndoBERT–KNN** framework.
-- **Aggressive Token-Level Cleansing:** Implements rigorous linguistic cleaning including lowercase transformation, punctuation and special-character removal, stopword filtering utilizing a manually defined token dictionary, and grammatical word-stemming via Sastrawi. This structured reduction minimizes feature noise and maps tokens to their base forms, applied specifically for the **Naïve Bayes–Lexicon** approach.
+- **Context-Preserving Preprocessing:** Implements text case folding and slang-word mapping to standardize the language while retaining complete structural dependencies. Applied specifically for the **IndoBERT–KNN** framework.
+- **Aggressive Token-Level Cleansing:** Implements rigorous linguistic cleaning including lowercase transformation, punctuation removal, stopword filtering utilizing a manual token dictionary, and grammatical word-stemming via Sastrawi. Applied specifically for the **Naïve Bayes–Lexicon** approach.
 
 ### Stage 3: Processing Procedure
 
 The execution frameworks split the comprehensive corpus into an 80% global training environment and a 20% standalone validation holdout.
 
-- **IndoBERT-KNN Pipeline (`train_indobert_knn`):** Sequentially coordinates `Idiom detection` checks via the presence of the `has_idiom` constraint, `Idiom meaning annotation`, contextual encoder pooling, `Sentence embedding` extraction, and distance-based classification inside a UMAP-reduced compact representation space.
-- **Naïve Bayes-Lexicon Approach (`train_lexicon_nb`):** Constructs a dynamic co-occurrence grid comprising dictionary lookup scoring and corpus-wide Pointwise Mutual Information (`compute_pmi`). Features are vectorized using a TF-IDF scheme, fed into a `MultinomialNB` engine, and integrated via a custom soft-probability mathematical fusi algorithm.
+- **IndoBERT-KNN Pipeline (`train_indobert_knn`):** Coordinates `Idiom detection` checks via the presence of the `has_idiom` constraint, `Idiom meaning annotation`, contextual encoder pooling, `Sentence embedding` extraction, and distance-based classification inside a UMAP-reduced compact representation space.
+- **Naïve Bayes-Lexicon Approach (`train_lexicon_nb`):** Constructs a dynamic co-occurrence grid comprising dictionary lookup scoring and corpus-wide Pointwise Mutual Information (`compute_pmi`). Features are vectorized using a TF-IDF scheme, fed into a `MultinomialNB` engine, and integrated via a custom soft-probability mathematical fusion algorithm.
 
 ### Stage 4: Evaluation & Model Evaluation Highlights
 
-Model performance evaluation is executed via Confusion Matrix matrices alongside standardized cross-validation configurations:
+Model performance evaluation strategy explicitly differentiates the validation workflow based on specific architectural paradigms to map true empirical training behavior:
 
-- **Validation Framework:** Parameter tuning is audited inside a Stratified 10-fold cross-validation setup (`StratifiedKFold`) within the training subset, while final generalizability is reported on the separate 20% independent testing holdout partition (`holdout_lexicon_[id].csv`).
-- **Core Performance Metrics:** System validation tracks macro-averaged parameters across accuracy, precision, recall, F1-score, Log Loss, and the Matthews Correlation Coefficient (MCC).
+- **IndoBERT-KNN Framework Validation:** Tracks localized feature representations over a progressive training sequence bounded by **5 distinct epochs** of fine-tuning, directly optimized utilizing a `Cross-Entropy Loss` metric over the 80% partitioned environment.
+- **Naïve Bayes-Lexicon Framework Validation:** Audits stability and feature dependency distributions inside a **Stratified 10-fold cross-validation setup** (`StratifiedKFold`) executed strictly within the partitioned environment to safeguard against overfitting.
+- **Core Performance Metrics:** Standalone generalization capability for both optimized models is verified on the separate 20% independent testing holdout partition (`holdout_lexicon_[id].csv`), tracking multi-class macro parameters across accuracy, precision, recall, F1-score, Log Loss, and the Matthews Correlation Coefficient (MCC).
 - **Experimental Baselines:** When validated on the 20% independent testing holdout partition, the proposed **IndoBERT–KNN** framework with UMAP achieved a prominent accuracy and F1-score of **97.45%** (Testing Loss: 0.0265, MCC: 0.970). This performance systematically outpaced the baseline **Naïve Bayes–Lexicon** model configuration, which achieved **93.13%** accuracy under identical testing splits. An ablation setup executed entirely without UMAP dimensionality reduction resulted in a lower testing accuracy of **89.07%** and an F1-score of **88.73%** for the transformer configuration.
 
 ## Code Availability & Open Data Policy
