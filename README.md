@@ -6,7 +6,7 @@
 
 ## Description
 
-This repository contains the official computer code and structural environment for the hybrid Natural Language Processing (NLP) models designed to classify emotions in Indonesian text by incorporating idiom-aware frameworks. It implements an architecture integrating IndoBERT with K-Nearest Neighbors (IndoBERT-KNN) and handles evaluation metrics including the Area Under the Receiver Operating Characteristic (ROC) curve and Area Under the Curve (AUC) analysis (ROC-AUC).
+This repository contains the official computer code and structural environment for the idiom-aware emotion classification frameworks developed for Indonesian text. It implements a unified processing pipeline integrating idiom detection, idiom interpretation, and emotion classification. This platform evaluates two distinct hybrid NLP paradigms: an architecture integrating IndoBERT with K-Nearest Neighbors using Uniform Manifold Approximation and Projection (IndoBERT–KNN) for contextual representations, and a Naïve Bayes–Lexicon approach incorporating emotion intensity-based lexicons. The codebase handles full evaluation metrics including the Area Under the Receiver Operating Characteristic curve and Area Under the Curve analysis (ROC–AUC), Matthews Correlation Coefficient (MCC), and multi-class macro performance averages.
 
 ## Dataset Information
 
@@ -18,10 +18,17 @@ This repository contains the official computer code and structural environment f
 
 ### Data Distribution Summary
 
-The underlying research utilizes a dataset initially consisting of **10,186 text samples** compiled during the primary ingestion phase. The corpus maintains a natural macro balance distributed across 8 core target emotion and literal text classes, which includes:
+The underlying research utilizes a dataset initially consisting of **10,186 text samples** compiled during the primary ingestion phase. The corpus maintains a natural balance distributed across core target emotion categories and literal text classes, which includes:
 
 - **Non-idiom data:** 5,013 samples
-- **Idiomatic data classes:** Happy (767), Trust (734), Surprise (735), Neutral (724), Sad (733), Fear (744), and Angry (736).
+- **Idiomatic data classes:** Distributed across 5,173 idiomatic sentences assigned into 7 emotion categories based on Plutchik's taxonomy:
+  - happiness (767)
+  - trust (734)
+  - surprise (735)
+  - neutral (724)
+  - sadness (733)
+  - fear (744)
+  - anger (736)
 
 Because the macro distribution between the non-idiomatic category and the cumulative idiomatic configurations inherently reflects a balanced pattern (approximate 50:50 distribution), the dataset does not require synthetic data generation (Augmentation) or random under-sampling algorithms (Discarding). Consequently, the model pipelines leverage the authentic empirical architecture of the data without external modifications. Clear distribution frequencies across the model frameworks can be fully referenced in **Table 1** of the main manuscript.
 
@@ -151,13 +158,17 @@ _Default System Administrative Credentials:_
 1. **Data Ingestion:** Reads structured text entries from the data directory.
 2. **Preprocessing:** Tokenizes and extracts embedding values optimized for Indonesian idiom phrases.
 3. **Classification:** Employs a hybrid model fusing IndoBERT architectures with K-Nearest Neighbors (KNN) logic.
-4. **Validation:** Evaluates predictions using multi-class Area Under the Receiver Operating Characteristic (ROC) curve and Area Under the Curve (AUC) analysis.
+4. **Validation:** Evaluates predictions using multi-class Area Under the Receiver Operating Characteristic curve and Area Under the Curve analysis.
 
 ### Model Evaluation Highlights
 
-The repository comprehensively evaluates and contrasts two distinct hybrid Natural Language Processing (NLP) paradigms implemented across the data architecture: our primary **Lexicon-Naive Bayes** framework and the baseline **IndoBERT-KNN** configuration.
+The repository comprehensively evaluates and contrasts two distinct hybrid Natural Language Processing (NLP) paradigms implemented across the data architecture: our primary **IndoBERT–KNN** framework (leveraging contextual language representations with instance-based learning) and the baseline **Naïve Bayes–Lexicon** configuration (integrating probabilistic classification with emotion intensity-based lexicons).
 
-Both algorithmic pipelines process the baseline dataset consisting of **10,186 text samples** distributed across 8 core target emotion and literal text classes (including 5,013 non-idiomatic references and an even spread of 724 to 767 samples per idiomatic emotion category). Exact distribution frequencies and multi-metric performance breakdowns across stratified K-fold cross-validation setups can be referenced in **Table 1** and **Table 6** of the main manuscript.
+- **Sample Corpus Baseline:** Both algorithmic pipelines process the baseline dataset consisting of **10,186 text samples** distributed across core target emotion and literal text classes.
+- **Class Stratification:** This includes 5,013 non-idiomatic references and an even macro spread ranging from 724 to 767 samples per individual idiomatic emotion category.
+- **Core Framework Results:** On the testing evaluation partitions, the proposed **IndoBERT–KNN** framework achieved a prominent accuracy and F1-score of **97.45%**, outperforming the baseline **Naïve Bayes–Lexicon** model, which achieved **93.13%**.
+- **Ablation Study Parameters:** Notably, a comparative experimental evaluation executed entirely without UMAP dimensionality reduction resulted in a lower testing accuracy of **89.07%** and an F1-score of **88.73%** for the baseline IndoBERT configuration.
+- **Manuscript Mapping:** Exact distribution frequencies and multi-metric performance breakdowns across stratified K-fold cross-validation setups can be referenced in **Table 1** and **Table 6** of the main manuscript.
 
 ## Code Availability & Open Data Policy
 
