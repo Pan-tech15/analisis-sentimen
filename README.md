@@ -70,6 +70,13 @@ To ensure exact replication of the empirical results presented in the study, the
 - **KNN Classifier:** K=5 (`metric='cosine'`, `weights='distance'`, `algorithm='auto'`)
   _(Detailed configurations are mapped in **Table 5** of the manuscript)_
 
+#### Naïve Bayes–Lexicon Classifier Settings
+
+- **Classifier Type:** Multinomial Naïve Bayes (`MultinomialNB`)
+- **Feature Vectorizer:** TF-IDF Vectorizer (Term Frequency-Inverse Document Frequency)
+- **Smoothing Parameter:** alpha = 0.3 (To prevent zero-frequency evaluation issues)
+- **Emotion Intensity Scale:** 7-tier scale mapping numerical strength from happiness (1) to anger (7)
+
 ## Environment Setup & Installation
 
 ### 1. Database Configuration & Migration
@@ -97,18 +104,9 @@ To ensure exact replication of the empirical results presented in the study, the
    python -m venv venv
    ```
 3. Activate the virtual environment:
-   - **Windows (PowerShell):**
-     ```powershell
-     .\venv\Scripts\Activate.ps1
-     ```
-   - **Windows (CMD):**
-     ```cmd
-     .\venv\Scripts\activate.bat
-     ```
-   - **macOS/Linux:**
-     ```bash
-     source venv/bin/activate
-     ```
+   - **Windows (PowerShell):** `.\venv\Scripts\Activate.ps1`
+   - **Windows (CMD):** `.\venv\Scripts\activate.bat`
+   - **macOS/Linux:** `source venv/bin/activate`
 4. Install all required dependencies from the package registry:
    ```bash
    pip install -r requirements.txt
@@ -150,25 +148,35 @@ Once both servers are running successfully, access the interfaces via:
 
 _Default System Administrative Credentials:_
 
-- **Username:** `admin`
-- **Password:** `admin123`
+- **Username:** `admin` | **Password:** `admin123`
 
 ## Methodology & Architectural Workflow
 
-1. **Data Ingestion:** Reads structured text entries from the data directory.
-2. **Preprocessing:** Tokenizes and extracts embedding values optimized for Indonesian idiom phrases.
-3. **Classification:** Employs a hybrid model fusing IndoBERT architectures with K-Nearest Neighbors (KNN) logic.
-4. **Validation:** Evaluates predictions using multi-class Area Under the Receiver Operating Characteristic curve and Area Under the Curve analysis.
+The execution pipeline follows the 4 structured framework stages established in the study: data collection, pre-processing, processing, and evaluation.
 
-### Model Evaluation Highlights
+### Stage 1: Data Collection & Stage 2: Pre-Processing
 
-The repository comprehensively evaluates and contrasts two distinct hybrid Natural Language Processing (NLP) paradigms implemented across the data architecture: our primary **IndoBERT–KNN** framework (leveraging contextual language representations with instance-based learning) and the baseline **Naïve Bayes–Lexicon** configuration (integrating probabilistic classification with emotion intensity-based lexicons).
+Text cleaning pipelines process text corpuses systematically via the following steps:
 
-- **Sample Corpus Baseline:** Both algorithmic pipelines process the baseline dataset consisting of **10,186 text samples** distributed across core target emotion and literal text classes.
-- **Class Stratification:** This includes 5,013 non-idiomatic references and an even macro spread ranging from 724 to 767 samples per individual idiomatic emotion category.
-- **Core Framework Results:** On the testing evaluation partitions, the proposed **IndoBERT–KNN** framework achieved a prominent accuracy and F1-score of **97.45%**, outperforming the baseline **Naïve Bayes–Lexicon** model, which achieved **93.13%**.
-- **Ablation Study Parameters:** Notably, a comparative experimental evaluation executed entirely without UMAP dimensionality reduction resulted in a lower testing accuracy of **89.07%** and an F1-score of **88.73%** for the baseline IndoBERT configuration.
-- **Manuscript Mapping:** Exact distribution frequencies and multi-metric performance breakdowns across stratified K-fold cross-validation setups can be referenced in **Table 1** and **Table 6** of the main manuscript.
+- **Lexical Cleansing:** Case folding, punctuation and special-character removal, stopword filtering, and grammatical stemming.
+- **Text Normalization:** Word normalization workflows and automated duplicate entry removal pipelines.
+- **Model Tokenization:** The clean text is structured into token IDs via IndoBERT’s WordPiece tokenizer, integrating standard `[CLS]` and `[SEP]` context boundaries.
+
+### Stage 3: Processing Procedure
+
+The core model frameworks process text pipelines through distinct task blocks:
+
+- **IndoBERT-KNN Pipeline:** Implements sequential blocks consisting of `Idiom detection`, `Idiom meaning annotation`, `IndoBERT encoder` transformations, `Sentence embedding` extraction, `KNN classification`, and final `Emotion prediction`.
+- **Naïve Bayes-Lexicon Approach:** Implements `Idiom detection`, `Hybrid Lexicon construction` (integrating both Dictionary-based and Corpus-based approaches), `Idiom meaning interpretation`, combined TF-IDF `Feature extraction`, and `Naïve Bayes classification` workflows.
+
+### Stage 4: Evaluation & Model Evaluation Highlights
+
+Model performance evaluation is executed via Confusion Matrix matrices alongside standardized cross-validation configurations:
+
+- **Core Performance Metrics:** System validation tracks macro-averaged and weighted-average parameters across accuracy, precision, recall, F1-score, and the Matthews Correlation Coefficient (MCC).
+- **Advanced Evaluators:** Discrepancies and threshold distributions are evaluated utilizing multi-class Area Under the Receiver Operating Characteristic curve and Area Under the Curve analysis, explicitly tracked via `ROC–AUC` and `ROU-AUC` baselines.
+- **Loss Parameters:** Model training optimizations track `Cross-Entropy Loss` and definitive `testing loss` parameters to evaluate model discriminative behavior on unseen samples.
+- **Experimental Baselines:** On the testing partitions, **IndoBERT–KNN** with UMAP achieved an accuracy and F1-score of **97.45%** (Testing Loss: 0.0265, MCC: 0.970), outperforming the baseline **Naïve Bayes–Lexicon** model which achieved **93.13%** accuracy. An ablation setup executed entirely without UMAP dimensionality reduction resulted in a lower testing accuracy of **89.07%** and an F1-score of **88.73%**.
 
 ## Code Availability & Open Data Policy
 
