@@ -1,5 +1,7 @@
 # README: Beyond literal meaning: an idiom-aware framework for Indonesian emotion classification using hybrid Natural Language Processing (NLP) models
 
+[![DOI](https://zenodo.org/badge/1198403897.svg)](https://doi.org/10.5281/zenodo.22223444)
+
 ## Project Title
 
 **Beyond literal meaning: an idiom-aware framework for Indonesian emotion classification using hybrid Natural Language Processing (NLP) models**
