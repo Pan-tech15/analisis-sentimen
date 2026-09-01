@@ -6,7 +6,7 @@
 
 ## Description
 
-This repository contains the official computer code and structural production environment for the idiom-aware emotion classification frameworks developed for Indonesian text. It implements a highly optimized, modular processing pipeline integrating idiom detection, idiom semantic interpretation, and emotion classification. This platform comprehensively implements and evaluates two distinct hybrid NLP paradigms: an architecture integrating IndoBERT with instance-based learning via K-Nearest Neighbors coupled with Uniform Manifold Approximation and Projection (IndoBERT–KNN) for high-dimensional contextual embeddings, and an ensemble Naïve Bayes–Lexicon approach incorporating statistical Pointwise Mutual Information (PMI) and mathematical Soft-Probability Decision Fusion. The codebase handles exhaustive validation metrics including Area Under the Receiver Operating Characteristic curve and Area Under the Curve analysis (ROC–AUC), Matthews Correlation Coefficient (MCC), Log Loss tracking, and multi-class macro performance averages.
+This repository contains the official computer code and structural production environment for the idiom-aware emotion classification frameworks developed for Indonesian text. It implements a highly optimized, modular processing pipeline integrating idiom detection, idiom semantic interpretation, and emotion classification. This platform comprehensively implements and evaluates two distinct hybrid NLP paradigms: an architecture integrating IndoBERT with instance-based learning via K-Nearest Neighbors coupled with Uniform Manifold Approximation and Projection (IndoBERT–KNN) for high-dimensional contextual embeddings, and an ensemble Naïve Bayes–Lexicon approach incorporating statistical lexicon-based features. The codebase handles exhaustive validation metrics including Area Under the Receiver Operating Characteristic curve (ROC–AUC), Matthews Correlation Coefficient (MCC), Log Loss tracking, and multi-class macro performance averages.
 
 ## Dataset Information
 
@@ -30,7 +30,7 @@ The underlying research model pipeline processes a balanced data repository cons
   - fear (744 samples)
   - anger (736 samples)
 
-Because the macro distribution between the non-idiomatic category and the cumulative idiomatic configurations inherently reflects an optimized pattern (approximate 50:50 macro distribution), the dataset does not require synthetic data generation (Augmentation) or random under-sampling algorithms (Discarding). Consequently, the model pipelines leverage the authentic empirical architecture of the data without external modifications. The complete distribution frequencies are detailed in **Table 1** of the main manuscript.
+To address minor class imbalances and increase data diversity while preserving the original idiomatic expressions and intended meanings, limited data augmentation was applied through paraphrasing techniques using Llama 3 and Gemini, as detailed in the main manuscript. The annotation process was performed by three independent annotators and achieved a Cohen's Kappa of 0.9557, indicating almost perfect inter-annotator agreement.
 
 ## Code Information
 
@@ -70,10 +70,8 @@ To ensure exact replication of the empirical results presented in the study, the
 
 #### Naïve Bayes–Lexicon Classifier Settings
 
-- **Training Strategy:** Hyperparameters (e.g., Laplace smoothing alpha) are optimized via a Stratified 10-fold Cross-Validation approach strictly within the training subset.
 - **Classifier Type:** Multinomial Naïve Bayes (`MultinomialNB`) with Laplace smoothing parameter alpha = 0.3.
 - **Feature Vectorizer:** `TfidfVectorizer` used to extract numerical text features by representing term importance within the text corpus.
-- **Hybrid Fusion Method:** Weighted Soft-Probability Decision Fusion ($P_{\text{final}} = \alpha \cdot P_{\text{NB}} + (1 - \alpha) \cdot S_{\text{lexicon}}$) with weight $\alpha = 0.9$.
 - **Tie-Breaker Ranking Array:** 7-tier scale mapping priority values: Happy (1), Trust (2), Surprised (3), Neutral (4), Sad (5), Scared (6), Angry (7).
 
 ## Environment Setup & Installation
