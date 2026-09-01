@@ -155,6 +155,30 @@ _Default System Administrative Credentials:_
 
 - **Username:** `admin` | **Password:** `admin123`
 
+### Viewing Model Performance on the Dashboard
+
+Once both servers are running and you have accessed the portal, follow the steps below to view the performance metrics of the best models:
+
+1. Log in using the default administrative credentials (`Username: admin | Password: admin123`). You will be automatically redirected to the homepage (`Beranda`).
+
+2. **To view the IndoBERT–KNN Best Model:**
+   - In the left sidebar, click on the **Processing** menu to navigate to the processing page.
+   - Scroll down to the bottom of the page.
+   - Use the search function in the "Training History" section to find the entry named `ModelK5NoF-U` and click the "Apply Filter" button.
+   - The table will display the best model. On the right, in the action column of the table, click the eye icon and it will direct to the details page.
+   - There it will be shown the parameters used for that model, the confusion matrix, and all the evaluation metrics.
+
+3. **To view the Lexicon–Naïve Bayes Best Model:**
+   - Head back to the **Processing** page, scroll back to the top section.
+   - Locate the **Select Algorithm** dropdown menu.
+   - Change the selection to `Naive Bayes-Lexicon`.
+   - Scroll down to the bottom of the page.
+   - Use the search function in the "Training History" section to find the entry named `M03TW09_bestratio_80-20` and click the "Apply Filter" button.
+   - The table will display the best model. On the right, in the action column of the table, click the eye icon and it will direct to the details page.
+   - There it will be shown the parameters used for that model, the confusion matrix, and all the evaluation metrics.
+
+These steps allow you to visually verify the experimental results discussed in the main manuscript (detailed in **Table 6**), including accuracy, F1-score, MCC, and ROC–AUC for each hybrid approach.
+
 ## Methodology & Architectural Workflow
 
 The execution pipeline follows the 4 structured framework stages established in the study: data collection, pre-processing, processing, and evaluation.
@@ -164,7 +188,7 @@ The execution pipeline follows the 4 structured framework stages established in 
 Linguistic text cleaning processes are executed through tailored configurations depending on the requirements of each model framework:
 
 - **Context-Preserving Preprocessing:** Implements text case folding and slang-word mapping to standardize the language while retaining complete structural dependencies. Applied specifically for the **IndoBERT–KNN** framework.
-- **Aggressive Token-Level Cleansing:** Implements rigorous linguistic cleaning including lowercase transformation, punctuation removal, stopword filtering utilizing a manual token dictionary, and grammatical word-stemming via Sastrawi. Applied specifically for the **Naïve Bayes–Lexicon** approach.
+- **Aggressive Token-Level Cleansing:** Implements rigorous linguistic cleaning including lowercase transformation, punctuation removal, stopword filtering utilizing a manual token dictionary, and grammatical word-stemming. Applied specifically for the **Naïve Bayes–Lexicon** approach.
 
 ### Stage 3: Processing Procedure
 
@@ -174,15 +198,15 @@ The comprehensive corpus is split into training and testing sets using a **hold-
   Sequentially coordinates `Idiom detection` checks via the `has_idiom` constraint, `Idiom meaning annotation`, and contextual encoder pooling. The core IndoBERT model is fine-tuned using a fixed **5 Epoch** strategy (hyperparameters detailed in **Table 4**) applied directly to the training set. Following encoding, sentence embeddings are projected into a compact semantic space using **UMAP** (parameter configuration in **Table 5**) and classified via KNN.
 
 - **Naïve Bayes-Lexicon Approach (`train_lexicon_nb`):**
-  Constructs a dynamic co-occurrence grid comprising dictionary lookup scoring and corpus-wide Pointwise Mutual Information (`compute_pmi`). Unlike the epoch-based training of IndoBERT, **hyperparameter optimization (e.g., the `alpha` smoothing parameter) is conducted internally via a Stratified 10-fold Cross-Validation** strictly within the training subset. Features are vectorized using a TF-IDF scheme, fed into a `MultinomialNB` engine, and integrated via a custom soft-probability mathematical fusion algorithm.
+  Constructs lexicon-based emotion features using a dictionary-based approach enriched with contextual co-occurrence patterns. Features are vectorized using a TF-IDF scheme and fed into a Multinomial Naïve Bayes classifier configured with a smoothing parameter alpha = 0.3.
 
 ### Stage 4: Evaluation & Model Performance Highlights
 
 Model performance is executed via Confusion Matrices alongside standardized validation configurations:
 
-- **Validation Framework:** While hyperparameter tuning for the Naïve Bayes–Lexicon model utilizes Stratified 10-fold CV on the training data, the **final generalization performance for both models** is rigorously validated on the separate independent testing holdout (using the optimal split ratios specified in Table 3).
+- **Validation Framework:** The final generalization performance for both models is rigorously validated on a separate independent testing holdout (using the optimal split ratios specified in Table 3).
 - **Core Performance Metrics:** System validation tracks macro-averaged parameters across accuracy, precision, recall, F1-score, Log Loss, Matthews Correlation Coefficient (MCC), and ROC–AUC. The consolidated training and testing results for all metrics are presented in **Table 6** of the manuscript.
-- **Experimental Baselines:** When validated on the independent holdout, the proposed **IndoBERT–KNN** framework with UMAP achieved a prominent accuracy and F1-score of **97.45%** (Testing Loss: 0.0265, MCC: 0.970). This performance systematically outpaced the baseline **Naïve Bayes–Lexicon** model configuration, which achieved **93.13%** accuracy under identical testing splits. An ablation setup executed entirely without UMAP dimensionality reduction resulted in a lower testing accuracy of **89.07%** and an F1-score of **88.73%** for the transformer configuration.
+- **Experimental Baselines:** When validated on the independent holdout, the proposed **IndoBERT–KNN** framework with UMAP achieved a prominent accuracy and F1-score of **97.45%** (Testing Loss: 0.0265, MCC: 0.970). This performance systematically outpaced the baseline **Naïve Bayes–Lexicon** model configuration, which achieved **93.13%** accuracy under identical testing splits. The supplementary ROC–AUC scores were recorded at **98.72%** for IndoBERT–KNN and **99.45%** for Naïve Bayes–Lexicon, consistent with the findings discussed in the manuscript. An ablation setup executed entirely without UMAP dimensionality reduction resulted in a lower testing accuracy of **89.07%** and an F1-score of **88.73%** for the transformer configuration.
 
 ## Code Availability & Open Data Policy
 
