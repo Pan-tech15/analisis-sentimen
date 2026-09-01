@@ -5,7 +5,12 @@ __pycache__/
 .env
 
 # Data files
-data/
+backend/app/data/
+backend/data/*
+!backend/data/models/
+backend/data/models/*
+!backend/data/models/indobert_knn_687.pkl
+!backend/data/models/lexicon_nb_581.pkl
 
 # IDE
 .vscode/
