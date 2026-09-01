@@ -157,7 +157,7 @@ _Default System Administrative Credentials:_
 
 - **Username:** `admin` | **Password:** `admin123`
 
-### Viewing Model Performance on the Dashboard
+### Viewing Model Performance
 
 Once both servers are running and you have accessed the portal, follow the steps below to view the performance metrics of the best models:
 
