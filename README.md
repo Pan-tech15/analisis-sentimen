@@ -12,6 +12,10 @@ This repository contains the official computer code and structural production en
 
 ## Dataset Information
 
+### Data Files
+
+The dataset used for training is the file `Dataset.csv`, which is a dataset of sentences in Indonesian. Also provided is the file `Dataset_english.csv`, which is a translation of the Indonesian sentence dataset in `Dataset.csv` into English to make it easier for reviewers to understand the sentences in the training dataset. Please note that the file `Dataset_english.csv` cannot be used for training, only for translation purposes.
+
 - **Data Directory Structure:** All research corpuses are securely managed under the backend storage structure:
   - **Raw Ingestion Directory:** `backend/data/raw/` (Contains original text files formatted with English metadata mapping).
   - **Engineered Feature Directory:** `backend/data/preprocessed/` (Contains pre-computed linguistic tokens and feature matrix arrays).
