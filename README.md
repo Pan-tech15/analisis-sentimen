@@ -58,16 +58,10 @@ In addition to the original `.pkl` model artifacts, this repository provides hum
 
 | Original `.pkl` Artifact | Readable Artifact | Format |
 |---|---|---|
-| `indobert_knn_687.pkl` | `indobert_knn_687.json.gz` | Compressed JSON (`.json.gz`); decompress before reading |
+| `indobert_knn_687.pkl` | `indobert_knn_687.json` | Plain JSON (`.json`) |
 | `lexicon_nb_581.pkl` | `lexicon_nb_581.json` | Plain JSON (`.json`) |
 
-These JSON files are provided to improve transparency, auditability, and interoperability. They allow the model contents and metadata to be inspected and parsed without relying on Python pickle deserialization. The `.pkl` files remain the primary artifacts for exact training and inference reproduction, while the `.json` / `.json.gz` files serve as accessible, portable representations.
-
-To read the compressed IndoBERT–KNN artifact, decompress it first, for example:
-
-```bash
-gunzip indobert_knn_687.json.gz
-```
+These JSON files are provided to improve transparency, auditability, and interoperability. They allow the model contents and metadata to be inspected and parsed without relying on Python pickle deserialization. The `.pkl` files remain the primary artifacts for exact training and inference reproduction, while the `.json` files serve as accessible, portable representations.
 
 ## Prerequisites & Requirements
 
@@ -233,7 +227,7 @@ Model performance is executed via Confusion Matrices alongside standardized vali
 
 ## Code Availability & Open Data Policy
 
-In compliance with the PeerJ open data policy, the source code, environmental configurations, and underlying text corpuses are temporarily archived for publication review. Model artifacts are available in both the original `.pkl` format and readable JSON formats: `indobert_knn_687.json.gz` for `indobert_knn_687.pkl` and `lexicon_nb_581.json` for `lexicon_nb_581.pkl`. Permanent static archives tracking definitive release tags will be accessible via Zenodo DOI upon formal publication.
+In compliance with the PeerJ open data policy, the source code, environmental configurations, and underlying text corpuses are temporarily archived for publication review. Model artifacts are available in both the original `.pkl` format and readable JSON formats: `indobert_knn_687.json` for `indobert_knn_687.pkl` and `lexicon_nb_581.json` for `lexicon_nb_581.pkl`. Permanent static archives tracking definitive release tags will be accessible via Zenodo DOI upon formal publication.
 
 ## License & Contribution Guidelines
 
