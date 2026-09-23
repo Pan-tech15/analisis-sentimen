@@ -54,14 +54,16 @@ The production repository architecture follows a modular, layered structure desi
 
 ### Model Artifacts & Readable Formats
 
-In addition to the original `.pkl` model artifacts, this repository provides human- and machine-readable JSON representations for the two main trained models:
+In addition to the original `.pkl` model artifacts, this repository provides human- and machine-readable representations for the two main trained models:
 
 | Original `.pkl` Artifact | Readable Artifact | Format |
 |---|---|---|
-| `indobert_knn_687.pkl` | `indobert_knn_687.json` | Plain JSON (`.json`) |
+| `indobert_knn_687.pkl` | `indobert_knn_687.txt` | Plain text (`.txt`) |
 | `lexicon_nb_581.pkl` | `lexicon_nb_581.json` | Plain JSON (`.json`) |
 
-These JSON files are provided to improve transparency, auditability, and interoperability. They allow the model contents and metadata to be inspected and parsed without relying on Python pickle deserialization. The `.pkl` files remain the primary artifacts for exact training and inference reproduction, while the `.json` files serve as accessible, portable representations.
+These readable files are provided to improve transparency, auditability, and interoperability. They allow the model contents and metadata to be inspected and parsed without relying on Python pickle deserialization. The `.pkl` files remain the primary artifacts for exact training and inference reproduction, while the `.txt` / `.json` files serve as accessible, portable representations.
+
+The `.txt` artifact can be opened with any standard text editor, while the `.json` artifact can be parsed using standard JSON tooling.
 
 ## Prerequisites & Requirements
 
@@ -227,7 +229,7 @@ Model performance is executed via Confusion Matrices alongside standardized vali
 
 ## Code Availability & Open Data Policy
 
-In compliance with the PeerJ open data policy, the source code, environmental configurations, and underlying text corpuses are temporarily archived for publication review. Model artifacts are available in both the original `.pkl` format and readable JSON formats: `indobert_knn_687.json` for `indobert_knn_687.pkl` and `lexicon_nb_581.json` for `lexicon_nb_581.pkl`. Permanent static archives tracking definitive release tags will be accessible via Zenodo DOI upon formal publication.
+In compliance with the PeerJ open data policy, the source code, environmental configurations, and underlying text corpuses are temporarily archived for publication review. Model artifacts are available in both the original `.pkl` format and readable formats: `indobert_knn_687.txt` for `indobert_knn_687.pkl` and `lexicon_nb_581.json` for `lexicon_nb_581.pkl`. Permanent static archives tracking definitive release tags will be accessible via Zenodo DOI upon formal publication.
 
 ## License & Contribution Guidelines
 
